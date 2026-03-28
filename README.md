@@ -11,12 +11,28 @@ Arduino board support package for NXP FRDM MCX Series boards.
 | FRDM-MCXN947 | MCXN947 (Cortex-M33) | 🔜 |
 | FRDM-MCXN236 | MCXN236 (Cortex-M33) | 🔜 |
 
+## Requirements
+
+### NXP LinkServer (Required for uploading)
+
+This package uses **NXP LinkServer** for uploading sketches to the board.  
+Please install it before using the Upload button in Arduino IDE.
+
+👉 Download: https://www.nxp.com/linkserver
+
+| OS | Installer |
+|----|-----------|
+| macOS | `.pkg` file, double-click to install |
+| Windows | `.exe` installer |
+| Linux | `.deb.bin` file |
+
+After installation, the upload script will automatically detect LinkServer — no path configuration needed.
+
 ## Installation
 
 1. Open Arduino IDE 2.x
 2. Go to **File → Preferences**
 3. Add the following URL to **Additional boards manager URLs**:
-
 ```
 https://raw.githubusercontent.com/teddokano/mcx-arduino-core/main/package_nxp_mcx_index.json
 ```
@@ -27,13 +43,14 @@ https://raw.githubusercontent.com/teddokano/mcx-arduino-core/main/package_nxp_mc
 ## Architecture
 
 This package uses a prebuilt library approach:
-
 ```
 mcx-arduino-core/
 ├── hardware/nxp/mcx/
 │   ├── platform.txt          # Compiler/linker settings
 │   ├── boards.txt            # Board definitions
 │   ├── cores/arduino/        # Arduino API headers
+│   ├── tools/
+│   │   └── upload.sh         # Upload script (auto-detects LinkServer)
 │   └── variants/
 │       └── frdm_mcxa153/
 │           ├── include/      # Board-specific headers
@@ -49,7 +66,6 @@ The prebuilt library (`lib_r01lib_frdm_mcxa153.a`) contains:
 - Board files (pin_mux, clock_config, board, ...)
 
 ## Example Sketch
-
 ```cpp
 #include "arduino.h"
 
@@ -69,8 +85,7 @@ void loop() {
 
 ## Building the Prebuilt Library
 
-The prebuilt `.a` library is built with MCUXpresso IDE from the
-`_r01lib_frdm_mcxa153` project in the [r01lib repository](https://github.com/teddokano/r01lib).
+The prebuilt `.a` library is built with MCUXpresso IDE from the `_r01lib_frdm_mcxa153` project in the [r01lib repository](https://github.com/teddokano/r01lib).
 
 ## License
 
