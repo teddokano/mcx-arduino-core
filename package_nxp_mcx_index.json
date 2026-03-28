@@ -16,8 +16,8 @@
           "category": "Contributed",
           "url": "https://github.com/teddokano/mcx-arduino-core/releases/download/0.1.0/mcx-arduino-core-0.1.0.zip",
           "archiveFileName": "mcx-arduino-core-0.1.0.zip",
-          "checksum": "SHA-256:a69615495130fbf42188fbf1e2bcc626a4ca7a98968ee2cd2fb3e85cc0ae9ea3",
-          "size": "18627124",
+          "checksum": "SHA-256:c98c74f176e11451cbd7047f4f53552949f165c801f8b61c10476f994067491c",
+          "size": "18625986",
           "boards": [
             {
               "name": "FRDM-MCXA153 (NXP Cortex-M33)"
