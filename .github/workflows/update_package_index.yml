@@ -1,0 +1,83 @@
+name: Update package_index.json checksums
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+  update-checksums:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download GCC and compute checksums
+        run: |
+          BASE="https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu/14.2.rel1/binrel"
+
+          declare -A FILES=(
+            ["arm64-apple-darwin"]="arm-gnu-toolchain-14.2.rel1-darwin-arm64-arm-none-eabi.tar.xz"
+            ["x86_64-apple-darwin"]="arm-gnu-toolchain-14.2.rel1-darwin-x86_64-arm-none-eabi.tar.xz"
+            ["x86_64-linux-gnu"]="arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-eabi.tar.xz"
+            ["aarch64-linux-gnu"]="arm-gnu-toolchain-14.2.rel1-aarch64-arm-none-eabi.tar.xz"
+            ["i686-mingw32"]="arm-gnu-toolchain-14.2.rel1-mingw-w64-i686-arm-none-eabi.zip"
+          )
+
+          echo "host,file,sha256,size" > /tmp/checksums.csv
+
+          for HOST in "${!FILES[@]}"; do
+            FILE="${FILES[$HOST]}"
+            URL="$BASE/$FILE"
+            echo "Downloading $HOST ..."
+            curl -L --silent --show-error "$URL" -o "/tmp/$FILE"
+            SHA256=$(sha256sum "/tmp/$FILE" | awk '{print $1}')
+            SIZE=$(wc -c < "/tmp/$FILE" | tr -d ' ')
+            echo "$HOST,$FILE,$SHA256,$SIZE" >> /tmp/checksums.csv
+            echo "  $HOST: SHA256=$SHA256 SIZE=$SIZE"
+            rm "/tmp/$FILE"
+          done
+
+          cat /tmp/checksums.csv
+
+      - name: Update package_index.json
+        run: |
+          python3 << 'PYEOF'
+          import json, csv
+
+          with open("package_nxp_mcx_index.json") as f:
+              pkg = json.load(f)
+
+          checksums = {}
+          with open("/tmp/checksums.csv") as f:
+              for row in csv.DictReader(f):
+                  checksums[row["host"]] = {
+                      "sha256": "SHA-256:" + row["sha256"],
+                      "size": row["size"],
+                  }
+
+          for tool in pkg["packages"][0]["tools"]:
+              if tool["name"] == "arm-none-eabi-gcc":
+                  for sys in tool["systems"]:
+                      host = sys["host"]
+                      if host in checksums:
+                          sys["checksum"] = checksums[host]["sha256"]
+                          sys["size"] = checksums[host]["size"]
+
+          with open("package_nxp_mcx_index.json", "w") as f:
+              json.dump(pkg, f, indent=2)
+
+          print("package_nxp_mcx_index.json updated")
+          PYEOF
+
+      - name: Commit updated package_index.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add package_nxp_mcx_index.json
+          git diff --staged --quiet || git commit -m "Update GCC checksums in package_index.json"
+          git push
