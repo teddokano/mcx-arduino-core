@@ -45,3 +45,7 @@ frdm_mcxa153.upload.protocol=
 # frdm_mcxn947.name=FRDM-MCXN947 ...
 # frdm_mcxn236.name=FRDM-MCXN236 ...
 ##############################################################
+frdm_mcxa153.vid.0=0x1FC9
+frdm_mcxa153.pid.0=0x0143
+frdm_mcxa153.upload_port.0.vid=0x1FC9
+frdm_mcxa153.upload_port.0.pid=0x0143
