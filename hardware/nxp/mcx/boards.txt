@@ -34,8 +34,10 @@ frdm_mcxa153.build.variant_lib=_r01lib_frdm_mcxa153
 
 # Upload
 frdm_mcxa153.build.pyocd_target=mcxa153
-frdm_mcxa153.upload.tool=pyocd
-frdm_mcxa153.upload.protocol=cmsis-dap
+frdm_mcxa153.upload.tool=linkserver
+frdm_mcxa153.upload.tool.default=linkserver
+frdm_mcxa153.upload.protocol=
+
 
 ##############################################################
 # （将来追加予定）
