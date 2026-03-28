@@ -34,9 +34,9 @@ compiler.ar.flags=rcs
 recipe.ar.pattern="{compiler.path}{compiler.ar.cmd}" {compiler.ar.flags} "{archive_file_path}" "{object_file}"
 
 compiler.c.elf.cmd=arm-none-eabi-c++
-compiler.c.elf.flags=-nostdlib -Xlinker --gc-sections -Xlinker -print-memory-usage -Xlinker --sort-section=alignment -Xlinker --cref -u _printf_float -u _scanf_float {compiler.cpu_flags}
+compiler.c.elf.flags=-nostartfiles -Xlinker --gc-sections -Xlinker -print-memory-usage -Xlinker --sort-section=alignment  -u _printf_float -u _scanf_float {compiler.cpu_flags}
 
-recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}" {compiler.c.elf.flags} -T "{build.variant.path}/linker/{build.ldscript}" -Xlinker -Map="{build.path}/{build.project_name}.map" -L"{build.variant.path}/lib" -o "{build.path}/{build.project_name}.elf" {object_files} "{archive_file_path}" -l{build.variant_lib}
+recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}" {compiler.c.elf.flags} -T "{build.variant.path}/linker/{build.ldscript}" -L{build.variant.path}/lib -o "{build.path}/{build.project_name}.elf" {object_files} "{archive_file_path}" -l{build.variant_lib} -lm -lc -lgcc
 
 compiler.objcopy.cmd=arm-none-eabi-objcopy
 compiler.elf2hex.cmd=arm-none-eabi-objcopy

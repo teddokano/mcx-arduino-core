@@ -96,3 +96,47 @@ SECTIONS
         *(.ARM.exidx*)
     }
 }
+
+/* Stack symbols for MCUXpresso startup */
+PROVIDE(_vStackTop = __stack_top__);
+PROVIDE(_vStackBase = __stack_start__);
+
+/* Data/BSS table symbols */
+PROVIDE(__data_section_table = 0);
+PROVIDE(__data_section_table_end = 0);
+PROVIDE(__bss_section_table = 0);
+PROVIDE(__bss_section_table_end = 0);
+
+/* Exception index table symbols */
+PROVIDE(__exidx_start = 0);
+PROVIDE(__exidx_end = 0);
+
+/* Newlib syscall stubs */
+PROVIDE(_kill = 0);
+PROVIDE(_getpid = 0);
+PROVIDE(_sbrk = 0);
+PROVIDE(_init = 0);
+PROVIDE(_close = 0);
+PROVIDE(_lseek = 0);
+PROVIDE(_read = 0);
+PROVIDE(_write = 0);
+PROVIDE(_fstat = 0);
+PROVIDE(_isatty = 0);
+
+/* Exception index table symbols */
+PROVIDE(__exidx_start = 0);
+PROVIDE(__exidx_end = 0);
+
+/* Newlib syscall stubs */
+PROVIDE(_kill = 0);
+PROVIDE(_getpid = 0);
+PROVIDE(_sbrk = 0);
+PROVIDE(_init = 0);
+PROVIDE(_close = 0);
+PROVIDE(_lseek = 0);
+PROVIDE(_read = 0);
+PROVIDE(_write = 0);
+PROVIDE(_fstat = 0);
+PROVIDE(_isatty = 0);
+
+PROVIDE(_exit = 0);
