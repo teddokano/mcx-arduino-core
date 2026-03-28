@@ -1,0 +1,76 @@
+{
+  "packages": [
+    {
+      "name": "nxp",
+      "maintainer": "Tedd OKANO",
+      "websiteURL": "https://github.com/teddokano/mcx-arduino-core",
+      "email": "",
+      "help": { "online": "https://github.com/teddokano/mcx-arduino-core" },
+      "platforms": [
+        {
+          "name": "NXP FRDM MCX Series",
+          "architecture": "mcx",
+          "version": "0.1.0",
+          "category": "Contributed",
+          "url": "https://github.com/teddokano/mcx-arduino-core/releases/download/0.1.0/mcx-arduino-core-0.1.0.zip",
+          "archiveFileName": "mcx-arduino-core-0.1.0.zip",
+          "checksum": "SHA-256:REPLACE_WITH_ACTUAL_SHA256",
+          "size": "REPLACE_WITH_ACTUAL_SIZE",
+          "boards": [
+            { "name": "FRDM-MCXA153 (NXP Cortex-M33)" }
+          ],
+          "toolsDependencies": [
+            {
+              "packager": "nxp",
+              "name": "arm-none-eabi-gcc",
+              "version": "14.2.rel1"
+            }
+          ]
+        }
+      ],
+      "tools": [
+        {
+          "name": "arm-none-eabi-gcc",
+          "version": "14.2.rel1",
+          "systems": [
+            {
+              "host": "arm64-apple-darwin",
+              "url": "https://developer.arm.com/-/media/Files/downloads/gnu/14.2.rel1/binrel/arm-gnu-toolchain-14.2.rel1-darwin-arm64-arm-none-eabi.tar.xz",
+              "archiveFileName": "arm-gnu-toolchain-14.2.rel1-darwin-arm64-arm-none-eabi.tar.xz",
+              "checksum": "SHA-256:REPLACE_WITH_ACTUAL_SHA256",
+              "size": "REPLACE_WITH_ACTUAL_SIZE"
+            },
+            {
+              "host": "x86_64-apple-darwin",
+              "url": "https://developer.arm.com/-/media/Files/downloads/gnu/14.2.rel1/binrel/arm-gnu-toolchain-14.2.rel1-darwin-x86_64-arm-none-eabi.tar.xz",
+              "archiveFileName": "arm-gnu-toolchain-14.2.rel1-darwin-x86_64-arm-none-eabi.tar.xz",
+              "checksum": "SHA-256:REPLACE_WITH_ACTUAL_SHA256",
+              "size": "REPLACE_WITH_ACTUAL_SIZE"
+            },
+            {
+              "host": "x86_64-linux-gnu",
+              "url": "https://developer.arm.com/-/media/Files/downloads/gnu/14.2.rel1/binrel/arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-eabi.tar.xz",
+              "archiveFileName": "arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-eabi.tar.xz",
+              "checksum": "SHA-256:REPLACE_WITH_ACTUAL_SHA256",
+              "size": "REPLACE_WITH_ACTUAL_SIZE"
+            },
+            {
+              "host": "aarch64-linux-gnu",
+              "url": "https://developer.arm.com/-/media/Files/downloads/gnu/14.2.rel1/binrel/arm-gnu-toolchain-14.2.rel1-aarch64-arm-none-eabi.tar.xz",
+              "archiveFileName": "arm-gnu-toolchain-14.2.rel1-aarch64-arm-none-eabi.tar.xz",
+              "checksum": "SHA-256:REPLACE_WITH_ACTUAL_SHA256",
+              "size": "REPLACE_WITH_ACTUAL_SIZE"
+            },
+            {
+              "host": "i686-mingw32",
+              "url": "https://developer.arm.com/-/media/Files/downloads/gnu/14.2.rel1/binrel/arm-gnu-toolchain-14.2.rel1-mingw-w64-i686-arm-none-eabi.zip",
+              "archiveFileName": "arm-gnu-toolchain-14.2.rel1-mingw-w64-i686-arm-none-eabi.zip",
+              "checksum": "SHA-256:REPLACE_WITH_ACTUAL_SHA256",
+              "size": "REPLACE_WITH_ACTUAL_SIZE"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

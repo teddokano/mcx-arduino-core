@@ -1,0 +1,45 @@
+# NXP FRDM MCX Series
+# boards.txt
+
+##############################################################
+# FRDM-MCXA153
+##############################################################
+
+frdm_mcxa153.name=FRDM-MCXA153 (NXP Cortex-M33)
+
+# CPU
+frdm_mcxa153.build.mcu=cortex-m33+nodsp
+
+# Arduino IDE internal identifiers
+frdm_mcxa153.build.board=FRDM_MCXA153
+frdm_mcxa153.build.core=arduino
+frdm_mcxa153.build.variant=frdm_mcxa153
+
+# Board-specific preprocessor defines
+frdm_mcxa153.build.board_defines=-DCPU_MCXA153VLH -DCPU_MCXA153VLH_cm33_nodsp -DTARGET_A153
+
+# Optimization (release build)
+frdm_mcxa153.build.opt_flags=-O2
+
+# Flash / RAM
+frdm_mcxa153.upload.maximum_size=131072
+frdm_mcxa153.upload.maximum_data_size=24576
+
+# Linker script filename (inside variants/frdm_mcxa153/linker/)
+frdm_mcxa153.build.ldscript=MCXA153.ld
+
+# Prebuilt library name  →  lib/lib_r01lib_frdm_mcxa153.a
+#   linker flag: -l_r01lib_frdm_mcxa153
+frdm_mcxa153.build.variant_lib=_r01lib_frdm_mcxa153
+
+# Upload
+frdm_mcxa153.build.pyocd_target=mcxa153
+frdm_mcxa153.upload.tool=pyocd
+frdm_mcxa153.upload.protocol=cmsis-dap
+
+##############################################################
+# （将来追加予定）
+# frdm_mcxa156.name=FRDM-MCXA156 ...
+# frdm_mcxn947.name=FRDM-MCXN947 ...
+# frdm_mcxn236.name=FRDM-MCXN236 ...
+##############################################################

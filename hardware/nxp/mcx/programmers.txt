@@ -1,0 +1,7 @@
+# programmers.txt
+# NXP FRDM MCX Series
+
+pyocd.name=pyocd (CMSIS-DAP)
+pyocd.communication=USB
+pyocd.protocol=cmsis-dap
+pyocd.program.tool=pyocd

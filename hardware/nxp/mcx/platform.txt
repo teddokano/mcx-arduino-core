@@ -1,0 +1,56 @@
+name=NXP FRDM MCX Series
+version=0.1.0
+
+# Use MCUXpresso bundled GCC 14.2 directly
+compiler.path={runtime.tools.arm-none-eabi-gcc.path}/bin/
+
+compiler.cpu_flags=-mcpu={build.mcu} -mthumb
+compiler.defines=-DPRINTF_FLOAT_ENABLE=1 -DSCANF_FLOAT_ENABLE=1 -DPRINTF_ADVANCED_ENABLE=1 -DSCANF_ADVANCED_ENABLE=1 -D__NEWLIB__ -DSDK_OS_BAREMETAL -DSERIAL_PORT_TYPE_UART=1 -DSDK_DEBUGCONSOLE=0 -D__USE_CMSIS {build.board_defines}
+compiler.opt_flags={build.opt_flags} -fno-common -g3 -gdwarf-4 -ffunction-sections -fdata-sections -fno-builtin -fmerge-constants -specs=nano.specs
+compiler.warning_flags.none=
+compiler.warning_flags.default=-Wall
+compiler.warning_flags.more=-Wall
+compiler.warning_flags.all=-Wall -Wextra
+compiler.includes=-I{build.core.path} -I{build.variant.path}/include
+
+compiler.c.cmd=arm-none-eabi-gcc
+compiler.c.flags={compiler.cpu_flags} {compiler.defines} {compiler.opt_flags} {compiler.warning_flags} -c -D__NEWLIB__ -fstack-usage -MMD -MP
+
+recipe.c.o.pattern="{compiler.path}{compiler.c.cmd}" {compiler.c.flags} {compiler.includes} {includes} -o "{object_file}" "{source_file}"
+
+compiler.cpp.cmd=arm-none-eabi-c++
+compiler.cpp.flags={compiler.cpu_flags} {compiler.defines} {compiler.opt_flags} {compiler.warning_flags} -std=c++20 -c -fno-rtti -fno-exceptions -D__NEWLIB__ -fstack-usage -MMD -MP
+
+recipe.cpp.o.pattern="{compiler.path}{compiler.cpp.cmd}" {compiler.cpp.flags} {compiler.includes} {includes} -o "{object_file}" "{source_file}"
+
+compiler.S.cmd=arm-none-eabi-gcc
+compiler.S.flags={compiler.cpu_flags} -c -x assembler-with-cpp -MMD
+
+recipe.S.o.pattern="{compiler.path}{compiler.S.cmd}" {compiler.S.flags} {compiler.includes} {includes} -o "{object_file}" "{source_file}"
+
+compiler.ar.cmd=arm-none-eabi-ar
+compiler.ar.flags=rcs
+
+recipe.ar.pattern="{compiler.path}{compiler.ar.cmd}" {compiler.ar.flags} "{archive_file_path}" "{object_file}"
+
+compiler.c.elf.cmd=arm-none-eabi-c++
+compiler.c.elf.flags=-nostdlib -Xlinker --gc-sections -Xlinker -print-memory-usage -Xlinker --sort-section=alignment -Xlinker --cref -u _printf_float -u _scanf_float {compiler.cpu_flags}
+
+recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}" {compiler.c.elf.flags} -T "{build.variant.path}/linker/{build.ldscript}" -Xlinker -Map="{build.path}/{build.project_name}.map" -L"{build.variant.path}/lib" -o "{build.path}/{build.project_name}.elf" {object_files} "{archive_file_path}" -l{build.variant_lib}
+
+compiler.objcopy.cmd=arm-none-eabi-objcopy
+compiler.elf2hex.cmd=arm-none-eabi-objcopy
+compiler.elf2hex.flags=-O binary
+
+recipe.objcopy.bin.pattern="{compiler.path}{compiler.elf2hex.cmd}" {compiler.elf2hex.flags} "{build.path}/{build.project_name}.elf" "{build.path}/{build.project_name}.bin"
+
+compiler.size.cmd=arm-none-eabi-size
+
+recipe.size.pattern="{compiler.path}{compiler.size.cmd}" -A "{build.path}/{build.project_name}.elf"
+recipe.size.regex=^(?:\.text|\.data|\.rodata)\s+([0-9]+).*
+recipe.size.regex.data=^(?:\.data|\.bss)\s+([0-9]+).*
+
+tools.pyocd.upload.protocol=cmsis-dap
+tools.pyocd.upload.params.verbose=
+tools.pyocd.upload.params.quiet=
+tools.pyocd.upload.pattern=pyocd flash --target {build.pyocd_target} --format bin "{build.path}/{build.project_name}.bin"
