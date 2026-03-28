@@ -14,12 +14,12 @@ compiler.warning_flags.all=-Wall -Wextra
 compiler.includes=-I{build.core.path} -I{build.variant.path}/include
 
 compiler.c.cmd=arm-none-eabi-gcc
-compiler.c.flags={compiler.cpu_flags} {compiler.defines} {compiler.opt_flags} {compiler.warning_flags} -c -D__NEWLIB__ -fstack-usage -MMD -MP
+compiler.c.flags={compiler.cpu_flags} {compiler.defines} {compiler.opt_flags} {compiler.warning_flags} -c -D__NEWLIB__ -fstack-usage
 
 recipe.c.o.pattern="{compiler.path}{compiler.c.cmd}" {compiler.c.flags} {compiler.includes} {includes} -o "{object_file}" "{source_file}"
 
 compiler.cpp.cmd=arm-none-eabi-c++
-compiler.cpp.flags={compiler.cpu_flags} {compiler.defines} {compiler.opt_flags} {compiler.warning_flags} -std=c++20 -c -fno-rtti -fno-exceptions -D__NEWLIB__ -fstack-usage -MMD -MP
+compiler.cpp.flags={compiler.cpu_flags} {compiler.defines} {compiler.opt_flags} {compiler.warning_flags} -std=c++20 -c -fno-rtti -fno-exceptions -D__NEWLIB__ -fstack-usage
 
 recipe.cpp.o.pattern="{compiler.path}{compiler.cpp.cmd}" {compiler.cpp.flags} {compiler.includes} {includes} -o "{object_file}" "{source_file}"
 
