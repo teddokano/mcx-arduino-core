@@ -5,7 +5,9 @@
       "maintainer": "Tedd OKANO",
       "websiteURL": "https://github.com/teddokano/mcx-arduino-core",
       "email": "",
-      "help": { "online": "https://github.com/teddokano/mcx-arduino-core" },
+      "help": {
+        "online": "https://github.com/teddokano/mcx-arduino-core"
+      },
       "platforms": [
         {
           "name": "NXP FRDM MCX Series",
@@ -17,7 +19,9 @@
           "checksum": "SHA-256:REPLACE_WITH_ACTUAL_SHA256",
           "size": "REPLACE_WITH_ACTUAL_SIZE",
           "boards": [
-            { "name": "FRDM-MCXA153 (NXP Cortex-M33)" }
+            {
+              "name": "FRDM-MCXA153 (NXP Cortex-M33)"
+            }
           ],
           "toolsDependencies": [
             {
@@ -37,36 +41,36 @@
               "host": "arm64-apple-darwin",
               "url": "https://developer.arm.com/-/media/Files/downloads/gnu/14.2.rel1/binrel/arm-gnu-toolchain-14.2.rel1-darwin-arm64-arm-none-eabi.tar.xz",
               "archiveFileName": "arm-gnu-toolchain-14.2.rel1-darwin-arm64-arm-none-eabi.tar.xz",
-              "checksum": "SHA-256:REPLACE_WITH_ACTUAL_SHA256",
-              "size": "REPLACE_WITH_ACTUAL_SIZE"
+              "checksum": "SHA-256:c7c78ffab9bebfce91d99d3c24da6bf4b81c01e16cf551eb2ff9f25b9e0a3818",
+              "size": "134812148"
             },
             {
               "host": "x86_64-apple-darwin",
               "url": "https://developer.arm.com/-/media/Files/downloads/gnu/14.2.rel1/binrel/arm-gnu-toolchain-14.2.rel1-darwin-x86_64-arm-none-eabi.tar.xz",
               "archiveFileName": "arm-gnu-toolchain-14.2.rel1-darwin-x86_64-arm-none-eabi.tar.xz",
-              "checksum": "SHA-256:REPLACE_WITH_ACTUAL_SHA256",
-              "size": "REPLACE_WITH_ACTUAL_SIZE"
+              "checksum": "SHA-256:2d9e717dd4f7751d18936ae1365d25916534105ebcb7583039eff1092b824505",
+              "size": "145118692"
             },
             {
               "host": "x86_64-linux-gnu",
               "url": "https://developer.arm.com/-/media/Files/downloads/gnu/14.2.rel1/binrel/arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-eabi.tar.xz",
               "archiveFileName": "arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-eabi.tar.xz",
-              "checksum": "SHA-256:REPLACE_WITH_ACTUAL_SHA256",
-              "size": "REPLACE_WITH_ACTUAL_SIZE"
+              "checksum": "SHA-256:62a63b981fe391a9cbad7ef51b17e49aeaa3e7b0d029b36ca1e9c3b2a9b78823",
+              "size": "149739784"
             },
             {
               "host": "aarch64-linux-gnu",
               "url": "https://developer.arm.com/-/media/Files/downloads/gnu/14.2.rel1/binrel/arm-gnu-toolchain-14.2.rel1-aarch64-arm-none-eabi.tar.xz",
               "archiveFileName": "arm-gnu-toolchain-14.2.rel1-aarch64-arm-none-eabi.tar.xz",
-              "checksum": "SHA-256:REPLACE_WITH_ACTUAL_SHA256",
-              "size": "REPLACE_WITH_ACTUAL_SIZE"
+              "checksum": "SHA-256:87330bab085dd8749d4ed0ad633674b9dc48b237b61069e3b481abd364d0a684",
+              "size": "151967360"
             },
             {
               "host": "i686-mingw32",
               "url": "https://developer.arm.com/-/media/Files/downloads/gnu/14.2.rel1/binrel/arm-gnu-toolchain-14.2.rel1-mingw-w64-i686-arm-none-eabi.zip",
               "archiveFileName": "arm-gnu-toolchain-14.2.rel1-mingw-w64-i686-arm-none-eabi.zip",
-              "checksum": "SHA-256:REPLACE_WITH_ACTUAL_SHA256",
-              "size": "REPLACE_WITH_ACTUAL_SIZE"
+              "checksum": "SHA-256:6facb152ce431ba9a4517e939ea46f057380f8f1e56b62e8712b3f3b87d994e1",
+              "size": "305393359"
             }
           ]
         }
