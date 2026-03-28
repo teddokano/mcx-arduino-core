@@ -90,3 +90,22 @@ The prebuilt `.a` library is built with MCUXpresso IDE from the `_r01lib_frdm_mc
 ## License
 
 MIT License — see [LICENSE](LICENSE)
+
+## Supported Arduino APIs
+
+| API | Status | Notes |
+|-----|--------|-------|
+| `pinMode` | ✅ | |
+| `digitalWrite` / `digitalRead` | ✅ | |
+| `attachInterrupt` | ✅ | RISING / FALLING / CHANGE |
+| `digitalPinToInterrupt` | ✅ | |
+| `Serial.begin` / `print` / `println` / `printf` | ✅ | |
+| `Serial.read` / `available` / `write` | ✅ | |
+| `Wire.begin` / `beginTransmission` / `endTransmission` | ✅ | |
+| `Wire.write` / `read` / `requestFrom` / `available` | ✅ | |
+| `SPI.begin` / `beginTransaction` / `transfer` / `transfer16` | ✅ | |
+| `delay` | ✅ | |
+| `analogWrite` (PWM) | n/a | |
+| `analogRead` | n/a | |
+| `millis` / `micros` | n/a | |
+| `tone` / `noTone` | n/a | |
