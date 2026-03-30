@@ -27,6 +27,11 @@
             {
               "packager": "nxp",
               "name": "arm-none-eabi-gcc",
+              "version": "14.2.rel1"
+            },
+            {
+              "packager": "nxp",
+              "name": "arm-none-eabi-gcc",
               "version": "13.3.rel1"
             }
           ]
@@ -35,7 +40,7 @@
       "tools": [
         {
           "name": "arm-none-eabi-gcc",
-          "version": "13.3.rel1",
+          "version": "14.2.rel1",
           "systems": [
             {
               "host": "arm64-apple-darwin",
@@ -64,7 +69,13 @@
               "archiveFileName": "arm-gnu-toolchain-14.2.rel1-aarch64-arm-none-eabi.tar.xz",
               "checksum": "SHA-256:87330bab085dd8749d4ed0ad633674b9dc48b237b61069e3b481abd364d0a684",
               "size": "151967360"
-            },
+            }
+          ]
+        },
+        {
+          "name": "arm-none-eabi-gcc",
+          "version": "13.3.rel1",
+          "systems": [
             {
               "host": "i686-mingw32",
               "url": "https://developer.arm.com/-/media/Files/downloads/gnu/13.3.rel1/binrel/arm-gnu-toolchain-13.3.rel1-mingw-w64-i686-arm-none-eabi.zip",
