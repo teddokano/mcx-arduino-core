@@ -16,28 +16,38 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Download GCC and compute checksums
+      - name: Update tool sizes via HEAD request (no download)
         run: |
-          BASE="https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu/14.2.rel1/binrel"
-          declare -A FILES=(
-            ["arm64-apple-darwin"]="arm-gnu-toolchain-14.2.rel1-darwin-arm64-arm-none-eabi.tar.xz"
-            ["x86_64-apple-darwin"]="arm-gnu-toolchain-14.2.rel1-darwin-x86_64-arm-none-eabi.tar.xz"
-            ["x86_64-linux-gnu"]="arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-eabi.tar.xz"
-            ["aarch64-linux-gnu"]="arm-gnu-toolchain-14.2.rel1-aarch64-arm-none-eabi.tar.xz"
-            ["i686-mingw32"]="arm-gnu-toolchain-14.2.rel1-mingw-w64-i686-arm-none-eabi.zip"
-          )
-          echo "host,file,sha256,size" > /tmp/gcc_checksums.csv
-          for HOST in "${!FILES[@]}"; do
-            FILE="${FILES[$HOST]}"
-            URL="$BASE/$FILE"
-            echo "Downloading $HOST ..."
-            curl -L --silent --show-error "$URL" -o "/tmp/$FILE"
-            SHA256=$(sha256sum "/tmp/$FILE" | awk '{print $1}')
-            SIZE=$(wc -c < "/tmp/$FILE" | tr -d ' ')
-            echo "$HOST,$FILE,$SHA256,$SIZE" >> /tmp/gcc_checksums.csv
-            echo "  $HOST: SHA256=$SHA256 SIZE=$SIZE"
-            rm "/tmp/$FILE"
-          done
+          python3 << 'PYEOF'
+          import json, subprocess
+
+          with open("package_nxp_mcx_index.json") as f:
+              pkg = json.load(f)
+
+          for tool in pkg["packages"][0]["tools"]:
+              if tool["name"] == "arm-none-eabi-gcc":
+                  for sys in tool["systems"]:
+                      url = sys["url"]
+                      host = sys["host"]
+                      print(f"HEAD {host}: {url}")
+                      result = subprocess.run(
+                          ["curl", "-sI", "--location", url],
+                          capture_output=True, text=True
+                      )
+                      size = None
+                      for line in result.stdout.splitlines():
+                          if line.lower().startswith("content-length:"):
+                              size = line.split(":", 1)[1].strip()
+                      if size:
+                          sys["size"] = size
+                          print(f"  size: {size}")
+                      else:
+                          print(f"  WARNING: could not get size")
+
+          with open("package_nxp_mcx_index.json", "w") as f:
+              json.dump(pkg, f, indent=2)
+          print("Done")
+          PYEOF
 
       - name: Download platform ZIP and compute checksum
         run: |
@@ -57,34 +67,25 @@ jobs:
           echo "$SIZE"   > /tmp/platform_size.txt
           rm /tmp/platform.zip
 
-      - name: Update package_index.json
+      - name: Update platform checksum in package_index.json
         run: |
           python3 << 'PYEOF'
-          import json, csv
+          import json
+
           with open("package_nxp_mcx_index.json") as f:
               pkg = json.load(f)
-          gcc_checksums = {}
-          with open("/tmp/gcc_checksums.csv") as f:
-              for row in csv.DictReader(f):
-                  gcc_checksums[row["host"]] = {
-                      "sha256": "SHA-256:" + row["sha256"],
-                      "size": row["size"],
-                  }
-          for tool in pkg["packages"][0]["tools"]:
-              if tool["name"] == "arm-none-eabi-gcc":
-                  for sys in tool["systems"]:
-                      host = sys["host"]
-                      if host in gcc_checksums:
-                          sys["checksum"] = gcc_checksums[host]["sha256"]
-                          sys["size"] = gcc_checksums[host]["size"]
+
           with open("/tmp/platform_sha256.txt") as f:
               platform_sha256 = "SHA-256:" + f.read().strip()
           with open("/tmp/platform_size.txt") as f:
               platform_size = f.read().strip()
+
           pkg["packages"][0]["platforms"][0]["checksum"] = platform_sha256
           pkg["packages"][0]["platforms"][0]["size"] = platform_size
+
           print(f"Platform checksum: {platform_sha256}")
           print(f"Platform size:     {platform_size}")
+
           with open("package_nxp_mcx_index.json", "w") as f:
               json.dump(pkg, f, indent=2)
           print("Done")
@@ -95,5 +96,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add package_nxp_mcx_index.json
-          git diff --staged --quiet || git commit -m "Update all checksums in package_index.json"
+          git diff --staged --quiet || git commit -m "Update checksums in package_index.json"
           git push
