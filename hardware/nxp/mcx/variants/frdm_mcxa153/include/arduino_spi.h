@@ -42,7 +42,7 @@ public:
 	uint8_t transfer( uint8_t data );
 	void	transfer( void *buf, size_t count );
 	void	endTransaction( void );
-
+	
 private:
 	void	txrx( uint8_t *buf, size_t count );
 
