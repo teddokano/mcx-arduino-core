@@ -12,10 +12,10 @@
         {
           "name": "NXP FRDM MCX Series",
           "architecture": "mcx",
-          "version": "0.1.4",
+          "version": "0.1.5",
           "category": "Contributed",
-          "url": "https://github.com/teddokano/mcx-arduino-core/releases/download/0.1.4/mcx-arduino-core-0.1.4.zip",
-          "archiveFileName": "mcx-arduino-core-0.1.4.zip",
+          "url": "https://github.com/teddokano/mcx-arduino-core/releases/download/0.1.5/mcx-arduino-core-0.1.5.zip",
+          "archiveFileName": "mcx-arduino-core-0.1.5.zip",
           "checksum": "SHA-256:e9edb3e4382c93fc96dd8d96332464042768ff2a8731b31b2dd4eaf98ffe215e",
           "size": "18975004",
           "boards": [

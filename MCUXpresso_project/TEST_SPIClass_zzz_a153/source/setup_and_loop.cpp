@@ -6,12 +6,14 @@
 
 #include	"arduino.h"
 
+#define	SS	10
+
 void setup( void )
 {
 	Serial.begin( 115200 );
 	Serial.println( "Hello, world!" );
 
-	SPI_.begin();
+	SPI.begin();
 
 	pin_mode( BLUE, OUTPUT );
 }
@@ -20,9 +22,9 @@ void loop( void )
 {
 	uint8_t	data[]	= { 0x00, 0x01, 0x02, 0x03, 0xFC, 0xFD, 0xFE, 0xFF };
 	
-	SPI_.beginTransaction( SPISettings( 1000000, MSBFIRST, SPI_MODE0 ) );
+	SPI.beginTransaction( SPISettings( 1000000, MSBFIRST, SPI_MODE0 ) );
 	digitalWrite( SS, LOW );
-	SPI_.transfer( data, sizeof( data ) );
+	SPI.transfer( data, sizeof( data ) );
 	digitalWrite( SS, HIGH );
 	
 	for ( auto b : data )

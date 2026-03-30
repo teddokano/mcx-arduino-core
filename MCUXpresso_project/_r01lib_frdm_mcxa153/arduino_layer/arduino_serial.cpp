@@ -87,12 +87,22 @@ void SerialClass::print( unsigned int n, int base )  { _print_unum( n, base ); }
 void SerialClass::print( long n, int base )          { _print_num( n, base ); }
 void SerialClass::print( unsigned long n, int base ) { _print_unum( n, base ); }
 
-void SerialClass::print( double n )
+void SerialClass::print( double n, int digits )
 {
 	if ( !_serial ) return;
+	if ( n < 0.0 ) { _serial->putc( '-' ); n = -n; }
+	long integer	= (long)n;
+	double frac		= n - integer;
 	char buf[ 32 ];
-	snprintf( buf, sizeof(buf), "%g", n );
+	sprintf( buf, "%ld.", integer );
 	print( buf );
+	for ( int i = 0; i < digits; i++ )
+	{
+		frac	*= 10;
+		int d	= (int)frac;
+		_serial->putc( '0' + d );
+		frac	-= d;
+	}
 }
 
 void SerialClass::print( const std::string& s )  { print( s.c_str() ); }
@@ -111,21 +121,88 @@ void SerialClass::println( int n, int base )             { print(n, base); print
 void SerialClass::println( unsigned int n, int base )    { print(n, base); println(); }
 void SerialClass::println( long n, int base )            { print(n, base); println(); }
 void SerialClass::println( unsigned long n, int base )   { print(n, base); println(); }
-void SerialClass::println( double n )                    { print(n); println(); }
+void SerialClass::println( double n, int digits )    { print(n, digits); println(); }
 void SerialClass::println( const std::string& s )        { print(s); println(); }
 void SerialClass::println( std::string_view s )          { print(s); println(); }
 
 // ---- printf ----
 
+//	Helper: output a double value with given decimal digits
+void SerialClass::_print_double( double val, int digits )
+{
+	if ( val < 0.0 ) { _serial->putc( '-' ); val = -val; }
+	long integer	= (long)val;
+	double frac		= val - integer;
+	char buf[ 32 ];
+	sprintf( buf, "%ld.", integer );
+	for ( char *p = buf; *p; p++ ) _serial->putc( *p );
+	for ( int i = 0; i < digits; i++ )
+	{
+		frac	*= 10;
+		int d	= (int)frac;
+		_serial->putc( '0' + d );
+		frac	-= d;
+	}
+}
+
 void SerialClass::printf( const char *format, ... )
 {
 	if ( !_serial ) return;
-	char buf[ 256 ];
 	va_list args;
 	va_start( args, format );
-	vsnprintf( buf, sizeof(buf), format, args );
+
+	const char *p	= format;
+	while ( *p )
+	{
+		if ( *p != '%' ) { _serial->putc( *p++ ); continue; }
+
+		//	Collect format specifier
+		const char *spec_start	= p++;
+		while ( *p && !strchr( "fFeEgGdiouxXcsp%lL", *p ) ) p++;
+		if ( *p == 'l' || *p == 'L' ) p++;		//	skip length modifier
+		char type	= *p ? *p++ : '\0';
+
+		//	Parse precision from spec (default=6)
+		int digits	= 6;
+		const char *pp	= spec_start + 1;
+		while ( *pp && *pp != '.' && *pp != 'f' && *pp != 'g' && *pp != 'e'
+		        && *pp != 'F' && *pp != 'G' && *pp != 'E' ) pp++;
+		if ( *pp == '.' ) { pp++; digits = 0; while ( *pp >= '0' && *pp <= '9' ) digits = digits * 10 + (*pp++ - '0'); }
+
+		if ( type == 'f' || type == 'F' || type == 'e' || type == 'E' || type == 'g' || type == 'G' )
+		{
+			_print_double( va_arg( args, double ), digits );
+		}
+		else if ( type == '%' )
+		{
+			_serial->putc( '%' );
+		}
+		else
+		{
+			//	Non-float: reconstruct spec and use snprintf
+			char spec_buf[ 32 ];
+			int spec_len	= (int)(p - spec_start);
+			if ( spec_len < (int)sizeof(spec_buf) )
+			{
+				strncpy( spec_buf, spec_start, spec_len );
+				spec_buf[ spec_len ]	= '\0';
+			}
+			else { spec_buf[ 0 ] = '\0'; }
+
+			char out[ 64 ];
+			switch ( type )
+			{
+				case 'd': case 'i':                          snprintf( out, sizeof(out), spec_buf, va_arg( args, int ) );            break;
+				case 'o': case 'u': case 'x': case 'X':     snprintf( out, sizeof(out), spec_buf, va_arg( args, unsigned int ) );   break;
+				case 'c':                                    snprintf( out, sizeof(out), spec_buf, va_arg( args, int ) );            break;
+				case 's':                                    snprintf( out, sizeof(out), spec_buf, va_arg( args, const char* ) );   break;
+				case 'p':                                    snprintf( out, sizeof(out), spec_buf, va_arg( args, void* ) );          break;
+				default:                                     out[ 0 ] = '\0'; break;
+			}
+			print( out );
+		}
+	}
 	va_end( args );
-	print( buf );
 }
 
 // ---- read / available / write ----

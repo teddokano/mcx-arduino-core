@@ -32,10 +32,17 @@ void loop( void )
 	while ( Wire.available() )
 		buf[ i++ ]	= Wire.read();
 
+	Serial.print( buf[ 0 ] );
+	Serial.print( buf[ 1 ] );
+	Serial.print( "       " );
+
+	
 	Serial.print( "P3T1085 temperature = " );
 	Serial.print( (double)( ( ((int16_t)(buf[ 0 ]) << 8) | buf[ 1 ] ) / 256.0 ) );
 	Serial.println( "℃" );
 
+	
+	
 	Serial.println( "LED - ON" );
 	digitalWrite( BLUE, LOW );
 	delay( 500 );

@@ -40,7 +40,7 @@ public:
 	void	print( unsigned int n, int base = DEC );
 	void	print( long n, int base = DEC );
 	void	print( unsigned long n, int base = DEC );
-	void	print( double n );
+	void	print( double n, int digits = 2 );
 	void	print( char c );
 	void	print( const std::string& s );
 	void	print( std::string_view s );
@@ -51,7 +51,7 @@ public:
 	void	println( unsigned int n, int base = DEC );
 	void	println( long n, int base = DEC );
 	void	println( unsigned long n, int base = DEC );
-	void	println( double n );
+	void	println( double n, int digits = 2 );
 	void	println( char c );
 	void	println( const std::string& s );
 	void	println( std::string_view s );
@@ -70,6 +70,7 @@ private:
 
 	void	_print_num( long n, int base );
 	void	_print_unum( unsigned long n, int base );
+	void	_print_double( double val, int digits );
 };
 
 extern SerialClass	Serial;

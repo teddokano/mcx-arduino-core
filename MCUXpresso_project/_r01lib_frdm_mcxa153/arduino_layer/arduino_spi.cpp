@@ -6,57 +6,59 @@
 
 #include	"r01lib.h"
 
-// Alias to avoid name collision: SPIClass uses "SPI" as member type,
-// but r01lib defines a class called "SPI" and we also define "SPIClass SPI".
+// r01lib の SPI クラスを別名で退避（arduino_spi.h で SPIClass SPI を宣言するため）
 using r01libSPI = SPI;
 
 #include	"arduino_spi.h"
-#include	"arduino_io.h"
 
-SPIClass	SPI;
+static r01libSPI	*spi	= nullptr;	//	MOSI, MISO, SCLK, CS (lazy init)
 
-SPIClass::SPIClass() : _spi( nullptr )
+SPISettings::SPISettings( uint32_t freq, int order, int mode ) : clock( freq ), bitOrder( order ), dataMode( mode )
 {
 }
 
 void SPIClass::begin( void )
 {
-	if ( !_spi )
-		_spi = new r01libSPI( SPI_MOSI, SPI_MISO, SPI_SCLK, SPI_CS );
+	if ( !spi )
+		spi	= new r01libSPI( ARD_MOSI, ARD_MISO, ARD_SCK, ARD_CS );
 }
 
-void SPIClass::end( void )
+void	SPIClass::beginTransaction( SPISettings settings )
 {
-	if ( _spi )
+	static uint32_t	last_clock	= 0;
+	static int		last_mode	= -1;
+
+	if ( settings.clock != last_clock )
 	{
-		delete _spi;
-		_spi = nullptr;
+		spi->frequency( settings.clock );
+		last_clock	= settings.clock;
 	}
-}
-
-void SPIClass::beginTransaction( SPISettings settings )
-{
-	if ( _spi )
-		_spi->frequency( settings._clock );
-}
-
-void SPIClass::endTransaction( void )
-{
-	// no-op
+	if ( settings.dataMode != last_mode )
+	{
+		spi->mode( settings.dataMode );
+		last_mode	= settings.dataMode;
+	}
 }
 
 uint8_t SPIClass::transfer( uint8_t data )
 {
-	if ( !_spi ) return 0;
-	uint8_t rx = 0;
-	// spi.h: write( uint8_t *wp, uint8_t *rp, int length )  — 3 arguments
-	_spi->write( &data, &rx, 1 );
-	return rx;
+	txrx( &data, 1 );
+	return data;
 }
 
-uint16_t SPIClass::transfer16( uint16_t data )
+void SPIClass::transfer( uint8_t *data, int length )
 {
-	uint8_t hi = transfer( (uint8_t)(data >> 8) );
-	uint8_t lo = transfer( (uint8_t)(data & 0xFF) );
-	return ( (uint16_t)hi << 8 ) | lo;
+	txrx( data, length );
 }
+
+void SPIClass::txrx( uint8_t *data, int size )
+{
+	static constexpr int	READ_BUFFER_SIZE	= 128;
+
+	uint8_t	r_data[ READ_BUFFER_SIZE ];
+	
+	spi->write( data, r_data, size );
+	memcpy( data, r_data, size );
+}
+
+SPIClass	SPI;
