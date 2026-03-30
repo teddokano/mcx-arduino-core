@@ -7,15 +7,16 @@
 #include	"r01lib.h"
 #include	"arduino_i2c.h"
 
-static I2C	*i2c	= nullptr;	//	SDA, SCL (lazy init)
+WireClass	Wire(  I2C_SDA, I2C_SCL );
+//WireClass	Wire1( I3C_SDA, I3C_SCL );
 
-WireClass	Wire;
+WireClass::WireClass( int sda_pin, int scl_pin ) : _sda( sda_pin ), _scl( scl_pin ), i2c( nullptr ){}
 
 void WireClass::begin( int baud )
 {
 	baudrate	= baud;
 	if ( !i2c )
-		i2c	= new I2C( I2C_SDA, I2C_SCL );
+		i2c	= new I2C( _sda, _scl );
 	i2c->frequency( baudrate );
 }
 
@@ -53,12 +54,14 @@ uint8_t	WireClass::requestFrom( const uint8_t address, const size_t length, bool
 	return	i2c->read( address, data_buf, length );
 }
 
-uint8_t WireClass::available( void )
+int WireClass::available( void )
 {
-	return read_size - data_buf_index;
+	return (int)(read_size - data_buf_index);
 }
 
-uint8_t WireClass::read( void )
+int WireClass::read( void )
 {
+	if ( data_buf_index >= read_size )
+		return -1;
 	return	data_buf[ data_buf_index++ ];
 }

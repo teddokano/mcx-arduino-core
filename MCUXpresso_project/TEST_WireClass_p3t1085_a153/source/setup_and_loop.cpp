@@ -7,6 +7,7 @@
 #include	"arduino.h"
 
 #define	TARGET_ADDRESS	0x4C
+//#define	TARGET_ADDRESS	0x48
 
 void setup( void )
 {
@@ -15,7 +16,7 @@ void setup( void )
 
 	Wire.begin();
 
-	pin_mode( BLUE, OUTPUT );
+	pinMode( BLUE, OUTPUT );
 }
 
 void loop( void )

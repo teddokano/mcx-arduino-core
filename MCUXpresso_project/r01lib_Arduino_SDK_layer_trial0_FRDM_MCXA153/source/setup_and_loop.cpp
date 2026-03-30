@@ -11,7 +11,7 @@ void setup( void )
 	Serial.begin( 115200 );
 	Serial.println( "Hello, world!" );
 
-	pin_mode( BLUE, OUTPUT );
+	pinMode( BLUE, OUTPUT );
 }
 
 void loop( void )

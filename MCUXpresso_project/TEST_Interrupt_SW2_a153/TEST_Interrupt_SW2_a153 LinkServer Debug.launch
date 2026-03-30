@@ -4,7 +4,7 @@
     <booleanAttribute key="attach" value="false"/>
     <booleanAttribute key="boot.config.enable" value="false"/>
     <stringAttribute key="boot.configuration.control" value=""/>
-    <stringAttribute key="bootrom.stall" value=""/>
+    <stringAttribute key="bootrom.stall" value="0x40091040"/>
     <stringAttribute key="com.crt.ctrlcenter.OFSemuDetails" value="LinkServer"/>
     <booleanAttribute key="com.crt.ctrlcenter.crtInit" value="true"/>
     <stringAttribute key="com.crt.ctrlcenter.currentWireType" value="SWD"/>
@@ -32,7 +32,7 @@
     <booleanAttribute key="internal.cache" value="false"/>
     <stringAttribute key="internal.connect.script" value=""/>
     <stringAttribute key="internal.core.index" value=""/>
-    <booleanAttribute key="internal.has_swo" value="false"/>
+    <booleanAttribute key="internal.has_swo" value="true"/>
     <booleanAttribute key="internal.multi.swd" value="true"/>
     <stringAttribute key="internal.prelaunch.command" value=""/>
     <stringAttribute key="internal.reset.script" value=""/>
@@ -50,12 +50,13 @@
     <booleanAttribute key="org.eclipse.cdt.debug.gdbjtag.core.doReset" value="false"/>
     <stringAttribute key="org.eclipse.cdt.debug.gdbjtag.core.imageFileName" value=""/>
     <stringAttribute key="org.eclipse.cdt.debug.gdbjtag.core.imageOffset" value=""/>
-    <stringAttribute key="org.eclipse.cdt.debug.gdbjtag.core.initCommands" value="set non-stop on&#10;set pagination off&#10;set mi-async&#10;"/>
+    <stringAttribute key="org.eclipse.cdt.debug.gdbjtag.core.initCommands" value="set non-stop on&#10;set pagination off&#10;set mi-async&#10;set remotetimeout 60000&#10;##target_extended_remote##&#10;set mem inaccessible-by-default ${mem.access}&#10;mon ondisconnect ${ondisconnect}&#10;set arm force-mode thumb&#10;${load}"/>
     <stringAttribute key="org.eclipse.cdt.debug.gdbjtag.core.ipAddress" value="localhost"/>
     <booleanAttribute key="org.eclipse.cdt.debug.gdbjtag.core.loadImage" value="true"/>
     <booleanAttribute key="org.eclipse.cdt.debug.gdbjtag.core.loadSymbols" value="true"/>
     <stringAttribute key="org.eclipse.cdt.debug.gdbjtag.core.pcRegister" value=""/>
     <intAttribute key="org.eclipse.cdt.debug.gdbjtag.core.portNumber" value="10989"/>
+    <stringAttribute key="org.eclipse.cdt.debug.gdbjtag.core.runCommands" value="${run}"/>
     <booleanAttribute key="org.eclipse.cdt.debug.gdbjtag.core.setPcRegister" value="false"/>
     <booleanAttribute key="org.eclipse.cdt.debug.gdbjtag.core.setResume" value="false"/>
     <booleanAttribute key="org.eclipse.cdt.debug.gdbjtag.core.setStopAt" value="true"/>
@@ -78,13 +79,13 @@
     <intAttribute key="org.eclipse.cdt.launch.ATTR_BUILD_BEFORE_LAUNCH_ATTR" value="2"/>
     <stringAttribute key="org.eclipse.cdt.launch.DEBUGGER_ID" value="gdb"/>
     <stringAttribute key="org.eclipse.cdt.launch.DEBUGGER_START_MODE" value="remote"/>
-    <stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="Debug/lib_r01lib_frdm_mcxa153.a"/>
-    <stringAttribute key="org.eclipse.cdt.launch.PROJECT_ATTR" value="_r01lib_frdm_mcxa153"/>
+    <stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="Debug/TEST_Interrupt_SW2_a153.axf"/>
+    <stringAttribute key="org.eclipse.cdt.launch.PROJECT_ATTR" value="TEST_Interrupt_SW2_a153"/>
     <booleanAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_AUTO_ATTR" value="false"/>
-    <stringAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_ID_ATTR" value="com.crt.advproject.config.lib.debug.1255393483"/>
+    <stringAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_ID_ATTR" value="com.crt.advproject.config.exe.debug.288188710"/>
     <booleanAttribute key="org.eclipse.cdt.launch.use_terminal" value="false"/>
     <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-        <listEntry value="/_r01lib_frdm_mcxa153"/>
+        <listEntry value="/TEST_Interrupt_SW2_a153"/>
     </listAttribute>
     <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
         <listEntry value="4"/>
@@ -92,10 +93,11 @@
     <mapAttribute key="org.eclipse.debug.core.preferred_launchers">
         <mapEntry key="[debug]" value="com.nxp.mcuxpresso.core.debug.support.linkserver.launch.LinkServerGdbLaunch"/>
     </mapAttribute>
+    <stringAttribute key="org.eclipse.dsf.launch.MEMORY_BLOCKS" value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&lt;memoryBlockExpressionList context=&quot;reserved-for-future-use&quot;/&gt;"/>
     <stringAttribute key="process_factory_id" value="com.nxp.mcuxpresso.core.debug.override.MCXProcessFactory"/>
     <booleanAttribute key="redlink.disable.preconnect.script" value="false"/>
     <booleanAttribute key="redlink.enable.flashhashing" value="true"/>
     <booleanAttribute key="redlink.enable.rangestepping" value="true"/>
     <stringAttribute key="run" value="cont"/>
-    <booleanAttribute key="vector.catch" value="true"/>
+    <booleanAttribute key="vector.catch" value="false"/>
 </launchConfiguration>

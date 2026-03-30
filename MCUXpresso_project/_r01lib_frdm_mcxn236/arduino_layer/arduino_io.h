@@ -17,7 +17,9 @@ constexpr int	INPUT_PULLUP	= INPUT | DigitalInOut::PullUp;
 constexpr bool	HIGH	= true;
 constexpr bool	LOW		= false;
 
-void	pin_mode( int pin_num, int mode );
+#define	LED_BUILTIN	GREEN
+
+void	pinMode( int pin_num, int mode );
 void	digitalWrite( int pin_num, bool state );
 bool	digitalRead( int pin_num );
 

@@ -43,13 +43,15 @@ uint8_t	WireClass::requestFrom( const uint8_t address, const size_t length, bool
 	return	i2c.read( address, data_buf, length );
 }
 
-uint8_t WireClass::available( void )
+int WireClass::available( void )
 {
-	return read_size - data_buf_index;
+	return (int)(read_size - data_buf_index);
 }
 
-uint8_t WireClass::read( void )
+int WireClass::read( void )
 {
+	if ( data_buf_index >= read_size )
+		return -1;
 	return	data_buf[ data_buf_index++ ];
 }
 

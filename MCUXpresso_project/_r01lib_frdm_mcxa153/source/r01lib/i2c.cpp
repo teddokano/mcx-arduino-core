@@ -279,10 +279,13 @@ status_t I2C::write_core( uint8_t address, const uint8_t *dp, int length, bool s
 			return reVal;
 		}
 
-		reVal = LPI2C_MasterStop( unit_base );
-		if ( reVal != kStatus_Success )
+		if ( stop )
 		{
-			return reVal;
+			reVal = LPI2C_MasterStop( unit_base );
+			if ( reVal != kStatus_Success )
+			{
+				return reVal;
+			}
 		}
 	}
 	return reVal;

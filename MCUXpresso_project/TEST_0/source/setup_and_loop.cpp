@@ -4,8 +4,8 @@ void setup( void )
 {
     Serial.begin( 115200 );
     Serial.println( "Hello, world!" );
-    pin_mode( 0, OUTPUT );
-    pin_mode( 1, OUTPUT );
+    pinMode( 0, OUTPUT );
+    pinMode( 1, OUTPUT );
 }
 
 void loop( void )
