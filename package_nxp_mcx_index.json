@@ -27,7 +27,7 @@
             {
               "packager": "nxp",
               "name": "arm-none-eabi-gcc",
-              "version": "14.2.rel1"
+              "version": "13.3.rel1"
             }
           ]
         }
@@ -35,7 +35,7 @@
       "tools": [
         {
           "name": "arm-none-eabi-gcc",
-          "version": "14.2.rel1",
+          "version": "13.3.rel1",
           "systems": [
             {
               "host": "arm64-apple-darwin",
