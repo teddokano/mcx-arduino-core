@@ -10,6 +10,8 @@
 class WireClass
 {
 public:
+	WireClass( int sda_pin, int scl_pin );
+	
 	void	begin( int baud = 100000 );
 	void	beginTransmission( const uint8_t address );
 	size_t	write( uint8_t data );
@@ -20,11 +22,14 @@ public:
 	int		read( void );
 
 private:
-	uint8_t	targ_addr;
-	int		baudrate;
-	uint8_t	data_buf[ 128 ];
-	size_t	data_buf_index;
-	size_t	read_size;
+	const int	_sda;
+	const int	_scl;
+	I2C			*i2c;
+	uint8_t		targ_addr;
+	int			baudrate;
+	uint8_t		data_buf[ 128 ];
+	size_t		data_buf_index;
+	size_t		read_size;
 };
 
 extern WireClass	Wire;

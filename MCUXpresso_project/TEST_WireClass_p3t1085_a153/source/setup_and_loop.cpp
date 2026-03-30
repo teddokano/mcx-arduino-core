@@ -7,6 +7,7 @@
 #include	"arduino.h"
 
 #define	TARGET_ADDRESS	0x4C
+//#define	TARGET_ADDRESS	0x48
 
 void setup( void )
 {

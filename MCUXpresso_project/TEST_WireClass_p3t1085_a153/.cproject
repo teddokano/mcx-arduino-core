@@ -280,7 +280,7 @@
 								<option id="gnu.cpp.link.option.debugging.codecov.1085795346" name="Generate gcov information (-ftest-coverage -fprofile-arcs)" superClass="gnu.cpp.link.option.debugging.codecov"/>
 								<option id="com.crt.advproject.link.cpp.lto.1588167272" name="Enable Link-time optimization (-flto)" superClass="com.crt.advproject.link.cpp.lto"/>
 								<option id="com.crt.advproject.link.cpp.lto.optmization.level.407432363" name="Link-time optimization level" superClass="com.crt.advproject.link.cpp.lto.optmization.level"/>
-								<option id="com.crt.advproject.link.cpp.fpu.1484953012" name="Floating point" superClass="com.crt.advproject.link.cpp.fpu" value="com.crt.advproject.link.fpu.none" valueType="enumerated"/>
+								<option id="com.crt.advproject.link.cpp.fpu.1484953012" name="Floating point" superClass="com.crt.advproject.link.cpp.fpu" value="com.crt.advproject.link.cpp.fpu.none" valueType="enumerated"/>
 								<option id="com.crt.advproject.link.cpp.manage.2053262669" name="Manage linker script" superClass="com.crt.advproject.link.cpp.manage" value="true" valueType="boolean"/>
 								<option id="com.crt.advproject.link.cpp.script.1480961580" name="Linker script" superClass="com.crt.advproject.link.cpp.script" value="TEST_WireClass_p3t1085_a153_Debug.ld" valueType="string"/>
 								<option id="com.crt.advproject.link.cpp.scriptdir.1115085946" name="Script path" superClass="com.crt.advproject.link.cpp.scriptdir" value="" valueType="string"/>
@@ -299,7 +299,7 @@
 								<option id="com.crt.advproject.link.cpp.sgstubenable.1077210502" name="Enable generation of Secure Gateway Import Library" superClass="com.crt.advproject.link.cpp.sgstubenable"/>
 								<option id="com.crt.advproject.link.cpp.nonsecureobject.1086452256" name="Secure Gateway Import Library" superClass="com.crt.advproject.link.cpp.nonsecureobject"/>
 								<option id="com.crt.advproject.link.cpp.inimplib.2026593479" name="Input Secure Gateway Import Library" superClass="com.crt.advproject.link.cpp.inimplib"/>
-								<option id="gnu.cpp.link.option.group.1440097054" superClass="gnu.cpp.link.option.group"/>
+								<option id="gnu.cpp.link.option.group.1440097054" name="Group libraries (-Wl,--start-group  ...  -Wl,--end-group)" superClass="gnu.cpp.link.option.group"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.2051273273" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
@@ -679,7 +679,7 @@
 								<option id="com.crt.advproject.link.cpp.sgstubenable.1011433726" name="Enable generation of Secure Gateway Import Library" superClass="com.crt.advproject.link.cpp.sgstubenable"/>
 								<option id="com.crt.advproject.link.cpp.nonsecureobject.803126026" name="Secure Gateway Import Library" superClass="com.crt.advproject.link.cpp.nonsecureobject"/>
 								<option id="com.crt.advproject.link.cpp.inimplib.1836974475" name="Input Secure Gateway Import Library" superClass="com.crt.advproject.link.cpp.inimplib"/>
-								<option id="gnu.cpp.link.option.group.1622910411" superClass="gnu.cpp.link.option.group"/>
+								<option id="gnu.cpp.link.option.group.1622910411" name="Group libraries (-Wl,--start-group  ...  -Wl,--end-group)" superClass="gnu.cpp.link.option.group"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.863213270" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
