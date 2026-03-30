@@ -20,8 +20,8 @@ void setup( void )
 	Serial.println( "Hello, world!" );
 	Serial.println( "Press SW2 to generate INT and toggle LED" );
 
-	pin_mode( BLUE, OUTPUT );
-	pin_mode( SW2, INPUT_PULLUP );
+	pinMode( BLUE, OUTPUT );
+	pinMode( SW2, INPUT_PULLUP );
 	
 	attachInterrupt( digitalPinToInterrupt( SW2 ), callback, FALLING );
 	digitalWrite( BLUE, led_state );

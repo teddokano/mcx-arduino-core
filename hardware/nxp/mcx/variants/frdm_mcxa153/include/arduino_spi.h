@@ -40,11 +40,11 @@ public:
 	void	begin( void );
 	void	beginTransaction( SPISettings settings );
 	uint8_t transfer( uint8_t data );
-	void	transfer( uint8_t *data, int length );
+	void	transfer( void *buf, size_t count );
 	void	endTransaction( void );
-	
+
 private:
-	void	txrx( uint8_t *data, int length );
+	void	txrx( uint8_t *buf, size_t count );
 
 };
 

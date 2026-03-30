@@ -11,7 +11,7 @@
 
 std::map<int, DigitalInOut*>	digital_pins;
 
-void pin_mode( int pin_num, int mode )
+void pinMode( int pin_num, int mode )
 {
 #ifdef	ARDUINO_PIN_RENUMBERING
 	pin_num	= arduino_pin_by_number[ pin_num ];
@@ -34,7 +34,7 @@ void pin_mode( int pin_num, int mode )
 		digital_pins[ pin_num ]	= new DigitalInOut( pin_num, dir, 0, pull );
 
 		if ( digital_pins[ pin_num ] == nullptr )
-			panic( "error @ new, in pin_mode()" );
+			panic( "error @ new, in pinMode()" );
 	}
 }
 

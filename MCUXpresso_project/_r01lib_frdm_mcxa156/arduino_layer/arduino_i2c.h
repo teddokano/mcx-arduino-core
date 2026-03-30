@@ -14,10 +14,10 @@ public:
 	void	beginTransmission( const uint8_t address );
 	size_t	write( uint8_t data );
 	size_t	write( const uint8_t *data, size_t length );
-	uint8_t	endTransmission( bool stop = false );
-	uint8_t	requestFrom( const uint8_t address, const size_t length, bool stop = false );
-	uint8_t	available( void );
-	uint8_t	read( void );
+	uint8_t	endTransmission( bool stop = true );
+	uint8_t	requestFrom( const uint8_t address, const size_t length, bool stop = true );
+	int		available( void );
+	int		read( void );
 	
 private:
 	uint8_t	targ_addr;

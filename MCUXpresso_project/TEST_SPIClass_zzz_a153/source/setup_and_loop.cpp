@@ -15,7 +15,7 @@ void setup( void )
 
 	SPI.begin();
 
-	pin_mode( BLUE, OUTPUT );
+	pinMode( BLUE, OUTPUT );
 }
 
 void loop( void )
