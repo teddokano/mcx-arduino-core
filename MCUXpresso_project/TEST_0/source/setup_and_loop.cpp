@@ -1,5 +1,7 @@
 #include "arduino.h"
 
+
+
 void setup( void )
 {
     Serial.begin( 115200 );
@@ -13,5 +15,6 @@ void loop( void )
     static int count = 0;
     digitalWrite( 0, count & 0x1 );
     digitalWrite( 1, count & 0x2 );
+    delay( 100 );
     count++;
 }
