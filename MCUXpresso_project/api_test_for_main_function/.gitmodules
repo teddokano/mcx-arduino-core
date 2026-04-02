@@ -1,0 +1,6 @@
+[submodule "component/r01device"]
+	path = component/r01device
+	url = https://github.com/teddokano/r01device.git
+[submodule "component/r01lib"]
+	path = component/r01lib
+	url = https://github.com/teddokano/r01lib.git
