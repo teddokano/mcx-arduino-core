@@ -7,10 +7,10 @@
 #ifndef R01LIB_ARDUINO_I2C_H
 #define R01LIB_ARDUINO_I2C_H
 
-class WireClass
+class TwoWire
 {
 public:
-	WireClass( int sda_pin, int scl_pin );
+	TwoWire( int sda_pin, int scl_pin );
 	
 	void	begin( int baud = 100000 );
 	void	beginTransmission( const uint8_t address );
@@ -32,6 +32,6 @@ private:
 	size_t		read_size;
 };
 
-extern WireClass	Wire;
+extern TwoWire	Wire;
 
 #endif // !R01LIB_ARDUINO_I2C_H
