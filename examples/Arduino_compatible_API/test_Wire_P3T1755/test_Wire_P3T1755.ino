@@ -8,6 +8,7 @@
 #include "arduino_i2c.h"
 
 #define TARGET_ADDRESS 0x4C
+//#define TARGET_ADDRESS 0x72
 
 void setup(void) {
 	Serial.begin(115200);

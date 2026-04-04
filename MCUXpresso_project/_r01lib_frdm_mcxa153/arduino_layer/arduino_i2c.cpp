@@ -18,6 +18,8 @@ void TwoWire::begin( int baud )
 	if ( !i2c )
 		i2c	= new I2C( _sda, _scl );
 	i2c->frequency( baudrate );
+	
+	i2c->err_callback( nullptr );
 }
 
 void TwoWire::beginTransmission( const uint8_t address )
