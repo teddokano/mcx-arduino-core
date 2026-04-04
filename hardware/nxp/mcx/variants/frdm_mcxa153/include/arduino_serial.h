@@ -62,6 +62,8 @@ public:
 	int		available( void );
 	void	write( uint8_t c );
 
+	inline operator	bool( void ) { return true; }
+
 private:
 	int		_tx;
 	int		_rx;
