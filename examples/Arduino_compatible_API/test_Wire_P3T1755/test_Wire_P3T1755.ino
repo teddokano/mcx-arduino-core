@@ -5,7 +5,7 @@
  */
 
 #include "arduino.h"
-#include "arduino_i2c.h"
+#include "Wire.h"
 
 #define TARGET_ADDRESS 0x4C
 //#define TARGET_ADDRESS 0x72
@@ -13,7 +13,7 @@
 void setup(void) {
 	Serial.begin(115200);
 	Serial.println("Hello, world!");
-//	delay( 1000 );
+
 	Wire.begin();
 
 	pinMode(BLUE, OUTPUT);
