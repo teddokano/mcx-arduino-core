@@ -1,5 +1,5 @@
 name=NXP FRDM MCX Series
-version=0.1.7
+version=0.1.8
 
 compiler.path={runtime.tools.arm-none-eabi-gcc.path}/bin/
 compiler.cpu_flags=-mcpu={build.mcu} -mthumb

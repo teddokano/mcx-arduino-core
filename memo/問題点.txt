@@ -1,2 +1,0 @@
-LEDの半点灯
-BUILD_IN_LED定義の追加
