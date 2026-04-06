@@ -53,7 +53,7 @@ uint8_t	TwoWire::requestFrom( const uint8_t address, const size_t length, bool s
 	data_buf_index	= 0;
 	read_size		= length;
 
-	return	i2c->read( address, data_buf, length );
+	return	(i2c->read( address, data_buf, length )) ? 0 : length;
 }
 
 int TwoWire::available( void )
