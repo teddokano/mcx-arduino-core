@@ -1,7 +1,10 @@
-#include "arduino.h"
+#include <Arduino.h>
 
 void setup() {
   Serial.begin(115200);
+  while (!Serial)
+    ;
+
   Serial.println("Hello, world!");
 
   pinMode(RED, OUTPUT);

@@ -1,0 +1,28 @@
+rm -rf ~/Library/Arduino15/packages/nxp
+rm -rf ~/Library/Caches/arduino*
+rm -rf ~/Library/Application\ Support/arduino-ide/
+rm -rf ~/Library/Arduino15/packages/nxp
+rm -rf ~/Library/Arduino15/tmp/
+rm ~/Library/Arduino15/package_nxp_mcx_index.json
+
+/Applications/LinkServer_25.12.83/LinkServer flash MCXA153:FRDM-MCXA153 load \
+  /Users/tedd/Library/Caches/arduino/sketches/129F0AD81C41EFB21DBF209314C99703/sketch_mar28a.ino.elf
+  
+  tree /Users/tedd/dev/mcx-arduino-core/hardware/nxp
+  
+  
+  /Users/tedd/dev/vsc_mcux/sdk/SDK_25_12_00_FRDM-MCXA153/mcuxsdk/scripts/guigenerator/templates/iar/app_jlinkswd/generic_no_flashloader.ewd
+  
+  
+  https://github.com/xpack-dev-tools/openocd-xpack/releases/download/v0.12.0-7/xpack-openocd-0.12.0-7-darwin-arm64.tar.gz
+  https://github.com/xpack-dev-tools/openocd-xpack/releases/download/v0.12.0-7.1/xpack-openocd-0.12.0-7.1-darwin-arm64.tar.gz
+  
+  
+  curl -L https://github.com/xpack-dev-tools/openocd-xpack/releases/download/v0.12.0-7.1/xpack-openocd-0.12.0-7.1-darwin-arm64.tar.gz \
+  -o /tmp/xpack-openocd.tar.gz
+tar xzf /tmp/xpack-openocd.tar.gz -C /tmp/
+strings /tmp/xpack-openocd-0.12.0-7.1-darwin-arm64/bin/openocd | grep cmsis_flash
+
+
+cp ~/dev/mcuxpresso/r01lib_Arduino_SDK_layer_trial1/_r01lib_frdm_mcxa153/Debug/lib_r01lib_frdm_mcxa153.a \
+   ~/Library/Arduino15/packages/nxp/hardware/mcx/0.1.3/variants/frdm_mcxa153/lib/

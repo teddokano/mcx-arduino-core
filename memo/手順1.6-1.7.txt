@@ -1,0 +1,78 @@
+ローカル環境でのテスト
+
+.aファイルのコピー
+cp /Users/tedd/dev/mcx-arduino-core/MCUXpresso_project/_r01lib_frdm_mcxa153/Debug/lib_r01lib_frdm_mcxa153.a /Users/tedd/Library/Arduino15/packages/nxp/hardware/mcx/0.1.6/variants/frdm_mcxa153/lib/
+
+ヘッダファイルのコピー
+cp ~/dev/mcx-arduino-core/MCUXpresso_project/_r01lib_frdm_mcxa153/arduino_layer/*.h ~/dev/mcx-arduino-core/hardware/nxp/mcx/variants/frdm_mcxa153/include/
+cp ~/dev/mcx-arduino-core/MCUXpresso_project/_r01lib_frdm_mcxa153/arduino_layer/*.h ~/Library/Arduino15/packages/nxp/hardware/mcx/0.1.6/variants/frdm_mcxa153/include/
+
+キャッシュのクリア
+rm -rf ~/Library/Caches/arduino/sketches/
+rm -rf ~/Library/Caches/arduino/cores/
+
+動作確認後
+1. ファイルをリポジトリにコピー
+
+# arduino layer → MCUXpressoプロジェクト（既にコピー済みのはず）
+# variants/include/ にヘッダを同期
+cp ~/dev/mcx-arduino-core/MCUXpresso_project/_r01lib_frdm_mcxa153/arduino_layer/*.h ~/dev/mcx-arduino-core/hardware/nxp/mcx/variants/frdm_mcxa153/include/
+
+
+# .a をリポジトリにコピー
+cp ~/dev/mcx-arduino-core/MCUXpresso_project/_r01lib_frdm_mcxa153/Debug/lib_r01lib_frdm_mcxa153.a ~/dev/mcx-arduino-core/hardware/nxp/mcx/variants/frdm_mcxa153/lib/
+
+2. バージョン更新
+
+sed -i '' 's/version=0\.1\.6/version=0.1.7/' ~/dev/mcx-arduino-core/hardware/nxp/mcx/platform.txt
+sed -i '' 's/"version": "0\.1\.6"/"version": "0.1.7"/' ~/dev/mcx-arduino-core/package_nxp_mcx_index.json
+sed -i '' 's/mcx-arduino-core-0\.1\.6/mcx-arduino-core-0.1.7/g'  ~/dev/mcx-arduino-core/package_nxp_mcx_index.json
+sed -i '' 's|releases/download/0\.1\.6/|releases/download/0.1.7/|' ~/dev/mcx-arduino-core/package_nxp_mcx_index.json
+
+3. 変更確認
+
+grep "version" ~/dev/mcx-arduino-core/hardware/nxp/mcx/platform.txt
+grep -E '"version"|"url"|"archiveFileName"' ~/dev/mcx-arduino-core/package_nxp_mcx_index.json
+grep 0.1.6 ~/dev/mcx-arduino-core/package_nxp_mcx_index.json  # 何も出なければOK
+
+4. ZIP作成
+
+cd ~/dev/mcx-arduino-core/hardware/nxp
+zip -r ~/mcx-arduino-core-0.1.7.zip mcx/ --exclude "*.DS_Store" --exclude "__MACOSX/*"
+
+5. ZIPサイズ確認
+
+ls -lh ~/mcx-arduino-core-0.1.7.zip
+
+6. git commit & push
+
+cd ~/dev/mcx-arduino-core
+git add -A
+git commit -m "◯◯◯"
+git push origin main
+
+
+7. リリースを作成してzipを添付
+
+
+8. git pull してチェックサムを確認
+
+cd ~/dev/mcx-arduino-core
+git pull origin main
+# package_nxp_mcx_index.jsonの該当部分を直接確認
+grep -A10 '"version": "0.1.7"' ~/dev/mcx-arduino-core/package_nxp_mcx_index.json
+
+shasum -a 256 ~/mcx-arduino-core-0.1.7.zip
+wc -c ~/mcx-arduino-core-0.1.7.zip
+
+9. ボードマネージャーで動作確認
+
+ツール/キャッシュを消去
+rm -rf ~/Library/Arduino15/packages/nxp
+rm -rf ~/Library/Caches/arduino*
+rm -rf ~/Library/Application\ Support/arduino-ide/
+rm -rf ~/Library/Arduino15/packages/nxp
+rm -rf ~/Library/Arduino15/tmp/
+rm ~/Library/Arduino15/package_nxp_mcx_index.json
+
+10. 再インストールを確認

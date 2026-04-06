@@ -240,7 +240,8 @@ status_t SPI::write( uint8_t *wp, uint8_t *rp, int length )
 	masterXfer.txData		= wp;
 	masterXfer.rxData		= rp;
 	masterXfer.dataSize		= length;
-	masterXfer.configFlags	= master_pcs_4_xfer | kLPSPI_MasterByteSwap;	//	PcsContinuous removed: CS controlled by user (digitalWrite)
+	//masterXfer.configFlags	= master_pcs_4_xfer | kLPSPI_MasterByteSwap;	//	PcsContinuous removed: CS controlled by user (digitalWrite)
+	masterXfer.configFlags	= master_pcs_4_xfer | kLPSPI_MasterPcsContinuous | kLPSPI_MasterByteSwap;
 
 	return LPSPI_MasterTransferBlocking( unit_base, &masterXfer );
 }

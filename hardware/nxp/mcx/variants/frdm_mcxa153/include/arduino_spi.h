@@ -24,6 +24,7 @@ constexpr int SS	= ARD_CS;
 class SPISettings
 {
 public:
+	SPISettings() : clock( 0 ), bitOrder( MSBFIRST ), dataMode( SPI_MODE0 ) {}
 	SPISettings( uint32_t freq, int order, int mode );
 
 	uint32_t	clock;

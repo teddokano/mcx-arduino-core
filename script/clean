@@ -1,0 +1,6 @@
+#!bash
+
+#   Arduino IDE build clean intermidiate files
+
+rm -rf ~/Library/Caches/arduino/sketches/
+rm -rf ~/Library/Caches/arduino/cores/

@@ -11,6 +11,7 @@
 #include	<string_view>
 #include	<stdarg.h>
 #include	<stdint.h>
+#include	"Serial.h"
 
 // Number base definitions
 #define DEC 10
@@ -18,22 +19,18 @@
 #define OCT 8
 #define BIN 2
 
-// Forward-declare r01lib's Serial to avoid including r01lib.h here
-// (which would create circular dependency via arduino.h)
-class Serial;
-
 /**
- * @brief Arduino-compatible Serial wrapper around r01lib's Serial class.
+ * @brief Arduino-compatible Serial class for NXP MCX BSP.
  *
- * Provides begin()/print()/println()/printf() API.
- * The internal r01lib Serial instance is created lazily in begin().
+ * Inherits r01lib's Serial directly (no heap allocation, no wrapper).
+ * Pinned to USBTX/USBRX. Call begin(baud) to initialise.
  */
-class SerialClass
+class SerialClass : public Serial
 {
 public:
-	SerialClass( int tx, int rx );
+	SerialClass() : Serial( USBTX, USBRX ) {}
 
-	void	begin( int baud );
+	void	begin( int baud ) { this->baud( baud ); }
 
 	void	print( const char *s );
 	void	print( int n, int base = DEC );
@@ -56,18 +53,13 @@ public:
 	void	println( const std::string& s );
 	void	println( std::string_view s );
 
-	void	printf( const char *format, ... );
+	int		available( void ) { return readable() ? 1 : 0; }
+	int		read( void )      { return getc(); }
+	void	write( uint8_t c ){ putc( c ); }
 
-	int		read( void );
-	int		available( void );
-	void	write( uint8_t c );
+	inline operator bool( void ) { return true; }
 
 private:
-	int		_tx;
-	int		_rx;
-	int		_baud;
-	Serial*	_serial;   // r01lib Serial (forward-declared above)
-
 	void	_print_num( long n, int base );
 	void	_print_unum( unsigned long n, int base );
 	void	_print_double( double val, int digits );
