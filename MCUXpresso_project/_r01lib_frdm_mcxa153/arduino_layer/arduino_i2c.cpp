@@ -8,7 +8,7 @@
 #include	"arduino_i2c.h"
 
 TwoWire	Wire(  I2C_SDA, I2C_SCL );
-//TwoWire	Wire1( I3C_SDA, I3C_SCL );
+TwoWire	Wire1( I3C_SDA, I3C_SCL );
 
 TwoWire::TwoWire( int sda_pin, int scl_pin ) : _sda( sda_pin ), _scl( scl_pin ), i2c( nullptr ){}
 

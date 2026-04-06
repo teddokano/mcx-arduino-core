@@ -235,7 +235,7 @@ SECTIONS
         PROVIDE(__end_noinit_SRAM = .);
     } > SRAM AT> SRAM
 
-    _HeapSize = 0x600;
+    _HeapSize = 0x2000;
     .heap (NOLOAD) : ALIGN(4)
     {
         _pvHeapStart = .;
