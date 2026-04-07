@@ -1,46 +1,34 @@
-/*
- *  @author Tedd OKANO
+/** P3T1755 temperature sensor operation sample
+ *  
+ *  This sample code is showing P3T1755 temperature sensor operation.
  *
- *  Released under the MIT license
+ *  @author  Tedd OKANO
+ *
+ *  Released under the MIT license License
+ *
+ *  About P3T1755:
+ *    https://www.nxp.com/products/sensors/ic-digital-temperature-sensors/i3c-ic-bus-0-5-c-accurate-digital-temperature-sensor:P3T1755DP
  */
 
-#include "arduino.h"
-#include "Wire.h"
+#include <P3T1755.h>
+#include <Wire.h>
 
-#define TARGET_ADDRESS 0x4C
-//#define TARGET_ADDRESS 0x72
+//P3T1755 sensor;
+P3T1755 sensor(Wire1, 0x48);
 
-void setup(void) {
-	Serial.begin(115200);
-	Serial.println("Hello, world!");
+void setup() {
+  Serial.begin(115200);
+  while (!Serial)
+    ;
 
-	Wire.begin();
+  Wire.begin();
 
-	pinMode(BLUE, OUTPUT);
+  Serial.println("\n***** Hello, P3T1755! *****");
 }
 
-void loop(void) {
-	Wire.beginTransmission( TARGET_ADDRESS );
-	Wire.write( 0x00 );
-	Wire.endTransmission( false );
+void loop() {
+  float t = sensor.temp();
 
-	uint8_t buf[2];
-	int i = 0;
-
-	Wire.requestFrom(TARGET_ADDRESS, 2);
-
-	while (Wire.available())
-		buf[i++] = Wire.read();
-
-	Serial.print("P3T1085 temperature = ");
-	Serial.print((double)(((int16_t)buf[0] << 8) | buf[1]) / 256.00);
-	Serial.println("℃");
-
-	Serial.println("LED - ON");
-	digitalWrite(BLUE, LOW);
-	delay(50);
-
-	Serial.println("LED - OFF");
-	digitalWrite(BLUE, HIGH);
-	delay(950);
+  Serial.println(t, 4);
+  delay(1000);
 }

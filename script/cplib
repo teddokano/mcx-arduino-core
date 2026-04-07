@@ -3,9 +3,9 @@
 #   copy r01lib into current arduino library path 
 #	and clear cashe
 
-cp /Users/tedd/dev/mcx-arduino-core/MCUXpresso_project/_r01lib_frdm_mcxa153/Debug/lib_r01lib_frdm_mcxa153.a /Users/tedd/Library/Arduino15/packages/nxp/hardware/mcx/0.1.7/variants/frdm_mcxa153/lib/
+cp /Users/tedd/dev/mcx-arduino-core/MCUXpresso_project/_r01lib_frdm_mcxa153/Debug/lib_r01lib_frdm_mcxa153.a /Users/tedd/Library/Arduino15/packages/nxp/hardware/mcx/0.1.8/variants/frdm_mcxa153/lib/
 cp ~/dev/mcx-arduino-core/MCUXpresso_project/_r01lib_frdm_mcxa153/arduino_layer/*.h ~/dev/mcx-arduino-core/hardware/nxp/mcx/variants/frdm_mcxa153/include/
-cp ~/dev/mcx-arduino-core/MCUXpresso_project/_r01lib_frdm_mcxa153/arduino_layer/*.h ~/Library/Arduino15/packages/nxp/hardware/mcx/0.1.7/variants/frdm_mcxa153/include/
+cp ~/dev/mcx-arduino-core/MCUXpresso_project/_r01lib_frdm_mcxa153/arduino_layer/*.h ~/Library/Arduino15/packages/nxp/hardware/mcx/0.1.8/variants/frdm_mcxa153/include/
 
 rm -rf ~/Library/Caches/arduino/sketches/
 rm -rf ~/Library/Caches/arduino/cores/
