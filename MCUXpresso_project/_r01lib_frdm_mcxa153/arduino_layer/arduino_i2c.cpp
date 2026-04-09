@@ -5,6 +5,7 @@
  */
 
 #include	"r01lib.h"
+#include	"i3c.h"
 #include	"arduino_i2c.h"
 
 TwoWire	Wire(  I2C_SDA, I2C_SCL );
@@ -15,10 +16,23 @@ TwoWire::TwoWire( int sda_pin, int scl_pin ) : _sda( sda_pin ), _scl( scl_pin ),
 void TwoWire::begin( int baud )
 {
 	baudrate	= baud;
+
 	if ( !i2c )
-		i2c	= new I2C( _sda, _scl );
+	{
+		if ( ( I3C_SDA == _sda ) && ( I3C_SCL == _scl ) )
+		{
+			I3C	*i3c;
+			i3c	= new I3C( _sda, _scl );
+			i3c->mode( I3C::MODE::I2C_MODE );
+			i2c	= i3c;
+		}
+		else
+		{
+			i2c	= new I2C( _sda, _scl );
+		}
+	}
+
 	i2c->frequency( baudrate );
-	
 	i2c->err_callback( nullptr );
 }
 
