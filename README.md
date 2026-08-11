@@ -31,6 +31,8 @@ Please install it before using the Upload button in Arduino IDE.
 
 After installation, the upload script will automatically detect LinkServer — no path configuration needed.
 
+The install → build → upload flow has been verified on **macOS and Windows 11**. Linux support is planned for a future release — the toolchain and upload script are already in place, but the end-to-end flow hasn't been verified there yet.
+
 ## Installation
 
 1. Open Arduino IDE 2.x
