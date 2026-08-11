@@ -33,6 +33,7 @@ English version → [TUTORIAL.md](TUTORIAL.md)
 
 ### 1.1. 用意するもの
 
+- **macOSまたはWindows**のコンピュータ。Linuxはまだ未対応です — [1.3](#13-nxp-linkserverのインストール)を参照
 - [FRDM-MCXA153](https://www.nxp.com/design/design-center/development-boards-and-designs/FRDM-MCXA153)ボード
 - Arduino IDE 2.x
 - NXP LinkServer

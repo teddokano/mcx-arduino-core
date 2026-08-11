@@ -36,6 +36,8 @@ reference table and [CHANGELOG.md](CHANGELOG.md) for version history.
 
 ### 1.1. What you need
 
+- A **macOS or Windows** computer. Linux isn't supported yet — see
+  [1.3](#13-install-nxp-linkserver)
 - An [FRDM-MCXA153](https://www.nxp.com/design/design-center/development-boards-and-designs/FRDM-MCXA153) board
 - Arduino IDE 2.x
 - NXP LinkServer
