@@ -105,7 +105,7 @@ MIT License — see [LICENSE](LICENSE)
 | `Wire.write` / `read` / `requestFrom` / `available` | ✅ | |
 | `SPI.begin` / `beginTransaction` / `transfer` / `transfer16` | ✅ | |
 | `delay` | ✅ | |
-| `analogWrite` (PWM) | n/a | |
-| `analogRead` | n/a | |
-| `millis` / `micros` | n/a | |
-| `tone` / `noTone` | n/a | |
+| `analogRead` | ✅ | LPADC, `A0`-`A3`, 10bit (0-1023) |
+| `analogWrite` (PWM) | ✅ | FlexPWM0, `PWM0`-`PWM5` only |
+| `millis` / `micros` | ✅ | SysTick(1ms) + DWT cycle counter |
+| `tone` / `noTone` | ✅ | CTIMER0, any digital pin, 1 tone at a time |
