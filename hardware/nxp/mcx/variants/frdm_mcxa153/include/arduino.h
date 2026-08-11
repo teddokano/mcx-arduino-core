@@ -17,5 +17,7 @@
 void	setup( void );
 void	loop( void );
 void	delay( unsigned long ms );
+unsigned long	millis( void );
+unsigned long	micros( void );
 
 #endif // !R01LIB_ARDUINO_H
