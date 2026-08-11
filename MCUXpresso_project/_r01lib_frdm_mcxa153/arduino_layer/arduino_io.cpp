@@ -103,3 +103,62 @@ int digitalPinToInterrupt( int pin_num )
 {
 		return  pin_num;
 }
+
+void shiftOut( int dataPin, int clockPin, int bitOrder, uint8_t val )
+{
+		for ( int i = 0; i < 8; i++ )
+		{
+				if ( bitOrder == LSBFIRST )
+						digitalWrite( dataPin, !!(val & (1 << i)) );
+				else
+						digitalWrite( dataPin, !!(val & (1 << (7 - i))) );
+
+				digitalWrite( clockPin, HIGH );
+				digitalWrite( clockPin, LOW );
+		}
+}
+
+uint8_t shiftIn( int dataPin, int clockPin, int bitOrder )
+{
+		uint8_t	value	= 0;
+
+		for ( int i = 0; i < 8; i++ )
+		{
+				digitalWrite( clockPin, HIGH );
+
+				if ( bitOrder == LSBFIRST )
+						value |= digitalRead( dataPin ) << i;
+				else
+						value |= digitalRead( dataPin ) << (7 - i);
+
+				digitalWrite( clockPin, LOW );
+		}
+
+		return	value;
+}
+
+unsigned long pulseIn( int pin_num, bool state, unsigned long timeout )
+{
+		unsigned long	start_wait	= micros();
+
+		while ( digitalRead( pin_num ) == state )
+				if ( (micros() - start_wait) > timeout )
+						return	0;
+
+		while ( digitalRead( pin_num ) != state )
+				if ( (micros() - start_wait) > timeout )
+						return	0;
+
+		unsigned long	start_pulse	= micros();
+
+		while ( digitalRead( pin_num ) == state )
+				if ( (micros() - start_pulse) > timeout )
+						return	0;
+
+		return	micros() - start_pulse;
+}
+
+unsigned long pulseInLong( int pin_num, bool state, unsigned long timeout )
+{
+		return	pulseIn( pin_num, state, timeout );
+}

@@ -8,6 +8,7 @@
 #define R01LIB_ARDUINO_H
 
 #include	<math.h>
+#include	<cstdlib>
 
 #include	"r01lib.h"
 #include	"arduino_serial.h"
@@ -80,6 +81,30 @@ auto max( const T& a, const L& b ) -> decltype( (b < a) ? b : a )
 inline long map( long x, long in_min, long in_max, long out_min, long out_max )
 {
 	return	(x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
+
+// random()/randomSeed() — thin wrapper over newlib's rand()/srand(), matches
+// UNO R3/R4's long random(long) / long random(long,long) / void randomSeed(unsigned long)
+inline void randomSeed( unsigned long seed )
+{
+	if ( seed != 0 )
+		srand( (unsigned int)seed );
+}
+
+inline long random( long max )
+{
+	if ( max <= 0 )
+		return	0;
+
+	return	rand() % max;
+}
+
+inline long random( long min, long max )
+{
+	if ( min >= max )
+		return	min;
+
+	return	random( max - min ) + min;
 }
 
 void	setup( void );

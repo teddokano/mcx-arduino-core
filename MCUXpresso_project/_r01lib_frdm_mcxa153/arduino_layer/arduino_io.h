@@ -7,6 +7,8 @@
 #ifndef R01LIB_ARDUINO_IO_H
 #define R01LIB_ARDUINO_IO_H
 
+#include	<stdint.h>
+
 #define	ARDUINO_PIN_RENUMBERING
 
 constexpr int	INPUT		= DigitalInOut::INPUT;   // = 0
@@ -28,6 +30,12 @@ constexpr int	CHANGE	= 2;
 
 void	attachInterrupt( int int_num, void (*callback)(void), int mode );
 int		digitalPinToInterrupt( int pin_num );
+
+void	shiftOut( int dataPin, int clockPin, int bitOrder, uint8_t val );
+uint8_t	shiftIn( int dataPin, int clockPin, int bitOrder );
+
+unsigned long	pulseIn( int pin_num, bool state, unsigned long timeout = 1000000UL );
+unsigned long	pulseInLong( int pin_num, bool state, unsigned long timeout = 1000000UL );
 
 #ifdef	ARDUINO_PIN_RENUMBERING
 
