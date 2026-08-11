@@ -2,7 +2,8 @@
 
 ## プロジェクト概要
 - **リポジトリ**: https://github.com/teddokano/mcx-arduino-core
-- **現在のバージョン**: v0.1.5
+- **現在のバージョン**: v0.1.8（`package_nxp_mcx_index.json` 上の最新リリース）
+- **作業中バージョン**: v0.1.9（`prepare0.1.9` ブランチ、`main` 未マージ・未リリース）
 - **内容**: NXP FRDM-MCXA153 (Cortex-M33) 向けArduino IDEボードサポートパッケージ
 
 ---
@@ -56,7 +57,59 @@ xPack checksums（正しい値）：
 
 ---
 
-## 動作確認済み（v0.1.5）
+## v0.1.6〜v0.1.8 で修正した内容（完了済み・リリース済み）
+
+### v0.1.6（`rel/v0.1.6`）
+- Arduino API命名・互換性の修正（`58f4951 fix: correct Arduino API naming and compatibility issues for v0.1.6`）
+
+### v0.1.7（`prepare0.1.7`, ディレクトリ構成変更含む）
+- `db3b01d` Wire動作の修正、`af4c690` NAKによるハングアップ修正
+- `e77651f` SPI動作修正（CSアサートがマルチバイト転送終了まで継続するよう修正）
+- `a9a2126` Serialインスタンスをstaticインスタンスに変更
+- `e9dcc81` ヒープサイズ調整
+- `directory_structure_change2` ブランチをマージ：`arduino_serial.cpp/.h` を大幅整理（145行→大幅削減）、`arduino_i2c.cpp`・リンカスクリプト等のパス構成見直し
+
+### v0.1.8（`b1edd25 for 0.1.8 release`）
+- `6abc09e fix: return value of "TwoWire::requestFrom"` — 戻り値の不具合修正
+- `package_nxp_mcx_index.json` のchecksum更新（GitHub Actionsによる自動更新）
+
+---
+
+## v0.1.9 で作業中の内容（`prepare0.1.9` ブランチ・未リリース）
+
+オンボードのP3T1755温度センサーをI3Cバス経由でI2Cモードとして使えるようにする対応。
+
+### arduino_i2c.cpp / arduino_i2c.h（`MCUXpresso_project/_r01lib_frdm_mcxa153/arduino_layer/` および `hardware/nxp/mcx/variants/frdm_mcxa153/include/` の両方に同様の変更）
+- `TwoWire Wire1( I3C_SDA, I3C_SCL );` を新規追加（`extern TwoWire Wire1;` をヘッダへ宣言）
+- `TwoWire::begin()` で、SDA/SCLピンが `I3C_SDA`/`I3C_SCL` と一致する場合は `I3C` インスタンスを生成し `mode( I3C::MODE::I2C_MODE )` に設定してから `i2c` ポインタへ代入するよう分岐を追加（一致しない場合は従来通り `I2C` を生成）
+- 使用例: `examples/Arduino_compatible_API/test_Wire_P3T1755/test_Wire_P3T1755.ino` — `P3T1755 sensor(Wire1, 0x48);`
+
+### analogRead / analogWrite 実装（ADC・PWM対応、完了・未コミット）
+`/Users/tedd/dev/mcuxpresso/r01lib_prj_generator/` で生成されたFRDM-MCXA153向け `AnalogIn`（LPADC）/ `PwmOut`（FlexPWM0）クラスを移植し、Arduino API化。
+
+- **r01lib本体**（`MCUXpresso_project/_r01lib_frdm_mcxa153/source/r01lib/`）
+  - `AnalogIn.h/.cpp`（12bit LPADC、A0-A3対応）、`PwmOut.h/.cpp`（FlexPWM0 sm0-2、PWM0-PWM5対応）を新規追加
+  - `io.h` に `PWM0`〜`PWM5`（P3_6〜P3_11。既存のD0-D19とは物理的に重複しない新規ピン、どのコネクタに出ているか要確認）を追加
+  - `r01lib.h` に両クラスのincludeを追加
+  - 依存する `fsl_lpadc.c/h` SDKドライバを `drivers/` に追加（`fsl_pwm.c/h`は既存を流用）
+- **Arduinoレイヤー**（`arduino_layer/arduino_analog.cpp/.h` 新規）
+  - `analogRead(pin)`：16bit値を10bit（0-1023、classic Arduino準拠）に変換。ピンごとに `AnalogIn` を遅延生成（Wire/SPIと同じ遅延初期化パターン）
+  - `analogWrite(pin, value)`：0-255のduty値を `PwmOut` に反映。初回生成時に周期1kHzを設定
+  - `arduino.h`（variant側・core側の両方、`hardware/nxp/mcx/cores/arduino/arduino.h` にも同じincludeが必要な点に注意 — コンパイラの `-I` 順序でcore側が優先解決されるため）、`arduino_io.h` のピン再番号付けテーブルに反映
+- **ビルド**：`Debug/`配下の`subdir.mk`を手動更新し、xPack arm-none-eabiツールチェーンで`lib_r01lib_frdm_mcxa153.a`を再ビルド → `hardware/nxp/mcx/variants/frdm_mcxa153/`（include/lib）に同期
+- **動作確認**：テストスケッチ `examples/Arduino_compatible_API/test_Analog_read_write/test_Analog_read_write.ino` を作成し、platform.txt準拠のビルドレシピを手動再現してコンパイル・リンク・シンボル解決を確認。既存`hello_world.ino`の回帰も確認済み
+- 未コミット（作業ツリーに変更あり）
+
+### 未追跡（未コミット）の作業ツリー内容
+- `examples/tests/` 配下に以下4つの外部ライブラリが独立git repoとして手元clone状態で存在（サブモジュール化はされていない、`.gitmodules`なし）。動作テスト目的とみられ、コミットするかどうか要判断：
+  - `I2C_device_Arduino`, `LCDDriver_NXP_Arduino`, `LEDDriver_NXP_Arduino`, `TempSensor_NXP_Arduino`（いずれも `github.com/teddokano/...`）
+
+### 未対応
+- `package_nxp_mcx_index.json` のバージョンはまだ `0.1.8` のまま。v0.1.9として正式リリースするにはバージョン番号更新・checksum更新・`main`へのマージが必要
+
+---
+
+## 動作確認済み（v0.1.5時点、以降未更新）
 
 | API | macOS | Windows |
 |---|---|---|
@@ -82,8 +135,10 @@ xPack checksums（正しい値）：
 
 ---
 
-## 残りのPendingタスク（v0.1.5以降）
-1. マルチボード対応（MCXN947, MCXA156, MCXN236）
-2. `analogWrite` / PWM実装
-3. `millis` / `micros` 実装
-4. IchigoJam-firm GPIO/PWMサポート（FRDM-MCXA153）
+## 残りのPendingタスク
+1. analogRead/analogWrite実装のコミット、PWM0-PWM5が実際にどのコネクタ/ピンに出ているか確認
+2. v0.1.9リリース作業：`package_nxp_mcx_index.json` のバージョン/checksum更新、`prepare0.1.9` → `main` マージ
+3. `examples/tests/` 配下の未追跡外部ライブラリ4件の扱い決定（コミット対象外にする/サブモジュール化する等）
+4. マルチボード対応（MCXN947, MCXA156, MCXN236）
+5. `millis` / `micros` 実装
+6. IchigoJam-firm GPIO/PWMサポート（FRDM-MCXA153）

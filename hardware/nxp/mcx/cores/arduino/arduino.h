@@ -10,6 +10,7 @@
 #include	"r01lib.h"
 #include	"arduino_serial.h"
 #include	"arduino_io.h"
+#include	"arduino_analog.h"
 #include	"arduino_i2c.h"
 #include	"arduino_spi.h"
 

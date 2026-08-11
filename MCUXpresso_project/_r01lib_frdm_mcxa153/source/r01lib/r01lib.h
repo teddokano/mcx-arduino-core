@@ -36,6 +36,8 @@ extern "C" {
 #include	"InterruptIn.h"
 #include	"BusInOut.h"
 #include	"Serial.h"
+#include	"AnalogIn.h"
+#include	"PwmOut.h"
 #include	"mcu.h"
 
 #endif // R01LIB_R01LIB_H

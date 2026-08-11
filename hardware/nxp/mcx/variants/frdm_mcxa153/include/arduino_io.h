@@ -85,6 +85,13 @@ const int	arduino_pin_by_number[]	=
 	ARD_MOSI,
 	ARD_MISO,
 	ARD_SCK,
+
+	PWM0,
+	PWM1,
+	PWM2,
+	PWM3,
+	PWM4,
+	PWM5,
 };
 
 #undef	D0
@@ -140,6 +147,13 @@ const int	arduino_pin_by_number[]	=
 #undef	ARD_MISO
 #undef	ARD_SCK
 
+#undef	PWM0
+#undef	PWM1
+#undef	PWM2
+#undef	PWM3
+#undef	PWM4
+#undef	PWM5
+
 enum ArduinoPinNum {
 	D0	= 0,
 	D1,
@@ -193,6 +207,13 @@ enum ArduinoPinNum {
 	ARD_MOSI,
 	ARD_MISO,
 	ARD_SCK,
+
+	PWM0,
+	PWM1,
+	PWM2,
+	PWM3,
+	PWM4,
+	PWM5,
 };
 
 #endif // ARDUINO_PIN_RENUMBERING

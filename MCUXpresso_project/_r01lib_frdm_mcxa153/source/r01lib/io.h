@@ -605,6 +605,12 @@ enum {
 	#define	A3		P2_0
 	#define	A4		P3_31
 	#define	A5		P3_30
+	#define	PWM0	P3_11	/* FlexPWM0 sm2 chB */
+	#define	PWM1	P3_10	/* FlexPWM0 sm2 chA */
+	#define	PWM2	P3_9	/* FlexPWM0 sm1 chB */
+	#define	PWM3	P3_8	/* FlexPWM0 sm1 chA */
+	#define	PWM4	P3_7	/* FlexPWM0 sm0 chB */
+	#define	PWM5	P3_6	/* FlexPWM0 sm0 chA */
 	#define	SW2		P3_29
 	#define	SW3		P1_7
 	#define	MB_AN	P3_30
