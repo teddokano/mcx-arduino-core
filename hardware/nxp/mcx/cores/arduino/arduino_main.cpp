@@ -54,6 +54,11 @@ void millis_init( void )
 	CoreDebug->DEMCR	|= CoreDebug_DEMCR_TRCENA_Msk;
 	DWT->CTRL			|= DWT_CTRL_CYCCNTENA_Msk;
 
+	// DWT->CYCCNT has been free-running since boot (wait()/delay() enabled
+	// it). Snapshot "now" as the baseline so micros() doesn't report the
+	// raw since-boot cycle count before the first SysTick tick has fired.
+	ms_tick_dwt		= DWT->CYCCNT;
+
 	millis_ready	= true;
 
 	SysTick_Config( core_hz / 1000u );

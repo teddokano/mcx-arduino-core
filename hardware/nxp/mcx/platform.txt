@@ -29,7 +29,7 @@ recipe.ar.pattern="{compiler.path}{compiler.ar.cmd}" {compiler.ar.flags} "{archi
 
 compiler.c.elf.cmd=arm-none-eabi-c++
 compiler.c.elf.flags=-nostdlib -Xlinker --gc-sections -Xlinker -print-memory-usage -Xlinker --sort-section=alignment -u _printf_float -u _scanf_float {compiler.cpu_flags}
-recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}" {compiler.c.elf.flags} -T "{build.variant.path}/linker/{build.ldscript}" -L{build.variant.path}/lib -o "{build.path}/{build.project_name}.elf" {object_files} -Wl,--whole-archive "{archive_file_path}" -Wl,--no-whole-archive -l{build.variant_lib} -lc -lgcc
+recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}" {compiler.c.elf.flags} -T "{build.variant.path}/linker/{build.ldscript}" -L{build.variant.path}/lib -o "{build.path}/{build.project_name}.elf" {object_files} -Wl,--whole-archive "{archive_file_path}" -Wl,--no-whole-archive -l{build.variant_lib} -lc -lm -lgcc
 
 compiler.objcopy.cmd=arm-none-eabi-objcopy
 compiler.elf2hex.cmd=arm-none-eabi-objcopy

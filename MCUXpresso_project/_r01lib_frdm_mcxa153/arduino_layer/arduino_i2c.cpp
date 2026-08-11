@@ -17,9 +17,11 @@ void TwoWire::begin( int baud )
 {
 	baudrate	= baud;
 
+	bool	is_i3c	= ( I3C_SDA == _sda ) && ( I3C_SCL == _scl );
+
 	if ( !i2c )
 	{
-		if ( ( I3C_SDA == _sda ) && ( I3C_SCL == _scl ) )
+		if ( is_i3c )
 		{
 			I3C	*i3c;
 			i3c	= new I3C( _sda, _scl );
@@ -32,7 +34,21 @@ void TwoWire::begin( int baud )
 		}
 	}
 
-	i2c->frequency( baudrate );
+	/*
+	 *  I2C(sda, scl, no_hw=true) — the base-class constructor I3C delegates
+	 *  to — skips hardware init entirely (`if (no_hw) return;`), leaving
+	 *  I2C::unit_base uninitialized. I3C's own
+	 *  frequency(uint32_t,uint32_t,uint32_t)/frequency(void) only hide, not
+	 *  override, I2C::frequency(uint32_t) (different signature), so calling
+	 *  the generic i2c->frequency(baudrate) for an I3C instance would
+	 *  dispatch to I2C::frequency() and dereference that uninitialized
+	 *  unit_base -> BusFault. Route to I3C's own overload instead.
+	 */
+	if ( is_i3c )
+		static_cast<I3C *>( i2c )->frequency( baudrate, 0, 0 );
+	else
+		i2c->frequency( baudrate );
+
 	i2c->err_callback( nullptr );
 }
 

@@ -21,7 +21,7 @@ void setup() {
   while (!Serial)
     ;
 
-  Wire.begin();
+  Wire1.begin();
 
   Serial.println("\n***** Hello, P3T1755! *****");
 }
