@@ -66,6 +66,11 @@ tool, so it needs to be installed separately *before* you upload anything.
 | Windows | `.exe` installer |
 | Linux | `.deb.bin` file |
 
+This tutorial's full install → build → upload flow has been verified on
+**macOS and Windows 11**. Linux support is planned for a future release —
+the toolchain and upload script are already in place, but the end-to-end
+flow hasn't been verified there yet.
+
 Once installed, the board package's upload script finds LinkServer
 automatically — no path configuration needed.
 
