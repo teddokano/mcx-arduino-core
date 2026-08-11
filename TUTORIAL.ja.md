@@ -50,7 +50,21 @@ English version → [TUTORIAL.md](TUTORIAL.md)
 
 詳細は[README.md](README.md#installation)を参照してください。
 
-## 2. 最初のスケッチ: オンボードLEDを点滅させる
+## 2. Arduino IDEツールバーの基本
+
+スケッチウィンドウ上部のツールバーには、頻繁に使うアイコンがいくつかあります:
+
+| アイコン | 機能 |
+|---|---|
+| ✔（チェックマーク） | **Verify（検証）** — 書き込みせずにコンパイルのみ行う。エラーを素早く確認するのに便利 |
+| →（右向き矢印） | **Upload（アップロード）** — コンパイル**して**ボードへ書き込む（LinkServer経由、MCU-Link USBコネクタ越し） |
+| 🔌/モニターアイコン（右上） | **Serial Monitor（シリアルモニタ）** — スケッチが`Serial.print`/`println`で送った内容を表示するパネルを開く |
+
+コンパイルエラーやアップロードのログは、ウィンドウ下部の黒い出力ペインに表示されます — アップロードに失敗したら、まずここを確認してください。
+
+このチュートリアルの全スケッチは`Serial.begin(...)`を呼んでいるので、**Upload**をクリックした後にシリアルモニタのアイコンを開き、そのボーレート（シリアルモニタパネル右下）がスケッチの`Serial.begin()`の値（本チュートリアルの大半は115200）と一致しているか確認してください — 一致していないと文字化けするか、何も表示されません。
+
+## 3. 最初のスケッチ: オンボードLEDを点滅させる
 
 ボードには3色のオンボードLED（`RED`, `GREEN`, `BLUE`）があり、**アクティブLow**で配線されています —— `LOW`で点灯、`HIGH`で消灯します。`LED_BUILTIN`は`GREEN`のエイリアスです。
 
@@ -71,7 +85,7 @@ void loop() {
 
 **Upload**をクリックしてください。緑色LEDが1秒間隔で点滅します。
 
-## 3. シリアル出力
+## 4. シリアル出力
 
 `Serial`はUSB経由のシリアルポートです。`setup()`内の`while (!Serial);`は、シリアルモニタが接続されるまで待つことで、最初の数行が表示されずに失われるのを防ぎます。
 
@@ -92,7 +106,7 @@ void loop() {
 
 書き込み後、**Tools → Serial Monitor**（115200bps）を開いてください。
 
-## 4. デジタル入力と割り込み
+## 5. デジタル入力と割り込み
 
 ボードには`SW2`・`SW3`という2つのオンボードボタンがあり、アクティブLowでプルアップが必要（`INPUT_PULLUP`）です。以下の例は、ポーリングではなく`attachInterrupt`を使ってボタン押下で青LEDをトグルします:
 
@@ -127,7 +141,7 @@ void loop() {
 }
 ```
 
-## 5. アナログ入力: `analogRead`
+## 6. アナログ入力: `analogRead`
 
 `analogRead`はLPADC経由で`A0`-`A3`ピンを読み取り、従来のArduinoボードと同じ10bit値（0-1023）を返します。（`A4`/`A5`はピン名としては存在しますが、このボードではADCに配線されていません — 詳細は[ピン配置表](README.md#pin-mapping-frdm-mcxa153)を参照）
 
@@ -150,9 +164,9 @@ void loop() {
 }
 ```
 
-## 6. PWM出力: `analogWrite`
+## 7. PWM出力: `analogWrite`
 
-PWMは専用ピン`PWM0`-`PWM5`（FlexPWM0）でのみ使用可能で、任意のデジタルピンでは使えません。周期は1kHz固定で、`analogWrite`が制御できるのはduty比（0-255）のみです（従来のArduinoと同じ）。以下の例は手順5のADC読み取り値をそのままPWM出力に反映します — 抵抗付きLEDやオシロスコープを`PWM0`に接続して変化を確認してください:
+PWMは専用ピン`PWM0`-`PWM5`（FlexPWM0）でのみ使用可能で、任意のデジタルピンでは使えません。周期は1kHz固定で、`analogWrite`が制御できるのはduty比（0-255）のみです（従来のArduinoと同じ）。以下の例は手順6のADC読み取り値をそのままPWM出力に反映します — 抵抗付きLEDやオシロスコープを`PWM0`に接続して変化を確認してください:
 
 ```cpp
 #include <Arduino.h>
@@ -168,7 +182,7 @@ void loop() {
 }
 ```
 
-## 7. 時間計測: `millis` / `micros`
+## 8. 時間計測: `millis` / `micros`
 
 標準的なArduinoのタイミング関数で、SysTick（1msティック）+ DWTサイクルカウンタで実装されています。`millis()`は従来のArduinoと同様、約49日でオーバーフローします。
 
@@ -190,7 +204,7 @@ void loop() {
 }
 ```
 
-## 8. 音: `tone` / `noTone`
+## 9. 音: `tone` / `noTone`
 
 `tone()`は`PWM0`-`PWM5`に限定される`analogWrite`と異なり、**任意の**デジタルピンで使用できます（CTIMER0によるソフトウェアトグル方式）。同時に鳴らせる音は1つだけです。圧電ブザーを`D13`とGND間に接続してください:
 
@@ -213,7 +227,7 @@ void loop() {
 メロディーを鳴らす完全な例は
 [`examples/Arduino_compatible_API/test_tone`](examples/Arduino_compatible_API/test_tone)を参照してください。
 
-## 9. I2C: `Wire`とオンボードセンサー（`Wire1`）
+## 10. I2C: `Wire`とオンボードセンサー（`Wire1`）
 
 ボードにはオンボードのP3T1755温度センサーがMCUのI3Cペリフェラルに接続されていますが、`Wire1`はこれを**I2C互換モード**で駆動するため、通常の`TwoWire`オブジェクトとして普通のI2C通信ができます（動的アドレッシングやIBIなどI3C固有の機能は一切使用しません）。この例には配線不要です:
 
@@ -242,7 +256,7 @@ void loop() {
 
 **外部**のI2Cデバイスを使う場合は、通常の`Wire`オブジェクト（`SDA`/`SCL`は`D18`/`D19`）を使い、従来のArduinoと全く同じ`Wire.begin()` / `beginTransmission()` / `write()` / `endTransmission()` / `requestFrom()` / `read()`を呼び出してください。
 
-## 10. SPI
+## 11. SPI
 
 `D10`(CS)/`D11`(MOSI)/`D12`(MISO)/`D13`(SCLK)で、標準的な`SPISettings`ベースのAPIが使えます:
 
@@ -271,7 +285,7 @@ void loop() {
 応答を確認するには実際のSPIペリフェラル（またはMOSI-MISO間のループバック線）が必要です — 
 [`examples/Arduino_compatible_API/test_SPI_loopback_with_a_wire`](examples/Arduino_compatible_API/test_SPI_loopback_with_a_wire)を参照してください。
 
-## 11. 2つ目のシリアルポート: `Serial1`
+## 12. 2つ目のシリアルポート: `Serial1`
 
 `Serial`はUSB経由ですが、`Serial1`は`D0`(RX)/`D1`(TX)ピン上の独立したハードウェアUARTで、USB接続を占有せずに外部シリアルデバイスと通信できます:
 
@@ -291,7 +305,7 @@ void loop() {
 他の外部ハードウェアなしで単体テストするには、`D1`と`D0`をジャンパー線でつなぎ、送信した内容を読み返してみてください —
 [`examples/Arduino_compatible_API/test_Serial1`](examples/Arduino_compatible_API/test_Serial1)を参照。
 
-## 12. ソフトウェア実装のヘルパー: `shiftOut` / `shiftIn` / `pulseIn`
+## 13. ソフトウェア実装のヘルパー: `shiftOut` / `shiftIn` / `pulseIn`
 
 従来のArduinoと同じシグネチャで、`digitalWrite`/`digitalRead`/`micros()`をベースにソフトウェアで実装されています:
 
@@ -304,7 +318,7 @@ unsigned long width = pulseIn(pin, HIGH);
 `random()` / `randomSeed()`も、従来のArduinoと同じシグネチャで使用できます。
 [`examples/Arduino_compatible_API/test_shiftOut_pulseIn_random`](examples/Arduino_compatible_API/test_shiftOut_pulseIn_random)を参照してください。
 
-## 13. UNO R3/R4互換性
+## 14. UNO R3/R4互換性
 
 Arduino UNO向けに書かれたスケッチが、追加の`#include`なしでそのままコンパイルできます: `PI`, `HALF_PI`, `TWO_PI`, `DEG_TO_RAD`, `RAD_TO_DEG`, `radians()`, `degrees()`, `min()`/`max()`, `abs()`, `constrain()`, `sq()`, `map()`, `lowByte()`/`highByte()`, `bitRead()` / `bitSet()` / `bitClear()` / `bitToggle()` / `bitWrite()` / `bit()`, `interrupts()` / `noInterrupts()`, `boolean`/`byte`/`word`, `LSBFIRST`/`MSBFIRST`。
 
