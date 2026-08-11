@@ -3,7 +3,7 @@
 ## プロジェクト概要
 - **リポジトリ**: https://github.com/teddokano/mcx-arduino-core
 - **現在のバージョン**: v0.1.8（`package_nxp_mcx_index.json` 上の最新リリース）
-- **作業中バージョン**: v0.1.9（`prepare0.1.9` ブランチ、`main` 未マージ・未リリース）
+- **作業中バージョン**: v0.2.0（`prepare0.1.9` ブランチ、`main` 未マージ・未リリース。ブランチ名は`0.1.9`のままだがリリースバージョンは`0.2.0`に変更 — analogRead/analogWrite/millis/micros/tone/noToneの追加で基本的なArduino API群が揃ったためマイナーバージョンを上げる判断）
 - **内容**: NXP FRDM-MCXA153 (Cortex-M33) 向けArduino IDEボードサポートパッケージ
 
 ---
@@ -75,50 +75,67 @@ xPack checksums（正しい値）：
 
 ---
 
-## v0.1.9 で作業中の内容（`prepare0.1.9` ブランチ・未リリース）
+## v0.2.0 で作業中の内容（`prepare0.1.9` ブランチ・未リリース・すべてコミット済み）
 
-オンボードのP3T1755温度センサーをI3Cバス経由でI2Cモードとして使えるようにする対応。
+analogRead/analogWrite/millis/micros/tone/noToneが揃い、基本的なArduino APIが一通り使えるようになった（マイナーバージョンを0.1.9ではなく0.2.0とする判断の理由）。
 
-### arduino_i2c.cpp / arduino_i2c.h（`MCUXpresso_project/_r01lib_frdm_mcxa153/arduino_layer/` および `hardware/nxp/mcx/variants/frdm_mcxa153/include/` の両方に同様の変更）
-- `TwoWire Wire1( I3C_SDA, I3C_SCL );` を新規追加（`extern TwoWire Wire1;` をヘッダへ宣言）
-- `TwoWire::begin()` で、SDA/SCLピンが `I3C_SDA`/`I3C_SCL` と一致する場合は `I3C` インスタンスを生成し `mode( I3C::MODE::I2C_MODE )` に設定してから `i2c` ポインタへ代入するよう分岐を追加（一致しない場合は従来通り `I2C` を生成）
-- 使用例: `examples/Arduino_compatible_API/test_Wire_P3T1755/test_Wire_P3T1755.ino` — `P3T1755 sensor(Wire1, 0x48);`
+### I3C/Wire1対応（P3T1755温度センサー、`09b3a5d`）
+- オンボードのP3T1755温度センサーをI3Cバス経由でI2Cモードとして使えるように対応
+- `TwoWire Wire1( I3C_SDA, I3C_SCL );` を新規追加、`TwoWire::begin()` でSDA/SCLピンが `I3C_SDA`/`I3C_SCL` と一致する場合は `I3C` インスタンスを生成し `mode( I3C::MODE::I2C_MODE )` に設定
+- 使用例: `examples/Arduino_compatible_API/onboard_temperature_sensor/onboard_temperature_sensor.ino`（`2206dd2`。旧`test_Wire_P3T1755`はデバッグ経緯の記録として残置）
 
-### analogRead / analogWrite 実装（ADC・PWM対応、完了・未コミット）
+### analogRead / analogWrite 実装（LPADC・FlexPWM0、`e476f36`）
 `/Users/tedd/dev/mcuxpresso/r01lib_prj_generator/` で生成されたFRDM-MCXA153向け `AnalogIn`（LPADC）/ `PwmOut`（FlexPWM0）クラスを移植し、Arduino API化。
+- **r01lib本体**: `AnalogIn.h/.cpp`（12bit LPADC、A0-A3対応）、`PwmOut.h/.cpp`（FlexPWM0 sm0-2、PWM0-PWM5対応）を新規追加。`io.h` に `PWM0`〜`PWM5`（P3_6〜P3_11、既存のD0-D19とは物理的に重複しない新規ピン）を追加。依存する `fsl_lpadc.c/h` SDKドライバを `drivers/` に追加
+- **Arduinoレイヤー**: `arduino_layer/arduino_analog.cpp/.h` 新規。`analogRead(pin)` は16bit値を10bit（0-1023）に変換、ピンごとに `AnalogIn` を遅延生成。`analogWrite(pin, value)` は0-255のduty値を `PwmOut` に反映、初回生成時に周期1kHzを設定
+- PWM0-PWM5の物理コネクタ位置は `examples/Arduino_compatible_API/test_PWM_pin_identify/` で実機確認済み、問題なし
 
-- **r01lib本体**（`MCUXpresso_project/_r01lib_frdm_mcxa153/source/r01lib/`）
-  - `AnalogIn.h/.cpp`（12bit LPADC、A0-A3対応）、`PwmOut.h/.cpp`（FlexPWM0 sm0-2、PWM0-PWM5対応）を新規追加
-  - `io.h` に `PWM0`〜`PWM5`（P3_6〜P3_11。既存のD0-D19とは物理的に重複しない新規ピン、どのコネクタに出ているか要確認）を追加
-  - `r01lib.h` に両クラスのincludeを追加
-  - 依存する `fsl_lpadc.c/h` SDKドライバを `drivers/` に追加（`fsl_pwm.c/h`は既存を流用）
-- **Arduinoレイヤー**（`arduino_layer/arduino_analog.cpp/.h` 新規）
-  - `analogRead(pin)`：16bit値を10bit（0-1023、classic Arduino準拠）に変換。ピンごとに `AnalogIn` を遅延生成（Wire/SPIと同じ遅延初期化パターン）
-  - `analogWrite(pin, value)`：0-255のduty値を `PwmOut` に反映。初回生成時に周期1kHzを設定
-  - `arduino.h`（variant側・core側の両方、`hardware/nxp/mcx/cores/arduino/arduino.h` にも同じincludeが必要な点に注意 — コンパイラの `-I` 順序でcore側が優先解決されるため）、`arduino_io.h` のピン再番号付けテーブルに反映
-- **ビルド**：`Debug/`配下の`subdir.mk`を手動更新し、xPack arm-none-eabiツールチェーンで`lib_r01lib_frdm_mcxa153.a`を再ビルド → `hardware/nxp/mcx/variants/frdm_mcxa153/`（include/lib）に同期
-- **動作確認**：テストスケッチ `examples/Arduino_compatible_API/test_Analog_read_write/test_Analog_read_write.ino` を作成し、platform.txt準拠のビルドレシピを手動再現してコンパイル・リンク・シンボル解決を確認。既存`hello_world.ino`の回帰も確認済み
-- 未コミット（作業ツリーに変更あり）
+### millis() / micros() 実装（SysTick + DWT、`cef7f8b`）
+- DWT->CYCCNTは`wait()`/`delay()`が既に有効化しているが、単体では96MHz時に約45秒でオーバーフローするため、SysTickを1msティックに設定してカウントを32bit ms全体（~49日、本家Arduino相当）まで拡張
+- `arduino_main.cpp`（`cores/arduino/`・`arduino_layer/`の両方）に `SysTick_Handler()` をオーバーライドして実装、`millis()`/`micros()`は初回呼び出し時に遅延初期化
+- 実機バグ: 初回`micros()`呼び出し時、SysTickの初回ティックがまだ発火していないと`ms_tick_dwt`基準値が0のままで、起動からの生DWTカウントがそのまま返っていた（`while(!Serial)`待ち時間が丸ごと出るなど）。`millis_init()`でDWT有効化直後に基準値を明示的にスナップショットするよう修正（`ddb3714`）
 
-### 未追跡（未コミット）の作業ツリー内容
-- `examples/tests/` 配下に以下4つの外部ライブラリが独立git repoとして手元clone状態で存在（サブモジュール化はされていない、`.gitmodules`なし）。動作テスト目的とみられ、コミットするかどうか要判断：
-  - `I2C_device_Arduino`, `LCDDriver_NXP_Arduino`, `LEDDriver_NXP_Arduino`, `TempSensor_NXP_Arduino`（いずれも `github.com/teddokano/...`）
+### tone() / noTone() 実装（CTIMER0、`7bb5615` + `ddb3714`）
+- analogWriteのFlexPWM0はPWM0-5専用ピンに限定されるため、tone()は任意のデジタルピンに対応する必要があり、未使用だったCTIMER0（このMCUに3系統ある）のMatch割り込みでGPIOをソフトウェアトグルする方式で実装
+- 依存ドライバ `fsl_ctimer.c/h` を別プロジェクト(`IchigoJamMcx_GPIO`)から移植。コピー元のSDKバージョンが新しく`MSDK_REG_SECURE_ADDR`マクロ未定義エラーが出たため、非TrustZoneビルドではno-opになるフォールバック定義を追加
+- 実機バグ1: CTIMER0のクロックmuxが未アタッチで`CLOCK_GetCTimerClkFreq()`が0を返し、match値がオーバーフローして割り込みが一切発火しなかった → `CLOCK_AttachClk(kFRO12M_to_CTIMER0)`を追加
+- 実機バグ2: `CTIMER_StopTimer()`はカウンタ値をリセットしないため、周波数を下げて次のtone()を呼ぶとカウンタが新しいmatch値に到達するまで（最大数分）止まったままになる → `CTIMER_StartTimer()`前に`CTIMER_Reset()`を追加
+
+### 重大バグ: I3C使用時のBusFault（`ddb3714`）
+`I2C(sda, scl, no_hw=true)` — I3Cのコンストラクタが委譲するベースクラスコンストラクタ — は `if (no_hw) return;` でハードウェア初期化を完全にスキップするため、`I2C::unit_base` が未初期化のまま残る。I3C自身の `frequency(uint32_t,uint32_t,uint32_t)` はシグネチャが異なるため `I2C::frequency(uint32_t)` を**オーバーライドではなく隠蔽**するだけで、`TwoWire::begin()`内の汎用的な `i2c->frequency(baudrate)` 呼び出しは（`i2c`がI3Cインスタンスでも）`I2C::frequency(uint32_t)`にディスパッチされ、未初期化の`unit_base`経由でBusFaultを起こしていた。
+- 発覚経緯: `test_combined_peripherals.ino`でI3C・millis・ADC・PWM・toneを同時使用するスケッチが特定の組み合わせ（I3C + tone）でのみ無応答になる不具合を、フォールトハンドラ（`HardFault_Handler`等）を仕込んでCFSR/BFARレジスタを直接UART経由でダンプして特定（`I3C_ENABLE=1, TONE_ENABLE=1`のみで再現、BFAR=0x0000000F付近＝ほぼNULLポインタ経由のアクセス）
+- 修正: `TwoWire::begin()`でI3Cインスタンスの場合は`i3c->frequency(baudrate, 0, 0)`をI3C自身の3引数オーバーロードとして直接呼ぶよう変更
+- 実機の`test_combined_peripherals.ino`で全機能同時動作を確認済み
+
+### その他の修正
+- **`-lm`リンク漏れ**（`ddb3714`）: `platform.txt`のリンクレシピに`libm`が含まれておらず、`ceilf`/`floorf`等の標準数学関数を使うライブラリが必ずリンクエラーになっていた。`-lc -lm -lgcc`に修正
+- **ビルドツールチェーンの不一致**: ここまでの`.a`再ビルドはローカルのARM公式配布ツールチェーンを使っていたが、実際にエンドユーザーへ配布されるのはxPack版14.2.1-1.1。xPack版（`~/.xpacktools/`に展開、チェックサム一致確認済み）でクリーンリビルドし直し、全サンプルの回帰・実機動作を再確認済み
+- **README.md**（`d99973f`）: API対応表でanalogRead/analogWrite/millis/micros/tone/noToneを✅に更新
+- **`examples/tests/`の扱い**（`0d2daf9`）: 4つの外部ライブラリ（`I2C_device_Arduino`, `LCDDriver_NXP_Arduino`, `LEDDriver_NXP_Arduino`, `TempSensor_NXP_Arduino`、いずれも`github.com/teddokano/...`の独立リポジトリ）を`.gitignore`に追加し、このリポジトリの管理対象外に
 
 ### 未対応
-- `package_nxp_mcx_index.json` のバージョンはまだ `0.1.8` のまま。v0.1.9として正式リリースするにはバージョン番号更新・checksum更新・`main`へのマージが必要
+- `package_nxp_mcx_index.json` のバージョンはまだ `0.1.8` のまま。v0.2.0として正式リリースするにはバージョン番号更新・checksum更新・`main`へのマージが必要
 
 ---
 
-## 動作確認済み（v0.1.5時点、以降未更新）
+## 動作確認済み
 
-| API | macOS | Windows |
+| API | 状態 | 備考 |
 |---|---|---|
-| GPIO / Lチカ | ✅ | ✅ |
-| Serial | ✅ | ✅ |
-| Wire (I2C) | ✅ | ✅ |
-| SPI | ✅ | ✅ |
-| attachInterrupt | ✅ | ✅ |
-| ボードマネージャーインストール | ✅ | ✅ |
+| GPIO / digitalWrite / digitalRead | ✅ | |
+| Serial | ✅ | |
+| Wire (I2C) | ✅ | |
+| Wire1 (I3C, I2Cモード) | ✅ | オンボードP3T1755で確認、重大バグ修正済み |
+| SPI | ✅ | |
+| attachInterrupt | ✅ | |
+| analogRead | ✅ | LPADC, A0-A3 |
+| analogWrite (PWM) | ✅ | FlexPWM0, PWM0-PWM5のみ |
+| millis / micros | ✅ | SysTick(1ms) + DWT |
+| tone / noTone | ✅ | CTIMER0, 任意のデジタルピン |
+| 上記全機能の同時使用 | ✅ | `test_combined_peripherals.ino`で確認 |
+| ボードマネージャーインストール | ✅ | v0.1.5時点、以降未再確認 |
+
+（v0.1.5時点ではWindowsでも確認していたが、v0.2.0作業分は今回すべてmacOS実機で確認）
 
 ---
 
@@ -127,7 +144,8 @@ xPack checksums（正しい値）：
 - **リポジトリパス**: `~/dev/mcx-arduino-core`
 - **MCUXpressoプロジェクト**: `~/dev/mcx-arduino-core/MCUXpresso_project/_r01lib_frdm_mcxa153/`
 - **ビルド済み.a**: `~/dev/mcx-arduino-core/MCUXpresso_project/_r01lib_frdm_mcxa153/Debug/lib_r01lib_frdm_mcxa153.a`
-- **Arduino15インストール済みパス**: `~/Library/Arduino15/packages/nxp/hardware/mcx/0.1.5/`
+- **xPackツールチェーン**: `~/.xpacktools/xpack-arm-none-eabi-gcc-14.2.1-1.1/`（`package_nxp_mcx_index.json`記載のものと同一バイナリ、チェックサム確認済み）
+- **ローカルArduino IDE連携**: `~/Library/Arduino15/packages/nxp/hardware/mcx/0.1.9-dev` をこのリポジトリの`hardware/nxp/mcx/`へのシンボリックリンクとして設定済み（編集が即座に反映される）。ツールチェーンも`~/.xpacktools/`への symlink
 
 ## GitHub Actions
 - **Workflow**: `.github/workflows/update_package_index.yml`
@@ -136,9 +154,6 @@ xPack checksums（正しい値）：
 ---
 
 ## 残りのPendingタスク
-1. analogRead/analogWrite実装のコミット、PWM0-PWM5が実際にどのコネクタ/ピンに出ているか確認
-2. v0.1.9リリース作業：`package_nxp_mcx_index.json` のバージョン/checksum更新、`prepare0.1.9` → `main` マージ
-3. `examples/tests/` 配下の未追跡外部ライブラリ4件の扱い決定（コミット対象外にする/サブモジュール化する等）
-4. マルチボード対応（MCXN947, MCXA156, MCXN236）
-5. `millis` / `micros` 実装
-6. IchigoJam-firm GPIO/PWMサポート（FRDM-MCXA153）
+1. v0.2.0リリース作業：`package_nxp_mcx_index.json` のバージョン/checksum更新、`prepare0.1.9` → `main` マージ
+2. マルチボード対応（MCXN947, MCXA156, MCXN236）
+3. IchigoJam-firm GPIO/PWMサポート（FRDM-MCXA153）
