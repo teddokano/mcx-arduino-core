@@ -14,15 +14,11 @@ See [CHANGELOG.md](CHANGELOG.md) for release history.
 | FRDM-MCXN947 | MCXN947 (Cortex-M33) | 🔜 |
 | FRDM-MCXN236 | MCXN236 (Cortex-M33) | 🔜 |
 
-## Relationship to ArduinoCore-zephyr
-
-Arduino's own [ArduinoCore-zephyr](https://github.com/arduino/ArduinoCore-zephyr) project already brings official Arduino support to some NXP MCX boards, including FRDM-MCXN947 — but not FRDM-MCXA153, and not by oversight.
-
-ArduinoCore-zephyr flashes a Zephyr-based "loader" once, then loads each sketch on top of it at runtime as a Zephyr **LLEXT** (Loadable Extension), rather than building one self-contained binary. That architecture keeps a Zephyr kernel, an LLEXT runtime, and symbol tables resident in RAM, plus a buffer to hold the incoming sketch during upload — the loader's source defines that buffer as `SKETCH_RAM_BUFFER_LEN 131072` (128KB). FRDM-MCXA153 has only **24KB of total RAM**, so that single buffer alone is over 5x the chip's entire RAM. FRDM-MCXN947, with far more RAM to spare, fits this architecture comfortably.
-
-mcx-arduino-core takes the opposite approach: each sketch is statically linked into one monolithic binary against a prebuilt r01lib library — no loader, no dynamic linking, nothing LLEXT-shaped resident in RAM. That's what lets it fit inside FRDM-MCXA153's actual 24KB RAM / 128KB flash budget (the same figures reported by this board's own build output).
-
-(Zephyr RTOS itself runs fine on FRDM-MCXA153 — LinkServer is even its default flash runner in mainline Zephyr. It's specifically the LLEXT-based Arduino layer that doesn't fit, not Zephyr as a whole.)
+> **Note**: mcx-arduino-core is an independent, community project and is not
+> part of or affiliated with Arduino's official
+> [ArduinoCore-zephyr](https://github.com/arduino/ArduinoCore-zephyr). See
+> [Relationship to ArduinoCore-zephyr](#relationship-to-arduinocore-zephyr)
+> at the end of this document for why this project exists alongside it.
 
 ## Requirements
 
@@ -172,3 +168,13 @@ Other named pins/peripherals:
 | `pulseIn` / `pulseInLong` | ✅ | |
 | `random` / `randomSeed` | ✅ | |
 | Math constants / compat macros | ✅ | `PI`, `min`/`max`, `bitRead`/`bitWrite`, `map`, etc. (UNO R3/R4 compatible) |
+
+## Relationship to ArduinoCore-zephyr
+
+Arduino's own [ArduinoCore-zephyr](https://github.com/arduino/ArduinoCore-zephyr) project already brings official Arduino support to some NXP MCX boards, including FRDM-MCXN947 — but not FRDM-MCXA153, and not by oversight. This project (mcx-arduino-core) is independent and unaffiliated with Arduino; it exists to cover FRDM-MCXA153, which ArduinoCore-zephyr's architecture can't fit on.
+
+ArduinoCore-zephyr flashes a Zephyr-based "loader" once, then loads each sketch on top of it at runtime as a Zephyr **LLEXT** (Loadable Extension), rather than building one self-contained binary. That architecture keeps a Zephyr kernel, an LLEXT runtime, and symbol tables resident in RAM, plus a buffer to hold the incoming sketch during upload — the loader's source defines that buffer as `SKETCH_RAM_BUFFER_LEN 131072` (128KB). FRDM-MCXA153 has only **24KB of total RAM**, so that single buffer alone is over 5x the chip's entire RAM. FRDM-MCXN947, with far more RAM to spare, fits this architecture comfortably.
+
+mcx-arduino-core takes the opposite approach: each sketch is statically linked into one monolithic binary against a prebuilt r01lib library — no loader, no dynamic linking, nothing LLEXT-shaped resident in RAM. That's what lets it fit inside FRDM-MCXA153's actual 24KB RAM / 128KB flash budget (the same figures reported by this board's own build output).
+
+(Zephyr RTOS itself runs fine on FRDM-MCXA153 — LinkServer is even its default flash runner in mainline Zephyr. It's specifically the LLEXT-based Arduino layer that doesn't fit, not Zephyr as a whole.)
