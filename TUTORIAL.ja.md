@@ -7,11 +7,35 @@ English version → [TUTORIAL.md](TUTORIAL.md)
 ## 用意するもの
 
 - [FRDM-MCXA153](https://www.nxp.com/design/design-center/development-boards-and-designs/FRDM-MCXA153)ボード
-- [Arduino IDE 2.x](https://www.arduino.cc/en/software)
-- [NXP LinkServer](https://www.nxp.com/linkserver)（書き込みに使用）
-- USBケーブル
+- Arduino IDE 2.x
+- NXP LinkServer
+- USB-Cケーブル
 
 このチュートリアルのほとんどの内容は外部部品なしで試せます。ボード上にLED・ボタン・温度センサーが搭載されているためです。
+
+### Arduino IDEの入手
+
+**[arduino.cc/en/software](https://www.arduino.cc/en/software)**からお使いのOS用インストーラをダウンロードしてインストールしてください。**2.x系**の最新版であれば問題ありません（本ガイドは旧版の1.8.x系IDEには対応していません）。
+
+### NXP LinkServerのインストール
+
+このボードへの書き込みにはArduino標準の書き込みツールではなく**NXP LinkServer**を使用するため、書き込みを試す*前に*別途インストールしておく必要があります。
+
+👉 ダウンロード: [nxp.com/linkserver](https://www.nxp.com/linkserver)
+
+| OS | インストーラ |
+|----|-----------|
+| macOS | `.pkg`ファイル、ダブルクリックでインストール |
+| Windows | `.exe`インストーラ |
+| Linux | `.deb.bin`ファイル |
+
+インストール後は、ボードパッケージの書き込みスクリプトが自動的にLinkServerを検出します — パス設定は不要です。
+
+### どちらのUSBコネクタを使うか
+
+このボードには**2つ**のUSB-Cコネクタがあり、間違った方に挿すとIDEに何も表示されません。**"MCU-Link USB"**とシルク印刷されたコネクタ（**J15**）を使ってください。このポートがオンボードのデバッグプローブで、LinkServerでの書き込み・ボードへの給電・`Serial`（USB経由のシリアルポート）の出力先すべてを兼ねています。
+
+もう一方の**"MCU USB"**（**J8**）というコネクタは使わないでください。こちらはMCXA153自体のUSBペリフェラルに直結されており、このチュートリアルではこのボードパッケージ側で使用しません。
 
 ## 1. ボードパッケージのインストール
 
@@ -22,9 +46,9 @@ English version → [TUTORIAL.md](TUTORIAL.md)
    ```
 3. **Tools → Board → Boards Manager**で`NXP MCX`を検索し**Install**
 4. **Tools → Board**で**FRDM-MCXA153 (NXP Cortex-M33)**を選択
-5. ボードをUSB接続し、**Tools → Port**でポートを選択
+5. ボードを**MCU-Link USB（J15）**コネクタに接続し、**Tools → Port**でポートを選択
 
-LinkServerのセットアップなど詳細は[README.md](README.md#installation)を参照してください。
+詳細は[README.md](README.md#installation)を参照してください。
 
 ## 2. 最初のスケッチ: オンボードLEDを点滅させる
 

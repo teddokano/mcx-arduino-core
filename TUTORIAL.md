@@ -10,12 +10,47 @@ reference table and [CHANGELOG.md](CHANGELOG.md) for version history.
 ## What you need
 
 - An [FRDM-MCXA153](https://www.nxp.com/design/design-center/development-boards-and-designs/FRDM-MCXA153) board
-- [Arduino IDE 2.x](https://www.arduino.cc/en/software)
-- [NXP LinkServer](https://www.nxp.com/linkserver) installed (used for uploading)
-- A USB cable
+- Arduino IDE 2.x
+- NXP LinkServer
+- A USB-C cable
 
 No external components are required for most of this tutorial — the board
 has on-board LEDs, buttons, and a temperature sensor.
+
+### Get the Arduino IDE
+
+Download the installer for your OS from
+**[arduino.cc/en/software](https://www.arduino.cc/en/software)** and install
+it. Any recent Arduino IDE **2.x** works (this guide doesn't cover the
+legacy 1.8.x IDE).
+
+### Install NXP LinkServer
+
+This board is programmed with **NXP LinkServer**, not Arduino's own upload
+tool, so it needs to be installed separately *before* you upload anything.
+
+👉 Download: [nxp.com/linkserver](https://www.nxp.com/linkserver)
+
+| OS | Installer |
+|----|-----------|
+| macOS | `.pkg` file, double-click to install |
+| Windows | `.exe` installer |
+| Linux | `.deb.bin` file |
+
+Once installed, the board package's upload script finds LinkServer
+automatically — no path configuration needed.
+
+### Which USB connector to use
+
+The board has **two** USB-C connectors — plugging into the wrong one means
+nothing will show up in the IDE. Use the one silkscreened **"MCU-Link
+USB"** (connector **J15**). That port is the on-board debug probe: it's what
+LinkServer uploads through, it powers the board, and it's what `Serial`
+(the USB-bridged serial port) comes out of.
+
+Don't use the other connector, silkscreened **"MCU USB"** (**J8**) — that one
+wires directly to the MCXA153's own USB peripheral, which this board
+package doesn't use for anything in this tutorial.
 
 ## 1. Install the board package
 
@@ -26,9 +61,10 @@ has on-board LEDs, buttons, and a temperature sensor.
    ```
 3. **Tools → Board → Boards Manager**, search `NXP MCX`, click **Install**
 4. **Tools → Board**, select **FRDM-MCXA153 (NXP Cortex-M33)**
-5. Plug in the board and select its port under **Tools → Port**
+5. Plug the board into the **MCU-Link USB (J15)** connector and select its
+   port under **Tools → Port**
 
-Full details (including LinkServer setup) are in [README.md](README.md#installation).
+Full details are in [README.md](README.md#installation).
 
 ## 2. Your first sketch: blink the on-board LED
 
