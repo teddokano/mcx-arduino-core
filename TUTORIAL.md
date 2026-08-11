@@ -1,0 +1,331 @@
+# Getting Started with mcx-arduino-core (v0.2.0)
+
+A hands-on walkthrough of the Arduino API on the NXP FRDM-MCXA153 board, from
+installation to every peripheral supported in v0.2.0. Each section is a
+complete, runnable sketch. See [README.md](README.md) for the full API
+reference table and [CHANGELOG.md](CHANGELOG.md) for version history.
+
+日本語版はこちら → [TUTORIAL.ja.md](TUTORIAL.ja.md)
+
+## What you need
+
+- An [FRDM-MCXA153](https://www.nxp.com/design/design-center/development-boards-and-designs/FRDM-MCXA153) board
+- [Arduino IDE 2.x](https://www.arduino.cc/en/software)
+- [NXP LinkServer](https://www.nxp.com/linkserver) installed (used for uploading)
+- A USB cable
+
+No external components are required for most of this tutorial — the board
+has on-board LEDs, buttons, and a temperature sensor.
+
+## 1. Install the board package
+
+1. Open Arduino IDE → **File → Preferences**
+2. Add this URL under **Additional boards manager URLs**:
+   ```
+   https://raw.githubusercontent.com/teddokano/mcx-arduino-core/main/package_nxp_mcx_index.json
+   ```
+3. **Tools → Board → Boards Manager**, search `NXP MCX`, click **Install**
+4. **Tools → Board**, select **FRDM-MCXA153 (NXP Cortex-M33)**
+5. Plug in the board and select its port under **Tools → Port**
+
+Full details (including LinkServer setup) are in [README.md](README.md#installation).
+
+## 2. Your first sketch: blink the on-board LED
+
+The board has three on-board LEDs (`RED`, `GREEN`, `BLUE`) wired **active-low**
+— `LOW` turns a LED on, `HIGH` turns it off. `LED_BUILTIN` is aliased to
+`GREEN`.
+
+```cpp
+#include <Arduino.h>
+
+void setup() {
+  pinMode(LED_BUILTIN, OUTPUT);
+}
+
+void loop() {
+  digitalWrite(LED_BUILTIN, LOW);   // on
+  delay(500);
+  digitalWrite(LED_BUILTIN, HIGH);  // off
+  delay(500);
+}
+```
+
+Click **Upload**. The green LED should blink once per second.
+
+## 3. Serial output
+
+`Serial` is the USB-bridged serial port. `while (!Serial);` in `setup()`
+waits for the Serial Monitor to connect before printing, so you don't miss
+the first lines.
+
+```cpp
+#include <Arduino.h>
+
+void setup() {
+  Serial.begin(115200);
+  while (!Serial)
+    ;
+
+  Serial.println("Hello, world!");
+}
+
+void loop() {
+}
+```
+
+Open **Tools → Serial Monitor** (115200 baud) after uploading.
+
+## 4. Digital input and interrupts
+
+The board has two on-board buttons, `SW2` and `SW3`, wired active-low with
+pull-ups needed (`INPUT_PULLUP`). This example toggles the blue LED on a
+button press using `attachInterrupt` instead of polling:
+
+```cpp
+#include <Arduino.h>
+
+volatile bool sw_pressed = false;
+bool led_state = true;
+
+void callback() {
+  sw_pressed = true;
+}
+
+void setup() {
+  Serial.begin(115200);
+
+  pinMode(BLUE, OUTPUT);
+  pinMode(SW2, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(SW2), callback, FALLING);
+
+  digitalWrite(BLUE, led_state);
+}
+
+void loop() {
+  if (sw_pressed) {
+    sw_pressed = false;
+    led_state = !led_state;
+    digitalWrite(BLUE, led_state);
+    Serial.println("SW2 pressed");
+    delay(100);  // debounce
+  }
+}
+```
+
+## 5. Analog input: `analogRead`
+
+`analogRead` reads pins `A0`-`A3` through the on-chip LPADC and returns a
+10-bit value (0-1023), same range as classic Arduino boards. (`A4`/`A5` exist
+as pin names but aren't ADC-capable on this board — see the
+[pin mapping table](README.md#pin-mapping-frdm-mcxa153).)
+
+Connect a potentiometer (or any 0-3.3V analog signal) to `A0`, or just try it
+unconnected to see floating-pin noise:
+
+```cpp
+#include <Arduino.h>
+
+void setup() {
+  Serial.begin(115200);
+  while (!Serial)
+    ;
+}
+
+void loop() {
+  int value = analogRead(A0);
+  Serial.print("A0 = ");
+  Serial.println(value);
+  delay(200);
+}
+```
+
+## 6. PWM output: `analogWrite`
+
+PWM is only available on the dedicated pins `PWM0`-`PWM5` (FlexPWM0), not on
+every digital pin. The period is fixed at 1kHz; `analogWrite` only controls
+duty cycle (0-255), same as classic Arduino. This example mirrors the ADC
+reading from step 5 onto a PWM output — connect an LED (with a resistor) or
+scope to `PWM0` to see it change:
+
+```cpp
+#include <Arduino.h>
+
+void setup() {
+  Serial.begin(115200);
+}
+
+void loop() {
+  int value = analogRead(A0);
+  analogWrite(PWM0, value >> 2);  // 10bit -> 8bit
+  delay(200);
+}
+```
+
+## 7. Timing: `millis` / `micros`
+
+Standard Arduino timing functions, backed by SysTick (1ms tick) + the DWT
+cycle counter. `millis()` doesn't roll over for about 49 days, just like a
+classic Arduino.
+
+```cpp
+#include <Arduino.h>
+
+void setup() {
+  Serial.begin(115200);
+  while (!Serial)
+    ;
+}
+
+void loop() {
+  Serial.print("millis = ");
+  Serial.print(millis());
+  Serial.print("  micros = ");
+  Serial.println(micros());
+  delay(500);
+}
+```
+
+## 8. Sound: `tone` / `noTone`
+
+`tone()` works on **any** digital pin (via CTIMER0 software-toggling the
+pin), unlike `analogWrite` which is limited to `PWM0`-`PWM5`. Only one tone
+can play at a time. Connect a piezo buzzer between `D13` and GND:
+
+```cpp
+#include <Arduino.h>
+
+#define BUZZER_PIN D13
+
+void setup() {
+}
+
+void loop() {
+  tone(BUZZER_PIN, 440, 200);  // A4, 200ms
+  delay(300);
+  noTone(BUZZER_PIN);
+  delay(700);
+}
+```
+
+See [`examples/Arduino_compatible_API/test_tone`](examples/Arduino_compatible_API/test_tone)
+for a full melody example.
+
+## 9. I2C: `Wire` and the on-board sensor (`Wire1`)
+
+The board has an on-board P3T1755 temperature sensor wired to the MCU's I3C
+peripheral — but `Wire1` drives it in **I2C-compatibility mode**, so it's a
+normal `TwoWire` object talking plain I2C (no I3C-specific features like
+dynamic addressing or IBI are used). No wiring needed for this one:
+
+```cpp
+#include <Wire.h>
+#include <P3T1755.h>   // install via Library Manager, or see the example below
+
+P3T1755 sensor(Wire1, 0x48);
+
+void setup() {
+  Serial.begin(115200);
+  while (!Serial)
+    ;
+
+  Wire1.begin();
+}
+
+void loop() {
+  Serial.println(sensor.temp(), 4);
+  delay(1000);
+}
+```
+
+Full sketch:
+[`examples/Arduino_compatible_API/onboard_temperature_sensor`](examples/Arduino_compatible_API/onboard_temperature_sensor).
+
+For an *external* I2C device instead, use the regular `Wire` object
+(`SDA`/`SCL` on `D18`/`D19`) with the standard
+`Wire.begin()` / `beginTransmission()` / `write()` / `endTransmission()` /
+`requestFrom()` / `read()` calls, exactly as on a classic Arduino.
+
+## 10. SPI
+
+Standard `SPISettings`-based API on pins `D10`(CS)/`D11`(MOSI)/`D12`(MISO)/`D13`(SCLK):
+
+```cpp
+#include <Arduino.h>
+
+void setup() {
+  Serial.begin(115200);
+  SPI.begin();
+  pinMode(SS, OUTPUT);
+}
+
+void loop() {
+  uint8_t data[] = { 0x00, 0x01, 0x02, 0x03 };
+
+  SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
+  digitalWrite(SS, LOW);
+  SPI.transfer(data, sizeof(data));
+  digitalWrite(SS, HIGH);
+  SPI.endTransaction();
+
+  delay(1000);
+}
+```
+
+This needs an actual SPI peripheral (or a loopback wire from MOSI to MISO)
+to see any response — see
+[`examples/Arduino_compatible_API/test_SPI_loopback_with_a_wire`](examples/Arduino_compatible_API/test_SPI_loopback_with_a_wire).
+
+## 11. A second serial port: `Serial1`
+
+`Serial` is bridged over USB. `Serial1` is a second, independent hardware
+UART on pins `D0`(RX)/`D1`(TX), for talking to external serial devices
+without tying up the USB connection:
+
+```cpp
+#include <Arduino.h>
+
+void setup() {
+  Serial1.begin(9600);
+}
+
+void loop() {
+  Serial1.println("hello from Serial1");
+  delay(1000);
+}
+```
+
+To test it stand-alone with no other hardware, jumper `D1` to `D0` and read
+back what you sent — see
+[`examples/Arduino_compatible_API/test_Serial1`](examples/Arduino_compatible_API/test_Serial1).
+
+## 12. Bit-banged helpers: `shiftOut` / `shiftIn` / `pulseIn`
+
+Same signatures as classic Arduino, implemented in software on top of
+`digitalWrite`/`digitalRead`/`micros()`:
+
+```cpp
+shiftOut(dataPin, clockPin, MSBFIRST, myByte);
+uint8_t b = shiftIn(dataPin, clockPin, MSBFIRST);
+unsigned long width = pulseIn(pin, HIGH);
+```
+
+`random()` / `randomSeed()` are also available, matching the classic Arduino
+signatures. See
+[`examples/Arduino_compatible_API/test_shiftOut_pulseIn_random`](examples/Arduino_compatible_API/test_shiftOut_pulseIn_random).
+
+## 13. UNO R3/R4 compatibility
+
+Sketches written for an Arduino UNO that use these will compile as-is, no
+extra `#include`s needed: `PI`, `HALF_PI`, `TWO_PI`, `DEG_TO_RAD`,
+`RAD_TO_DEG`, `radians()`, `degrees()`, `min()`/`max()`, `abs()`,
+`constrain()`, `sq()`, `map()`, `lowByte()`/`highByte()`, `bitRead()` /
+`bitSet()` / `bitClear()` / `bitToggle()` / `bitWrite()` / `bit()`,
+`interrupts()` / `noInterrupts()`, `boolean`/`byte`/`word`, `LSBFIRST`/`MSBFIRST`.
+
+## Where to go next
+
+- [README.md](README.md) — full API support table and pin mapping
+- [`examples/Arduino_compatible_API/`](examples/Arduino_compatible_API) — one focused sketch per feature
+- [`examples/Arduino_compatible_API/test_combined_peripherals`](examples/Arduino_compatible_API/test_combined_peripherals) — everything running at once
+- [CHANGELOG.md](CHANGELOG.md) — what changed between versions

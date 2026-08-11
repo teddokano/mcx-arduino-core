@@ -2,6 +2,7 @@
 
 Arduino board support package for NXP FRDM MCX Series boards.
 
+New here? Start with the [tutorial](TUTORIAL.md) ([日本語版](TUTORIAL.ja.md)).
 See [CHANGELOG.md](CHANGELOG.md) for release history.
 
 ## Supported Boards
