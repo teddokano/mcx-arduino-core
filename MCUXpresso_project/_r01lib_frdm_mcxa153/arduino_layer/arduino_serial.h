@@ -37,6 +37,8 @@ public:
 	void	print( unsigned int n, int base = DEC );
 	void	print( long n, int base = DEC );
 	void	print( unsigned long n, int base = DEC );
+	void	print( long long n, int base = DEC );
+	void	print( unsigned long long n, int base = DEC );
 	void	print( double n, int digits = 2 );
 	void	print( char c );
 	void	print( const std::string& s );
@@ -48,6 +50,8 @@ public:
 	void	println( unsigned int n, int base = DEC );
 	void	println( long n, int base = DEC );
 	void	println( unsigned long n, int base = DEC );
+	void	println( long long n, int base = DEC );
+	void	println( unsigned long long n, int base = DEC );
 	void	println( double n, int digits = 2 );
 	void	println( char c );
 	void	println( const std::string& s );
@@ -62,6 +66,8 @@ public:
 private:
 	void	_print_num( long n, int base );
 	void	_print_unum( unsigned long n, int base );
+	void	_print_num64( long long n, int base );
+	void	_print_unum64( unsigned long long n, int base );
 	void	_print_double( double val, int digits );
 };
 

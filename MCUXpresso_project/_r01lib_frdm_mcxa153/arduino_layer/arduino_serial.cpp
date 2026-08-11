@@ -54,10 +54,40 @@ void SerialClass::_print_unum( unsigned long n, int base )
 	print( buf );
 }
 
-void SerialClass::print( int n, int base )           { _print_num( n, base ); }
-void SerialClass::print( unsigned int n, int base )  { _print_unum( n, base ); }
-void SerialClass::print( long n, int base )          { _print_num( n, base ); }
-void SerialClass::print( unsigned long n, int base ) { _print_unum( n, base ); }
+void SerialClass::_print_num64( long long n, int base )
+{
+	char buf[ 66 ];
+	if ( base == DEC )
+		snprintf( buf, sizeof(buf), "%lld", n );
+	else if ( base == HEX )
+		snprintf( buf, sizeof(buf), "%llx", (unsigned long long)n );
+	else if ( base == OCT )
+		snprintf( buf, sizeof(buf), "%llo", (unsigned long long)n );
+	else
+		snprintf( buf, sizeof(buf), "%lld", n );
+	print( buf );
+}
+
+void SerialClass::_print_unum64( unsigned long long n, int base )
+{
+	char buf[ 66 ];
+	if ( base == DEC )
+		snprintf( buf, sizeof(buf), "%llu", n );
+	else if ( base == HEX )
+		snprintf( buf, sizeof(buf), "%llx", n );
+	else if ( base == OCT )
+		snprintf( buf, sizeof(buf), "%llo", n );
+	else
+		snprintf( buf, sizeof(buf), "%llu", n );
+	print( buf );
+}
+
+void SerialClass::print( int n, int base )                { _print_num( n, base ); }
+void SerialClass::print( unsigned int n, int base )       { _print_unum( n, base ); }
+void SerialClass::print( long n, int base )               { _print_num( n, base ); }
+void SerialClass::print( unsigned long n, int base )      { _print_unum( n, base ); }
+void SerialClass::print( long long n, int base )          { _print_num64( n, base ); }
+void SerialClass::print( unsigned long long n, int base ) { _print_unum64( n, base ); }
 
 void SerialClass::print( double n, int digits )
 {
@@ -79,6 +109,8 @@ void SerialClass::println( int n, int base )             { print(n, base); print
 void SerialClass::println( unsigned int n, int base )    { print(n, base); println(); }
 void SerialClass::println( long n, int base )            { print(n, base); println(); }
 void SerialClass::println( unsigned long n, int base )   { print(n, base); println(); }
+void SerialClass::println( long long n, int base )       { print(n, base); println(); }
+void SerialClass::println( unsigned long long n, int base ) { print(n, base); println(); }
 void SerialClass::println( double n, int digits )        { print(n, digits); println(); }
 void SerialClass::println( const std::string& s )        { print(s); println(); }
 void SerialClass::println( std::string_view s )          { print(s); println(); }
