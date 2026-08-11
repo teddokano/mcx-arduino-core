@@ -159,6 +159,11 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 - **判明した既知の問題**: タグpushで自動起動する`update_package_index.yml`は、`actions/checkout`がタグをdetached HEADでチェックアウトするため`git push`が失敗する（exit code 128）。過去のv0.1.6〜v0.1.8のタグpush時も同様に全て失敗しており、実際のchecksum確定は毎回リリース後に手動で`workflow_dispatch`を`main`ブランチに対して実行することで行われていたと判明（`gh run list`で過去の成功/失敗パターンを確認して特定）。v0.2.0でも同じ手順（タグpush→失敗を確認→`gh workflow run update_package_index.yml --ref main`で手動実行）でchecksum/sizeを確定（`f393132`、SHA-256:`4beef79ec0def9aff3c9d878336b650ffc758cf9ce8ab1a0b6c3a8f5571f96f7`、ローカルで計算した値と一致確認済み）
 - 副次的に判明した軽微な問題（未対応・低優先度）: workflowの`Post Checkout`クリーンアップ時に警告が出る（`fatal: No url found for submodule path 'examples/tests/GPIO_NXP_Arduino' in .gitmodules`）。原因はリポジトリのツリーに`examples/tests/GPIO_NXP_Arduino`へのgitlink（`git ls-files --stage`で`160000`エントリ、コミット`db3b01d`由来）が残っているのに`.gitmodules`ファイル自体が存在しないこと（外部クローンを誤ってそのまま`git add`した名残と推測）。ジョブ自体は成功扱いで実害はないが、いずれ`git rm --cached examples/tests/GPIO_NXP_Arduino`等で整理してもよい
 
+### チュートリアル新規作成（`837d202`）
+- `TUTORIAL.md`（英語）・`TUTORIAL.ja.md`（日本語）を新規作成。インストール→オンボードLED点滅→Serial→デジタル入力/割り込み→analogRead→analogWrite→millis/micros→tone/noTone→Wire1（オンボードP3T1755）→SPI→Serial1→shiftOut/shiftIn/pulseIn/random→UNO R3/R4互換マクロ、の順に、それぞれ単体で書き込んで動くスケッチとして構成
+- 新規に書き起こしたスニペット（`LED_BUILTIN`点滅、`SPI.endTransaction()`込みの例、`Serial1`単体例）は`arduino-cli compile`で実際にコンパイル確認してから掲載。既存の`examples/`のスケッチをベースにしたセクションはそのまま流用
+- README.mdの冒頭からリンク（英語版をメイン、日本語版へのリンクも併記）
+
 ---
 
 ## 動作確認済み
