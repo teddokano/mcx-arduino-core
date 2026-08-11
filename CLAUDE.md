@@ -193,7 +193,7 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 - **MCUXpressoプロジェクト**: `~/dev/mcx-arduino-core/MCUXpresso_project/_r01lib_frdm_mcxa153/`
 - **ビルド済み.a**: `~/dev/mcx-arduino-core/MCUXpresso_project/_r01lib_frdm_mcxa153/Debug/lib_r01lib_frdm_mcxa153.a`
 - **xPackツールチェーン**: `~/.xpacktools/xpack-arm-none-eabi-gcc-14.2.1-1.1/`（`package_nxp_mcx_index.json`記載のものと同一バイナリ、チェックサム確認済み）
-- **ローカルArduino IDE連携**: `~/Library/Arduino15/packages/nxp/hardware/mcx/0.1.9-dev` をこのリポジトリの`hardware/nxp/mcx/`へのシンボリックリンクとして設定済み（編集が即座に反映される）。ツールチェーンも`~/.xpacktools/`への symlink
+- **ローカルArduino IDE連携**: `~/Library/Arduino15/packages/nxp/hardware/mcx/0.2.0-dev`（v0.2.0リリース後に`0.1.9-dev`から改名）をこのリポジトリの`hardware/nxp/mcx/`へのシンボリックリンクとして設定済み（編集が即座に反映される）。ツールチェーンも`~/.xpacktools/`への symlink。`-dev`サフィックスにより、Boards Manager経由でインストールする実リリース版（`0.2.0`）とはディレクトリ名が衝突せず共存可能
 - **注意（Boards Manager経由の実インストール検証時のハマりどころ）**: 上記symlink環境を無効化する際、`~/Library/Arduino15/packages/nxp`を同じ`packages/`直下で別名（例: `nxp.dev-backup`）にリネームしただけでは不十分 — arduino-cliは`packages/*`配下の全ディレクトリ名をpackager IDとして解釈するため、リネーム後も`nxp.dev-backup:mcx`という別パッケージとして「0.1.9-dev installed」表示が残ってしまう（`arduino-cli core list --all`で再現・特定）。無効化する際は`packages/`の外（例: スクラッチパッド等）に完全に退避すること。v0.2.0リリース後、この手順でBoards Manager経由のGitHubからの実インストールを検証済み
 
 ## GitHub Actions
@@ -204,5 +204,6 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 ---
 
 ## 残りのPendingタスク
-1. マルチボード対応（MCXN947, MCXA156, MCXN236）
-2. （低優先度）`examples/tests/GPIO_NXP_Arduino`の不要なgitlinkエントリの整理
+1. Linux対応の実機検証：xPack GCC（Linux x86_64/arm64）のchecksumと`upload.sh`のLinux分岐（`uname`判定、`which LinkServer`／`/usr/local/LinkServer/LinkServer`探索）はコード上は用意済みだが、実機でのBoards Managerインストール・ビルド・書き込みは未検証（macOS/Windows 11のみ確認済み）
+2. マルチボード対応（MCXN947, MCXA156, MCXN236）
+3. （低優先度）`examples/tests/GPIO_NXP_Arduino`の不要なgitlinkエントリの整理
