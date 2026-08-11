@@ -16,6 +16,7 @@ reference table and [CHANGELOG.md](CHANGELOG.md) for version history.
   - [1.4. Which USB connector to use](#14-which-usb-connector-to-use)
   - [1.5. Install the board package](#15-install-the-board-package)
   - [1.6. A quick tour of the Arduino IDE toolbar](#16-a-quick-tour-of-the-arduino-ide-toolbar)
+  - [1.7. Troubleshooting](#17-troubleshooting)
 - [2. Try It Out](#2-try-it-out)
   - [2.1. Your first sketch: blink the on-board LED](#21-your-first-sketch-blink-the-on-board-led)
   - [2.2. Serial output](#22-serial-output)
@@ -38,7 +39,9 @@ reference table and [CHANGELOG.md](CHANGELOG.md) for version history.
 - An [FRDM-MCXA153](https://www.nxp.com/design/design-center/development-boards-and-designs/FRDM-MCXA153) board
 - Arduino IDE 2.x
 - NXP LinkServer
-- A USB-C cable
+- A USB-C **data** cable — not a charge-only one. Many cheap USB-C cables
+  only carry power and no data lines; if the board never shows up under
+  **Tools → Port**, this is the first thing to try swapping
 
 No external components are required for most of this tutorial — the board
 has on-board LEDs, buttons, and a temperature sensor.
@@ -86,6 +89,10 @@ package doesn't use for anything in this tutorial.
    https://raw.githubusercontent.com/teddokano/mcx-arduino-core/main/package_nxp_mcx_index.json
    ```
 3. **Tools → Board → Boards Manager**, search `NXP MCX`, click **Install**
+   — this also downloads the ARM GCC toolchain (a few hundred MB) the
+   first time, which can take several minutes depending on your
+   connection. Watch the progress bar at the bottom of the Boards Manager
+   window; it isn't frozen, just downloading
 4. **Tools → Board**, select **FRDM-MCXA153 (NXP Cortex-M33)**
 5. Plug the board into the **MCU-Link USB (J15)** connector and select its
    port under **Tools → Port**
@@ -111,6 +118,35 @@ Every sketch in this tutorial calls `Serial.begin(...)`, so after clicking
 (bottom-right of the Serial Monitor panel) matches the sketch's
 `Serial.begin()` value (115200 in most examples here) — otherwise you'll see
 garbled text or nothing at all.
+
+### 1.7. Troubleshooting
+
+**Nothing shows up under Tools → Port:**
+- Try a different USB-C cable — make sure it's a data cable, not
+  charge-only (see [1.1](#11-what-you-need))
+- Make sure you're plugged into **MCU-Link USB (J15)**, not **MCU USB
+  (J8)** (see [1.4](#14-which-usb-connector-to-use))
+- Make sure NXP LinkServer is installed (see [1.3](#13-install-nxp-linkserver))
+- Unplug and replug the board, or try a different USB port on your
+  computer
+
+**Upload fails, or the output pane shows a LinkServer error:**
+- Confirm LinkServer is actually installed — the upload script looks for
+  it automatically, but only finds it if it's installed
+- On Windows, check **Device Manager** for a driver problem (a yellow
+  warning icon) on the board's entry
+- Close any other program that might be holding the port open (another
+  Serial Monitor instance, a terminal program, etc.)
+
+**Serial Monitor shows garbled text or nothing at all:**
+- Check the baud rate matches the sketch's `Serial.begin()` value, as
+  described above
+- Make sure the sketch actually finished uploading (watch for "Done
+  uploading" in the output pane) before expecting output
+
+If none of this helps, the [README.md](README.md) has more detail, or open
+an issue on the
+[GitHub repo](https://github.com/teddokano/mcx-arduino-core/issues).
 
 ## 2. Try It Out
 

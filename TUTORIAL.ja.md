@@ -13,6 +13,7 @@ English version → [TUTORIAL.md](TUTORIAL.md)
   - [1.4. どちらのUSBコネクタを使うか](#14-どちらのusbコネクタを使うか)
   - [1.5. ボードパッケージのインストール](#15-ボードパッケージのインストール)
   - [1.6. Arduino IDEツールバーの基本](#16-arduino-ideツールバーの基本)
+  - [1.7. トラブルシューティング](#17-トラブルシューティング)
 - [2. 動作確認](#2-動作確認)
   - [2.1. 最初のスケッチ: オンボードLEDを点滅させる](#21-最初のスケッチ-オンボードledを点滅させる)
   - [2.2. シリアル出力](#22-シリアル出力)
@@ -35,7 +36,7 @@ English version → [TUTORIAL.md](TUTORIAL.md)
 - [FRDM-MCXA153](https://www.nxp.com/design/design-center/development-boards-and-designs/FRDM-MCXA153)ボード
 - Arduino IDE 2.x
 - NXP LinkServer
-- USB-Cケーブル
+- USB-Cの**データ通信対応**ケーブル（充電専用ケーブルは不可）。安価なUSB-Cケーブルには電源線しかなくデータ線が入っていないものが多く、**Tools → Port**にボードが表示されない場合、まずこれを疑って別のケーブルに交換してみてください
 
 このチュートリアルのほとんどの内容は外部部品なしで試せます。ボード上にLED・ボタン・温度センサーが搭載されているためです。
 
@@ -71,6 +72,10 @@ English version → [TUTORIAL.md](TUTORIAL.md)
    https://raw.githubusercontent.com/teddokano/mcx-arduino-core/main/package_nxp_mcx_index.json
    ```
 3. **Tools → Board → Boards Manager**で`NXP MCX`を検索し**Install**
+   — このとき初回はARM GCCツールチェーン（数百MB）も一緒にダウンロードされ、
+   回線速度によっては数分かかります。Boards Managerウィンドウ下部の
+   プログレスバーが進んでいれば、フリーズしているわけではなく
+   ダウンロード中なので待ってください
 4. **Tools → Board**で**FRDM-MCXA153 (NXP Cortex-M33)**を選択
 5. ボードを**MCU-Link USB（J15）**コネクタに接続し、**Tools → Port**でポートを選択
 
@@ -89,6 +94,25 @@ English version → [TUTORIAL.md](TUTORIAL.md)
 コンパイルエラーやアップロードのログは、ウィンドウ下部の黒い出力ペインに表示されます — アップロードに失敗したら、まずここを確認してください。
 
 このチュートリアルの全スケッチは`Serial.begin(...)`を呼んでいるので、**Upload**をクリックした後にシリアルモニタのアイコンを開き、そのボーレート（シリアルモニタパネル右下）がスケッチの`Serial.begin()`の値（本チュートリアルの大半は115200）と一致しているか確認してください — 一致していないと文字化けするか、何も表示されません。
+
+### 1.7. トラブルシューティング
+
+**Tools → Portに何も表示されない場合:**
+- 別のUSB-Cケーブルを試す — データ通信対応のケーブルであることを確認（[1.1](#11-用意するもの)参照）
+- **MCU-Link USB（J15）**に接続しているか確認、**MCU USB（J8）**ではない（[1.4](#14-どちらのusbコネクタを使うか)参照）
+- NXP LinkServerがインストールされているか確認（[1.3](#13-nxp-linkserverのインストール)参照）
+- ボードを抜き差しする、またはPC側の別のUSBポートを試す
+
+**アップロードに失敗する、または出力ペインにLinkServer関連のエラーが出る場合:**
+- LinkServerが実際にインストールされているか確認 — 書き込みスクリプトは自動検出しますが、インストールされていないと見つけられません
+- Windowsでは**デバイスマネージャー**でボードのエントリに黄色い警告アイコン（ドライバの問題）が出ていないか確認
+- ポートを掴んだままの他のプログラム（別のシリアルモニタ、ターミナルソフト等）を閉じる
+
+**シリアルモニタが文字化けする、または何も表示されない場合:**
+- 上記の通り、ボーレートがスケッチの`Serial.begin()`の値と一致しているか確認
+- 出力を期待する前に、スケッチの書き込みが実際に完了している（出力ペインに"Done uploading"が表示される）か確認
+
+これでも解決しない場合は[README.md](README.md)により詳しい情報があるほか、[GitHubリポジトリ](https://github.com/teddokano/mcx-arduino-core/issues)でIssueを立てていただいても構いません。
 
 ## 2. 動作確認
 
