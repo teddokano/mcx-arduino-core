@@ -181,7 +181,7 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 | random / randomSeed | ✅ | |
 | UNO R3/R4互換マクロ・定数一式 | ✅ | コンパイル確認のみ（数値的な動作確認は各マクロの単純さから省略） |
 | 上記全機能の同時使用 | ✅ | `test_combined_peripherals.ino`（Serial1込み）で実機確認済み。WARNINGなし、`serial1`ループバック欠落なし |
-| ボードマネージャーインストール | ✅ | v0.1.5時点、以降未再確認 |
+| ボードマネージャーインストール | ✅ | v0.1.5時点で確認済み。v0.2.0リリース後、実際にGitHubの`package_nxp_mcx_index.json`経由でBoards Managerからインストールし直して動作確認済み（macOS、Arduino IDE） |
 
 （v0.1.5時点ではWindowsでも確認していたが、v0.2.0作業分は今回すべてmacOS実機で確認）
 
@@ -194,6 +194,7 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 - **ビルド済み.a**: `~/dev/mcx-arduino-core/MCUXpresso_project/_r01lib_frdm_mcxa153/Debug/lib_r01lib_frdm_mcxa153.a`
 - **xPackツールチェーン**: `~/.xpacktools/xpack-arm-none-eabi-gcc-14.2.1-1.1/`（`package_nxp_mcx_index.json`記載のものと同一バイナリ、チェックサム確認済み）
 - **ローカルArduino IDE連携**: `~/Library/Arduino15/packages/nxp/hardware/mcx/0.1.9-dev` をこのリポジトリの`hardware/nxp/mcx/`へのシンボリックリンクとして設定済み（編集が即座に反映される）。ツールチェーンも`~/.xpacktools/`への symlink
+- **注意（Boards Manager経由の実インストール検証時のハマりどころ）**: 上記symlink環境を無効化する際、`~/Library/Arduino15/packages/nxp`を同じ`packages/`直下で別名（例: `nxp.dev-backup`）にリネームしただけでは不十分 — arduino-cliは`packages/*`配下の全ディレクトリ名をpackager IDとして解釈するため、リネーム後も`nxp.dev-backup:mcx`という別パッケージとして「0.1.9-dev installed」表示が残ってしまう（`arduino-cli core list --all`で再現・特定）。無効化する際は`packages/`の外（例: スクラッチパッド等）に完全に退避すること。v0.2.0リリース後、この手順でBoards Manager経由のGitHubからの実インストールを検証済み
 
 ## GitHub Actions
 - **Workflow**: `.github/workflows/update_package_index.yml`
