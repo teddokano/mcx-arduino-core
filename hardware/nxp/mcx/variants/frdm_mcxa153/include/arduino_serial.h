@@ -23,14 +23,22 @@
  * @brief Arduino-compatible Serial class for NXP MCX BSP.
  *
  * Inherits r01lib's Serial directly (no heap allocation, no wrapper).
- * Pinned to USBTX/USBRX. Call begin(baud) to initialise.
+ * Call begin(baud) to initialise.
  */
 class SerialClass : public Serial
 {
 public:
-	SerialClass() : Serial( USBTX, USBRX ) {}
+	SerialClass( int tx_pin, int rx_pin ) : Serial( tx_pin, rx_pin ) {}
 
-	void	begin( int baud ) { this->baud( baud ); }
+	/*
+	 *  attach() registers a (no-op) RX callback purely to switch getc()/
+	 *  readable() from raw single-byte hardware-register polling over to
+	 *  the interrupt-driven ring buffer (see Serial::_irq_handler()) --
+	 *  without it the RX interrupt is never enabled at all, and bytes
+	 *  arriving faster than the sketch calls read() get silently
+	 *  overwritten in the 1-deep hardware receive register.
+	 */
+	void	begin( int baud ) { this->baud( baud ); attach( []{}, RxIrq ); }
 
 	void	print( const char *s );
 	void	print( int n, int base = DEC );
@@ -57,7 +65,7 @@ public:
 	void	println( const std::string& s );
 	void	println( std::string_view s );
 
-	int		available( void ) { return readable() ? 1 : 0; }
+	int		available( void ) { return (int)Serial::available(); }
 	int		read( void )      { return getc(); }
 	void	write( uint8_t c ){ putc( c ); }
 
@@ -72,5 +80,6 @@ private:
 };
 
 extern SerialClass	Serial;
+extern SerialClass	Serial1;	// hardware UART on D0(RX)/D1(TX), separate from the USB-bridged Serial
 
 #endif // !R01LIB_ARDUINO_SERIAL_H

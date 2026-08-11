@@ -848,6 +848,19 @@ public:
 	 * This interface is provided to other class drivers to change pin config dynamically
 	 */
 	void	pin_mux( int mux );
+
+	/** Digital input buffer enable
+	 *
+	 *  PORT_SetPinMux() only touches the MUX field; on this chip the input
+	 *  buffer (PCR.IBE) is a separate bit that defaults to disabled on pins
+	 *  not otherwise configured at boot (see pin_mux.c). Peripherals reading
+	 *  a pin as input (e.g. UART RX on a non-default pin) need this enabled
+	 *  explicitly or the peripheral never sees the incoming signal, even
+	 *  though the MUX/electrical wiring is otherwise correct.
+	 *
+	 *  @param enable true to enable the digital input buffer
+	 */
+	void	input_buffer( bool enable );
 		
 	/** Pin mode setting
 	 * @param pin_mode PullUp, PullDown, PullNone, OpenDrain

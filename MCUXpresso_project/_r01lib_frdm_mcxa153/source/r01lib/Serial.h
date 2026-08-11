@@ -158,6 +158,15 @@ public:
     bool     readable( void );
 
     /**
+     * @brief  Number of bytes waiting to be read.
+     *
+     * Returns an exact count when the RX ring buffer is active (i.e. after
+     * attach(callback, RxIrq) has been called); otherwise falls back to 0
+     * or 1, same as readable(), since there's no buffer to count.
+     */
+    size_t   available( void );
+
+    /**
      * @brief  Query whether there is space in the TX ring buffer.
      *
      * @return `true` if at least one byte can be enqueued without blocking.
@@ -227,7 +236,9 @@ private:
     lpuart_config_t _config;
     uint32_t        _clk_freq;
     uint32_t        _instance;
-    port_mux_t      _mux;
+    port_mux_t      _tx_mux;
+    port_mux_t      _rx_mux;	// TX/RX of the same UART don't always share the
+    				// same ALT function number (e.g. MCXA153 D0/D1)
     IRQn_Type       _irqn;
     int             _tx_pin;
     int             _rx_pin;

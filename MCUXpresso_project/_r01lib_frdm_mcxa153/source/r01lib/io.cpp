@@ -537,6 +537,14 @@ void DigitalInOut::pin_mux( int mux )
 	PORT_SetPinMux( port_n, gpio_pin, (port_mux_t)mux );
 }
 
+void DigitalInOut::input_buffer( bool enable )
+{
+	if ( enable )
+		port_n->PCR[ gpio_pin ] |= PORT_PCR_IBE_MASK;
+	else
+		port_n->PCR[ gpio_pin ] &= ~PORT_PCR_IBE_MASK;
+}
+
 void DigitalInOut::mode( int pin_mode )
 {
 	PORT_SetPinPullUpDown( port_n, gpio_pin, (pin_mode & (PullUp | PullDown)) ? 1 : 0, (pin_mode & PullUp) ? 1 : 0);
