@@ -18,6 +18,14 @@
 #include	"arduino_i2c.h"
 #include	"arduino_spi.h"
 
+// The constants, macros, and templates below (through the min()/max()/
+// bit-manipulation/map()/random() section) are original reimplementations of
+// the standard Arduino API surface, written to match the interface and
+// naming of ArduinoCore-avr (github.com/arduino/ArduinoCore-avr) and
+// ArduinoCore-API (github.com/arduino/ArduinoCore-API) for sketch
+// compatibility -- not copied from either. Both reference projects are
+// LGPL 2.1; see LICENSE for this project's own MIT terms.
+
 // Math constants (matches UNO R3/R4's Arduino.h — sketches can use these
 // and <math.h> functions without an explicit #include <math.h>)
 #define	PI			3.1415926535897932384626433832795

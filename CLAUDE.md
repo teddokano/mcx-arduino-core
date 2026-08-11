@@ -113,8 +113,48 @@ analogRead/analogWrite/millis/micros/tone/noToneが揃い、基本的なArduino 
 - **README.md**（`d99973f`）: API対応表でanalogRead/analogWrite/millis/micros/tone/noToneを✅に更新
 - **`examples/tests/`の扱い**（`0d2daf9`）: 4つの外部ライブラリ（`I2C_device_Arduino`, `LCDDriver_NXP_Arduino`, `LEDDriver_NXP_Arduino`, `TempSensor_NXP_Arduino`、いずれも`github.com/teddokano/...`の独立リポジトリ）を`.gitignore`に追加し、このリポジトリの管理対象外に
 
+### バージョン0.2.0への引き上げ（`ec7d3f4`）
+- `package_nxp_mcx_index.json`（`version`/`url`/`archiveFileName`）と`platform.txt`（`version=0.2.0`）を`0.1.8`→`0.2.0`に更新
+- checksum/sizeは意図的に古いまま（実際のリリースタグpush時に`update_package_index.yml`が自動計算・上書きする運用のため、この時点では未修正で問題ない）
+- ブランチ名`prepare0.1.9`はリネームしない方針を確認済み（当初`0.1.9`予定だったが機能追加量から`0.2.0`が妥当と判断）
+
+### UNO R3/R4互換性の調査・対応（`a0a0bb7`, `2ae1983`）
+UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（`ArduinoCore-API`/`ArduinoCore-renesas`、`gh api`で取得）を参照元に、本ボードでスケッチ互換性が壊れる箇所を洗い出して対応。ベースはいずれもLGPL 2.1だが、対応内容はArduino標準APIの定型的な再実装（数学定数の`#define`、`min`/`max`テンプレート等）にとどまるため、ユーザー判断によりMITライセンスの本リポジトリへの追加を許容（「問題ないと判断した」）。
+- **`time_t`のあいまいなオーバーロード**（`a0a0bb7`）: `Serial.print(time_t)`が`SerialClass::print`のどのオーバーロードにも一意に決まらずコンパイルエラー（newlib-nanoの`time_t`は32bit ARMでも`__int_least64_t`＝64bit定義のため）。`print`/`println(long long)`・`(unsigned long long)`オーバーロードと`_print_num64`/`_print_unum64`を追加して解消
+- **数学定数・互換マクロ一式**（`2ae1983`、`arduino.h`に追加）: `#include <math.h>`・`<cstdlib>`、`PI`/`HALF_PI`/`TWO_PI`/`DEG_TO_RAD`/`RAD_TO_DEG`/`EULER`、`radians()`/`degrees()`、`LSBFIRST`/`MSBFIRST`/`SERIAL`/`DISPLAY`、`boolean`/`byte`/`word`型、`min()`/`max()`テンプレート、`abs()`/`constrain()`/`sq()`、`lowByte()`/`highByte()`/`bitRead()`/`bitSet()`/`bitClear()`/`bitToggle()`/`bitWrite()`/`bit()`、`interrupts()`/`noInterrupts()`（`cpsie`/`cpsid`インラインアセンブラ）、`map()`
+- 確認用スケッチ: `examples/Arduino_compatible_API/test_Serial_print_time_t/`, `test_math_constants/`, `test_arduino_compat_macros/`
+
+### shiftOut/shiftIn, pulseIn/pulseInLong, random/randomSeed 実装（`7d7d334`）
+- `arduino_io.cpp/.h`（`digitalWrite`/`digitalRead`/`micros()`ベースのソフトウェア実装）に`shiftOut`/`shiftIn`/`pulseIn`/`pulseInLong`を追加
+- `random(long)`/`random(long,long)`/`randomSeed(unsigned long)`は`arduino.h`にインライン実装として追加（標準`rand()`/`srand()`ベース）
+- shiftInの検証はshiftOutの実出力と組み合わせる方式を採用（物理的に同一ピンを同時にshiftOut/shiftInできない制約があるため、割り込みでクロックエッジを捕捉してデータを再構成するアプローチに合意して実装）
+- 確認用スケッチ: `examples/Arduino_compatible_API/test_shiftOut_pulseIn_random/`
+
+### Serial1（D0/D1ハードウェアUART）追加と関連バグ修正（`b215e5a`）
+これまで`Serial`はUSBブリッジ経由のみで、D0/D1に直結したハードウェアUART出力が使えなかった。Wire/Wire1の前例に倣い`Serial1`を新規追加（`SerialClass Serial1(arduino_pin_by_number[D1], arduino_pin_by_number[D0]);`）。実装過程で実機テストにより2件の既存バグが判明・修正された。
+
+- **`SerialClass`のコンストラクタをtx/rx pin引数対応に変更**: 従来は引数なし（`USBTX`/`USBRX`固定）だったのを`SerialClass(int tx_pin, int rx_pin)`に変更し、`Serial`/`Serial1`両方をこのクラスで表現できるように
+- **バグ1（誤った当初仮説として一旦Alt4に変更→リバート）**: `pin_mux.c`のYAMLコメント順を「リスト位置＝ALT番号」と誤読し、D0/D1のmux値を`kPORT_MuxAlt3`→`kPORT_MuxAlt4`に変更したが改善せず。Zephyrプロジェクトのpinctrlヘッダ（`MCXA344VLH-pinctrl.h`、NXPリファレンスマニュアル同等のシリコン検証済み情報源）で両ピンとも実際は`Alt3`であることを確認し、`Alt3`/`Alt3`に戻して確定。他のCPUターゲット（MCXC444VLH/MCXA156VLL/MCXN236VDF/MCXN947VDF）は、`lpuart_pin_map_t`の`mux`フィールドを`tx_mux`/`rx_mux`に分割する機械的なリファクタのみで、値は一切変更していないことを確認済み
+- **バグ2（真因）**: `pin_mux.c`の`BOARD_InitPins()`はUSBTX/USBRXの入力バッファは明示的に有効化しているが、D0/D1は未設定のままリセットデフォルト（入力バッファ無効）だった。`Serial::pin_mux()`はMUXフィールドしか設定していなかったため、`DigitalInOut::input_buffer(bool)`を新設し（`io.h/.cpp`、`PORT_PCR_IBE_MASK`を操作）、`Serial`コンストラクタで`rx_io.input_buffer(true)`を呼ぶよう修正
+- **バグ3**: 入力バッファ修正後もRXが大半のバイトを取りこぼす問題が残存。`SerialClass`が`Serial::attach()`を一度も呼んでいなかったため、RX割り込みが有効化されず`readable()`/`getc()`が常に1バイトのハードウェアレジスタを直接ポーリングする方式（`delay()`等のブロッキング処理下でオーバーランしやすい）のままだった。`SerialClass::begin()`内で`attach([]{}, RxIrq)`を呼ぶよう修正
+- **`available()`が0/1しか返さない問題**: `Serial::available()`をベースクラスに新設し、RXリングバッファの占有バイト数（`(_rx_head - _rx_tail) & (RX_RING_BUF_SIZE - 1)`）を返すよう実装。`SerialClass::available()`はこれに委譲
+- 3件とも実機での逐次検証により確定（ユーザーがシリアルモニタ出力を都度報告、空文字列→部分受信→全文受信の順で切り分け）
+- 確認用スケッチ: `examples/Arduino_compatible_API/test_Serial1/`（D1-D0ジャンパでのループバックテスト）
+
+### ドキュメント整備（`LICENSE`/`CHANGELOG.md`新規作成、README拡充）
+- **`LICENSE`ファイルが存在しないままREADMEからリンクされていた**（リンク切れ）ことが判明し、新規作成（MIT License, Copyright (c) 2026 Tedd OKANO）
+- `LICENSE`に「Third-Party Notices」セクションを追加：UNO R3/R4互換マクロ群（数学定数・`min`/`max`・ビット操作マクロ・`map`・`random`等）がArduinoCore-avr/ArduinoCore-API（いずれもLGPL 2.1）のインターフェースに合わせた独自再実装であり、コードのコピーではない旨を明記。同内容の帰属コメントを`arduino.h`の3箇所の同期コピーにも追加
+- **`CHANGELOG.md`を新規作成**（Keep a Changelog形式）。既存のGitHub Releases（v0.1.0〜v0.1.8、`gh release list`で確認・全リリースタグ作成済みと判明）の内容と`CLAUDE.md`の技術詳細を突き合わせて過去分を整理し、v0.2.0をUnreleasedセクションとして記載。README冒頭からリンク
+- **README.mdに「Pin Mapping (FRDM-MCXA153)」セクションを新規追加**：`io.h`のピンマクロ定義を実際に確認し、D0-D19/A0-A5/PWM0-PWM5と各ペリフェラル（Serial/Serial1/Wire/Wire1/SPI）の物理ピン対応表を作成。A4/A5はマクロとしては存在するがLPADCチャンネル未配線のため`analogRead`非対応である点も明記
+- **`Wire1`が「I3Cペリフェラルを使っているがI2Cモードで動作している」ことの明確化**：README・API対応表の記述だけでは伝わりにくいと判断し、ピン対応表の下に注記を追加（I3C固有機能（動的アドレッシング、IBI、高速クロック等）は一切使用・公開していない旨を明記）
+- API対応表に`analogWrite`のPWM周期が1kHz固定（変更不可）である旨のNotesを追加
+- Pendingタスクから「IchigoJam-firm GPIO/PWMサポート」を削除（ユーザー指示）。tone/noTone実装セクション内の移植元プロジェクト名（`IchigoJamMcx_GPIO`）への言及は技術的な出典情報として残置
+
+### 複合動作確認（Serial1込み、最終リリース前検証）
+`test_combined_peripherals.ino`にSerial1のループバック検証（D1→D0送信、次ループ冒頭で受信・欠落チェック）を追加し、Serial1・I3C(Wire1)・analogRead・analogWrite・tone・millis/microsを同時に動かす実機テストを実施。WARNINGなし、`serial1`ループバック（`hb0`〜`hb5`等）の欠落なし、`temp`/`adc`とも安定、`pwmDuty`も規則通り変化することを確認 — Serial1追加後としては初めての全機能同時動作確認
+
 ### 未対応
-- `package_nxp_mcx_index.json` のバージョンはまだ `0.1.8` のまま。v0.2.0として正式リリースするにはバージョン番号更新・checksum更新・`main`へのマージが必要
+- `package_nxp_mcx_index.json` のバージョンは`0.2.0`に更新済みだが、checksum/sizeは実際のリリースタグpushまで未更新（意図的）。v0.2.0として正式リリースするには`prepare0.1.9`ブランチ→`main`マージとGitHub Releaseの作成（タグ`0.2.0`、zipアセットのアップロード）が必要 — 7項目のリリース前チェックリストのうち唯一未実施（公開・不可逆操作のためユーザーの明示的な指示待ち）
 
 ---
 
@@ -132,7 +172,12 @@ analogRead/analogWrite/millis/micros/tone/noToneが揃い、基本的なArduino 
 | analogWrite (PWM) | ✅ | FlexPWM0, PWM0-PWM5のみ |
 | millis / micros | ✅ | SysTick(1ms) + DWT |
 | tone / noTone | ✅ | CTIMER0, 任意のデジタルピン |
-| 上記全機能の同時使用 | ✅ | `test_combined_peripherals.ino`で確認 |
+| Serial1 (D0/D1ハードウェアUART) | ✅ | 入力バッファ有効化・RX割り込み・available()の3バグ修正後、実機ループバックで確認 |
+| shiftOut / shiftIn | ✅ | 割り込みベースの相互検証で確認 |
+| pulseIn / pulseInLong | ✅ | |
+| random / randomSeed | ✅ | |
+| UNO R3/R4互換マクロ・定数一式 | ✅ | コンパイル確認のみ（数値的な動作確認は各マクロの単純さから省略） |
+| 上記全機能の同時使用 | ✅ | `test_combined_peripherals.ino`（Serial1込み）で実機確認済み。WARNINGなし、`serial1`ループバック欠落なし |
 | ボードマネージャーインストール | ✅ | v0.1.5時点、以降未再確認 |
 
 （v0.1.5時点ではWindowsでも確認していたが、v0.2.0作業分は今回すべてmacOS実機で確認）
@@ -154,6 +199,5 @@ analogRead/analogWrite/millis/micros/tone/noToneが揃い、基本的なArduino 
 ---
 
 ## 残りのPendingタスク
-1. v0.2.0リリース作業：`package_nxp_mcx_index.json` のバージョン/checksum更新、`prepare0.1.9` → `main` マージ
+1. v0.2.0リリース作業：`prepare0.1.9` → `main` マージ、GitHub Releaseの作成（タグ`0.2.0`、zipアセットアップロード。push後は`update_package_index.yml`によるchecksum自動更新を確認）
 2. マルチボード対応（MCXN947, MCXA156, MCXN236）
-3. IchigoJam-firm GPIO/PWMサポート（FRDM-MCXA153）
