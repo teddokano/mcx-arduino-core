@@ -1,1 +1,8 @@
 hardware/nxp/mcx/variants/frdm_mcxa153/lib/*.a
+
+# Local clones of independent test/compatibility libraries (own GitHub repos,
+# not part of mcx-arduino-core's history)
+examples/tests/I2C_device_Arduino/
+examples/tests/LCDDriver_NXP_Arduino/
+examples/tests/LEDDriver_NXP_Arduino/
+examples/tests/TempSensor_NXP_Arduino/
