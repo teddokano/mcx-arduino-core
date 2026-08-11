@@ -108,7 +108,7 @@ constantly:
 |---|---|
 | ✔ (checkmark) | **Verify** — compiles the sketch without uploading, useful to catch errors quickly |
 | → (right arrow) | **Upload** — compiles *and* uploads to the board (via LinkServer, over the MCU-Link USB connector) |
-| 🔌/monitor icon, top right | **Serial Monitor** — opens a panel showing whatever the sketch sends with `Serial.print`/`println` |
+| 🔍 (magnifying glass), top right | **Serial Monitor** — opens a panel showing whatever the sketch sends with `Serial.print`/`println` |
 
 Compiler errors and the upload log show up in the black output pane at the
 bottom of the window — if an upload fails, that's the first place to look.
