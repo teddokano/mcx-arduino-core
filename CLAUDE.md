@@ -2,8 +2,8 @@
 
 ## プロジェクト概要
 - **リポジトリ**: https://github.com/teddokano/mcx-arduino-core
-- **現在のバージョン**: v0.1.8（`package_nxp_mcx_index.json` 上の最新リリース）
-- **作業中バージョン**: v0.2.0（`prepare0.1.9` ブランチ、`main` 未マージ・未リリース。ブランチ名は`0.1.9`のままだがリリースバージョンは`0.2.0`に変更 — analogRead/analogWrite/millis/micros/tone/noToneの追加で基本的なArduino API群が揃ったためマイナーバージョンを上げる判断）
+- **現在のバージョン**: v0.2.0（`package_nxp_mcx_index.json` 上の最新リリース。`prepare0.1.9`→`main`マージ・GitHub Release作成済み、`f393132`でchecksum自動更新も確定）
+- ブランチ名は`0.1.9`のままだがリリースバージョンは`0.2.0`に変更 — analogRead/analogWrite/millis/micros/tone/noToneの追加で基本的なArduino API群が揃ったためマイナーバージョンを上げる判断
 - **内容**: NXP FRDM-MCXA153 (Cortex-M33) 向けArduino IDEボードサポートパッケージ
 
 ---
@@ -153,8 +153,11 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 ### 複合動作確認（Serial1込み、最終リリース前検証）
 `test_combined_peripherals.ino`にSerial1のループバック検証（D1→D0送信、次ループ冒頭で受信・欠落チェック）を追加し、Serial1・I3C(Wire1)・analogRead・analogWrite・tone・millis/microsを同時に動かす実機テストを実施。WARNINGなし、`serial1`ループバック（`hb0`〜`hb5`等）の欠落なし、`temp`/`adc`とも安定、`pwmDuty`も規則通り変化することを確認 — Serial1追加後としては初めての全機能同時動作確認
 
-### 未対応
-- `package_nxp_mcx_index.json` のバージョンは`0.2.0`に更新済みだが、checksum/sizeは実際のリリースタグpushまで未更新（意図的）。v0.2.0として正式リリースするには`prepare0.1.9`ブランチ→`main`マージとGitHub Releaseの作成（タグ`0.2.0`、zipアセットのアップロード）が必要 — 7項目のリリース前チェックリストのうち唯一未実施（公開・不可逆操作のためユーザーの明示的な指示待ち）
+### v0.2.0リリース完了（`main`マージ・GitHub Release作成・checksum確定）
+- `prepare0.1.9`（`cea0e94`）→`main`へfast-forwardマージ・push（分岐なし、18コミット）
+- リリースzip（`mcx-arduino-core-0.2.0.zip`、`hardware/nxp/mcx/`をgit archiveしビルド済み`.a`を追加したもの、13,020,412 bytes）を作成し、GitHub Release `0.2.0`（`main`のHEAD `cea0e94`をtarget）にアップロード: https://github.com/teddokano/mcx-arduino-core/releases/tag/0.2.0
+- **判明した既知の問題**: タグpushで自動起動する`update_package_index.yml`は、`actions/checkout`がタグをdetached HEADでチェックアウトするため`git push`が失敗する（exit code 128）。過去のv0.1.6〜v0.1.8のタグpush時も同様に全て失敗しており、実際のchecksum確定は毎回リリース後に手動で`workflow_dispatch`を`main`ブランチに対して実行することで行われていたと判明（`gh run list`で過去の成功/失敗パターンを確認して特定）。v0.2.0でも同じ手順（タグpush→失敗を確認→`gh workflow run update_package_index.yml --ref main`で手動実行）でchecksum/sizeを確定（`f393132`、SHA-256:`4beef79ec0def9aff3c9d878336b650ffc758cf9ce8ab1a0b6c3a8f5571f96f7`、ローカルで計算した値と一致確認済み）
+- 副次的に判明した軽微な問題（未対応・低優先度）: workflowの`Post Checkout`クリーンアップ時に警告が出る（`fatal: No url found for submodule path 'examples/tests/GPIO_NXP_Arduino' in .gitmodules`）。原因はリポジトリのツリーに`examples/tests/GPIO_NXP_Arduino`へのgitlink（`git ls-files --stage`で`160000`エントリ、コミット`db3b01d`由来）が残っているのに`.gitmodules`ファイル自体が存在しないこと（外部クローンを誤ってそのまま`git add`した名残と推測）。ジョブ自体は成功扱いで実害はないが、いずれ`git rm --cached examples/tests/GPIO_NXP_Arduino`等で整理してもよい
 
 ---
 
@@ -195,9 +198,10 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 ## GitHub Actions
 - **Workflow**: `.github/workflows/update_package_index.yml`
 - **役割**: GCCのsizeをHEADリクエストで取得、プラットフォームZIPのchecksum/sizeをダウンロードして計算・更新
+- **既知の制限**: タグpush（`push: tags: '[0-9]+.[0-9]+.[0-9]+'`）で起動した場合、`actions/checkout`がdetached HEADでチェックアウトするため最後の`git push`が失敗する（過去のv0.1.6〜v0.2.0全リリースで再現）。実際のchecksum確定は、リリース後に`gh workflow run update_package_index.yml --ref main`（または Actions UI の "Run workflow"）で`main`ブランチに対し手動実行する必要がある。**リリース時は「タグpush→(失敗を確認)→mainに対してworkflow_dispatchを手動実行」の2段階が必須の手順**
 
 ---
 
 ## 残りのPendingタスク
-1. v0.2.0リリース作業：`prepare0.1.9` → `main` マージ、GitHub Releaseの作成（タグ`0.2.0`、zipアセットアップロード。push後は`update_package_index.yml`によるchecksum自動更新を確認）
-2. マルチボード対応（MCXN947, MCXA156, MCXN236）
+1. マルチボード対応（MCXN947, MCXA156, MCXN236）
+2. （低優先度）`examples/tests/GPIO_NXP_Arduino`の不要なgitlinkエントリの整理
