@@ -1,6 +1,6 @@
-# mcx-arduino-core 入門チュートリアル（v0.2.0）
+# mcx-arduino-core 入門チュートリアル（v0.2.1）
 
-NXP FRDM-MCXA153ボードでArduino APIを使うためのハンズオンガイドです。インストールから、v0.2.0で対応している各種ペリフェラルまで一通り扱います。各セクションはそのまま書き込んで動く完結したスケッチです。API対応表・ピン配置の詳細は[README.md](README.md)、バージョン間の変更点は[CHANGELOG.md](CHANGELOG.md)を参照してください。
+NXP FRDM-MCXA153ボードでArduino APIを使うためのハンズオンガイドです。インストールから、v0.2.1で対応している各種ペリフェラルまで一通り扱います。各セクションはそのまま書き込んで動く完結したスケッチです。API対応表・ピン配置の詳細は[README.md](README.md)、バージョン間の変更点は[CHANGELOG.md](CHANGELOG.md)を参照してください。
 
 English version → [TUTORIAL.md](TUTORIAL.md)
 
@@ -17,23 +17,24 @@ English version → [TUTORIAL.md](TUTORIAL.md)
 - [2. 動作確認](#2-動作確認)
   - [2.1. 最初のスケッチ: オンボードLEDを点滅させる](#21-最初のスケッチ-オンボードledを点滅させる)
   - [2.2. シリアル出力](#22-シリアル出力)
-  - [2.3. デジタル入力と割り込み](#23-デジタル入力と割り込み)
-  - [2.4. アナログ入力: `analogRead`](#24-アナログ入力-analogread)
-  - [2.5. PWM出力: `analogWrite`](#25-pwm出力-analogwrite)
-  - [2.6. 時間計測: `millis` / `micros`](#26-時間計測-millis--micros)
-  - [2.7. 音: `tone` / `noTone`](#27-音-tone--notone)
-  - [2.8. I2C: `Wire`とオンボードセンサー（`Wire1`）](#28-i2c-wireとオンボードセンサーwire1)
-  - [2.9. SPI](#29-spi)
-  - [2.10. 2つ目のシリアルポート: `Serial1`](#210-2つ目のシリアルポート-serial1)
-  - [2.11. ソフトウェア実装のヘルパー: `shiftOut` / `shiftIn` / `pulseIn`](#211-ソフトウェア実装のヘルパー-shiftout--shiftin--pulsein)
-  - [2.12. UNO R3/R4互換性](#212-uno-r3r4互換性)
+  - [2.3. 文字列（String）](#23-文字列string)
+  - [2.4. デジタル入力と割り込み](#24-デジタル入力と割り込み)
+  - [2.5. アナログ入力: `analogRead`](#25-アナログ入力-analogread)
+  - [2.6. PWM出力: `analogWrite`](#26-pwm出力-analogwrite)
+  - [2.7. 時間計測: `millis` / `micros`](#27-時間計測-millis--micros)
+  - [2.8. 音: `tone` / `noTone`](#28-音-tone--notone)
+  - [2.9. I2C: `Wire`とオンボードセンサー（`Wire1`）](#29-i2c-wireとオンボードセンサーwire1)
+  - [2.10. SPI](#210-spi)
+  - [2.11. 2つ目のシリアルポート: `Serial1`](#211-2つ目のシリアルポート-serial1)
+  - [2.12. ソフトウェア実装のヘルパー: `shiftOut` / `shiftIn` / `pulseIn`](#212-ソフトウェア実装のヘルパー-shiftout--shiftin--pulsein)
+  - [2.13. UNO R3/R4互換性](#213-uno-r3r4互換性)
 - [次に見るべきもの](#次に見るべきもの)
 
 ## 1. インストール
 
 ### 1.1. 用意するもの
 
-- **macOSまたはWindows**のコンピュータ。Linuxはまだ未対応です — [1.3](#13-nxp-linkserverのインストール)を参照
+- **macOS、Windows、またはLinux**のコンピュータ — Linuxについての注意点は[1.3](#13-nxp-linkserverのインストール)を参照
 - [FRDM-MCXA153](https://www.nxp.com/design/design-center/development-boards-and-designs/FRDM-MCXA153)ボード
 - Arduino IDE 2.x
 - NXP LinkServer
@@ -57,7 +58,7 @@ English version → [TUTORIAL.md](TUTORIAL.md)
 | Windows | `.exe`インストーラ |
 | Linux | `.deb.bin`ファイル |
 
-本チュートリアルのインストール〜ビルド〜書き込みの流れは**macOSとWindows 11で検証済み**です。Linux対応は将来のバージョンで予定しています — ツールチェーンや書き込みスクリプト自体はすでに用意されていますが、一連の流れとしての検証はまだ行っていません。
+本チュートリアルのインストール〜ビルド〜書き込みの流れは**macOSとWindows 11で検証済み**です。Linuxも今回のリリースに含まれています（ツールチェーン・書き込みスクリプト）が、実機での一連の流れとしての検証はまだ行っていません。
 
 インストール後は、ボードパッケージの書き込みスクリプトが自動的にLinkServerを検出します — パス設定は不要です。
 
@@ -161,7 +162,45 @@ void loop() {
 
 書き込み後、**Tools → Serial Monitor**（115200bps）を開いてください。
 
-### 2.3. デジタル入力と割り込み
+`Serial`は受信もできます。シリアルモニタの入力欄に数字を入力してEnterを押すと、従来のArduinoと同様に`Serial.parseInt()`で取り出せます:
+
+```cpp
+void loop() {
+  if (Serial.available()) {
+    int n = Serial.parseInt();
+    Serial.print("got: ");
+    Serial.println(n);
+  }
+}
+```
+
+### 2.3. 文字列（String）
+
+`String`は従来のArduinoと同じように使えます —— `+`で数値や他の文字列を連結し、そのまま`Serial.print()`/`println()`に渡せます:
+
+```cpp
+#include <Arduino.h>
+
+int count = 0;
+
+void setup() {
+  Serial.begin(115200);
+  while (!Serial)
+    ;
+}
+
+void loop() {
+  String msg = "reading #" + String(count) + ": " + String(3.3 * count / 10.0, 2) + "V";
+  Serial.println(msg);
+  count++;
+  delay(500);
+}
+```
+
+`substring()`、`indexOf()`、`replace()`、`toUpperCase()`/`toLowerCase()`、`toInt()`/`toFloat()`など、通常の`String` APIも一通り使えます —— 
+[`examples/Arduino_compatible_API/test_String`](examples/Arduino_compatible_API/test_String)を参照してください。
+
+### 2.4. デジタル入力と割り込み
 
 ボードには`SW2`・`SW3`という2つのオンボードボタンがあり、アクティブLowでプルアップが必要（`INPUT_PULLUP`）です。以下の例は、ポーリングではなく`attachInterrupt`を使ってボタン押下で青LEDをトグルします:
 
@@ -196,7 +235,9 @@ void loop() {
 }
 ```
 
-### 2.4. アナログ入力: `analogRead`
+逆向きの配線（デフォルトでLow、押下時にHighを読む）にしたい場合は`INPUT_PULLDOWN`も使えます。
+
+### 2.5. アナログ入力: `analogRead`
 
 `analogRead`はLPADC経由で`A0`-`A3`ピンを読み取り、従来のArduinoボードと同じ10bit値（0-1023）を返します。（`A4`/`A5`はピン名としては存在しますが、このボードではADCに配線されていません — 詳細は[ピン配置表](README.md#pin-mapping-frdm-mcxa153)を参照）
 
@@ -219,7 +260,7 @@ void loop() {
 }
 ```
 
-### 2.5. PWM出力: `analogWrite`
+### 2.6. PWM出力: `analogWrite`
 
 PWMは専用ピン`PWM0`-`PWM5`（FlexPWM0）でのみ使用可能で、任意のデジタルピンでは使えません。周期は1kHz固定で、`analogWrite`が制御できるのはduty比（0-255）のみです（従来のArduinoと同じ）。以下の例は2.4節のADC読み取り値をそのままPWM出力に反映します — 抵抗付きLEDやオシロスコープを`PWM0`に接続して変化を確認してください:
 
@@ -237,7 +278,7 @@ void loop() {
 }
 ```
 
-### 2.6. 時間計測: `millis` / `micros`
+### 2.7. 時間計測: `millis` / `micros`
 
 標準的なArduinoのタイミング関数で、SysTick（1msティック）+ DWTサイクルカウンタで実装されています。`millis()`は従来のArduinoと同様、約49日でオーバーフローします。
 
@@ -259,7 +300,7 @@ void loop() {
 }
 ```
 
-### 2.7. 音: `tone` / `noTone`
+### 2.8. 音: `tone` / `noTone`
 
 `tone()`は`PWM0`-`PWM5`に限定される`analogWrite`と異なり、**任意の**デジタルピンで使用できます（CTIMER0によるソフトウェアトグル方式）。同時に鳴らせる音は1つだけです。圧電ブザーを`D13`とGND間に接続してください:
 
@@ -282,7 +323,7 @@ void loop() {
 メロディーを鳴らす完全な例は
 [`examples/Arduino_compatible_API/test_tone`](examples/Arduino_compatible_API/test_tone)を参照してください。
 
-### 2.8. I2C: `Wire`とオンボードセンサー（`Wire1`）
+### 2.9. I2C: `Wire`とオンボードセンサー（`Wire1`）
 
 ボードにはオンボードのP3T1755温度センサーがMCUのI3Cペリフェラルに接続されていますが、`Wire1`はこれを**I2C互換モード**で駆動するため、通常の`TwoWire`オブジェクトとして普通のI2C通信ができます（動的アドレッシングやIBIなどI3C固有の機能は一切使用しません）。この例には配線不要です:
 
@@ -311,7 +352,7 @@ void loop() {
 
 **外部**のI2Cデバイスを使う場合は、通常の`Wire`オブジェクト（`SDA`/`SCL`は`D18`/`D19`）を使い、従来のArduinoと全く同じ`Wire.begin()` / `beginTransmission()` / `write()` / `endTransmission()` / `requestFrom()` / `read()`を呼び出してください。
 
-### 2.9. SPI
+### 2.10. SPI
 
 `D10`(CS)/`D11`(MOSI)/`D12`(MISO)/`D13`(SCLK)で、標準的な`SPISettings`ベースのAPIが使えます:
 
@@ -340,7 +381,7 @@ void loop() {
 応答を確認するには実際のSPIペリフェラル（またはMOSI-MISO間のループバック線）が必要です — 
 [`examples/Arduino_compatible_API/test_SPI_loopback_with_a_wire`](examples/Arduino_compatible_API/test_SPI_loopback_with_a_wire)を参照してください。
 
-### 2.10. 2つ目のシリアルポート: `Serial1`
+### 2.11. 2つ目のシリアルポート: `Serial1`
 
 `Serial`はUSB経由ですが、`Serial1`は`D0`(RX)/`D1`(TX)ピン上の独立したハードウェアUARTで、USB接続を占有せずに外部シリアルデバイスと通信できます:
 
@@ -360,7 +401,7 @@ void loop() {
 他の外部ハードウェアなしで単体テストするには、`D1`と`D0`をジャンパー線でつなぎ、送信した内容を読み返してみてください —
 [`examples/Arduino_compatible_API/test_Serial1`](examples/Arduino_compatible_API/test_Serial1)を参照。
 
-### 2.11. ソフトウェア実装のヘルパー: `shiftOut` / `shiftIn` / `pulseIn`
+### 2.12. ソフトウェア実装のヘルパー: `shiftOut` / `shiftIn` / `pulseIn`
 
 従来のArduinoと同じシグネチャで、`digitalWrite`/`digitalRead`/`micros()`をベースにソフトウェアで実装されています:
 
@@ -373,7 +414,7 @@ unsigned long width = pulseIn(pin, HIGH);
 `random()` / `randomSeed()`も、従来のArduinoと同じシグネチャで使用できます。
 [`examples/Arduino_compatible_API/test_shiftOut_pulseIn_random`](examples/Arduino_compatible_API/test_shiftOut_pulseIn_random)を参照してください。
 
-### 2.12. UNO R3/R4互換性
+### 2.13. UNO R3/R4互換性
 
 Arduino UNO向けに書かれたスケッチが、追加の`#include`なしでそのままコンパイルできます: `PI`, `HALF_PI`, `TWO_PI`, `DEG_TO_RAD`, `RAD_TO_DEG`, `radians()`, `degrees()`, `min()`/`max()`, `abs()`, `constrain()`, `sq()`, `map()`, `lowByte()`/`highByte()`, `bitRead()` / `bitSet()` / `bitClear()` / `bitToggle()` / `bitWrite()` / `bit()`, `interrupts()` / `noInterrupts()`, `boolean`/`byte`/`word`, `LSBFIRST`/`MSBFIRST`。
 

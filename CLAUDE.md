@@ -178,6 +178,17 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 
 ## v0.2.1 で作業中の内容（`prepare0.2.1` ブランチ→`main`マージ済み・2026-08-12リリース済み）
 
+### リリース後: TUTORIAL.md/TUTORIAL.ja.mdの更新
+ユーザーから「チュートリアルが(v0.2.0)になってた」と指摘。タイトルのバージョン表記だけでなく、本文もv0.2.0時点の内容のままで、v0.2.1で追加された機能のセクションが無いことが判明。「追加された機能はチュートリアルとして必要か」との問いに対し、このチュートリアルは「ペリフェラルを動かしてみる」実践ガイドでAPI網羅が目的のAPI_COMPATIBILITY.mdとは役割が違う、という観点で選別を提案:
+- **`String`クラス**: 初心者が最初に書く実用的なスケッチで頻繁に使う基礎的な型のため、新規セクション「2.3. Strings」として追加（Serial出力セクションの直後、以降のセクション番号を2.4〜2.13に振り直し）
+- **`INPUT_PULLDOWN`**: 既存の「Digital input and interrupts」セクションに一言追記のみ
+- **Serial入力（`parseInt`等）**: 既存の「Serial output」セクションに`Serial.available()`/`parseInt()`の短い例を追記
+- **`Print`/`Stream`抽象基底クラス、fast-GPIOレジスタ、`Wire.end()`、`PROGMEM`/`F()`、`Printable`**: ライブラリ作者向け・上級者向け機能のため追加しないと判断（API_COMPATIBILITY.mdで十分カバー済み）
+
+ユーザー承認のうえ実施。英語版・日本語版の両方に同じ変更を反映（セクション番号・TOCアンカーとも整合性確認済み）。新規に書き起こしたStringスニペットは実際に`arduino-cli compile`でコンパイル確認してから掲載（ローカル開発用symlinkをBoards Manager実機検証のため一時退避していたため、`0.2.1-dev`として復元してから実施）。
+
+また、Linux対応に関する古い記述（「Linuxはまだ未対応」「将来のリリースで予定」）も、v0.2.1で実際にLinux対応をリリースに含めた（実機未検証）という現状に合わせて両言語とも修正。
+
 ### delayMicroseconds() 実装
 - v0.2.0公開後に`delayMicroseconds()`が未対応であることが判明。`delay()`と同じパターンで、r01libに既存の`wait_us()`（`mcu.h`/`mcu.cpp`、SDKの`SDK_DelayAtLeastUs()`ベース）を呼ぶだけの実装として追加
 - `arduino.h`（3箇所の同期コピー）に宣言追加、`arduino_main.cpp`（2箇所の同期コピー）に実装追加

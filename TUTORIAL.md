@@ -1,7 +1,7 @@
-# Getting Started with mcx-arduino-core (v0.2.0)
+# Getting Started with mcx-arduino-core (v0.2.1)
 
 A hands-on walkthrough of the Arduino API on the NXP FRDM-MCXA153 board, from
-installation to every peripheral supported in v0.2.0. Each section is a
+installation to every peripheral supported in v0.2.1. Each section is a
 complete, runnable sketch. See [README.md](README.md) for the full API
 reference table and [CHANGELOG.md](CHANGELOG.md) for version history.
 
@@ -20,24 +20,25 @@ reference table and [CHANGELOG.md](CHANGELOG.md) for version history.
 - [2. Try It Out](#2-try-it-out)
   - [2.1. Your first sketch: blink the on-board LED](#21-your-first-sketch-blink-the-on-board-led)
   - [2.2. Serial output](#22-serial-output)
-  - [2.3. Digital input and interrupts](#23-digital-input-and-interrupts)
-  - [2.4. Analog input: `analogRead`](#24-analog-input-analogread)
-  - [2.5. PWM output: `analogWrite`](#25-pwm-output-analogwrite)
-  - [2.6. Timing: `millis` / `micros`](#26-timing-millis--micros)
-  - [2.7. Sound: `tone` / `noTone`](#27-sound-tone--notone)
-  - [2.8. I2C: `Wire` and the on-board sensor (`Wire1`)](#28-i2c-wire-and-the-on-board-sensor-wire1)
-  - [2.9. SPI](#29-spi)
-  - [2.10. A second serial port: `Serial1`](#210-a-second-serial-port-serial1)
-  - [2.11. Bit-banged helpers: `shiftOut` / `shiftIn` / `pulseIn`](#211-bit-banged-helpers-shiftout--shiftin--pulsein)
-  - [2.12. UNO R3/R4 compatibility](#212-uno-r3r4-compatibility)
+  - [2.3. Strings](#23-strings)
+  - [2.4. Digital input and interrupts](#24-digital-input-and-interrupts)
+  - [2.5. Analog input: `analogRead`](#25-analog-input-analogread)
+  - [2.6. PWM output: `analogWrite`](#26-pwm-output-analogwrite)
+  - [2.7. Timing: `millis` / `micros`](#27-timing-millis--micros)
+  - [2.8. Sound: `tone` / `noTone`](#28-sound-tone--notone)
+  - [2.9. I2C: `Wire` and the on-board sensor (`Wire1`)](#29-i2c-wire-and-the-on-board-sensor-wire1)
+  - [2.10. SPI](#210-spi)
+  - [2.11. A second serial port: `Serial1`](#211-a-second-serial-port-serial1)
+  - [2.12. Bit-banged helpers: `shiftOut` / `shiftIn` / `pulseIn`](#212-bit-banged-helpers-shiftout--shiftin--pulsein)
+  - [2.13. UNO R3/R4 compatibility](#213-uno-r3r4-compatibility)
 - [Where to go next](#where-to-go-next)
 
 ## 1. Installation
 
 ### 1.1. What you need
 
-- A **macOS or Windows** computer. Linux isn't supported yet — see
-  [1.3](#13-install-nxp-linkserver)
+- A **macOS, Windows, or Linux** computer — see
+  [1.3](#13-install-nxp-linkserver) for a caveat on Linux
 - An [FRDM-MCXA153](https://www.nxp.com/design/design-center/development-boards-and-designs/FRDM-MCXA153) board
 - Arduino IDE 2.x
 - NXP LinkServer
@@ -69,9 +70,9 @@ tool, so it needs to be installed separately *before* you upload anything.
 | Linux | `.deb.bin` file |
 
 This tutorial's full install → build → upload flow has been verified on
-**macOS and Windows 11**. Linux support is planned for a future release —
-the toolchain and upload script are already in place, but the end-to-end
-flow hasn't been verified there yet.
+**macOS and Windows 11**. Linux is included in this release too (toolchain
+and upload script), but the end-to-end flow hasn't been verified on real
+Linux hardware yet.
 
 Once installed, the board package's upload script finds LinkServer
 automatically — no path configuration needed.
@@ -203,7 +204,50 @@ void loop() {
 
 Open **Tools → Serial Monitor** (115200 baud) after uploading.
 
-### 2.3. Digital input and interrupts
+`Serial` reads too: type a number into the Serial Monitor's input box and
+press Enter, and `Serial.parseInt()` picks it out, same as classic Arduino:
+
+```cpp
+void loop() {
+  if (Serial.available()) {
+    int n = Serial.parseInt();
+    Serial.print("got: ");
+    Serial.println(n);
+  }
+}
+```
+
+### 2.3. Strings
+
+`String` works the same way as on classic Arduino — build text out of
+numbers and other strings with `+`, and pass the result straight to
+`Serial.print()`/`println()`:
+
+```cpp
+#include <Arduino.h>
+
+int count = 0;
+
+void setup() {
+  Serial.begin(115200);
+  while (!Serial)
+    ;
+}
+
+void loop() {
+  String msg = "reading #" + String(count) + ": " + String(3.3 * count / 10.0, 2) + "V";
+  Serial.println(msg);
+  count++;
+  delay(500);
+}
+```
+
+`substring()`, `indexOf()`, `replace()`, `toUpperCase()`/`toLowerCase()`,
+`toInt()`/`toFloat()`, and the rest of the usual `String` API are all
+available — see
+[`examples/Arduino_compatible_API/test_String`](examples/Arduino_compatible_API/test_String).
+
+### 2.4. Digital input and interrupts
 
 The board has two on-board buttons, `SW2` and `SW3`, wired active-low with
 pull-ups needed (`INPUT_PULLUP`). This example toggles the blue LED on a
@@ -240,7 +284,10 @@ void loop() {
 }
 ```
 
-### 2.4. Analog input: `analogRead`
+`INPUT_PULLDOWN` is also available, for wiring a button/switch the other
+way around (pulled low by default, reads `HIGH` when pressed).
+
+### 2.5. Analog input: `analogRead`
 
 `analogRead` reads pins `A0`-`A3` through the on-chip LPADC and returns a
 10-bit value (0-1023), same range as classic Arduino boards. (`A4`/`A5` exist
@@ -267,7 +314,7 @@ void loop() {
 }
 ```
 
-### 2.5. PWM output: `analogWrite`
+### 2.6. PWM output: `analogWrite`
 
 PWM is only available on the dedicated pins `PWM0`-`PWM5` (FlexPWM0), not on
 every digital pin. The period is fixed at 1kHz; `analogWrite` only controls
@@ -289,7 +336,7 @@ void loop() {
 }
 ```
 
-### 2.6. Timing: `millis` / `micros`
+### 2.7. Timing: `millis` / `micros`
 
 Standard Arduino timing functions, backed by SysTick (1ms tick) + the DWT
 cycle counter. `millis()` doesn't roll over for about 49 days, just like a
@@ -313,7 +360,7 @@ void loop() {
 }
 ```
 
-### 2.7. Sound: `tone` / `noTone`
+### 2.8. Sound: `tone` / `noTone`
 
 `tone()` works on **any** digital pin (via CTIMER0 software-toggling the
 pin), unlike `analogWrite` which is limited to `PWM0`-`PWM5`. Only one tone
@@ -338,7 +385,7 @@ void loop() {
 See [`examples/Arduino_compatible_API/test_tone`](examples/Arduino_compatible_API/test_tone)
 for a full melody example.
 
-### 2.8. I2C: `Wire` and the on-board sensor (`Wire1`)
+### 2.9. I2C: `Wire` and the on-board sensor (`Wire1`)
 
 The board has an on-board P3T1755 temperature sensor wired to the MCU's I3C
 peripheral — but `Wire1` drives it in **I2C-compatibility mode**, so it's a
@@ -373,7 +420,7 @@ For an *external* I2C device instead, use the regular `Wire` object
 `Wire.begin()` / `beginTransmission()` / `write()` / `endTransmission()` /
 `requestFrom()` / `read()` calls, exactly as on a classic Arduino.
 
-### 2.9. SPI
+### 2.10. SPI
 
 Standard `SPISettings`-based API on pins `D10`(CS)/`D11`(MOSI)/`D12`(MISO)/`D13`(SCLK):
 
@@ -403,7 +450,7 @@ This needs an actual SPI peripheral (or a loopback wire from MOSI to MISO)
 to see any response — see
 [`examples/Arduino_compatible_API/test_SPI_loopback_with_a_wire`](examples/Arduino_compatible_API/test_SPI_loopback_with_a_wire).
 
-### 2.10. A second serial port: `Serial1`
+### 2.11. A second serial port: `Serial1`
 
 `Serial` is bridged over USB. `Serial1` is a second, independent hardware
 UART on pins `D0`(RX)/`D1`(TX), for talking to external serial devices
@@ -426,7 +473,7 @@ To test it stand-alone with no other hardware, jumper `D1` to `D0` and read
 back what you sent — see
 [`examples/Arduino_compatible_API/test_Serial1`](examples/Arduino_compatible_API/test_Serial1).
 
-### 2.11. Bit-banged helpers: `shiftOut` / `shiftIn` / `pulseIn`
+### 2.12. Bit-banged helpers: `shiftOut` / `shiftIn` / `pulseIn`
 
 Same signatures as classic Arduino, implemented in software on top of
 `digitalWrite`/`digitalRead`/`micros()`:
@@ -441,7 +488,7 @@ unsigned long width = pulseIn(pin, HIGH);
 signatures. See
 [`examples/Arduino_compatible_API/test_shiftOut_pulseIn_random`](examples/Arduino_compatible_API/test_shiftOut_pulseIn_random).
 
-### 2.12. UNO R3/R4 compatibility
+### 2.13. UNO R3/R4 compatibility
 
 Sketches written for an Arduino UNO that use these will compile as-is, no
 extra `#include`s needed: `PI`, `HALF_PI`, `TWO_PI`, `DEG_TO_RAD`,
