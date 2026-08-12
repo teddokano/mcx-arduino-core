@@ -537,6 +537,19 @@ int Serial::getc( void )
     }
 }
 
+int Serial::peek( void )
+{
+    if ( _rx_callback )
+    {
+        if ( _rx_head == _rx_tail )
+            return -1;
+
+        return (int)_rx_buf[ _rx_tail ];
+    }
+
+    return -1;
+}
+
 int Serial::printf( const char *fmt, ... )
 {
     char    buf[ 256 ];

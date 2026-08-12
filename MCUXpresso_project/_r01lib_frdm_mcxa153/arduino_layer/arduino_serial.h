@@ -70,6 +70,7 @@ public:
 
 	int		available( void ) { return (int)Serial::available(); }
 	int		read( void )      { return getc(); }
+	int		peek( void )      { return Serial::peek(); }
 	void	write( uint8_t c ){ putc( c ); }
 	void	flush( void )     { Serial::flush(); }
 

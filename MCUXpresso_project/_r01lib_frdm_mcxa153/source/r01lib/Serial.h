@@ -139,6 +139,18 @@ public:
     int      getc( void );
 
     /**
+     * @brief  Look at the next received byte without consuming it.
+     *
+     * Only meaningful in interrupt-driven mode (after `attach(callback,
+     * RxIrq)`) -- reads from the RX ring buffer without advancing the tail.
+     * Without a callback attached there's no ring buffer to peek into, so
+     * this always returns -1.
+     *
+     * @return  Next byte as `int` (0-255), or -1 if none available.
+     */
+    int      peek( void );
+
+    /**
      * @brief  Formatted print to the serial port.
      *
      * Formats into a 256-byte stack buffer then enqueues each byte into the

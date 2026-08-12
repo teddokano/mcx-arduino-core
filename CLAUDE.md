@@ -200,6 +200,11 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 - 確認用スケッチ: `examples/Arduino_compatible_API/test_Serial_flush/`（Serial1を9600bpsで使い、`flush()`が実際にブロックした時間を計測してビット数から計算した理論値と比較）。実機確認済み — 実測24799/24002/23914µs、理論値23958µsとほぼ一致し、ソフトウェアバッファの空きだけでなくハードウェア送信完了まで正しく待っていることを確認
 - README.mdのAPI対応表にも追加
 
+### Serial.peek() 実装
+- ギャップ調査で判明した4件目。RXリングバッファ（`_rx_head`/`_rx_tail`）から`_rx_tail`を進めずに次の1バイトを覗き見るだけの実装。`SerialClass::begin()`が常に`attach([]{}, RxIrq)`を呼ぶため、`Serial`/`Serial1`では常にリングバッファモードが有効で問題なく使える。コールバック未登録時（このプロジェクトでは実質発生しない経路）は-1を返す
+- 確認用スケッチ: `examples/Arduino_compatible_API/test_Serial_peek/`（Serial1ループバックで"AB"を送信し、`peek()`を2回呼んでも`available()`が変化しないこと、`read()`後は次のバイトが見えることを検証）。実機確認済み、全項目OK
+- README.mdのAPI対応表にも追加
+
 ---
 
 ## 動作確認済み
@@ -209,6 +214,7 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 | GPIO / digitalWrite / digitalRead | ✅ | |
 | Serial | ✅ | |
 | Serial.flush() | ✅ | v0.2.1で追加。Serial1@9600bpsで実測値と理論値を比較し実機確認済み |
+| Serial.peek() | ✅ | v0.2.1で追加。Serial1ループバックで実機確認済み |
 | Wire (I2C) | ✅ | |
 | Wire1 (I3C, I2Cモード) | ✅ | オンボードP3T1755で確認、重大バグ修正済み |
 | SPI | ✅ | |
