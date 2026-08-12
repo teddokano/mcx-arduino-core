@@ -5,6 +5,11 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.2.2] - 2026-08-13
+
+### Fixed
+- Build failure on Linux (and any case-sensitive filesystem): the core's actual header file was named `arduino.h`, but every sketch gets `#include <Arduino.h>` auto-prepended by the Arduino IDE/arduino-cli. This only ever worked by accident on macOS/Windows, whose default filesystems don't distinguish case — present since 0.1.0, only caught now with the first real Linux build attempt. Renamed to `Arduino.h`. A second instance of the same bug was found and fixed at the same time: `#include <SPI.h>` (used by most SPI examples) only ever resolved to r01lib's unrelated low-level `spi.h` by the same case-insensitive accident; added a real `SPI.h` (wrapping the existing `arduino_spi.h`, which is the file that actually implements `SPIClass`) after renaming r01lib's low-level SPI class out of the way to `r01lib_spi.h`
+
 ## [0.2.1] - 2026-08-12
 
 ### Added
