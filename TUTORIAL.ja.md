@@ -1,6 +1,6 @@
-# mcx-arduino-core 入門チュートリアル（v0.2.1）
+# mcx-arduino-core 入門チュートリアル
 
-NXP FRDM-MCXA153ボードでArduino APIを使うためのハンズオンガイドです。インストールから、v0.2.1で対応している各種ペリフェラルまで一通り扱います。各セクションはそのまま書き込んで動く完結したスケッチです。API対応表・ピン配置の詳細は[README.md](README.md)、バージョン間の変更点は[CHANGELOG.md](CHANGELOG.md)を参照してください。
+NXP FRDM-MCXA153ボードでArduino APIを使うためのハンズオンガイドです。インストールから、対応している各種ペリフェラルまで一通り扱います。各セクションはそのまま書き込んで動く完結したスケッチです。API対応表・ピン配置の詳細は[README.md](README.md)、バージョン間の変更点は[CHANGELOG.md](CHANGELOG.md)を参照してください。
 
 English version → [TUTORIAL.md](TUTORIAL.md)
 

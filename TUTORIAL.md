@@ -1,9 +1,9 @@
-# Getting Started with mcx-arduino-core (v0.2.1)
+# Getting Started with mcx-arduino-core
 
 A hands-on walkthrough of the Arduino API on the NXP FRDM-MCXA153 board, from
-installation to every peripheral supported in v0.2.1. Each section is a
-complete, runnable sketch. See [README.md](README.md) for the full API
-reference table and [CHANGELOG.md](CHANGELOG.md) for version history.
+installation to every supported peripheral. Each section is a complete,
+runnable sketch. See [README.md](README.md) for the full API reference table
+and [CHANGELOG.md](CHANGELOG.md) for version history.
 
 日本語版はこちら → [TUTORIAL.ja.md](TUTORIAL.ja.md)
 
