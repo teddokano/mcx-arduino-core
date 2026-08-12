@@ -13,6 +13,7 @@
   - 過去バージョンのzip自体（0.1.0/0.1.5/0.1.8/0.2.0で個別確認）は全て単一トップレベルディレクトリ（`mcx/`）を持つ正しい構造で問題なし——構造バグはv0.2.1の初回zipのみの一過性のミスだったと確定
   - **`.github/workflows/update_package_index.yml`の重大な設計ミスを修正**: 「Download platform ZIP and compute checksum」「Update platform checksum」の2ステップが`platforms[0]`を決め打ちで参照・上書きしていた（エントリが1つしかない前提のコード）。`hardware/nxp/mcx/platform.txt`の`version=`行を読み、`platforms[]`の中から**そのバージョンに一致するエントリだけ**を検索して更新するよう変更。シェル変数をpythonのヒアドキュメントに未クォートで埋め込む脆い書き方だった箇所も、`VERSION="$VERSION" python3 << 'PYEOF'`（環境変数経由・quotedヒアドキュメント）に修正し安全性も向上
   - **今後のリリース手順の変更点**: 新バージョンをリリースする際は、`package_nxp_mcx_index.json`の既存エントリを上書きするのではなく、**`platforms`配列に新しいエントリを追加**すること（`checksum`/`size`は他バージョンと同様に一旦古い値のまま、または適当なプレースホルダーで良い——`update_package_index.yml`のworkflow_dispatch実行時に`platform.txt`のバージョンと一致するエントリを見つけて自動的に正しい値へ更新される）
+  - **実機確認済み**: ローカルキャッシュ（`~/Library/Arduino15/package_nxp_mcx_index.json`）削除・Arduino IDE再起動後、Boards Managerのバージョンドロップダウンに0.1.0〜0.2.1の全11バージョンが表示されることを確認
 
 ---
 
