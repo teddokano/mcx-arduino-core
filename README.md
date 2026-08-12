@@ -16,6 +16,8 @@ See [CHANGELOG.md](CHANGELOG.md) for release history.
 
 <img src="img/FRDM-MCXA153.jpg" alt="FRDM-MCXA153 running an mcx-arduino-core sketch" width="400">
 
+*FRDM-MCXA153*
+
 > **Note**: mcx-arduino-core is an independent, community project and is not
 > part of or affiliated with Arduino's official
 > [ArduinoCore-zephyr](https://github.com/arduino/ArduinoCore-zephyr). See
