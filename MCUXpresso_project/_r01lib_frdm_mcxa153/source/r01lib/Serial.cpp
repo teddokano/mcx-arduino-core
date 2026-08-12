@@ -586,6 +586,12 @@ bool Serial::writable( void )
     return ( next != _tx_tail );
 }
 
+size_t Serial::availableForWrite( void )
+{
+    size_t used = (size_t)(( _tx_head - _tx_tail ) & ( TX_RING_BUF_SIZE - 1U ));
+    return (size_t)( TX_RING_BUF_SIZE - 1U - used );
+}
+
 void Serial::flush( void )
 {
     while ( _tx_head != _tx_tail )

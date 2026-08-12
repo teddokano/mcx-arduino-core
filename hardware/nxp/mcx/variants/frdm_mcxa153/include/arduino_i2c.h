@@ -13,6 +13,7 @@ public:
 	TwoWire( int sda_pin, int scl_pin );
 	
 	void	begin( int baud = 100000 );
+	void	end( void );
 	void	setClock( uint32_t freq );
 	void	beginTransmission( const uint8_t address );
 	size_t	write( uint8_t data );

@@ -242,6 +242,7 @@ private:
 	DigitalInOut			_sda;
 	DigitalInOut			_scl;
 	err_cb_ptr				err_cb;
+	bool					_no_hw;
 };
 
 #endif // R01LIB_I2C_H

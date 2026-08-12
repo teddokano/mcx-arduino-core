@@ -52,6 +52,12 @@ void TwoWire::begin( int baud )
 	i2c->err_callback( nullptr );
 }
 
+void TwoWire::end( void )
+{
+	delete i2c;
+	i2c	= nullptr;
+}
+
 void TwoWire::setClock( uint32_t freq )
 {
 	if ( !i2c )

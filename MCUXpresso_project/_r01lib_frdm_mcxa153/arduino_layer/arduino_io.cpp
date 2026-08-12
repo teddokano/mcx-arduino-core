@@ -21,8 +21,15 @@ void pinMode( int pin_num, int mode )
 		if ( pin_num < 0 || pin_num >= MAX_DIGITAL_PINS )
 				return;
 
-		int     dir     = (mode == OUTPUT) ? DigitalInOut::OUTPUT : DigitalInOut::INPUT;
-		int     pull    = (mode == INPUT_PULLUP) ? DigitalInOut::PullUp : DigitalInOut::PullNone;
+		int     dir       = (mode == OUTPUT || mode == OUTPUT_OPENDRAIN) ? DigitalInOut::OUTPUT : DigitalInOut::INPUT;
+		int     pin_mode  = DigitalInOut::PullNone;
+
+		if ( mode == INPUT_PULLUP )
+				pin_mode = DigitalInOut::PullUp;
+		else if ( mode == INPUT_PULLDOWN )
+				pin_mode = DigitalInOut::PullDown;
+		else if ( mode == OUTPUT_OPENDRAIN )
+				pin_mode = DigitalInOut::OpenDrain;
 
 		if ( digital_pins[ pin_num ] != nullptr )
 		{
@@ -30,10 +37,12 @@ void pinMode( int pin_num, int mode )
 						digital_pins[ pin_num ]->output();
 				else
 						digital_pins[ pin_num ]->input();
+
+				digital_pins[ pin_num ]->mode( pin_mode );
 		}
 		else
 		{
-				digital_pins[ pin_num ] = new DigitalInOut( pin_num, dir, 0, pull );
+				digital_pins[ pin_num ] = new DigitalInOut( pin_num, dir, 0, pin_mode );
 
 				if ( digital_pins[ pin_num ] == nullptr )
 						panic( "error @ new, in pinMode()" );

@@ -257,6 +257,24 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 - 確認用スケッチ: `test_Serial_BIN_and_write`（Serial1 D1-D0ジャンパ要、BIN基数の期待値比較＋write系の往復確認、null バイトを含むバッファでcount-basedであることも確認）、`test_Interrupt_LOW`（配線不要、SW2長押しでカウンタが数十万回増えることを確認 — エッジトリガーなら数回で止まるはずが374,533回増加し、レベルトリガーとして機能していることを実証）。実機確認済み、全項目OK
 - README.mdのAPI対応表を更新（`attachInterrupt`にLOW追加、`Serial.write`の4オーバーロード明記、BINバグ修正済みである旨明記）
 
+### 4周目のAPI互換性精査と5項目実装（Wire.end、find/findUntil、availableForWrite、INPUT_PULLDOWN、OUTPUT_OPENDRAIN）
+- 3周目までで見つかったバグ・機能ギャップがすべて解消したのを受け、4周目としてWire.end/Serial.availableForWrite/Stream系findの拡張オーバーロード/INPUT_PULLDOWN・OUTPUT_OPENDRAIN pinModeを精査（Explore agentに依頼）。EEPROM・Stream::flush()のRXクリア相当は「本家にも存在しない・対応不要」と判明、5項目を実装
+- **`Wire.end()`**: `TwoWire`に新設（`arduino_i2c.h/.cpp`）。直近実装した`SPIClass::end()`と同じパターンで`delete i2c; i2c = nullptr;`。r01libの`I2C::~I2C()`/`I3C::~I3C()`は既に`LPI2C_MasterDeinit`/`I3C_MasterDeinit`を呼ぶ実装済みのデストラクタを持っていたため、Arduino層に配線するだけで済んだ
+- **`Serial.find(target, length)` / `findUntil(target, terminator)`**: 既存の`find(const char*)`と同じ素朴な逐次一致方式（KMP等の最適化なし）で追加。`findUntil`はtarget側とterminator側の2本のマッチャーを並行して回し、terminatorが先に完成したら`false`で早期終了
+- **`Serial.availableForWrite()`**: これまでr01lib `Serial`クラスにはTXバッファの空き状況を返すAPIとして`bool writable()`（1バイト分の空きがあるか）しかなかった。`available()`のRXリングバッファ残量計算（`(_rx_head - _rx_tail) & (RX_RING_BUF_SIZE - 1)`）と同じパターンで`size_t Serial::availableForWrite()`を新設し、使用中バイト数からバッファ容量（255＝256バイトのリングバッファの実効容量、満杯検出のため1バイト分予約）を引いて返すよう実装。`SerialClass`側に`int availableForWrite()`として露出
+- **`INPUT_PULLDOWN` / `OUTPUT_OPENDRAIN`**: r01libの`DigitalInOut::PinMode`には元々`PullDown`（0x2）・`OpenDrain`（0x8）が存在していたが、Arduino層の`pinMode()`が`INPUT_PULLUP`しか見ておらず、他のモードは`DigitalInOut::mode()`実装（`PORT_SetPinPullUpDown`/`PORT_SetPinOpenDrain`をビットマスクとして独立に見る作り）まで到達できなかった。`arduino_io.h`に`INPUT_PULLDOWN = 0x20`・`OUTPUT_OPENDRAIN = 0x30`を追加（既存の`INPUT_PULLUP = 0x10`と同様、`OUTPUT=1`と衝突しない値）、`pinMode()`のモード判定を拡張。既存ピン再利用パス（`digital_pins[pin_num] != nullptr`のとき）でも`->mode(pin_mode)`を呼ぶよう変更し、同一ピンに対して`pinMode()`を呼び直した際にpull/open-drain設定も更新されるようにした（従来は方向切り替えのみでpull設定が反映されなかった）
+- 確認用スケッチ: `examples/Arduino_compatible_API/test_Wire_end_find_availForWrite_pullmodes/`（オンボードP3T1755でWire1.end()前後の読み取りを比較、Serial1ループバックでfind/findUntilを検証、availableForWriteをバースト書き込み前後で比較、D4フローティングピンでPULLDOWN/PULLUP切り替えを検証、D2-D3ジャンパでOUTPUT_OPENDRAINの真のオープンドレイン特性——D3をPULLDOWNにした状態でD2をHIGHにしても押し上げられずLOWのまま、という push-pull出力とは区別できる挙動——を検証）
+
+### 実機バグ発見・修正: `Wire.end()`（I3C使用時）でBusFault/ハング
+上記5項目の実機確認1発目で判明。`Wire1.end()`を呼ぶと「Wire1.end() called」の出力直前で無応答になる不具合が発生
+- **原因**: `TwoWire::end()`の`delete i2c`は仮想デストラクタ経由で正しく`I3C::~I3C()`（`I3C_MasterDeinit`）→`I2C::~I2C()`の順にチェーンされるが、`I2C::~I2C()`は無条件に`LPI2C_MasterDeinit( unit_base )`を呼んでいた。I3C経由でI2Cモードとして使う場合、ベースクラス委譲コンストラクタ`I2C(sda, scl, no_hw=true)`は`if (no_hw) return;`でハードウェア初期化を完全にスキップし`unit_base`を未初期化のまま残す（v0.2.0で発覚した`TwoWire::begin()`のBusFaultバグと全く同じ未初期化`unit_base`が根本原因）。今回は仮想デストラクタなので`frequency()`のような隠蔽では回避できず、`I2C::~I2C()`が必ず呼ばれてしまう構造的な問題。これまで`I2C`/`I3C`インスタンスを`delete`するコードパスがコードベース中に一つも存在しなかったため、`Wire.end()`の追加で初めて顕在化した
+- **修正**: `I2C`クラスに`bool _no_hw`メンバを新設（`i2c.h`）、コンストラクタで`no_hw`引数の値を保持（`i2c.cpp`）。デストラクタで`_no_hw`が立っていれば`LPI2C_MasterDeinit`/`I2C_MasterDeinit`呼び出しをスキップするよう修正（I3Cの場合は`I3C::~I3C()`が既に`I3C_MasterDeinit`で正しく後始末しているため、ベースクラス側で何もすることがない）
+- ヘッダ同期・ライブラリ再ビルド・`test_Wire_end_find_availForWrite_pullmodes`/`test_combined_peripherals`/`test_Wire_setClock`のコンパイル確認済み。実機再検証済み — `Wire1.end()`後もハングせず、`begin()`し直して正常読み取り継続を確認
+
+### 4周目5項目、実機確認完了
+`test_Wire_end_find_availForWrite_pullmodes.ino`を実機で実行、全項目OK（`Wire1.end()`前後の温度読み取り、`availableForWrite`のバースト/flush前後の増減、`find(target,length)`/`findUntil()`の早期終了、`INPUT_PULLDOWN`/`INPUT_PULLUP`のフローティングピン読み取り、`OUTPUT_OPENDRAIN`の真のオープンドレイン特性）
+- README.mdのAPI対応表を更新（`pinMode`にPULLDOWN/OPENDRAIN追記、`Serial.find(len)`/`findUntil`/`availableForWrite`/`Wire.end`を新規追加）
+
 ### 機能ギャップ埋め（PROGMEM/F()、ARDUINO/ARDUINO_ARCH_*マクロ）
 - 3周目で「未対応（バグではなく機能ギャップ）」として見送っていた3項目に対応
 - **`ARDUINO`バージョンマクロ・`ARDUINO_ARCH_*`系マクロ**: ソースコード側ではなく`platform.txt`の`compiler.defines`に追加（`-DARDUINO=10819 -DARDUINO_ARCH_MCX -DARDUINO_{build.board}`）。`{build.board}`はarduino-cliが`boards.txt`の`frdm_mcxa153.build.board=FRDM_MCXA153`から自動展開する組み込みプロパティで、`ARDUINO_FRDM_MCXA153`として正しく定義されることを実際にビルドして確認済み。従来これらのマクロが本当に未定義かどうか自体、テストスケッチで`#ifdef`/`#pragma message`を使って実証してから着手した
@@ -283,6 +301,7 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 | SPI.setBitOrder/setDataMode/setClockDivider、String 64bit（long long/unsigned long long） | ✅ | v0.2.1で追加。MOSI-MISOループバック＋純粋ロジック検証で実機確認済み |
 | Serial print BIN基数バグ修正（Serial・String両方）、Serial.write全オーバーロード、attachInterrupt LOWモード | ✅ | v0.2.1で修正・追加。全項目実機確認済み（LOWモードは長押しでカウンタ374,533回増加を確認） |
 | PROGMEM/pgm_read系、F()/String対応、ARDUINO/ARDUINO_ARCH_*マクロ | ✅ | v0.2.1で追加。実機確認済み |
+| Wire.end、Serial.find(len)/findUntil、Serial.availableForWrite、INPUT_PULLDOWN、OUTPUT_OPENDRAIN | ✅ | v0.2.1で追加。実機確認済み（`Wire.end()`はI3C使用時のBusFaultバグを修正後に確認） |
 | Wire (I2C) | ✅ | |
 | Wire1 (I3C, I2Cモード) | ✅ | オンボードP3T1755で確認、重大バグ修正済み |
 | SPI | ✅ | |

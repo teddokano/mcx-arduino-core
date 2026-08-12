@@ -14,6 +14,8 @@
 constexpr int	INPUT		= DigitalInOut::INPUT;   // = 0
 constexpr int	OUTPUT		= DigitalInOut::OUTPUT;  // = 1
 constexpr int	INPUT_PULLUP	= 0x10;                  // INPUTかつPullUp（OUTPUT=1と衝突しない値）
+constexpr int	INPUT_PULLDOWN	= 0x20;                  // INPUTかつPullDown
+constexpr int	OUTPUT_OPENDRAIN	= 0x30;              // OUTPUTかつOpenDrain
 
 constexpr bool	HIGH	= true;
 constexpr bool	LOW		= false;

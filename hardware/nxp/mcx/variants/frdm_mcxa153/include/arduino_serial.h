@@ -75,6 +75,7 @@ public:
 	int		read( void )      { return getc(); }
 	int		peek( void )      { return Serial::peek(); }
 	void	flush( void )     { Serial::flush(); }
+	int		availableForWrite( void ) { return (int)Serial::availableForWrite(); }
 
 	/*
 	 *  All four write() overloads are declared together here (rather than
@@ -105,6 +106,8 @@ public:
 	float	parseFloat( void );
 
 	bool	find( const char *target );
+	bool	find( const char *target, size_t length );
+	bool	findUntil( const char *target, const char *terminator );
 
 private:
 	void	_print_num( long n, int base );

@@ -186,6 +186,13 @@ public:
     bool     writable( void );
 
     /**
+     * @brief  Number of bytes that can be written without blocking.
+     *
+     * @return Free space in the TX ring buffer, in bytes.
+     */
+    size_t   availableForWrite( void );
+
+    /**
      * @brief  Block until all outgoing data has actually been transmitted.
      *
      * Waits for the TX ring buffer to drain, then waits for the LPUART's

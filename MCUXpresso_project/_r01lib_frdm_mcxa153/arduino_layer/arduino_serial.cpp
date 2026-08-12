@@ -369,3 +369,73 @@ bool SerialClass::find( const char *target )
 		}
 	}
 }
+
+bool SerialClass::find( const char *target, size_t length )
+{
+	if ( length == 0 )
+		return	true;
+
+	size_t	matched	= 0;
+
+	while ( true )
+	{
+		int	c	= _timed_read();
+		if ( c < 0 )
+			return	false;
+
+		if ( (char)c == target[ matched ] )
+		{
+			matched++;
+			if ( matched == length )
+				return	true;
+		}
+		else
+		{
+			matched	= ( (char)c == target[ 0 ] ) ? 1 : 0;
+		}
+	}
+}
+
+bool SerialClass::findUntil( const char *target, const char *terminator )
+{
+	size_t	target_len	= strlen( target );
+	size_t	term_len	= strlen( terminator );
+
+	if ( target_len == 0 )
+		return	true;
+
+	size_t	matched		= 0;
+	size_t	term_matched	= 0;
+
+	while ( true )
+	{
+		int	c	= _timed_read();
+		if ( c < 0 )
+			return	false;
+
+		if ( (char)c == target[ matched ] )
+		{
+			matched++;
+			if ( matched == target_len )
+				return	true;
+		}
+		else
+		{
+			matched	= ( (char)c == target[ 0 ] ) ? 1 : 0;
+		}
+
+		if ( term_len > 0 )
+		{
+			if ( (char)c == terminator[ term_matched ] )
+			{
+				term_matched++;
+				if ( term_matched == term_len )
+					return	false;
+			}
+			else
+			{
+				term_matched	= ( (char)c == terminator[ 0 ] ) ? 1 : 0;
+			}
+		}
+	}
+}

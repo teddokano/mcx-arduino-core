@@ -152,7 +152,7 @@ Other named pins/peripherals:
 
 | API | Status | Notes |
 |-----|--------|-------|
-| `pinMode` | ✅ | |
+| `pinMode` | ✅ | `INPUT` / `OUTPUT` / `INPUT_PULLUP` / `INPUT_PULLDOWN` / `OUTPUT_OPENDRAIN` |
 | `digitalWrite` / `digitalRead` | ✅ | |
 | `attachInterrupt` | ✅ | RISING / FALLING / CHANGE / LOW (level-triggered, fires repeatedly while held) |
 | `detachInterrupt` | ✅ | |
@@ -163,10 +163,13 @@ Other named pins/peripherals:
 | `Serial.flush` | ✅ | Blocks until the hardware finishes shifting out the last byte, not just until the software TX buffer is empty |
 | `Serial.peek` | ✅ | Only meaningful after `begin()` (always the case for `Serial`/`Serial1`), since it reads the RX ring buffer |
 | `Serial.setTimeout` / `readBytes` / `readBytesUntil` / `readString` / `readStringUntil` / `parseInt` / `parseFloat` / `find` | ✅ | Polled, `millis()`-based timeout (default 1000ms) |
+| `Serial.find(target, length)` / `findUntil(target, terminator)` | ✅ | Added in v0.2.1 |
+| `Serial.availableForWrite` | ✅ | Added in v0.2.1 — free bytes in the TX ring buffer (max 255) |
 | `Serial1` | ✅ | Hardware UART on `D0`/`D1`, separate from USB-bridged `Serial` |
 | `Wire.begin` / `beginTransmission` / `endTransmission` | ✅ | |
 | `Wire.write` / `read` / `requestFrom` / `available` | ✅ | |
 | `Wire.setClock` | ✅ | |
+| `Wire.end` | ✅ | Added in v0.2.1 — releases the I2C/I3C peripheral |
 | I2C slave mode (`Wire.begin(address)`, `onReceive`, `onRequest`) | ❌ | Not supported — master mode only. r01lib has no slave-mode I2C/LPI2C driver to build on; would need new low-level driver work, not just an Arduino-layer shim |
 | `Wire1` (I3C, I2C mode) | ✅ | On-board P3T1755 temperature sensor |
 | `SPI.begin` / `end` / `beginTransaction` / `endTransaction` / `transfer` / `transfer16` | ✅ | `bitOrder` in `SPISettings` is now actually applied to hardware (was silently ignored before v0.2.1) |
