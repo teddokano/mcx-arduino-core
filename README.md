@@ -1,5 +1,7 @@
 # mcx-arduino-core
 
+<img src="img/FRDM-MCXA153.jpg" alt="FRDM-MCXA153 running an mcx-arduino-core sketch" width="400">
+
 Arduino board support package for NXP FRDM MCX Series boards.
 
 New here? Start with the [tutorial](TUTORIAL.md) ([日本語版](TUTORIAL.ja.md)).
