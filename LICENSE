@@ -33,3 +33,10 @@ No source code was copied from either project.
 
 - ArduinoCore-avr — https://github.com/arduino/ArduinoCore-avr (LGPL 2.1)
 - ArduinoCore-API — https://github.com/arduino/ArduinoCore-API (LGPL 2.1)
+
+The Linux LinkServer-discovery logic in `hardware/nxp/mcx/tools/upload.sh`
+(checking a fixed install path, then versioned `LinkServer_<version>`
+install directories, then falling back to `PATH`) is adapted from
+ArduinoCore-zephyr's `tools/upload_pyocd_or_linkserver.sh`.
+
+- ArduinoCore-zephyr — https://github.com/arduino/ArduinoCore-zephyr (Apache License 2.0)

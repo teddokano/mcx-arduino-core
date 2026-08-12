@@ -10,15 +10,26 @@ if [ "$(uname)" = "Darwin" ]; then
     fi
 fi
 
-# Linux
+# Linux -- discovery order adapted from ArduinoCore-zephyr's
+# tools/upload_pyocd_or_linkserver.sh (Apache License 2.0): fixed install
+# path first, then versioned install dirs (LinkServer's installer names
+# these LinkServer_<version>), then fall back to PATH.
 if [ "$(uname)" = "Linux" ]; then
-    LINKSERVER=$(which LinkServer 2>/dev/null)
-    if [ -z "$LINKSERVER" ]; then
-        LINKSERVER="/usr/local/LinkServer/LinkServer"
+    if [ -x /usr/local/LinkServer/LinkServer ]; then
+        LINKSERVER=/usr/local/LinkServer/LinkServer
+    else
+        LINKSERVER_DIR=$(ls -d /usr/local/LinkServer_* 2>/dev/null | sort -V | tail -1)
+        if [ -n "$LINKSERVER_DIR" ]; then
+            LINKSERVER="$LINKSERVER_DIR/LinkServer"
+        fi
+    fi
+
+    if [ -z "$LINKSERVER" ] || [ ! -x "$LINKSERVER" ]; then
+        LINKSERVER=$(command -v LinkServer 2>/dev/null)
     fi
 fi
 
-if [ -z "$LINKSERVER" ] || [ ! -f "$LINKSERVER" ]; then
+if [ -z "$LINKSERVER" ] || [ ! -x "$LINKSERVER" ]; then
     echo "============================================"
     echo "ERROR: LinkServer not found."
     echo "Please install LinkServer from:"

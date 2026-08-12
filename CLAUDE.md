@@ -223,6 +223,14 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 - 確認用スケッチ: `examples/Arduino_compatible_API/test_analog_resolution_and_misc/`（A0の同一信号を10bit/12bitで読み比べ約4倍の関係を確認、ctype.h系は既知の文字で網羅的に検証）。実機確認済み、全項目OK
 - README.mdのAPI対応表にも追加
 
+### Linux対応: upload.shのLinkServer探索ロジック強化
+- ローカルにクローン済みの`ArduinoCore-zephyr`（`/Users/tedd/dev/ArduinoCore/ArduinoCore-zephyr/`, Apache License 2.0）の`tools/upload_pyocd_or_linkserver.sh`を参照し、`upload.sh`のLinux分岐を強化
+- 旧実装: `which LinkServer`を先に試し、無ければ固定パス`/usr/local/LinkServer/LinkServer`にフォールバックするだけだった
+- 新実装: 固定パス`/usr/local/LinkServer/LinkServer`を最優先、次にバージョン付きインストールディレクトリ`/usr/local/LinkServer_<version>`（LinkServerのインストーラが実際に使う命名規則、`sort -V`で最新版を選択）、最後に`PATH`（`command -v`）にフォールバック。存在確認も`-f`（ファイル存在）から`-x`（実行可能）に強化
+- macOS分岐は変更なし。ローカルの実LinkServerインストール（`/Applications/LinkServer_26.6.137/LinkServer`）で探索ロジックの回帰がないことをdry-runで確認済み
+- `LICENSE`のThird-Party Noticesに、この探索ロジックがArduinoCore-zephyrから移植したものである旨を追記
+- **注意**: これはコードの改善であり、実際にLinux環境上でBoards Managerインストール〜ビルド〜書き込みまでの一連の流れを検証したわけではない。実機（実OS）での検証は引き続き未実施（残りのPendingタスク#1のまま）
+
 ---
 
 ## 動作確認済み
