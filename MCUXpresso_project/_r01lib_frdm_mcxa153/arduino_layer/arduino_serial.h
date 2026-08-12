@@ -54,6 +54,7 @@ public:
 	void	print( const std::string& s );
 	void	print( std::string_view s );
 	void	print( const String& s );
+	void	print( const __FlashStringHelper *pstr );
 
 	void	println( void );
 	void	println( const char *s );
@@ -68,6 +69,7 @@ public:
 	void	println( const std::string& s );
 	void	println( std::string_view s );
 	void	println( const String& s );
+	void	println( const __FlashStringHelper *pstr );
 
 	int		available( void ) { return (int)Serial::available(); }
 	int		read( void )      { return getc(); }

@@ -11,6 +11,29 @@
 #include	<cstdlib>
 #include	<cctype>
 
+/*
+ *  PROGMEM / F() / pgm_read_*() compatibility -- no-ops on this Cortex-M
+ *  target. AVR is a Harvard-architecture chip where flash and RAM are
+ *  separate address spaces, so PROGMEM-tagged data needs special
+ *  instructions (pgm_read_byte() etc.) to read back; on this von-Neumann
+ *  Cortex-M, flash is just regular memory-mapped, readable like anything
+ *  else. These are declared purely so AVR-era sketches/libraries that use
+ *  them still compile -- __FlashStringHelper is forward-declared here
+ *  (before arduino_string.h/arduino_serial.h) since String and SerialClass
+ *  both need to know the type exists for their F()-string overloads.
+ */
+#define	PROGMEM
+#define	PGM_P				const char *
+#define	PSTR( s )			( s )
+#define	pgm_read_byte( addr )	( *(const unsigned char *)(addr) )
+#define	pgm_read_word( addr )	( *(const unsigned short *)(addr) )
+#define	pgm_read_dword( addr )	( *(const unsigned long *)(addr) )
+#define	pgm_read_float( addr )	( *(const float *)(addr) )
+#define	pgm_read_ptr( addr )	( *(const void * const *)(addr) )
+
+class __FlashStringHelper;
+#define	F( string_literal )	( reinterpret_cast<const __FlashStringHelper *>( PSTR( string_literal ) ) )
+
 #include	"r01lib.h"
 #include	"arduino_string.h"
 #include	"arduino_serial.h"

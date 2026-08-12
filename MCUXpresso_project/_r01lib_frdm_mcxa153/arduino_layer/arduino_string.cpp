@@ -143,6 +143,15 @@ String::String( const std::string &s )
 	_alloc_copy( s.c_str(), (unsigned int)s.length() );
 }
 
+String::String( const __FlashStringHelper *pstr )
+{
+	_init();
+	// F()-wrapped strings are just regular flash-resident const char* on
+	// this platform (see arduino.h) -- the "cast back" is the whole point.
+	const char	*cstr	= reinterpret_cast<const char *>( pstr );
+	_alloc_copy( cstr, cstr ? (unsigned int)strlen( cstr ) : 0 );
+}
+
 String::String( int value, unsigned char base )
 {
 	_init();
@@ -321,6 +330,11 @@ bool String::concat( const char *cstr )
 	_len	= newlen;
 
 	return	true;
+}
+
+bool String::concat( const __FlashStringHelper *pstr )
+{
+	return	concat( reinterpret_cast<const char *>( pstr ) );
 }
 
 bool String::concat( char c )

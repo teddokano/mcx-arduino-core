@@ -16,6 +16,13 @@
 #include	<cstdint>
 #include	<cstddef>
 
+// Forward declaration only, never defined -- matches AVR/ARM Arduino cores'
+// convention of using this purely as an opaque pointer type to distinguish
+// F()-wrapped flash-string literals at compile time (see arduino.h's F()
+// macro). Declared here too (not just in arduino.h) so this header stays
+// self-contained regardless of include order.
+class __FlashStringHelper;
+
 class String
 {
 public:
@@ -25,6 +32,7 @@ public:
 	String( String &&s ) noexcept;
 	String( char c );
 	String( const std::string &s );
+	String( const __FlashStringHelper *pstr );
 	explicit String( int value, unsigned char base = 10 );
 	explicit String( unsigned int value, unsigned char base = 10 );
 	explicit String( long value, unsigned char base = 10 );
@@ -56,6 +64,7 @@ public:
 
 	bool	concat( const String &s );
 	bool	concat( const char *cstr );
+	bool	concat( const __FlashStringHelper *pstr );
 	bool	concat( char c );
 	bool	concat( int num );
 	bool	concat( unsigned int num );
@@ -68,6 +77,7 @@ public:
 
 	String&	operator+=( const String &s )     { concat( s ); return *this; }
 	String&	operator+=( const char *cstr )    { concat( cstr ); return *this; }
+	String&	operator+=( const __FlashStringHelper *pstr ) { concat( pstr ); return *this; }
 	String&	operator+=( char c )               { concat( c ); return *this; }
 	String&	operator+=( int num )              { concat( num ); return *this; }
 	String&	operator+=( unsigned int num )     { concat( num ); return *this; }

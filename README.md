@@ -186,7 +186,11 @@ Other named pins/peripherals:
 | Math constants / compat macros | ✅ | `PI`, `min`/`max`, `bitRead`/`bitWrite`, `map`, etc. (UNO R3/R4 compatible) |
 | `yield` | ✅ | No-op — no cooperative scheduler on this core |
 | Character functions (`isAlpha`, `isDigit`, `isSpace`, etc.) | ✅ | Thin wrappers over `<cctype>` |
-| `String` class | ✅ | Original implementation (not a WString port); concatenation (including `long long`/`unsigned long long`), `substring`/`indexOf`/`replace`, `toInt`/`toFloat`, `getBytes`/`toCharArray`, etc. `reserve()` is a no-op (always allocates exact-fit) |
+| `String` class | ✅ | Original implementation (not a WString port); concatenation (including `long long`/`unsigned long long`, and `F("...")`), `substring`/`indexOf`/`replace`, `toInt`/`toFloat`, `getBytes`/`toCharArray`, etc. `reserve()` is a no-op (always allocates exact-fit) |
+| `PROGMEM` / `pgm_read_byte`/`_word`/`_dword`/`_float`/`_ptr` / `PSTR` | ✅ | No-ops — flash and RAM share one address space on this Cortex-M target, unlike AVR's Harvard split. Declared for sketch/library compatibility only |
+| `F("...")` / `__FlashStringHelper` | ✅ | Works with `Serial.print`/`println` and `String` (construct/concat) |
+| `ARDUINO` version macro | ✅ | Defined as `10819` via `platform.txt`, for libraries that gate on `#if ARDUINO >= 100` etc. |
+| `ARDUINO_ARCH_MCX` / `ARDUINO_FRDM_MCXA153` | ✅ | Defined via `platform.txt` (the latter derived from `boards.txt`'s `build.board`) |
 
 ## Relationship to ArduinoCore-zephyr
 

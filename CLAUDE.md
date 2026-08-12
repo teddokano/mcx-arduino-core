@@ -257,6 +257,14 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 - 確認用スケッチ: `test_Serial_BIN_and_write`（Serial1 D1-D0ジャンパ要、BIN基数の期待値比較＋write系の往復確認、null バイトを含むバッファでcount-basedであることも確認）、`test_Interrupt_LOW`（配線不要、SW2長押しでカウンタが数十万回増えることを確認 — エッジトリガーなら数回で止まるはずが374,533回増加し、レベルトリガーとして機能していることを実証）。実機確認済み、全項目OK
 - README.mdのAPI対応表を更新（`attachInterrupt`にLOW追加、`Serial.write`の4オーバーロード明記、BINバグ修正済みである旨明記）
 
+### 機能ギャップ埋め（PROGMEM/F()、ARDUINO/ARDUINO_ARCH_*マクロ）
+- 3周目で「未対応（バグではなく機能ギャップ）」として見送っていた3項目に対応
+- **`ARDUINO`バージョンマクロ・`ARDUINO_ARCH_*`系マクロ**: ソースコード側ではなく`platform.txt`の`compiler.defines`に追加（`-DARDUINO=10819 -DARDUINO_ARCH_MCX -DARDUINO_{build.board}`）。`{build.board}`はarduino-cliが`boards.txt`の`frdm_mcxa153.build.board=FRDM_MCXA153`から自動展開する組み込みプロパティで、`ARDUINO_FRDM_MCXA153`として正しく定義されることを実際にビルドして確認済み。従来これらのマクロが本当に未定義かどうか自体、テストスケッチで`#ifdef`/`#pragma message`を使って実証してから着手した
+- **`PROGMEM`/`pgm_read_byte`等/`PSTR`**: `arduino.h`にno-opマクロとして追加。Cortex-Mはvon Neumann構成でフラッシュとRAMが同一アドレス空間のため、AVRのようなpgm_read系の特殊アクセスは本来不要 — ソース互換性のためだけの宣言
+- **`F("...")`/`__FlashStringHelper`**: `arduino.h`に`class __FlashStringHelper;`（前方宣言のみ、実体は定義しない、本家と同じ流儀）と`F()`マクロを追加。`arduino_string.h`と`arduino_serial.h`にも同じ前方宣言を重複させて自己完結させ（`arduino.h`が`arduino_string.h`をincludeする順序に依存しないように）、`String(const __FlashStringHelper*)`コンストラクタ・`concat`/`operator+=`、`SerialClass::print`/`println(const __FlashStringHelper*)`を実装。中身は単に`const char*`へreinterpret_castして通常経路に渡すだけ
+- 確認用スケッチ: `test_PROGMEM_F_ARDUINO_macros`（配線不要、`pgm_read_byte`の値確認、`F()`をSerial/Stringの両方で使用、`#if ARDUINO >= 100`・`ARDUINO_ARCH_MCX`・`ARDUINO_FRDM_MCXA153`の`#ifdef`確認）。実機確認済み、全項目OK
+- README.mdのAPI対応表にも追加。これで3周にわたるAPI互換性精査で見つかった項目はすべて対応完了（唯一の例外はI2Cスレーブモード、既知の制限として明記済み）
+
 ---
 
 ## 動作確認済み
@@ -274,6 +282,7 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 | Serial.readString / readStringUntil、String::reserve/getBytes/toCharArray/startsWith(offset) | ✅ | v0.2.1で追加。Serial1ループバック＋純粋ロジック検証で実機確認済み |
 | SPI.setBitOrder/setDataMode/setClockDivider、String 64bit（long long/unsigned long long） | ✅ | v0.2.1で追加。MOSI-MISOループバック＋純粋ロジック検証で実機確認済み |
 | Serial print BIN基数バグ修正（Serial・String両方）、Serial.write全オーバーロード、attachInterrupt LOWモード | ✅ | v0.2.1で修正・追加。全項目実機確認済み（LOWモードは長押しでカウンタ374,533回増加を確認） |
+| PROGMEM/pgm_read系、F()/String対応、ARDUINO/ARDUINO_ARCH_*マクロ | ✅ | v0.2.1で追加。実機確認済み |
 | Wire (I2C) | ✅ | |
 | Wire1 (I3C, I2Cモード) | ✅ | オンボードP3T1755で確認、重大バグ修正済み |
 | SPI | ✅ | |

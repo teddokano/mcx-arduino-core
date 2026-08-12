@@ -151,6 +151,10 @@ void SerialClass::print( std::string_view s )
 	for ( char c : s ) putc( c );
 }
 void SerialClass::print( const String& s )        { print( s.c_str() ); }
+void SerialClass::print( const __FlashStringHelper *pstr )
+{
+	print( reinterpret_cast<const char *>( pstr ) );
+}
 
 // ---- println overloads ----
 
@@ -167,6 +171,7 @@ void SerialClass::println( double n, int digits )        { print(n, digits); pri
 void SerialClass::println( const std::string& s )        { print(s); println(); }
 void SerialClass::println( std::string_view s )          { print(s); println(); }
 void SerialClass::println( const String& s )              { print(s); println(); }
+void SerialClass::println( const __FlashStringHelper *pstr ) { print(pstr); println(); }
 
 // ---- helpers ----
 
