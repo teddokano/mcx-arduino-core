@@ -71,6 +71,7 @@ public:
 	int		available( void ) { return (int)Serial::available(); }
 	int		read( void )      { return getc(); }
 	void	write( uint8_t c ){ putc( c ); }
+	void	flush( void )     { Serial::flush(); }
 
 	inline operator bool( void ) { return true; }
 

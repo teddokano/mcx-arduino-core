@@ -159,6 +159,7 @@ Other named pins/peripherals:
 | `digitalPinToInterrupt` | ✅ | |
 | `Serial.begin` / `print` / `println` / `printf` | ✅ | |
 | `Serial.read` / `available` / `write` | ✅ | |
+| `Serial.flush` | ✅ | Blocks until the hardware finishes shifting out the last byte, not just until the software TX buffer is empty |
 | `Serial1` | ✅ | Hardware UART on `D0`/`D1`, separate from USB-bridged `Serial` |
 | `Wire.begin` / `beginTransmission` / `endTransmission` | ✅ | |
 | `Wire.write` / `read` / `requestFrom` / `available` | ✅ | |

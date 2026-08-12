@@ -174,6 +174,15 @@ public:
     bool     writable( void );
 
     /**
+     * @brief  Block until all outgoing data has actually been transmitted.
+     *
+     * Waits for the TX ring buffer to drain, then waits for the LPUART's
+     * transmission-complete flag -- i.e. until the last byte has finished
+     * shifting out of hardware, not just been handed off to the peripheral.
+     */
+    void     flush( void );
+
+    /**
      * @brief  Write a byte array to the TX ring buffer.
      *
      * Enqueues all @p length bytes.  Blocks on each byte if the TX ring

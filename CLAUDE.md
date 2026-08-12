@@ -193,6 +193,13 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 - 確認用スケッチ: `examples/Arduino_compatible_API/test_detachInterrupt/`（SW2を3回押すとdetach→3秒後に自動re-attach、という流れ）。実機確認済み — detach中の押下は無反応、re-attach後は正常に再開することを確認
 - README.mdのAPI対応表にも追加
 
+### Serial.flush() 実装
+- ギャップ調査で判明した3件目。r01libの`Serial`クラスにTXリングバッファ（`_tx_head`/`_tx_tail`、256バイト）はあったが、送信完了を待つ手段がなかった
+- `Serial::flush()`をr01lib側に新設（`Serial.h/.cpp`）。まずTXリングバッファが空になるまでスピンウェイトし、その後LPUARTの`kLPUART_TransmissionCompleteFlag`（ソフトウェアバッファではなくハードウェアのシフトレジスタが実際に送信完了したか）が立つまで待つ、という2段階の待ち合わせ。バッファが空でも直近の1バイトはまだ物理的に送信中の可能性があるため
+- `SerialClass::flush()`は単純なパススルー
+- 確認用スケッチ: `examples/Arduino_compatible_API/test_Serial_flush/`（Serial1を9600bpsで使い、`flush()`が実際にブロックした時間を計測してビット数から計算した理論値と比較）。実機確認済み — 実測24799/24002/23914µs、理論値23958µsとほぼ一致し、ソフトウェアバッファの空きだけでなくハードウェア送信完了まで正しく待っていることを確認
+- README.mdのAPI対応表にも追加
+
 ---
 
 ## 動作確認済み
@@ -201,6 +208,7 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 |---|---|---|
 | GPIO / digitalWrite / digitalRead | ✅ | |
 | Serial | ✅ | |
+| Serial.flush() | ✅ | v0.2.1で追加。Serial1@9600bpsで実測値と理論値を比較し実機確認済み |
 | Wire (I2C) | ✅ | |
 | Wire1 (I3C, I2Cモード) | ✅ | オンボードP3T1755で確認、重大バグ修正済み |
 | SPI | ✅ | |

@@ -573,6 +573,15 @@ bool Serial::writable( void )
     return ( next != _tx_tail );
 }
 
+void Serial::flush( void )
+{
+    while ( _tx_head != _tx_tail )
+        ;
+
+    while ( !( LPUART_GetStatusFlags( _base ) & kLPUART_TransmissionCompleteFlag ) )
+        ;
+}
+
 status_t Serial::write( const uint8_t *data, size_t length )
 {
     for ( size_t i = 0; i < length; i++ )
