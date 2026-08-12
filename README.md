@@ -170,6 +170,7 @@ Other named pins/peripherals:
 | `Wire1` (I3C, I2C mode) | ✅ | On-board P3T1755 temperature sensor |
 | `SPI.begin` / `end` / `beginTransaction` / `endTransaction` / `transfer` / `transfer16` | ✅ | `bitOrder` in `SPISettings` is now actually applied to hardware (was silently ignored before v0.2.1) |
 | `SPI.usingInterrupt` / `notUsingInterrupt` | ✅ | No-op — declared for sketch compatibility only |
+| `SPI.setBitOrder` / `setDataMode` / `setClockDivider` | ✅ | Legacy pre-1.6 API; `setClockDivider` divides `SPI`'s peripheral input clock, not `F_CPU` |
 | `delay` | ✅ | |
 | `delayMicroseconds` | ✅ | |
 | `analogRead` | ✅ | LPADC, `A0`-`A3`, 10bit (0-1023) default |
@@ -184,7 +185,7 @@ Other named pins/peripherals:
 | Math constants / compat macros | ✅ | `PI`, `min`/`max`, `bitRead`/`bitWrite`, `map`, etc. (UNO R3/R4 compatible) |
 | `yield` | ✅ | No-op — no cooperative scheduler on this core |
 | Character functions (`isAlpha`, `isDigit`, `isSpace`, etc.) | ✅ | Thin wrappers over `<cctype>` |
-| `String` class | ✅ | Original implementation (not a WString port); concatenation, `substring`/`indexOf`/`replace`, `toInt`/`toFloat`, `getBytes`/`toCharArray`, etc. `reserve()` is a no-op (always allocates exact-fit) |
+| `String` class | ✅ | Original implementation (not a WString port); concatenation (including `long long`/`unsigned long long`), `substring`/`indexOf`/`replace`, `toInt`/`toFloat`, `getBytes`/`toCharArray`, etc. `reserve()` is a no-op (always allocates exact-fit) |
 
 ## Relationship to ArduinoCore-zephyr
 

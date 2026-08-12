@@ -69,6 +69,11 @@ public:
 	 */
 	virtual void	bit_order( uint8_t order );
 
+	/** SPI peripheral's input clock, in Hz -- the reference frequency() is
+	 *  divided down from.
+	 */
+	uint32_t	clock_freq( void ) const { return master_clk_freq; }
+
 	/** Data transfer on SPI
 	 *  
 	 * @param wp data to write

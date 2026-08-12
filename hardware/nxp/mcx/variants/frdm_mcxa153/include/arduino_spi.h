@@ -25,6 +25,17 @@ enum spi_mode {
 	SPI_MODE3,
 };
 
+// Legacy (pre-1.6) clock divider constants, values matching classic AVR
+// SPI.h's register-encoding scheme (not linear) -- setClockDivider() maps
+// each back to the actual divide-by-N factor it names.
+#define	SPI_CLOCK_DIV4		0x00
+#define	SPI_CLOCK_DIV16		0x01
+#define	SPI_CLOCK_DIV64		0x02
+#define	SPI_CLOCK_DIV128	0x03
+#define	SPI_CLOCK_DIV2		0x04
+#define	SPI_CLOCK_DIV8		0x05
+#define	SPI_CLOCK_DIV32		0x06
+
 constexpr int SS	= ARD_CS;
 
 class SPISettings
@@ -60,6 +71,16 @@ public:
 	 */
 	void	 usingInterrupt( uint8_t interruptNumber )    { (void)interruptNumber; }
 	void	 notUsingInterrupt( uint8_t interruptNumber ) { (void)interruptNumber; }
+
+	/*
+	 *  Legacy pre-1.6 API: configures bit order/mode/clock outside of a
+	 *  beginTransaction()/endTransaction() pair, applied immediately and
+	 *  persisting until changed again. Superseded by SPISettings, kept for
+	 *  sketch compatibility.
+	 */
+	void	setBitOrder( uint8_t order );
+	void	setDataMode( uint8_t mode );
+	void	setClockDivider( uint8_t divider );
 
 private:
 	void	txrx( uint8_t *buf, size_t count );

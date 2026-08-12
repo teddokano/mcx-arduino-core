@@ -242,6 +242,12 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 - 確認用スケッチ: `test_SPI_bitorder_end_transfer16`（MOSI-MISOループバック配線要）、`test_Wire_setClock`（オンボードP3T1755、配線不要）、`test_Serial_readString`（Serial1 D1-D0ジャンパ要）。3本とも実機確認済み、全項目OK
 - README.mdのAPI対応表を全項目更新。**I2Cスレーブモード**（`Wire.begin(address)`, `onReceive`, `onRequest`）は未対応であることを❌付きで明記 — r01lib側にスレーブ用I2C/LPI2Cドライバが一切存在せず、Arduino層だけでは実装不可能で新規の低レベルドライバ開発が必要という規模の大きさから、既知の制限事項として記録
 
+### 中優先度ギャップ対応（SPIレガシーAPI、Stringの64bit対応）
+- 2周目の精査で「中優先度」に分類していた残り項目
+- **SPI**: `setBitOrder()`/`setDataMode()`/`setClockDivider()`（pre-1.6世代のレガシーAPI、`SPISettings`/`beginTransaction()`を使わず即座にハードウェアへ反映する方式）を追加。`setClockDivider()`はAVRの`SPI_CLOCK_DIVn`定数（レジスタエンコーディングが非線形なので、定数値をそのまま除数として使わずlookup table的にswitch文で分周値へ変換）をサポートするが、除算対象はAVRの`F_CPU`ではなくr01lib SPIの`master_clk_freq`（このボードのSPIペリフェラル入力クロック、新設した`clock_freq()`アクセサ経由で取得）。この違いはREADMEにも明記
+- **String**: `long long`/`unsigned long long`のコンストラクタ・`concat`・`operator+=`を追加。実装は既存の`long`/`unsigned long`版と同じパターン（`snprintf`の`%lld`/`%llu`/`%llx`/`%llo`、整数フォーマットなのでnano.specsの浮動小数点非対応制約とは無関係で問題なし）
+- 確認用スケッチ: `test_SPI_legacy_api`（MOSI-MISOループバック配線要、legacy API切り替え後もtransferが正常動作することを確認）、`test_String_64bit`（配線不要、32bit longをオーバーフローする値で64bit経路が実際に使われていることを確認）。実機確認済み、全項目OK
+
 ---
 
 ## 動作確認済み
@@ -257,6 +263,7 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 | SPI.end / transfer16 / bitOrderバグ修正 | ✅ | v0.2.1で追加・修正。MOSI-MISOループバックで実機確認済み |
 | Wire.setClock | ✅ | v0.2.1で追加。オンボードP3T1755で実機確認済み |
 | Serial.readString / readStringUntil、String::reserve/getBytes/toCharArray/startsWith(offset) | ✅ | v0.2.1で追加。Serial1ループバック＋純粋ロジック検証で実機確認済み |
+| SPI.setBitOrder/setDataMode/setClockDivider、String 64bit（long long/unsigned long long） | ✅ | v0.2.1で追加。MOSI-MISOループバック＋純粋ロジック検証で実機確認済み |
 | Wire (I2C) | ✅ | |
 | Wire1 (I3C, I2Cモード) | ✅ | オンボードP3T1755で確認、重大バグ修正済み |
 | SPI | ✅ | |

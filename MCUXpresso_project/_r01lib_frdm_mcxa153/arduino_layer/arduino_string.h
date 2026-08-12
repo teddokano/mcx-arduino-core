@@ -29,6 +29,8 @@ public:
 	explicit String( unsigned int value, unsigned char base = 10 );
 	explicit String( long value, unsigned char base = 10 );
 	explicit String( unsigned long value, unsigned char base = 10 );
+	explicit String( long long value, unsigned char base = 10 );
+	explicit String( unsigned long long value, unsigned char base = 10 );
 	explicit String( float value, unsigned char decimalPlaces = 2 );
 	explicit String( double value, unsigned char decimalPlaces = 2 );
 	~String();
@@ -59,6 +61,8 @@ public:
 	bool	concat( unsigned int num );
 	bool	concat( long num );
 	bool	concat( unsigned long num );
+	bool	concat( long long num );
+	bool	concat( unsigned long long num );
 	bool	concat( float num );
 	bool	concat( double num );
 
@@ -69,6 +73,8 @@ public:
 	String&	operator+=( unsigned int num )     { concat( num ); return *this; }
 	String&	operator+=( long num )             { concat( num ); return *this; }
 	String&	operator+=( unsigned long num )    { concat( num ); return *this; }
+	String&	operator+=( long long num )        { concat( num ); return *this; }
+	String&	operator+=( unsigned long long num ){ concat( num ); return *this; }
 	String&	operator+=( float num )            { concat( num ); return *this; }
 	String&	operator+=( double num )           { concat( num ); return *this; }
 

@@ -142,6 +142,24 @@ String::String( unsigned long value, unsigned char base )
 	_alloc_copy( buf, (unsigned int)strlen( buf ) );
 }
 
+String::String( long long value, unsigned char base )
+{
+	_init();
+	char	buf[ 66 ];
+	const char	*fmt	= ( base == 16 ) ? "%llx" : ( base == 8 ) ? "%llo" : "%lld";
+	snprintf( buf, sizeof(buf), fmt, value );
+	_alloc_copy( buf, (unsigned int)strlen( buf ) );
+}
+
+String::String( unsigned long long value, unsigned char base )
+{
+	_init();
+	char	buf[ 66 ];
+	const char	*fmt	= ( base == 16 ) ? "%llx" : ( base == 8 ) ? "%llo" : "%llu";
+	snprintf( buf, sizeof(buf), fmt, value );
+	_alloc_copy( buf, (unsigned int)strlen( buf ) );
+}
+
 String::String( float value, unsigned char decimalPlaces )
 {
 	_init();
@@ -250,6 +268,8 @@ bool String::concat( int num )         { return	concat( String( num ) ); }
 bool String::concat( unsigned int num ){ return	concat( String( num ) ); }
 bool String::concat( long num )        { return	concat( String( num ) ); }
 bool String::concat( unsigned long num){ return	concat( String( num ) ); }
+bool String::concat( long long num )          { return	concat( String( num ) ); }
+bool String::concat( unsigned long long num ) { return	concat( String( num ) ); }
 bool String::concat( float num )       { return	concat( String( num ) ); }
 bool String::concat( double num )      { return	concat( String( num ) ); }
 
