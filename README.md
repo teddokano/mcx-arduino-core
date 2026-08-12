@@ -164,6 +164,7 @@ Other named pins/peripherals:
 | `Wire1` (I3C, I2C mode) | ✅ | On-board P3T1755 temperature sensor |
 | `SPI.begin` / `beginTransaction` / `transfer` / `transfer16` | ✅ | |
 | `delay` | ✅ | |
+| `delayMicroseconds` | ✅ | |
 | `analogRead` | ✅ | LPADC, `A0`-`A3`, 10bit (0-1023) |
 | `analogWrite` (PWM) | ✅ | FlexPWM0, `PWM0`-`PWM5` only, fixed 1kHz period (not configurable) |
 | `millis` / `micros` | ✅ | SysTick(1ms) + DWT cycle counter |
@@ -172,6 +173,7 @@ Other named pins/peripherals:
 | `pulseIn` / `pulseInLong` | ✅ | |
 | `random` / `randomSeed` | ✅ | |
 | Math constants / compat macros | ✅ | `PI`, `min`/`max`, `bitRead`/`bitWrite`, `map`, etc. (UNO R3/R4 compatible) |
+| `String` class | ✅ | Original implementation (not a WString port); concatenation, `substring`/`indexOf`/`replace`, `toInt`/`toFloat`, etc. |
 
 ## Relationship to ArduinoCore-zephyr
 

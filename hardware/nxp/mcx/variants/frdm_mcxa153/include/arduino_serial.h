@@ -12,6 +12,7 @@
 #include	<stdarg.h>
 #include	<stdint.h>
 #include	"Serial.h"
+#include	"arduino_string.h"
 
 // Number base definitions
 #define DEC 10
@@ -51,6 +52,7 @@ public:
 	void	print( char c );
 	void	print( const std::string& s );
 	void	print( std::string_view s );
+	void	print( const String& s );
 
 	void	println( void );
 	void	println( const char *s );
@@ -64,6 +66,7 @@ public:
 	void	println( char c );
 	void	println( const std::string& s );
 	void	println( std::string_view s );
+	void	println( const String& s );
 
 	int		available( void ) { return (int)Serial::available(); }
 	int		read( void )      { return getc(); }

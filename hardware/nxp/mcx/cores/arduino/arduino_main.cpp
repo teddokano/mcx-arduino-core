@@ -28,6 +28,11 @@ void delay( unsigned long ms )
 	wait( (float)ms / 1000.0f );
 }
 
+void delayMicroseconds( unsigned int us )
+{
+	wait_us( us );
+}
+
 /*
  *  millis() / micros()
  *

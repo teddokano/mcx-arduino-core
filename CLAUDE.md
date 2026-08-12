@@ -5,6 +5,7 @@
 - **現在のバージョン**: v0.2.0（`package_nxp_mcx_index.json` 上の最新リリース。`prepare0.1.9`→`main`マージ・GitHub Release作成済み、`f393132`でchecksum自動更新も確定）
 - ブランチ名は`0.1.9`のままだがリリースバージョンは`0.2.0`に変更 — analogRead/analogWrite/millis/micros/tone/noToneの追加で基本的なArduino API群が揃ったためマイナーバージョンを上げる判断
 - **内容**: NXP FRDM-MCXA153 (Cortex-M33) 向けArduino IDEボードサポートパッケージ
+- **作業中バージョン**: v0.2.1（`prepare0.2.1`ブランチ、`main`未マージ・未リリース）
 
 ---
 
@@ -166,6 +167,27 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 
 ---
 
+## v0.2.1 で作業中の内容（`prepare0.2.1` ブランチ・未リリース）
+
+### delayMicroseconds() 実装
+- v0.2.0公開後に`delayMicroseconds()`が未対応であることが判明。`delay()`と同じパターンで、r01libに既存の`wait_us()`（`mcu.h`/`mcu.cpp`、SDKの`SDK_DelayAtLeastUs()`ベース）を呼ぶだけの実装として追加
+- `arduino.h`（3箇所の同期コピー）に宣言追加、`arduino_main.cpp`（2箇所の同期コピー）に実装追加
+- 確認用スケッチ: `examples/Arduino_compatible_API/test_delayMicroseconds/`（`micros()`で前後を計測し、要求値との比較・WARNING表示付き）。実機確認済み
+- README.mdのAPI対応表にも追加
+
+### Arduino APIギャップ調査と`String`クラス新規実装
+- v0.2.0公開後、Arduinoで標準的とされるAPIのうち未対応のものがないか総点検（Explore agentに依頼して網羅的に調査）。抜けていたもの: `detachInterrupt()`、`yield()`、ctype.h系ラッパー（`isAlpha`等）、`analogReference()`、`analogReadResolution`/`analogWriteResolution`、`String`クラス、`Serial.flush()`/`peek()`/`setTimeout()`/`readBytes()`/`parseInt()`等のStream系ヘルパー。`pow`/`sqrt`/`sin`/`cos`/`tan`は`arduino.h`が`<math.h>`を読み込み済みのため対応不要と判明
+- 上記のうち`String`クラスをまず実装。本家ArduinoCore-avr/ArduinoCore-APIの`WString`（LGPL 2.1）を移植する案と、独自にゼロから書く案をユーザーに提示し、**独自実装（MITのまま統一）を選択**（本家移植だとその1ファイルだけLGPL表記を残す必要が出るため）
+- 新規ファイル `arduino_string.h`/`arduino_string.cpp`（`arduino_layer/`に新規、`variants/frdm_mcxa153/include/`にはヘッダのみ同期 — `.cpp`実装は元々`hardware/`側には置かない構成のため）
+- コンストラクタ（`const char*`, `std::string`, `char`, 数値各種＋基数/小数桁指定）、`+`/`+=`/`concat`、比較演算子、`c_str`/`length`/`isEmpty`、`charAt`/`operator[]`、`indexOf`/`lastIndexOf`/`substring`/`startsWith`/`endsWith`、`replace`/`remove`、`toUpperCase`/`toLowerCase`/`trim`、`toInt`/`toFloat`/`toDouble`を実装。ヒープ確保は`new`＋`_alloc_copy()`で毎回exact-fit再確保する単純な方式（本家のcapacity先読み最適化はなし、実用上は問題ない想定）
+- double→文字列変換は`SerialClass::_print_double()`と同じ整数演算ベースの手法（nano.specsの`snprintf`が`%f`非対応のため）をローカルに複製して実装（`dtoa()`ヘルパー）
+- `SerialClass::print(const String&)` / `println(const String&)` オーバーロードを追加
+- ビルド設定: `MCUXpresso_project/.../Debug/arduino_layer/subdir.mk`に`arduino_string.cpp`をCPP_SRCS/CPP_DEPS/OBJS/cleanターゲットへ追加
+- 確認用スケッチ: `examples/Arduino_compatible_API/test_String/`（連結・数値変換・検索・置換・大小文字変換・trim等を`OK`/`FAIL`判定付きで一通り検証）。実機確認済み、全項目OK
+- README.mdのAPI対応表にも追加（WStringの移植ではなく独自実装である旨を明記）
+
+---
+
 ## 動作確認済み
 
 | API | 状態 | 備考 |
@@ -179,12 +201,14 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 | analogRead | ✅ | LPADC, A0-A3 |
 | analogWrite (PWM) | ✅ | FlexPWM0, PWM0-PWM5のみ |
 | millis / micros | ✅ | SysTick(1ms) + DWT |
+| delayMicroseconds | ✅ | wait_us()ベース、v0.2.1で追加 |
 | tone / noTone | ✅ | CTIMER0, 任意のデジタルピン |
 | Serial1 (D0/D1ハードウェアUART) | ✅ | 入力バッファ有効化・RX割り込み・available()の3バグ修正後、実機ループバックで確認 |
 | shiftOut / shiftIn | ✅ | 割り込みベースの相互検証で確認 |
 | pulseIn / pulseInLong | ✅ | |
 | random / randomSeed | ✅ | |
 | UNO R3/R4互換マクロ・定数一式 | ✅ | コンパイル確認のみ（数値的な動作確認は各マクロの単純さから省略） |
+| String クラス | ✅ | 独自実装（WString移植ではない）。連結・数値変換・検索・置換・大小文字変換・trim等を実機確認、全項目OK |
 | 上記全機能の同時使用 | ✅ | `test_combined_peripherals.ino`（Serial1込み）で実機確認済み。WARNINGなし、`serial1`ループバック欠落なし |
 | ボードマネージャーインストール | ✅ | v0.1.5時点で確認済み。v0.2.0リリース後、実際にGitHubの`package_nxp_mcx_index.json`経由でBoards Managerからインストールし直し、macOS/Windows 11双方でビルド・書き込み・実行まで動作確認済み |
 

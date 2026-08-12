@@ -11,6 +11,7 @@
 #include	<cstdlib>
 
 #include	"r01lib.h"
+#include	"arduino_string.h"
 #include	"arduino_serial.h"
 #include	"arduino_io.h"
 #include	"arduino_analog.h"
@@ -118,6 +119,7 @@ inline long random( long min, long max )
 void	setup( void );
 void	loop( void );
 void	delay( unsigned long ms );
+void	delayMicroseconds( unsigned int us );
 unsigned long	millis( void );
 unsigned long	micros( void );
 
