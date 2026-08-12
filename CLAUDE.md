@@ -2,7 +2,8 @@
 
 ## プロジェクト概要
 - **リポジトリ**: https://github.com/teddokano/mcx-arduino-core
-- **現在のバージョン**: v0.2.1（`package_nxp_mcx_index.json` 上の最新リリース。`prepare0.2.1`→`main`fast-forwardマージ・GitHub Release作成済み、`3e9b54b`でchecksum自動更新も確定。2026-08-12リリース）
+- **現在のバージョン**: v0.2.1（`package_nxp_mcx_index.json` 上の最新リリース。`prepare0.2.1`→`main`fast-forwardマージ・GitHub Release作成済み、`2da5772`でchecksum自動更新も確定。2026-08-12リリース）
+- **重要な学び（リリースzipの構造要件）**: v0.2.1の初回リリース作業で`git archive --format=zip -o ... HEAD:hardware/nxp/mcx`を使ってzipを作成したところ、Arduino IDE経由の実インストールで`Failed to install platform: ... no unique root dir in archive, found '.../cores' and '.../tools'`エラーで失敗。Arduino Boards Managerのインストーラーは**zip直下に単一のラッパーディレクトリが1つだけ**存在することを要求する（インストーラーがそのディレクトリを剥がして`packages/<vendor>/hardware/<arch>/<version>/`に配置する仕組み）。`git archive HEAD:hardware/nxp/mcx`はサブディレクトリの中身を直接展開するため、`boards.txt`/`cores/`/`tools/`/`variants/`等がzip直下に並ぶ「フラットな」構造になってしまい、この要件を満たしていなかった。実際に公開済みのv0.2.0のzipを確認したところ、そちらは`mcx/`という単一のラッパーディレクトリを持つ正しい構造になっており問題なし（0.2.1作成時のみのミス）。**今後リリースzipを作る際は、必ず単一のトップレベルディレクトリ（名前は任意、例: `mcx-arduino-core-<version>/`）でラップすること** — `git archive`で作る場合は一旦別ディレクトリに展開してからラッパーディレクトリごと`zip -r`するか、`--prefix=<name>/`オプションを使う
 - **内容**: NXP FRDM-MCXA153 (Cortex-M33) 向けArduino IDEボードサポートパッケージ
 - v0.2.1の主な内容: `String`クラス独自実装、`Print`/`Stream`/`Printable`抽象基底クラス新設（サードパーティライブラリ互換性向上）、Serial/Stream系ヘルパー一式、複数の実バグ修正（SPI bitOrder、Serial BIN基数、Serial.writeオーバーロード、attachInterrupt LOW、Wire.end() BusFault）。詳細は本ファイル内の「v0.2.1 で作業中の内容」セクションおよび[CHANGELOG.md](CHANGELOG.md)を参照
 - **Linux対応の扱い**: v0.2.1にxPack GCC（Linux x86_64/arm64）・`upload.sh`のLinux分岐を含めたが、実機（実Linux環境）でのBoards Managerインストール〜ビルド〜書き込みは未検証（README.mdに明記済み）。ユーザー方針: このリリース版を使って実際にLinuxマシンで検証し、確認できた時点で正式サポート確定とする（残りのPendingタスク#1）
