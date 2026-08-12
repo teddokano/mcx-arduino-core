@@ -304,6 +304,9 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 - 確認用スケッチ: `examples/Arduino_compatible_API/test_Print_Stream_hierarchy/`（`class Foo : public Print`をハードウェア非依存で実装できることを`BufferPrint`で確認、`Stream&`への真の多態性を`Serial1`をベースクラス参照経由で`find()`する形で確認、`print()`/`println()`が実際のバイト数を返すようになったこと確認、`Printable::printTo()`内の`n += p.print(x)`累算イディオムが——以前はvoid返却のため無意味だったが——今回`size_t`化により正しく機能することを確認）。D0-D1ジャンパ要、実機確認はこのあと実施予定
 - README.md/API_COMPATIBILITY.mdを更新（`Printable`の「`print()`がvoidを返す」という制約説明を削除し、`Print`/`Stream`の新規行を追加）
 
+### v0.2.1リリース前の最終複合動作確認
+タグ`0.2.1`をpush済み・GitHub Release作成前の段階で、ユーザーから「全体の動作テストをやっておいたほうがいいか」との提案。直近のPrint/Streamリファクタ（`SerialClass`の継承階層を作り直す大きな変更）は`test_Print_Stream_hierarchy.ino`単体では実機確認済みだったが、Serial1・I3C・ADC・PWM・tone・millisを同時に動かす`test_combined_peripherals.ino`はこのリファクタ後に未再実行だったため、最終確認として実機で再実行。`millis`/`micros`同期進行、`temp`安定（~25.8℃）、`adc`変動、`pwmDuty`5刻み増加、`serial1`ループバック（`hb0`〜`hb5`）欠落なし——全て正常、Print/Streamリファクタ後も複合動作に回帰なしと確認
+
 ### README.md「Supported Arduino APIs」表をAPI_COMPATIBILITY.mdへ分離
 5周目完了後、ユーザーから「表が長くなりすぎていないか」との指摘。46行のフラットな1枚表になっており、Notes列には「v0.2.1で修正」的な経緯説明や`Printable`/`Wire.setWireTimeout`の数文にわたる理由説明まで混在し一覧性が低下していた。`CHANGELOG.md`/`TUTORIAL.md`（`.ja.md`）を既に別ファイルに切り出している本プロジェクトの慣習に合わせ、`API_COMPATIBILITY.md`を新規作成して全表を移設（GPIO/割り込み、Serial、Wire、SPI、タイミング、アナログ、その他デジタルI/O、String/Print、互換マクロの9カテゴリに見出しで分割、内容自体は変更なし）。README.md側は数行の要約＋リンクに圧縮、冒頭のTUTORIAL/CHANGELOGへのリンク行にも同様に追加
 
@@ -377,6 +380,6 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 ---
 
 ## 残りのPendingタスク
-1. Linux対応の実機検証：xPack GCC（Linux x86_64/arm64）のchecksumと`upload.sh`のLinux分岐（`uname`判定、`which LinkServer`／`/usr/local/LinkServer/LinkServer`探索）はコード上は用意済みだが、実機でのBoards Managerインストール・ビルド・書き込みは未検証（macOS/Windows 11のみ確認済み）
+1. Linux対応の実機検証：xPack GCC（Linux x86_64/arm64）のchecksumと`upload.sh`のLinux分岐（`uname`判定、`which LinkServer`／`/usr/local/LinkServer/LinkServer`探索）はコード上は用意済みで**v0.2.1リリースに含めた**が、実機でのBoards Managerインストール・ビルド・書き込みは未検証（macOS/Windows 11のみ確認済み）。ユーザー方針: 0.2.1リリース後、そのリリース版をLinuxマシンで実際にBoards Manager経由インストールして動作確認し、確認できた時点で正式サポートとして確定する（README.mdに未検証である旨を明記済み）
 2. マルチボード対応（MCXN947, MCXA156, MCXN236）
 3. （低優先度）`examples/tests/GPIO_NXP_Arduino`の不要なgitlinkエントリの整理

@@ -42,7 +42,13 @@ Please install it before using the Upload button in Arduino IDE.
 
 After installation, the upload script will automatically detect LinkServer — no path configuration needed.
 
-The install → build → upload flow has been verified on **macOS and Windows 11**. Linux support is planned for a future release — the toolchain and upload script are already in place, but the end-to-end flow hasn't been verified there yet.
+The install → build → upload flow has been verified on **macOS and Windows 11**.
+
+> **Note on Linux support**: Linux is included in this release (xPack GCC toolchain checksums
+> for x86_64/arm64, and a LinkServer auto-detection path in the upload script), but the
+> end-to-end Boards Manager install → build → upload flow has **not yet been verified on real
+> Linux hardware**. It will be verified using this release and confirmed in a follow-up update
+> once that's done.
 
 ## Installation
 
