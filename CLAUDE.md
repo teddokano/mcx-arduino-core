@@ -186,6 +186,13 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 - 確認用スケッチ: `examples/Arduino_compatible_API/test_String/`（連結・数値変換・検索・置換・大小文字変換・trim等を`OK`/`FAIL`判定付きで一通り検証）。実機確認済み、全項目OK
 - README.mdのAPI対応表にも追加（WStringの移植ではなく独自実装である旨を明記）
 
+### detachInterrupt() 実装
+- ギャップ調査で判明した2件目。既存の`attachInterrupt()`はピンごとの管理テーブルを持たず、呼ぶたびに新しい`InterruptIn`をnewしてリークする作りだった（`digitalWrite`/`pinMode`用の`digital_pins[]`に相当するものが割り込み側にはなかった）ため、`detachInterrupt()`の実装にはまずこの管理テーブル追加が前提として必要だった
+- `arduino_io.cpp`に`interrupt_pins[]`テーブルを新設（`digital_pins[]`と同じ`MAX_DIGITAL_PINS`サイズ）。`attachInterrupt()`は既存インスタンスがあれば再利用するよう修正（副次的にリークも解消）、`detachInterrupt()`はテーブルから該当ピンの`InterruptIn`を引いて新設の`disable()`を呼ぶ
+- r01lib側: `InterruptIn`クラスに`disable()`メソッドを新設（`InterruptIn.h/.cpp`）。`PORT_SetPinInterruptConfig(..., kPORT_InterruptOrDMADisabled)`（`FSL_FEATURE_PORT_HAS_NO_INTERRUPT`環境では`GPIO_SetPinInterruptConfig(..., kGPIO_InterruptStatusFlagDisabled)`）でハードウェアの割り込み設定を無効化し、IRQディスパッチ用の`cb_table[][]`エントリもクリア
+- 確認用スケッチ: `examples/Arduino_compatible_API/test_detachInterrupt/`（SW2を3回押すとdetach→3秒後に自動re-attach、という流れ）。実機確認済み — detach中の押下は無反応、re-attach後は正常に再開することを確認
+- README.mdのAPI対応表にも追加
+
 ---
 
 ## 動作確認済み
@@ -198,6 +205,7 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 | Wire1 (I3C, I2Cモード) | ✅ | オンボードP3T1755で確認、重大バグ修正済み |
 | SPI | ✅ | |
 | attachInterrupt | ✅ | |
+| detachInterrupt | ✅ | v0.2.1で追加。SW2を使った実機確認済み |
 | analogRead | ✅ | LPADC, A0-A3 |
 | analogWrite (PWM) | ✅ | FlexPWM0, PWM0-PWM5のみ |
 | millis / micros | ✅ | SysTick(1ms) + DWT |

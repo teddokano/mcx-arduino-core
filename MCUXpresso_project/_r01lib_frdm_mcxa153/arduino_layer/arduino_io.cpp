@@ -10,6 +10,7 @@
 #define MAX_DIGITAL_PINS    128
 
 static DigitalInOut*    digital_pins[ MAX_DIGITAL_PINS ]    = {};
+static InterruptIn*     interrupt_pins[ MAX_DIGITAL_PINS ]  = {};
 
 void pinMode( int pin_num, int mode )
 {
@@ -73,10 +74,20 @@ void attachInterrupt( int pin_num, void (*callback)(void), int mode )
 		pin_num = arduino_pin_by_number[ pin_num ];
 #endif
 
-		InterruptIn* int_pin    = new InterruptIn( pin_num );
+		if ( pin_num < 0 || pin_num >= MAX_DIGITAL_PINS )
+				return;
+
+		InterruptIn* int_pin    = interrupt_pins[ pin_num ];
 
 		if ( int_pin == nullptr )
-				panic( "error @ new, in attachInterrupt()" );
+		{
+				int_pin    = new InterruptIn( pin_num );
+
+				if ( int_pin == nullptr )
+						panic( "error @ new, in attachInterrupt()" );
+
+				interrupt_pins[ pin_num ]    = int_pin;
+		}
 
 		switch ( mode )
 		{
@@ -97,6 +108,19 @@ void attachInterrupt( int pin_num, void (*callback)(void), int mode )
 						panic( "error @ attachInterrupt(), unknown mode" );
 						break;
 		}
+}
+
+void detachInterrupt( int pin_num )
+{
+#ifdef  ARDUINO_PIN_RENUMBERING
+		pin_num = arduino_pin_by_number[ pin_num ];
+#endif
+
+		if ( pin_num < 0 || pin_num >= MAX_DIGITAL_PINS )
+				return;
+
+		if ( interrupt_pins[ pin_num ] != nullptr )
+				interrupt_pins[ pin_num ]->disable();
 }
 
 int digitalPinToInterrupt( int pin_num )

@@ -50,6 +50,13 @@ public:
 	 */
 	virtual void	fall( func_ptr callback );
 
+	/** Disable the interrupt and clear the registered callback
+	 *
+	 *  Reverses rise()/fall() -- disables the pin's interrupt/DMA request
+	 *  in hardware and removes its entry from the IRQ dispatch table.
+	 */
+	virtual void	disable( void );
+
 private:
 #if (defined(FSL_FEATURE_PORT_HAS_NO_INTERRUPT) && FSL_FEATURE_PORT_HAS_NO_INTERRUPT)
 	void	regist( func_ptr callback, gpio_interrupt_config_t type );

@@ -107,6 +107,33 @@ void InterruptIn::fall( func_ptr callback )
 	regist( *callback, kFallingEdge );
 }
 
+void InterruptIn::disable( void )
+{
+#if (defined(FSL_FEATURE_PORT_HAS_NO_INTERRUPT) && FSL_FEATURE_PORT_HAS_NO_INTERRUPT)
+	GPIO_SetPinInterruptConfig( gpio_n, gpio_pin, kGPIO_InterruptStatusFlagDisabled );
+
+	for ( int i = 0; i < N_GPIO; i++ )
+	{
+		if ( gpio_ptr[i] == gpio_n )
+		{
+			cb_table[ i ][ gpio_pin ]	= NULL;
+			break;
+		}
+	}
+#else
+	PORT_SetPinInterruptConfig( port_n, gpio_pin, kPORT_InterruptOrDMADisabled );
+
+	for ( int i = 0; i < N_GPIO; i++ )
+	{
+		if ( gpio_ptr[i] == gpio_n )
+		{
+			cb_table[ i ][ gpio_pin ]	= NULL;
+			break;
+		}
+	}
+#endif
+}
+
 #if (defined(FSL_FEATURE_PORT_HAS_NO_INTERRUPT) && FSL_FEATURE_PORT_HAS_NO_INTERRUPT)
 void InterruptIn::regist( func_ptr callback, gpio_interrupt_config_t type )
 #else

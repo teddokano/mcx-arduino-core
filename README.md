@@ -155,6 +155,7 @@ Other named pins/peripherals:
 | `pinMode` | ✅ | |
 | `digitalWrite` / `digitalRead` | ✅ | |
 | `attachInterrupt` | ✅ | RISING / FALLING / CHANGE |
+| `detachInterrupt` | ✅ | |
 | `digitalPinToInterrupt` | ✅ | |
 | `Serial.begin` / `print` / `println` / `printf` | ✅ | |
 | `Serial.read` / `available` / `write` | ✅ | |

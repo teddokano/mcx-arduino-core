@@ -29,6 +29,7 @@ constexpr int	FALLING	= 1;
 constexpr int	CHANGE	= 2;
 
 void	attachInterrupt( int int_num, void (*callback)(void), int mode );
+void	detachInterrupt( int int_num );
 int		digitalPinToInterrupt( int pin_num );
 
 void	shiftOut( int dataPin, int clockPin, int bitOrder, uint8_t val );
