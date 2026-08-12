@@ -34,7 +34,7 @@ English version → [TUTORIAL.md](TUTORIAL.md)
 
 ### 1.1. 用意するもの
 
-- **macOS、Windows、またはLinux**のコンピュータ — Linuxについての注意点は[1.3](#13-nxp-linkserverのインストール)を参照
+- **macOS、Windows、またはLinux**のコンピュータ
 - [FRDM-MCXA153](https://www.nxp.com/design/design-center/development-boards-and-designs/FRDM-MCXA153)ボード
 - Arduino IDE 2.x
 - NXP LinkServer
@@ -58,7 +58,7 @@ English version → [TUTORIAL.md](TUTORIAL.md)
 | Windows | `.exe`インストーラ |
 | Linux | `.deb.bin`ファイル |
 
-本チュートリアルのインストール〜ビルド〜書き込みの流れは**macOSとWindows 11で検証済み**です。Linuxも今回のリリースに含まれています（ツールチェーン・書き込みスクリプト）が、実機での一連の流れとしての検証はまだ行っていません。
+本チュートリアルのインストール〜ビルド〜書き込みの流れは**macOS、Windows 11、Linuxで検証済み**です。
 
 インストール後は、ボードパッケージの書き込みスクリプトが自動的にLinkServerを検出します — パス設定は不要です。
 

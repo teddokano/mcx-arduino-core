@@ -37,8 +37,7 @@ reference table and [CHANGELOG.md](CHANGELOG.md) for version history.
 
 ### 1.1. What you need
 
-- A **macOS, Windows, or Linux** computer — see
-  [1.3](#13-install-nxp-linkserver) for a caveat on Linux
+- A **macOS, Windows, or Linux** computer
 - An [FRDM-MCXA153](https://www.nxp.com/design/design-center/development-boards-and-designs/FRDM-MCXA153) board
 - Arduino IDE 2.x
 - NXP LinkServer
@@ -70,9 +69,7 @@ tool, so it needs to be installed separately *before* you upload anything.
 | Linux | `.deb.bin` file |
 
 This tutorial's full install → build → upload flow has been verified on
-**macOS and Windows 11**. Linux is included in this release too (toolchain
-and upload script), but the end-to-end flow hasn't been verified on real
-Linux hardware yet.
+**macOS, Windows 11, and Linux**.
 
 Once installed, the board package's upload script finds LinkServer
 automatically — no path configuration needed.
