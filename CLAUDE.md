@@ -190,6 +190,7 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 - **検証**: 通常のmacOS開発機（大文字小文字を区別しない）でのビルド確認だけでは同じ見落としを再現できないため、`hdiutil create -fs "Case-sensitive APFS"`で一時的にcase-sensitiveなAPFSボリュームを作成し、`hardware/nxp/mcx/`一式をコピーした上でxPack GCCで直接`#include <Arduino.h>`/`<SPI.h>`/`<Wire.h>`を使うテストコードをコンパイル、エラーゼロで通ることを実機Linux相当の条件で確認
 - 全examples（Arduino_compatible_API・Arduino_incompatible_API）の回帰コンパイルも実施、問題なし
 - **v0.2.2としてリリース済み**: ユーザー判断で即パッチリリース。`main`にfast-forward（別ブランチなし、直接main上で作業）、`platforms`配列に0.2.2エントリを新規追加（既存の0.2.1エントリ上書きではなく、CLAUDE.md記載の新方式どおり）、リリースzip作成→GitHub Release作成→タグpush（`gh release create`が自動でタグ作成・push、ローカルの重複annotatedタグは削除して整理）→`update_package_index.yml`手動実行でchecksum確定（`c63ffd4`、SHA-256:`52880c626303ee3deb89da26dcec694ada19eb79f042d7da16445ff904991b47`、ローカル計算値と一致確認済み、全12バージョンのエントリが正しく保持されていることも確認）。2026-08-13リリース。ローカル開発用symlinkも`0.2.2-dev`に更新
+- **v0.2.2のBoards Managerインストール実機検証（macOS）**: 開発用symlinkを`packages/`外へ完全退避・ローカルインデックスキャッシュ削除の上でBoards Manager経由インストール実施。`hello_world`(Blink)・`test_combined_peripherals.ino`とも実機で正常動作を確認済み。Linux実機での検証（今回の修正の本来の目的）はこれから
 
 ## v0.2.1 で作業中の内容（`prepare0.2.1` ブランチ→`main`マージ済み・2026-08-12リリース済み）
 
