@@ -144,5 +144,14 @@ String	operator+( String lhs, const String &rhs );
 String	operator+( String lhs, const char *rhs );
 String	operator+( const char *lhs, const String &rhs );
 String	operator+( String lhs, char rhs );
+String	operator+( String lhs, const __FlashStringHelper *rhs );
+String	operator+( String lhs, int rhs );
+String	operator+( String lhs, unsigned int rhs );
+String	operator+( String lhs, long rhs );
+String	operator+( String lhs, unsigned long rhs );
+String	operator+( String lhs, long long rhs );
+String	operator+( String lhs, unsigned long long rhs );
+String	operator+( String lhs, float rhs );
+String	operator+( String lhs, double rhs );
 
 #endif // !R01LIB_ARDUINO_STRING_H

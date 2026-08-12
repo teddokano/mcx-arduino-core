@@ -21,6 +21,23 @@
 #define OCT 8
 #define BIN 2
 
+class SerialClass;
+
+// This core has only one Print-like sink (SerialClass), so Print is just an
+// alias for it rather than a separate abstract base class -- Printable
+// implementations written against real Arduino's `Print&` compile as-is.
+using Print = SerialClass;
+
+/**
+ * @brief Interface for user-defined types that can format themselves for
+ *        Serial.print()/println() (matches real Arduino's Printable.h).
+ */
+class Printable
+{
+public:
+	virtual size_t	printTo( Print &p ) const = 0;
+};
+
 /**
  * @brief Arduino-compatible Serial class for NXP MCX BSP.
  *
@@ -55,6 +72,7 @@ public:
 	void	print( std::string_view s );
 	void	print( const String& s );
 	void	print( const __FlashStringHelper *pstr );
+	void	print( const Printable& p );
 
 	void	println( void );
 	void	println( const char *s );
@@ -70,6 +88,7 @@ public:
 	void	println( std::string_view s );
 	void	println( const String& s );
 	void	println( const __FlashStringHelper *pstr );
+	void	println( const Printable& p );
 
 	int		available( void ) { return (int)Serial::available(); }
 	int		read( void )      { return getc(); }

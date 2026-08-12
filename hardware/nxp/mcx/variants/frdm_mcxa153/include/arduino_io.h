@@ -26,6 +26,23 @@ void	pinMode( int pin_num, int mode );
 void	digitalWrite( int pin_num, bool state );
 bool	digitalRead( int pin_num );
 
+/*
+ *  Fast-GPIO / direct-register-access family, for third-party libraries
+ *  that bit-bang a pin and want to skip digitalWrite()'s per-call
+ *  overhead (e.g. NeoPixel-style drivers). pinMode() must be called on
+ *  the pin first -- these read back the GPIO_Type/bit already resolved
+ *  by the pin's (lazily-created) DigitalInOut instance, they don't do
+ *  pin setup themselves. Returns nullptr/0 for a pin that hasn't been
+ *  configured with pinMode() yet.
+ */
+GPIO_Type*			digitalPinToPort( int pin_num );
+uint32_t			digitalPinToBitMask( int pin_num );
+volatile uint32_t*	portOutputRegister( GPIO_Type *port );
+volatile uint32_t*	portInputRegister( GPIO_Type *port );
+volatile uint32_t*	portModeRegister( GPIO_Type *port );
+
+constexpr int	NOT_AN_INTERRUPT	= -1;
+
 // Values match real Arduino exactly (CHANGE=1/FALLING=2/RISING=3, with 0
 // deliberately left free for LOW -- attachInterrupt(pin, isr, LOW) reuses
 // the digital-level LOW constant above as its 4th mode). This project used

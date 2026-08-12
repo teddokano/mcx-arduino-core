@@ -141,6 +141,45 @@ int digitalPinToInterrupt( int pin_num )
 		return  pin_num;
 }
 
+GPIO_Type* digitalPinToPort( int pin_num )
+{
+#ifdef  ARDUINO_PIN_RENUMBERING
+		pin_num = arduino_pin_by_number[ pin_num ];
+#endif
+
+		if ( pin_num < 0 || pin_num >= MAX_DIGITAL_PINS || digital_pins[ pin_num ] == nullptr )
+				return  nullptr;
+
+		return  digital_pins[ pin_num ]->gpio_base();
+}
+
+uint32_t digitalPinToBitMask( int pin_num )
+{
+#ifdef  ARDUINO_PIN_RENUMBERING
+		pin_num = arduino_pin_by_number[ pin_num ];
+#endif
+
+		if ( pin_num < 0 || pin_num >= MAX_DIGITAL_PINS || digital_pins[ pin_num ] == nullptr )
+				return  0;
+
+		return  1UL << digital_pins[ pin_num ]->gpio_bit();
+}
+
+volatile uint32_t* portOutputRegister( GPIO_Type *port )
+{
+		return  port ? &port->PDOR : nullptr;
+}
+
+volatile uint32_t* portInputRegister( GPIO_Type *port )
+{
+		return  port ? &port->PDIR : nullptr;
+}
+
+volatile uint32_t* portModeRegister( GPIO_Type *port )
+{
+		return  port ? &port->PDDR : nullptr;
+}
+
 void shiftOut( int dataPin, int clockPin, int bitOrder, uint8_t val )
 {
 		for ( int i = 0; i < 8; i++ )

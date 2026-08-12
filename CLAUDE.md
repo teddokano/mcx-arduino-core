@@ -275,6 +275,18 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 `test_Wire_end_find_availForWrite_pullmodes.ino`を実機で実行、全項目OK（`Wire1.end()`前後の温度読み取り、`availableForWrite`のバースト/flush前後の増減、`find(target,length)`/`findUntil()`の早期終了、`INPUT_PULLDOWN`/`INPUT_PULLUP`のフローティングピン読み取り、`OUTPUT_OPENDRAIN`の真のオープンドレイン特性）
 - README.mdのAPI対応表を更新（`pinMode`にPULLDOWN/OPENDRAIN追記、`Serial.find(len)`/`findUntil`/`availableForWrite`/`Wire.end`を新規追加）
 
+### 5周目のAPI互換性精査と4項目実装（String operator+数値版、Printable、NOT_AN_INTERRUPT、fast GPIOレジスタアクセス）
+- 4周目までの傾向（見つかる項目の優先度が徐々に下がってきている）についてユーザーから「優先度の低いものまで出てきたということか、それとも高優先度の取りこぼしがあったということか」と問われ、1〜3周目は実バグ・Stringクラス丸ごと欠落等の高優先度、4〜5周目はニッチな項目に移ってきている旨を回答。Explore agentへの監査はチェックリスト式で聞いた観点にしか答えないため高優先度の見落としを完全には否定できないとも説明し、次の一手としてサードパーティArduinoライブラリの実地コンパイルテストを提案、ユーザーが承認
+- 5周目監査で見つかった6項目のうち、`SPI.transfer(void*,size_t)`は既に実装済みと判明。残り5項目のうち4項目を実装（`Wire.setWireTimeout`系は後述の理由で見送り）
+- **`String`の free `operator+`数値版**: `concat()`/`operator+=`は`int`/`unsigned int`/`long`/`unsigned long`/`long long`/`unsigned long long`/`float`/`double`/`F()`まで揃っていたが、対応する free `operator+`（`String + int`等）が`String`/`const char*`/`char`の3種類しかなく、`String s = "x=" + someInt;`のような一般的なイディオムがコンパイルできなかった。既存の`operator+(String lhs, char rhs) { lhs += rhs; return lhs; }`と同じワンライナーパターンで9個追加（数値8種＋`F()`版）
+- **`Printable`インターフェース**: このプロジェクトには元々`Print`という抽象基底クラスが存在せず（`SerialClass`が直接の具象クラス）、実質`Print`を名乗れるクラスは`SerialClass`のみだったため、`using Print = SerialClass;`という型エイリアスとして`Print`を新設（`arduino_serial.h`）。`class Printable { virtual size_t printTo(Print&) const = 0; };`を本家と同じ形で追加し、`SerialClass::print`/`println(const Printable&)`を実装（`p.printTo(*this)`を呼ぶだけ）
+  - **判明した制約**: 本家ArduinoのPrint系クラスは`print()`/`println()`が全て`size_t`（書き込みバイト数）を返す設計で、サードパーティライブラリの`printTo()`実装は`size_t n = 0; n += p.print(x); ...; return n;`という累算イディオムを多用する。しかしこのプロジェクトの`SerialClass::print()`/`println()`はほぼ全て`void`を返す設計（`write()`のみ`size_t`）のため、このイディオムを使う`printTo()`実装はそのままではコンパイルが通らない。全`print()`/`println()`オーバーロード（约26個）を`size_t`返却に作り直すのは影響範囲が大きすぎるため今回は見送り、既知の制約としてREADMEに明記
+- **`NOT_AN_INTERRUPT`**: 定数を`-1`として追加（`arduino_io.h`）。このMCUは有効なGPIOピンなら基本的にどれでも割り込み対応可能なため、`digitalPinToInterrupt()`の実装（`return pin_num;`）自体は変更せず、定数だけ追加（この定数をチェックするスケッチがコンパイルは通るように、という互換性目的）
+- **`digitalPinToPort`/`digitalPinToBitMask`/`portOutputRegister`/`portInputRegister`/`portModeRegister`**: NeoPixel系の高速ビットバングライブラリ向け。r01libの`DigitalInOut`が既に内部で保持している`gpio_n`（`GPIO_Type*`）・`gpio_pin`（ビット番号）に`public`アクセサ`gpio_base()`/`gpio_bit()`を新設（`io.h`）。Arduino層は`pinMode()`で既に生成済みの`digital_pins[]`エントリからこれを読み出すだけ（`pinMode()`未実行のピンは`nullptr`/`0`を返す——このプロジェクトは元々`digitalWrite`/`digitalRead`自体が`pinMode()`未実行だと無反応になる設計のため、既存の制約と整合）。レジスタは`GPIO_Type`の`PDOR`（出力、R/W）/`PDIR`（入力、読み取り専用）/`PDDR`（方向、1=OUTPUT）を採用——AVRの`PORTx`/`PINx`/`DDRx`と同じ「単一R/Wレジスタ」方式に対応する自然な選択（`PSOR`/`PCOR`のような書き込み専用atomicセット/クリアレジスタも存在するが、AVR互換の意味論に合わせて`PDOR`を採用）
+- **見送った項目**: `Wire.setWireTimeout()`/`clearWireTimeoutFlag()`/`getWireTimeoutFlag()`はユーザーに実装せず見送ることを提案予定（このメッセージ作成時点では未提示）。理由: r01libの`I2C::write_core()`/`read_core()`はSDKの`LPI2C_MasterStart`/`Send`/`Receive`/`Stop`という完全にブロッキングなSDK関数を直接呼んでおり、実際のバス ハング（スレーブがクロックストレッチし続ける等）はほぼ確実にこれらSDK関数の内部ポーリングでスタックする。Arduino層だけでタイムアウト値とフラグを保持する「見せかけの」実装は、ユーザーに「タイムアウトで守られている」という誤った安心感を与えるだけで実際のハングを防げないため、正直な実装のためにはr01libのブロッキング呼び出し自体にデッドライン機構を組み込む必要があり、今回のスコープを超える規模と判断
+- 確認用スケッチ: `examples/Arduino_compatible_API/test_String_plus_numeric_Printable_fastGPIO/`（`String + int/long/long long/unsigned long/float/F()`の連結確認、`Printable`を実装したカスタムクラス`Point`を`Serial.println()`に直接渡して視覚確認、`NOT_AN_INTERRUPT`の値と実ピンとの非衝突確認、D2-D3ジャンパでfast GPIOレジスタ直接操作がdigitalWrite相当に振る舞うか——`portOutputRegister`への書き込みが実際にD3で観測できるか、`portInputRegister`が自分自身の状態を正しく反映するか、`portModeRegister`がOUTPUT方向を正しく示すか——を検証）。全examplesの回帰コンパイルも実施、問題なし
+- README.mdのAPI対応表を更新（`digitalPinToInterrupt`/`NOT_AN_INTERRUPT`、fast GPIOレジスタ系、`String`の`operator+`数値版、`Printable`インターフェース（`print()`がvoidを返す制約を明記）を追加）
+
 ### 機能ギャップ埋め（PROGMEM/F()、ARDUINO/ARDUINO_ARCH_*マクロ）
 - 3周目で「未対応（バグではなく機能ギャップ）」として見送っていた3項目に対応
 - **`ARDUINO`バージョンマクロ・`ARDUINO_ARCH_*`系マクロ**: ソースコード側ではなく`platform.txt`の`compiler.defines`に追加（`-DARDUINO=10819 -DARDUINO_ARCH_MCX -DARDUINO_{build.board}`）。`{build.board}`はarduino-cliが`boards.txt`の`frdm_mcxa153.build.board=FRDM_MCXA153`から自動展開する組み込みプロパティで、`ARDUINO_FRDM_MCXA153`として正しく定義されることを実際にビルドして確認済み。従来これらのマクロが本当に未定義かどうか自体、テストスケッチで`#ifdef`/`#pragma message`を使って実証してから着手した
@@ -302,6 +314,7 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 | Serial print BIN基数バグ修正（Serial・String両方）、Serial.write全オーバーロード、attachInterrupt LOWモード | ✅ | v0.2.1で修正・追加。全項目実機確認済み（LOWモードは長押しでカウンタ374,533回増加を確認） |
 | PROGMEM/pgm_read系、F()/String対応、ARDUINO/ARDUINO_ARCH_*マクロ | ✅ | v0.2.1で追加。実機確認済み |
 | Wire.end、Serial.find(len)/findUntil、Serial.availableForWrite、INPUT_PULLDOWN、OUTPUT_OPENDRAIN | ✅ | v0.2.1で追加。実機確認済み（`Wire.end()`はI3C使用時のBusFaultバグを修正後に確認） |
+| String operator+数値版/F()、Printable、NOT_AN_INTERRUPT、digitalPinToPort/BitMask+portOutput/Input/ModeRegister | ✅ | v0.2.1で追加。実機確認済み（fast GPIOレジスタ直接操作がD2-D3ジャンパで正しく動作、Printableカスタムクラスの出力を視覚確認） |
 | Wire (I2C) | ✅ | |
 | Wire1 (I3C, I2Cモード) | ✅ | オンボードP3T1755で確認、重大バグ修正済み |
 | SPI | ✅ | |

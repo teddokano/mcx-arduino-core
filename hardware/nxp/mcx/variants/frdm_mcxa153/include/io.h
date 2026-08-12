@@ -869,6 +869,16 @@ public:
 
 	uint32_t mode( void );
 
+	/** Raw GPIO peripheral base and bit number backing this pin.
+	 *
+	 *  Exposed so fast-GPIO-style third-party libraries (bit-banging code
+	 *  that bypasses value()/GPIO_PinWrite() per-call overhead) can be
+	 *  ported via the digitalPinToPort()/portOutputRegister() family in
+	 *  arduino_io.h.
+	 */
+	GPIO_Type*	gpio_base( void ) const { return gpio_n; }
+	uint8_t		gpio_bit( void ) const  { return gpio_pin; }
+
 	/** A short hand for setting pins
 	 */
 	DigitalInOut&	operator=( bool v );

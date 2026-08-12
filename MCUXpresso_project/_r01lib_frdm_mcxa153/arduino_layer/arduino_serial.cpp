@@ -156,6 +156,11 @@ void SerialClass::print( const __FlashStringHelper *pstr )
 	print( reinterpret_cast<const char *>( pstr ) );
 }
 
+void SerialClass::print( const Printable &p )
+{
+	p.printTo( *this );
+}
+
 // ---- println overloads ----
 
 void SerialClass::println( void )                        { print( "\r\n" ); }
@@ -172,6 +177,7 @@ void SerialClass::println( const std::string& s )        { print(s); println(); 
 void SerialClass::println( std::string_view s )          { print(s); println(); }
 void SerialClass::println( const String& s )              { print(s); println(); }
 void SerialClass::println( const __FlashStringHelper *pstr ) { print(pstr); println(); }
+void SerialClass::println( const Printable &p )               { print(p); println(); }
 
 // ---- helpers ----
 
