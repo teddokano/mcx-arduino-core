@@ -2,10 +2,10 @@
 
 ## プロジェクト概要
 - **リポジトリ**: https://github.com/teddokano/mcx-arduino-core
-- **現在のバージョン**: v0.2.0（`package_nxp_mcx_index.json` 上の最新リリース。`prepare0.1.9`→`main`マージ・GitHub Release作成済み、`f393132`でchecksum自動更新も確定）
-- ブランチ名は`0.1.9`のままだがリリースバージョンは`0.2.0`に変更 — analogRead/analogWrite/millis/micros/tone/noToneの追加で基本的なArduino API群が揃ったためマイナーバージョンを上げる判断
+- **現在のバージョン**: v0.2.1（`package_nxp_mcx_index.json` 上の最新リリース。`prepare0.2.1`→`main`fast-forwardマージ・GitHub Release作成済み、`3e9b54b`でchecksum自動更新も確定。2026-08-12リリース）
 - **内容**: NXP FRDM-MCXA153 (Cortex-M33) 向けArduino IDEボードサポートパッケージ
-- **作業中バージョン**: v0.2.1（`prepare0.2.1`ブランチ、`main`未マージ・未リリース）
+- v0.2.1の主な内容: `String`クラス独自実装、`Print`/`Stream`/`Printable`抽象基底クラス新設（サードパーティライブラリ互換性向上）、Serial/Stream系ヘルパー一式、複数の実バグ修正（SPI bitOrder、Serial BIN基数、Serial.writeオーバーロード、attachInterrupt LOW、Wire.end() BusFault）。詳細は本ファイル内の「v0.2.1 で作業中の内容」セクションおよび[CHANGELOG.md](CHANGELOG.md)を参照
+- **Linux対応の扱い**: v0.2.1にxPack GCC（Linux x86_64/arm64）・`upload.sh`のLinux分岐を含めたが、実機（実Linux環境）でのBoards Managerインストール〜ビルド〜書き込みは未検証（README.mdに明記済み）。ユーザー方針: このリリース版を使って実際にLinuxマシンで検証し、確認できた時点で正式サポート確定とする（残りのPendingタスク#1）
 
 ---
 
@@ -167,7 +167,7 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 
 ---
 
-## v0.2.1 で作業中の内容（`prepare0.2.1` ブランチ・未リリース）
+## v0.2.1 で作業中の内容（`prepare0.2.1` ブランチ→`main`マージ済み・2026-08-12リリース済み）
 
 ### delayMicroseconds() 実装
 - v0.2.0公開後に`delayMicroseconds()`が未対応であることが判明。`delay()`と同じパターンで、r01libに既存の`wait_us()`（`mcu.h`/`mcu.cpp`、SDKの`SDK_DelayAtLeastUs()`ベース）を呼ぶだけの実装として追加
