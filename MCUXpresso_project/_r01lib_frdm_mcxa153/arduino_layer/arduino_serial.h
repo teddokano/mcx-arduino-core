@@ -76,12 +76,30 @@ public:
 
 	inline operator bool( void ) { return true; }
 
+	// ---- Stream-style helpers (polled, using millis()-based timeout) ----
+
+	void	setTimeout( unsigned long timeout ) { _timeout = timeout; }
+
+	size_t	readBytes( char *buffer, size_t length );
+	size_t	readBytesUntil( char terminator, char *buffer, size_t length );
+
+	long	parseInt( void );
+	float	parseFloat( void );
+
+	bool	find( const char *target );
+
 private:
 	void	_print_num( long n, int base );
 	void	_print_unum( unsigned long n, int base );
 	void	_print_num64( long long n, int base );
 	void	_print_unum64( unsigned long long n, int base );
 	void	_print_double( double val, int digits );
+
+	int		_timed_read( void );
+	int		_timed_peek( void );
+	double	_parseNumber( bool allow_decimal );
+
+	unsigned long	_timeout	= 1000;
 };
 
 extern SerialClass	Serial;

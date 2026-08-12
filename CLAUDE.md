@@ -205,6 +205,15 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 - 確認用スケッチ: `examples/Arduino_compatible_API/test_Serial_peek/`（Serial1ループバックで"AB"を送信し、`peek()`を2回呼んでも`available()`が変化しないこと、`read()`後は次のバイトが見えることを検証）。実機確認済み、全項目OK
 - README.mdのAPI対応表にも追加
 
+### Serial Stream系ヘルパー実装（setTimeout/readBytes/readBytesUntil/parseInt/parseFloat/find）
+- ギャップ調査で判明した5件目、これでリストの中〜高優先度項目が一通り完了
+- Arduino層（`arduino_serial.h/.cpp`）のみで完結する実装。r01lib側の変更は不要 — 既存の`read()`/`peek()`/`millis()`を組み合わせたポーリングベース
+- `_timed_read()`/`_timed_peek()`という共通ヘルパーを新設（`millis()`基準のタイムアウト付きでデータを待つ）。`parseInt()`/`parseFloat()`は共通の`_parseNumber(bool allow_decimal)`ヘルパーに集約し重複を回避（先頭の非数字をスキップ→符号→整数部→小数点（許可時）→小数部、という状態遷移）
+- `find()`は素朴な逐次一致（KMP等の最適化はなし、実用上問題ない想定）
+- ビルド時に`arduino_serial.cpp`で`millis()`が未宣言というエラーが発生 — 従来`arduino_serial.cpp`は`arduino_serial.h`/`arduino_io.h`のみincludeしており`millis()`宣言元の`arduino.h`を直接includeしていなかったため。`arduino_serial.cpp`に`#include "arduino.h"`を追加して解消（include guardがあるため循環includeにはならない）
+- 確認用スケッチ: `examples/Arduino_compatible_API/test_Serial_stream_helpers/`（Serial1ループバックで各関数を検証、最後にタイムアウトパス（`setTimeout(500)`未達時の待ち時間）も実測）。実機確認済み、全項目OK — タイムアウト実測値は設定通り500ms
+- README.mdのAPI対応表にも追加
+
 ---
 
 ## 動作確認済み
@@ -215,6 +224,7 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 | Serial | ✅ | |
 | Serial.flush() | ✅ | v0.2.1で追加。Serial1@9600bpsで実測値と理論値を比較し実機確認済み |
 | Serial.peek() | ✅ | v0.2.1で追加。Serial1ループバックで実機確認済み |
+| Serial Stream系（setTimeout/readBytes/readBytesUntil/parseInt/parseFloat/find） | ✅ | v0.2.1で追加。Serial1ループバックで実機確認済み、タイムアウトパスも実測 |
 | Wire (I2C) | ✅ | |
 | Wire1 (I3C, I2Cモード) | ✅ | オンボードP3T1755で確認、重大バグ修正済み |
 | SPI | ✅ | |
