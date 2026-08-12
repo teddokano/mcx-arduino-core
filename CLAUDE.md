@@ -287,6 +287,23 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 - 確認用スケッチ: `examples/Arduino_compatible_API/test_String_plus_numeric_Printable_fastGPIO/`（`String + int/long/long long/unsigned long/float/F()`の連結確認、`Printable`を実装したカスタムクラス`Point`を`Serial.println()`に直接渡して視覚確認、`NOT_AN_INTERRUPT`の値と実ピンとの非衝突確認、D2-D3ジャンパでfast GPIOレジスタ直接操作がdigitalWrite相当に振る舞うか——`portOutputRegister`への書き込みが実際にD3で観測できるか、`portInputRegister`が自分自身の状態を正しく反映するか、`portModeRegister`がOUTPUT方向を正しく示すか——を検証）。全examplesの回帰コンパイルも実施、問題なし
 - README.mdのAPI対応表を更新（`digitalPinToInterrupt`/`NOT_AN_INTERRUPT`、fast GPIOレジスタ系、`String`の`operator+`数値版、`Printable`インターフェース（`print()`がvoidを返す制約を明記）を追加）
 
+### サードパーティArduinoライブラリの実地コンパイルテスト → Print/Stream抽象基底クラス新設
+5周目完了後、チェックリスト式監査の限界（聞いた観点にしか答えない）を補うため、ユーザー提案で実際に有名なサードパーティライブラリを`arduino-cli compile`してみる方針に転換。Adafruit NeoPixel/ArduinoJson/OneWire/Adafruit BusIO/Adafruit Unified Sensor/LiquidCrystal/Servo/DHT sensor libraryをインストールし最小スケッチでコンパイルテストした結果、NeoPixel・OneWireは成功したが、**ArduinoJson・LiquidCrystal・DHT（Adafruit_Sensor経由）が同一の根本原因で失敗**することが判明: `fatal error: Print.h: No such file or directory` / `'Stream' was not declared in this scope`。このプロジェクトには本家Arduinoにある抽象基底クラス`Print`/`Stream`が実在せず、`Printable`実装時（前回セッション）に`using Print = SerialClass;`という型エイリアスで済ませていたため、`class Foo : public Print`という一般的なパターン（`LiquidCrystal`、ArduinoJson内部の`StringBuilderPrint`、`Adafruit_Sensor`等）がSerialClassの「TX/RXピン必須コンストラクタ」に阻まれてコンパイルできなかった
+
+- **LGPL移植 vs 独自実装の再検討**: ユーザーから「Print/Streamはハードウェアから独立した層なので本家から持ってこられないか」と提案。本家`Print.cpp`/`Stream.h`はArduinoCore-avr/API由来のLGPL 2.1で、`String`のとき（WString移植 vs 独自実装）と同じ論点だったため、LGPL 2.1の実際の義務（コピー・改変した該当ファイル自体はLGPL 2.1でライセンスし直す必要があり「明示するだけ」では済まない、一方それを使う側はMITのままでよい）を説明。その上で「独自実装では中身の互換性が担保できないのでは」との質問に対し、サードパーティ側が依存するのはクラス階層の形（メソッド名・シグネチャ・virtual dispatch）であって著作権保護される「中身」ではなく、かつ実際の振る舞い（数値print・parseInt等）は既にこのプロジェクトが独自実装済み・実機検証済みのコードであるため、移すだけで互換性は担保できると回答。ユーザー了承のうえ独自実装（MIT継続）で新設する方針に決定
+
+- **新規ファイル**: `arduino_layer/Printable.h`（`Print`前方宣言のみ）、`Print.h`/`Print.cpp`（抽象`Print`基底クラス。`write(uint8_t)`のみ純粋仮想、`write(const uint8_t*,size_t)`はデフォルト実装ありの仮想関数、`print()`/`println()`群・`_print_num`系・`_utoa_radix`ヘルパーは全て旧`SerialClass`から移設し`size_t`返却に変更、DEC/HEX/OCT/BINマクロもここに集約）、`Stream.h`/`Stream.cpp`（`Print`を継承する抽象`Stream`基底クラス。`available()`/`read()`/`peek()`が純粋仮想、`find`/`findUntil`/`parseInt`/`parseFloat`/`readBytes`/`readString`等の`_timed_read`ベース実装も旧`SerialClass`から移設）
+- **`arduino_serial.h`/`.cpp`の縮小**: `SerialClass`を`class SerialClass : public Serial, public Stream`に変更。旧来あった`print`/`println`/`find`/`parseInt`等の宣言・実装を全削除し、Stream/Printの必須オーバーライド（`write(uint8_t)`/`write(bulk)`/`available()`/`read()`/`peek()`/`availableForWrite()`、いずれもr01lib `Serial`のハードウェアプリミティブを呼ぶだけ）と`begin()`/`operator bool()`のみに削減。`write()`をオーバーライド宣言すると名前隠蔽でPrintの`write(const char*)`等も隠れてしまうため`using Print::write;`を追加（過去の「Serial.write()オーバーロード欠落バグ」と同じ名前隠蔽パターンだが、今回は戻り値型が両者ともsize_tで一致するため`using`で正しく解決できる）
+- **ビルド設定**: `MCUXpresso_project/.../Debug/arduino_layer/subdir.mk`に`Print.cpp`/`Stream.cpp`をCPP_SRCS/CPP_DEPS/OBJS/cleanターゲットへ追加
+- **`arduino.h`**: `#include "Printable.h"`/`"Print.h"`/`"Stream.h"`を`arduino_string.h`の直後・`arduino_serial.h`の直前に追加
+- **副次的に見つかった2件の小さな互換性ギャップ**（DHT sensor library・Adafruit BusIOの再テストで判明、Print/Stream本体とは無関係）:
+  - `microsecondsToClockCycles`未定義（DHTのタイムアウト計算で使用）→ `F_CPU`（このボードは96MHz固定、`board/clock_config.h`の`BOARD_BOOTCLOCKFRO96M_CORE_CLOCK`と一致）と`clockCyclesPerMicrosecond()`/`clockCyclesToMicroseconds()`/`microsecondsToClockCycles()`マクロを`arduino.h`に追加
+  - `BitOrder`型が存在しない（Adafruit BusIOの`typedef BitOrder BusIOBitOrder;`で使用）→ 本家は`LSBFIRST`/`MSBFIRST`を`enum BitOrder`の列挙子として定義するが、このプロジェクトは既に`#define LSBFIRST 0`/`#define MSBFIRST 1`マクロを採用済み（`arduino_spi.h`の`enum endian`バグ修正の経緯参照）のため、同名の列挙子を持つ本物のenumは宣言できない（プリプロセッサがトークン置換してしまう）。`typedef uint8_t BitOrder;`という素朴な型エイリアスで対応——ライブラリ側は型名の存在だけを必要としており、列挙子名までは参照していないため実用上問題なし
+- **再テスト結果**: ArduinoJson・LiquidCrystal・DHT sensor library・Adafruit BusIOすべてコンパイル成功に転換。NeoPixel・OneWireは引き続き成功。Servoのみ、ライブラリ側が対応アーキテクチャをソース内`#error`でハードコード管理しており`mcx`が入っていないため引き続き失敗——これはAPI不足ではなくライブラリ側の明示的な非対応で、こちら側の修正では直せない既知の限界として記録
+- 全examplesの回帰コンパイル（既存test_Serial_BIN_and_write/test_PROGMEM_F_ARDUINO_macros/test_String_plus_numeric_Printable_fastGPIO等、旧`Printable`実装に依存していたスケッチ含む）も問題なし
+- 確認用スケッチ: `examples/Arduino_compatible_API/test_Print_Stream_hierarchy/`（`class Foo : public Print`をハードウェア非依存で実装できることを`BufferPrint`で確認、`Stream&`への真の多態性を`Serial1`をベースクラス参照経由で`find()`する形で確認、`print()`/`println()`が実際のバイト数を返すようになったこと確認、`Printable::printTo()`内の`n += p.print(x)`累算イディオムが——以前はvoid返却のため無意味だったが——今回`size_t`化により正しく機能することを確認）。D0-D1ジャンパ要、実機確認はこのあと実施予定
+- README.md/API_COMPATIBILITY.mdを更新（`Printable`の「`print()`がvoidを返す」という制約説明を削除し、`Print`/`Stream`の新規行を追加）
+
 ### README.md「Supported Arduino APIs」表をAPI_COMPATIBILITY.mdへ分離
 5周目完了後、ユーザーから「表が長くなりすぎていないか」との指摘。46行のフラットな1枚表になっており、Notes列には「v0.2.1で修正」的な経緯説明や`Printable`/`Wire.setWireTimeout`の数文にわたる理由説明まで混在し一覧性が低下していた。`CHANGELOG.md`/`TUTORIAL.md`（`.ja.md`）を既に別ファイルに切り出している本プロジェクトの慣習に合わせ、`API_COMPATIBILITY.md`を新規作成して全表を移設（GPIO/割り込み、Serial、Wire、SPI、タイミング、アナログ、その他デジタルI/O、String/Print、互換マクロの9カテゴリに見出しで分割、内容自体は変更なし）。README.md側は数行の要約＋リンクに圧縮、冒頭のTUTORIAL/CHANGELOGへのリンク行にも同様に追加
 
@@ -318,6 +335,8 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 | PROGMEM/pgm_read系、F()/String対応、ARDUINO/ARDUINO_ARCH_*マクロ | ✅ | v0.2.1で追加。実機確認済み |
 | Wire.end、Serial.find(len)/findUntil、Serial.availableForWrite、INPUT_PULLDOWN、OUTPUT_OPENDRAIN | ✅ | v0.2.1で追加。実機確認済み（`Wire.end()`はI3C使用時のBusFaultバグを修正後に確認） |
 | String operator+数値版/F()、Printable、NOT_AN_INTERRUPT、digitalPinToPort/BitMask+portOutput/Input/ModeRegister | ✅ | v0.2.1で追加。実機確認済み（fast GPIOレジスタ直接操作がD2-D3ジャンパで正しく動作、Printableカスタムクラスの出力を視覚確認） |
+| Print/Stream抽象基底クラス（新設） | ✅ | v0.2.1で追加。実機確認済み——ハードウェア非依存のPrint派生クラス、Stream&への多態性、print()/println()の実バイト数返却、Printableのn+=p.print(x)イディオムすべて動作確認 |
+| サードパーティライブラリ互換性（ArduinoJson/LiquidCrystal/DHT/NeoPixel/OneWire/Adafruit BusIO） | ✅ | Print/Stream新設・BitOrder型・microsecondsToClockCycles追加によりarduino-cli compile成功。Servoのみライブラリ側のアーキテクチャ非対応で不可（既知の限界） |
 | Wire (I2C) | ✅ | |
 | Wire1 (I3C, I2Cモード) | ✅ | オンボードP3T1755で確認、重大バグ修正済み |
 | SPI | ✅ | |

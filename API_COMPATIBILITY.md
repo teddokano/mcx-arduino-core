@@ -74,12 +74,13 @@ Status of Arduino-standard APIs on this core (FRDM-MCXA153). See the main
 | `pulseIn` / `pulseInLong` | ✅ | |
 | `random` / `randomSeed` | ✅ | |
 
-## String & Print
+## String, Print & Stream
 
 | API | Status | Notes |
 |-----|--------|-------|
 | `String` class | ✅ | Original implementation (not a WString port); concatenation (including `long long`/`unsigned long long`, and `F("...")`), `substring`/`indexOf`/`replace`, `toInt`/`toFloat`, `getBytes`/`toCharArray`, free `operator+` for all numeric types and `F("...")`, etc. `reserve()` is a no-op (always allocates exact-fit) |
-| `Printable` interface | ✅ | `Serial.print`/`println` accept any class implementing `size_t printTo(Print&) const`. Caveat: this core's own `print()`/`println()` overloads return `void`, not `size_t` like real Arduino's `Print` class — a `printTo()` body written as `size_t n = 0; n += p.print(x); ...; return n;` (a common idiom in third-party libraries) won't compile as-is here; write it to call `print()` without accumulating a return value instead |
+| `Print` / `Stream` abstract base classes | ✅ | Added in v0.2.1. Original implementation (not a port of ArduinoCore-avr/API's LGPL 2.1 `Print`/`Stream`), matching the real class hierarchy: any class can inherit `Print` directly (no hardware/pins required) and get every `print()`/`println()` overload for free by implementing just `write(uint8_t)`; `Stream` adds `available()`/`read()`/`peek()` plus the polled `find`/`parseInt`/`readBytes`/etc. helpers. `SerialClass` (`Serial`/`Serial1`) derives from both. `print()`/`println()` return `size_t` (bytes written), matching real Arduino |
+| `Printable` interface | ✅ | `Print::print`/`println` accept any class implementing `size_t printTo(Print&) const`. Now that `print()`/`println()` return real `size_t` byte counts, the common third-party idiom `size_t n = 0; n += p.print(x); ...; return n;` inside `printTo()` works as written (this previously required a workaround before the `Print`/`Stream` refactor) |
 | `PROGMEM` / `pgm_read_byte`/`_word`/`_dword`/`_float`/`_ptr` / `PSTR` | ✅ | No-ops — flash and RAM share one address space on this Cortex-M target, unlike AVR's Harvard split. Declared for sketch/library compatibility only |
 | `F("...")` / `__FlashStringHelper` | ✅ | Works with `Serial.print`/`println` and `String` (construct/concat) |
 

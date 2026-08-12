@@ -36,6 +36,9 @@ class __FlashStringHelper;
 
 #include	"r01lib.h"
 #include	"arduino_string.h"
+#include	"Printable.h"
+#include	"Print.h"
+#include	"Stream.h"
 #include	"arduino_serial.h"
 #include	"arduino_io.h"
 #include	"arduino_analog.h"
@@ -68,6 +71,30 @@ class __FlashStringHelper;
 #define	MSBFIRST	1
 #define	SERIAL		0x0
 #define	DISPLAY		0x1
+
+/*
+ *  Real Arduino declares LSBFIRST/MSBFIRST as enumerators of an actual
+ *  `BitOrder` enum type (api/Common.h), so any type named BitOrder is
+ *  automatically usable. This project defines LSBFIRST/MSBFIRST as plain
+ *  #define macros instead (established earlier -- see arduino_spi.h's
+ *  `enum endian`), so a real `enum BitOrder { LSBFIRST, MSBFIRST }` can't
+ *  be declared here too: the preprocessor would substitute those tokens
+ *  away before the compiler ever saw them as enumerator names. BitOrder
+ *  is provided as a plain integer typedef instead, just so the TYPE NAME
+ *  exists for libraries (e.g. Adafruit BusIO's `typedef BitOrder
+ *  BusIOBitOrder;`) that expect the core to declare it.
+ */
+typedef	uint8_t	BitOrder;
+
+// Clock-cycle conversion macros (matches UNO R3/R4's Arduino.h). This
+// board always runs its core clock at a fixed 96MHz (see
+// board/clock_config.h's BOARD_BOOTCLOCKFRO96M_CORE_CLOCK) -- unlike AVR,
+// there's no user-selectable F_CPU here, this is just the fixed value some
+// libraries reference directly (F_CPU) or via these derived macros.
+#define	F_CPU	96000000UL
+#define	clockCyclesPerMicrosecond()		( F_CPU / 1000000UL )
+#define	clockCyclesToMicroseconds( a )	( (a) / clockCyclesPerMicrosecond() )
+#define	microsecondsToClockCycles( a )	( (a) * clockCyclesPerMicrosecond() )
 
 // Type aliases (matches UNO R3/R4's Arduino.h)
 typedef	bool		boolean;
