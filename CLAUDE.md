@@ -2,7 +2,8 @@
 
 ## プロジェクト概要
 - **リポジトリ**: https://github.com/teddokano/mcx-arduino-core
-- **現在のバージョン**: v0.2.1（`package_nxp_mcx_index.json` 上の最新リリース。`prepare0.2.1`→`main`fast-forwardマージ・GitHub Release作成済み、`2da5772`でchecksum自動更新も確定。2026-08-12リリース）
+- **現在のバージョン**: v0.2.2（`package_nxp_mcx_index.json` 上の最新リリース。`main`上で直接作業・GitHub Release作成済み、`c63ffd4`でchecksum自動更新も確定。2026-08-13リリース。Linux実機での`#include <Arduino.h>`/`<SPI.h>`のファイル名大文字小文字ミスマッチによるビルド失敗を修正するパッチリリース——詳細は後述の専用セクション参照）
+- **v0.2.1**（前バージョン）: `prepare0.2.1`→`main`fast-forwardマージ・GitHub Release作成済み、2026-08-12リリース
 - **重要な学び（リリースzipの構造要件）**: v0.2.1の初回リリース作業で`git archive --format=zip -o ... HEAD:hardware/nxp/mcx`を使ってzipを作成したところ、Arduino IDE経由の実インストールで`Failed to install platform: ... no unique root dir in archive, found '.../cores' and '.../tools'`エラーで失敗。Arduino Boards Managerのインストーラーは**zip直下に単一のラッパーディレクトリが1つだけ**存在することを要求する（インストーラーがそのディレクトリを剥がして`packages/<vendor>/hardware/<arch>/<version>/`に配置する仕組み）。`git archive HEAD:hardware/nxp/mcx`はサブディレクトリの中身を直接展開するため、`boards.txt`/`cores/`/`tools/`/`variants/`等がzip直下に並ぶ「フラットな」構造になってしまい、この要件を満たしていなかった。実際に公開済みのv0.2.0のzipを確認したところ、そちらは`mcx/`という単一のラッパーディレクトリを持つ正しい構造になっており問題なし（0.2.1作成時のみのミス）。**今後リリースzipを作る際は、必ず単一のトップレベルディレクトリ（名前は任意、例: `mcx-arduino-core-<version>/`）でラップすること** — `git archive`で作る場合は一旦別ディレクトリに展開してからラッパーディレクトリごと`zip -r`するか、`--prefix=<name>/`オプションを使う
 - **内容**: NXP FRDM-MCXA153 (Cortex-M33) 向けArduino IDEボードサポートパッケージ
 - v0.2.1の主な内容: `String`クラス独自実装、`Print`/`Stream`/`Printable`抽象基底クラス新設（サードパーティライブラリ互換性向上）、Serial/Stream系ヘルパー一式、複数の実バグ修正（SPI bitOrder、Serial BIN基数、Serial.writeオーバーロード、attachInterrupt LOW、Wire.end() BusFault）。詳細は本ファイル内の「v0.2.1 で作業中の内容」セクションおよび[CHANGELOG.md](CHANGELOG.md)を参照
@@ -176,7 +177,7 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 
 ---
 
-## v0.2.1リリース後に発覚: Linux実機ビルドがファイル名の大文字小文字違いで失敗（未リリースの修正・作業中）
+## v0.2.2: Linux実機ビルドがファイル名の大文字小文字違いで失敗する問題を修正（`main`上で直接作業・2026-08-13リリース済み）
 ユーザーがLinux実機（Ubuntu系、`nxl76485`ユーザー）でv0.2.1をBoards Manager経由インストール→Blinkスケッチのビルドを試したところ「Failed to install platform」は解消していたが、コンパイル自体が`#include <Arduino.h>` の時点で`compilation terminated`エラーで失敗。
 
 - **原因**: このリポジトリの実ファイル名は`arduino.h`（小文字）だが、Arduino IDE/arduino-cliが全スケッチに自動挿入する行は`#include <Arduino.h>`（大文字A）。macOS・Windowsは既定でファイルシステムが大文字小文字を区別しないため今まで気づかれなかったが、Linuxは区別するため、実際に該当ファイルが見つからずビルド不能だった。これはv0.1.0リリース以来ずっと存在していた潜在バグで、今回が初めての実Linux環境でのビルド試行だったため今になって発覚した
@@ -188,7 +189,7 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
   - **git側の注意点**: `git config core.ignorecase`がmacOSでは既定で`true`のため、`git mv`ではなく手動コピーで大文字小文字だけ違うパスをリネームすると、`git status`/`git add -A`がリネームとして認識せず「変更」としか見えず、実際には元の小文字パスのままcommitされてしまう罠があった。`git rm --cached`→`mv`（実ファイルをcase-preservingで大文字化）→`git add`で正しく大文字パスとしてindexに反映されることを確認
 - **検証**: 通常のmacOS開発機（大文字小文字を区別しない）でのビルド確認だけでは同じ見落としを再現できないため、`hdiutil create -fs "Case-sensitive APFS"`で一時的にcase-sensitiveなAPFSボリュームを作成し、`hardware/nxp/mcx/`一式をコピーした上でxPack GCCで直接`#include <Arduino.h>`/`<SPI.h>`/`<Wire.h>`を使うテストコードをコンパイル、エラーゼロで通ることを実機Linux相当の条件で確認
 - 全examples（Arduino_compatible_API・Arduino_incompatible_API）の回帰コンパイルも実施、問題なし
-- **未実施**: この修正はまだリリースされていない（`main`にコミットのみ、パッチリリース要否をユーザーと相談中）
+- **v0.2.2としてリリース済み**: ユーザー判断で即パッチリリース。`main`にfast-forward（別ブランチなし、直接main上で作業）、`platforms`配列に0.2.2エントリを新規追加（既存の0.2.1エントリ上書きではなく、CLAUDE.md記載の新方式どおり）、リリースzip作成→GitHub Release作成→タグpush（`gh release create`が自動でタグ作成・push、ローカルの重複annotatedタグは削除して整理）→`update_package_index.yml`手動実行でchecksum確定（`c63ffd4`、SHA-256:`52880c626303ee3deb89da26dcec694ada19eb79f042d7da16445ff904991b47`、ローカル計算値と一致確認済み、全12バージョンのエントリが正しく保持されていることも確認）。2026-08-13リリース。ローカル開発用symlinkも`0.2.2-dev`に更新
 
 ## v0.2.1 で作業中の内容（`prepare0.2.1` ブランチ→`main`マージ済み・2026-08-12リリース済み）
 
