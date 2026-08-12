@@ -248,6 +248,15 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 - **String**: `long long`/`unsigned long long`のコンストラクタ・`concat`・`operator+=`を追加。実装は既存の`long`/`unsigned long`版と同じパターン（`snprintf`の`%lld`/`%llu`/`%llx`/`%llo`、整数フォーマットなのでnano.specsの浮動小数点非対応制約とは無関係で問題なし）
 - 確認用スケッチ: `test_SPI_legacy_api`（MOSI-MISOループバック配線要、legacy API切り替え後もtransferが正常動作することを確認）、`test_String_64bit`（配線不要、32bit longをオーバーフローする値で64bit経路が実際に使われていることを確認）。実機確認済み、全項目OK
 
+### 3周目のAPI互換性精査と3件のバグ修正（BIN基数、Serial.write、attachInterrupt LOW）
+- 2周目で見つけたSPIバグの修正パターンに味を占め、3周目としてSerial print系・write系・PROGMEM・attachInterruptモード・`ARDUINO`系マクロを精査（Explore agentに依頼）。3件の実バグと3件の未対応機能ギャップ（PROGMEM/F()、`#define ARDUINO`、`ARDUINO_ARCH_*`系マクロ、いずれもCortex-M機種では実害が小さいと判断し今回は見送り）が判明
+- **バグ1: `Serial.print(x, BIN)`が無言で10進数を返す**。`_print_num`/`_print_unum`/`_print_num64`/`_print_unum64`（`arduino_serial.cpp`）はいずれも`DEC`/`HEX`/`OCT`だけをsnprintfの書式指定で分岐し、それ以外（`BIN`含む）は`else`で10進フォーマットにフォールバックしていた（snprintfに`%b`相当がないため）。任意基数（2〜36）対応の`_utoa_radix()`ヘルパーを新設し、この`else`分岐を置き換えて解消
+- **同じバグが`String`クラスの数値コンストラクタにも独立して存在**（`arduino_string.cpp`、`String::String(long, base)`等の4つの整数コンストラクタ）。ユーザーの実機テストで`Serial.print(255, BIN)`は直っているのに`String(255, BIN) == "11111111"`が`FAIL`する、という形で発覚 — Serial側だけ直して見落としていた。同じ`_utoa_radix`ヘルパーを`arduino_string.cpp`側にも複製し（別の翻訳単位なので共有不可、既存の`dtoa()`と同じ扱い）、4つのコンストラクタすべてを修正
+- **バグ2: `Serial.write()`のオーバーロード不足＋r01lib実装の隠蔽**。`SerialClass`は`write(uint8_t c)`（戻り値`void`）しか宣言しておらず、C++の名前隠蔽ルールにより基底クラス`Serial`の`write(const uint8_t*, size_t)`（一括書き込み）が完全に不可視化されていた。`write(uint8_t)`（戻り値を本家準拠の`size_t`に変更）、`write(const uint8_t*, size_t)`、`write(const char*, size_t)`、`write(const char*)`の4オーバーロードをすべて`SerialClass`自身に明示的に宣言する形で解消（`using`宣言だと基底の`status_t`返り値がそのまま漏れて`size_t`として誤解釈される問題があるため、ラッパーとして書き直した）
+- **バグ3: `attachInterrupt(pin, isr, LOW)`が無言でRISING扱いになる**。このプロジェクト独自の定数番号`RISING=0/FALLING=1/CHANGE=2`が、デジタルレベル定数`LOW`（`false`=0）と数値衝突していた（本家Arduinoは`CHANGE=1/FALLING=2/RISING=3`で`LOW=0`を意図的に空けてある）。定数を本家と同じ番号体系に振り直し、r01libに`InterruptIn::low()`（`kPORT_InterruptLogicZero`によるレベルトリガー割り込み）を新設して`case LOW:`を正式サポート
+- 確認用スケッチ: `test_Serial_BIN_and_write`（Serial1 D1-D0ジャンパ要、BIN基数の期待値比較＋write系の往復確認、null バイトを含むバッファでcount-basedであることも確認）、`test_Interrupt_LOW`（配線不要、SW2長押しでカウンタが数十万回増えることを確認 — エッジトリガーなら数回で止まるはずが374,533回増加し、レベルトリガーとして機能していることを実証）。実機確認済み、全項目OK
+- README.mdのAPI対応表を更新（`attachInterrupt`にLOW追加、`Serial.write`の4オーバーロード明記、BINバグ修正済みである旨明記）
+
 ---
 
 ## 動作確認済み
@@ -264,6 +273,7 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 | Wire.setClock | ✅ | v0.2.1で追加。オンボードP3T1755で実機確認済み |
 | Serial.readString / readStringUntil、String::reserve/getBytes/toCharArray/startsWith(offset) | ✅ | v0.2.1で追加。Serial1ループバック＋純粋ロジック検証で実機確認済み |
 | SPI.setBitOrder/setDataMode/setClockDivider、String 64bit（long long/unsigned long long） | ✅ | v0.2.1で追加。MOSI-MISOループバック＋純粋ロジック検証で実機確認済み |
+| Serial print BIN基数バグ修正（Serial・String両方）、Serial.write全オーバーロード、attachInterrupt LOWモード | ✅ | v0.2.1で修正・追加。全項目実機確認済み（LOWモードは長押しでカウンタ374,533回増加を確認） |
 | Wire (I2C) | ✅ | |
 | Wire1 (I3C, I2Cモード) | ✅ | オンボードP3T1755で確認、重大バグ修正済み |
 | SPI | ✅ | |

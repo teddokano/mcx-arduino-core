@@ -154,11 +154,12 @@ Other named pins/peripherals:
 |-----|--------|-------|
 | `pinMode` | ✅ | |
 | `digitalWrite` / `digitalRead` | ✅ | |
-| `attachInterrupt` | ✅ | RISING / FALLING / CHANGE |
+| `attachInterrupt` | ✅ | RISING / FALLING / CHANGE / LOW (level-triggered, fires repeatedly while held) |
 | `detachInterrupt` | ✅ | |
 | `digitalPinToInterrupt` | ✅ | |
 | `Serial.begin` / `print` / `println` / `printf` | ✅ | |
-| `Serial.read` / `available` / `write` | ✅ | |
+| `Serial.read` / `available` / `write` | ✅ | `write` has all 4 standard overloads (`uint8_t`, `const char*`, `(const uint8_t*, size_t)`, `(const char*, size_t)`) |
+| `Serial.print`/`println` with `BIN` base | ✅ | Fixed in v0.2.1 — previously silently printed decimal instead of binary |
 | `Serial.flush` | ✅ | Blocks until the hardware finishes shifting out the last byte, not just until the software TX buffer is empty |
 | `Serial.peek` | ✅ | Only meaningful after `begin()` (always the case for `Serial`/`Serial1`), since it reads the RX ring buffer |
 | `Serial.setTimeout` / `readBytes` / `readBytesUntil` / `readString` / `readStringUntil` / `parseInt` / `parseFloat` / `find` | ✅ | Polled, `millis()`-based timeout (default 1000ms) |

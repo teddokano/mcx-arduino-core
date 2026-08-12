@@ -40,9 +40,11 @@ extern "C" {
 #if (defined(FSL_FEATURE_PORT_HAS_NO_INTERRUPT) && FSL_FEATURE_PORT_HAS_NO_INTERRUPT)
 #define	kRisingEdge		kGPIO_InterruptRisingEdge
 #define	kFallingEdge	kGPIO_InterruptFallingEdge
+#define	kLogicZero		kGPIO_InterruptLogicZero
 #else
 #define	kRisingEdge		kPORT_InterruptRisingEdge
 #define	kFallingEdge	kPORT_InterruptFallingEdge
+#define	kLogicZero		kPORT_InterruptLogicZero
 typedef void (*utick_callback_t)(void);
 #endif
 
@@ -105,6 +107,11 @@ void InterruptIn::rise( func_ptr callback )
 void InterruptIn::fall( func_ptr callback )
 {
 	regist( *callback, kFallingEdge );
+}
+
+void InterruptIn::low( func_ptr callback )
+{
+	regist( *callback, kLogicZero );
 }
 
 void InterruptIn::disable( void )

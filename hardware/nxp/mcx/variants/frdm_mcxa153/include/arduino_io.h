@@ -24,9 +24,14 @@ void	pinMode( int pin_num, int mode );
 void	digitalWrite( int pin_num, bool state );
 bool	digitalRead( int pin_num );
 
-constexpr int	RISING	= 0;
-constexpr int	FALLING	= 1;
-constexpr int	CHANGE	= 2;
+// Values match real Arduino exactly (CHANGE=1/FALLING=2/RISING=3, with 0
+// deliberately left free for LOW -- attachInterrupt(pin, isr, LOW) reuses
+// the digital-level LOW constant above as its 4th mode). This project used
+// to number these RISING=0/FALLING=1/CHANGE=2, which collided LOW's value
+// with RISING and made attachInterrupt(..., LOW) silently behave as RISING.
+constexpr int	CHANGE	= 1;
+constexpr int	FALLING	= 2;
+constexpr int	RISING	= 3;
 
 void	attachInterrupt( int int_num, void (*callback)(void), int mode );
 void	detachInterrupt( int int_num );

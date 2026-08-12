@@ -104,6 +104,10 @@ void attachInterrupt( int pin_num, void (*callback)(void), int mode )
 						int_pin->fall( callback );
 						break;
 
+				case    LOW:
+						int_pin->low( callback );
+						break;
+
 				default:
 						panic( "error @ attachInterrupt(), unknown mode" );
 						break;

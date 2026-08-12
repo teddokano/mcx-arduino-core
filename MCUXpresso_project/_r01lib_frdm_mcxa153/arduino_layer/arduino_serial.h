@@ -11,6 +11,7 @@
 #include	<string_view>
 #include	<stdarg.h>
 #include	<stdint.h>
+#include	<cstring>
 #include	"Serial.h"
 #include	"arduino_string.h"
 
@@ -71,8 +72,20 @@ public:
 	int		available( void ) { return (int)Serial::available(); }
 	int		read( void )      { return getc(); }
 	int		peek( void )      { return Serial::peek(); }
-	void	write( uint8_t c ){ putc( c ); }
 	void	flush( void )     { Serial::flush(); }
+
+	/*
+	 *  All four write() overloads are declared together here (rather than
+	 *  relying on `using Serial::write;` to pull in r01lib's own bulk
+	 *  write(const uint8_t*, size_t)) so they share Arduino's size_t-
+	 *  returns-bytes-written contract -- r01lib's version returns
+	 *  status_t (0 = success), which would silently read as "0 bytes
+	 *  written" if exposed directly to sketches expecting a byte count.
+	 */
+	size_t	write( uint8_t c )                              { putc( c ); return 1; }
+	size_t	write( const uint8_t *buffer, size_t size )      { Serial::write( buffer, size ); return size; }
+	size_t	write( const char *buffer, size_t size )         { return write( (const uint8_t *)buffer, size ); }
+	size_t	write( const char *str )                         { return str ? write( (const uint8_t *)str, strlen( str ) ) : 0; }
 
 	inline operator bool( void ) { return true; }
 

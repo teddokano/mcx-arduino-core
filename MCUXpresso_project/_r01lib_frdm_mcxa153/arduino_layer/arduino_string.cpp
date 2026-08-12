@@ -14,6 +14,37 @@
 
 namespace {
 
+/*
+ *  snprintf()/printf() have no format specifier for arbitrary radixes (no
+ *  %b for binary, and nothing at all for bases other than 8/10/16) --
+ *  matches the identical helper in arduino_serial.cpp (duplicated rather
+ *  than shared across the two translation units, same as dtoa() below).
+ */
+void _utoa_radix( unsigned long long value, int base, char *buf, size_t bufsize )
+{
+	static const char	digits[]	= "0123456789abcdefghijklmnopqrstuvwxyz";
+
+	if ( base < 2 || base > 36 )
+		base	= 10;
+
+	char	tmp[ 66 ];
+	int		i	= 0;
+
+	if ( value == 0 )
+		tmp[ i++ ]	= '0';
+
+	while ( value > 0 && i < (int)sizeof(tmp) - 1 )
+	{
+		tmp[ i++ ]	= digits[ value % (unsigned)base ];
+		value		/= (unsigned)base;
+	}
+
+	size_t	j	= 0;
+	while ( i > 0 && j < bufsize - 1 )
+		buf[ j++ ]	= tmp[ --i ];
+	buf[ j ]	= '\0';
+}
+
 // Integer-arithmetic double -> decimal string, same technique as
 // SerialClass::_print_double() -- nano.specs' snprintf() doesn't support
 // %f/%e/%g, so this can't just be sprintf("%f", ...).
@@ -128,8 +159,19 @@ String::String( long value, unsigned char base )
 {
 	_init();
 	char	buf[ 34 ];
-	const char	*fmt	= ( base == 16 ) ? "%lx" : ( base == 8 ) ? "%lo" : "%ld";
-	snprintf( buf, sizeof(buf), fmt, value );
+	if ( base == 16 )
+		snprintf( buf, sizeof(buf), "%lx", value );
+	else if ( base == 8 )
+		snprintf( buf, sizeof(buf), "%lo", value );
+	else if ( base == 10 )
+		snprintf( buf, sizeof(buf), "%ld", value );
+	else if ( value < 0 )
+	{
+		buf[ 0 ]	= '-';
+		_utoa_radix( (unsigned long long)( -(long long)value ), base, buf + 1, sizeof(buf) - 1 );
+	}
+	else
+		_utoa_radix( (unsigned long long)value, base, buf, sizeof(buf) );
 	_alloc_copy( buf, (unsigned int)strlen( buf ) );
 }
 
@@ -137,8 +179,14 @@ String::String( unsigned long value, unsigned char base )
 {
 	_init();
 	char	buf[ 34 ];
-	const char	*fmt	= ( base == 16 ) ? "%lx" : ( base == 8 ) ? "%lo" : "%lu";
-	snprintf( buf, sizeof(buf), fmt, value );
+	if ( base == 16 )
+		snprintf( buf, sizeof(buf), "%lx", value );
+	else if ( base == 8 )
+		snprintf( buf, sizeof(buf), "%lo", value );
+	else if ( base == 10 )
+		snprintf( buf, sizeof(buf), "%lu", value );
+	else
+		_utoa_radix( (unsigned long long)value, base, buf, sizeof(buf) );
 	_alloc_copy( buf, (unsigned int)strlen( buf ) );
 }
 
@@ -146,8 +194,19 @@ String::String( long long value, unsigned char base )
 {
 	_init();
 	char	buf[ 66 ];
-	const char	*fmt	= ( base == 16 ) ? "%llx" : ( base == 8 ) ? "%llo" : "%lld";
-	snprintf( buf, sizeof(buf), fmt, value );
+	if ( base == 16 )
+		snprintf( buf, sizeof(buf), "%llx", value );
+	else if ( base == 8 )
+		snprintf( buf, sizeof(buf), "%llo", value );
+	else if ( base == 10 )
+		snprintf( buf, sizeof(buf), "%lld", value );
+	else if ( value < 0 )
+	{
+		buf[ 0 ]	= '-';
+		_utoa_radix( (unsigned long long)( -value ), base, buf + 1, sizeof(buf) - 1 );
+	}
+	else
+		_utoa_radix( (unsigned long long)value, base, buf, sizeof(buf) );
 	_alloc_copy( buf, (unsigned int)strlen( buf ) );
 }
 
@@ -155,8 +214,14 @@ String::String( unsigned long long value, unsigned char base )
 {
 	_init();
 	char	buf[ 66 ];
-	const char	*fmt	= ( base == 16 ) ? "%llx" : ( base == 8 ) ? "%llo" : "%llu";
-	snprintf( buf, sizeof(buf), fmt, value );
+	if ( base == 16 )
+		snprintf( buf, sizeof(buf), "%llx", value );
+	else if ( base == 8 )
+		snprintf( buf, sizeof(buf), "%llo", value );
+	else if ( base == 10 )
+		snprintf( buf, sizeof(buf), "%llu", value );
+	else
+		_utoa_radix( value, base, buf, sizeof(buf) );
 	_alloc_copy( buf, (unsigned int)strlen( buf ) );
 }
 

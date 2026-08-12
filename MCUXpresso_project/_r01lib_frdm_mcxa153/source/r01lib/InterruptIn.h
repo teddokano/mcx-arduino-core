@@ -50,6 +50,14 @@ public:
 	 */
 	virtual void	fall( func_ptr callback );
 
+	/** Register callback function which is called continuously while the
+	 *  pin reads logic low (level-triggered, matches classic Arduino's
+	 *  attachInterrupt(pin, isr, LOW))
+	 *
+	 * @param callback pointer to callback fuction
+	 */
+	virtual void	low( func_ptr callback );
+
 	/** Disable the interrupt and clear the registered callback
 	 *
 	 *  Reverses rise()/fall() -- disables the pin's interrupt/DMA request

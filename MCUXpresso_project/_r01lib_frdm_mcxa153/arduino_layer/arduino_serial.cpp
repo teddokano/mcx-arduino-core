@@ -21,6 +21,41 @@ SerialClass	Serial1( arduino_pin_by_number[ D1 ], arduino_pin_by_number[ D0 ] );
 
 // ---- print overloads ----
 
+namespace {
+
+/*
+ *  snprintf()/printf() have no format specifier for arbitrary radixes (no
+ *  %b for binary, and nothing at all for bases other than 8/10/16), so
+ *  BIN -- and any other non-DEC/HEX/OCT base a sketch might pass, matching
+ *  real Arduino's support for any radix 2-36 -- has to be hand-converted.
+ */
+void _utoa_radix( unsigned long long value, int base, char *buf, size_t bufsize )
+{
+	static const char	digits[]	= "0123456789abcdefghijklmnopqrstuvwxyz";
+
+	if ( base < 2 || base > 36 )
+		base	= 10;
+
+	char	tmp[ 66 ];
+	int		i	= 0;
+
+	if ( value == 0 )
+		tmp[ i++ ]	= '0';
+
+	while ( value > 0 && i < (int)sizeof(tmp) - 1 )
+	{
+		tmp[ i++ ]	= digits[ value % (unsigned)base ];
+		value		/= (unsigned)base;
+	}
+
+	size_t	j	= 0;
+	while ( i > 0 && j < bufsize - 1 )
+		buf[ j++ ]	= tmp[ --i ];
+	buf[ j ]	= '\0';
+}
+
+}	// namespace
+
 void SerialClass::print( const char *s )
 {
 	while ( *s )
@@ -41,8 +76,13 @@ void SerialClass::_print_num( long n, int base )
 		snprintf( buf, sizeof(buf), "%lx", (unsigned long)n );
 	else if ( base == OCT )
 		snprintf( buf, sizeof(buf), "%lo", (unsigned long)n );
+	else if ( n < 0 )
+	{
+		putc( '-' );
+		_utoa_radix( (unsigned long long)( -(long long)n ), base, buf, sizeof(buf) );
+	}
 	else
-		snprintf( buf, sizeof(buf), "%ld", n );
+		_utoa_radix( (unsigned long long)n, base, buf, sizeof(buf) );
 	print( buf );
 }
 
@@ -56,7 +96,7 @@ void SerialClass::_print_unum( unsigned long n, int base )
 	else if ( base == OCT )
 		snprintf( buf, sizeof(buf), "%lo", n );
 	else
-		snprintf( buf, sizeof(buf), "%lu", n );
+		_utoa_radix( (unsigned long long)n, base, buf, sizeof(buf) );
 	print( buf );
 }
 
@@ -69,8 +109,13 @@ void SerialClass::_print_num64( long long n, int base )
 		snprintf( buf, sizeof(buf), "%llx", (unsigned long long)n );
 	else if ( base == OCT )
 		snprintf( buf, sizeof(buf), "%llo", (unsigned long long)n );
+	else if ( n < 0 )
+	{
+		putc( '-' );
+		_utoa_radix( (unsigned long long)( -n ), base, buf, sizeof(buf) );
+	}
 	else
-		snprintf( buf, sizeof(buf), "%lld", n );
+		_utoa_radix( (unsigned long long)n, base, buf, sizeof(buf) );
 	print( buf );
 }
 
@@ -84,7 +129,7 @@ void SerialClass::_print_unum64( unsigned long long n, int base )
 	else if ( base == OCT )
 		snprintf( buf, sizeof(buf), "%llo", n );
 	else
-		snprintf( buf, sizeof(buf), "%llu", n );
+		_utoa_radix( n, base, buf, sizeof(buf) );
 	print( buf );
 }
 
