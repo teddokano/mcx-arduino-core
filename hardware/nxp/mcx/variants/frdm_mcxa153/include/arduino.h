@@ -9,6 +9,7 @@
 
 #include	<math.h>
 #include	<cstdlib>
+#include	<cctype>
 
 #include	"r01lib.h"
 #include	"arduino_string.h"
@@ -122,5 +123,26 @@ void	delay( unsigned long ms );
 void	delayMicroseconds( unsigned int us );
 unsigned long	millis( void );
 unsigned long	micros( void );
+
+// yield() is a no-op here: there's no cooperative scheduler to hand control
+// to (unlike ESP8266/ESP32/SAMD cores) -- declared purely so sketches that
+// call it defensively (many libraries do, in busy-wait loops) still compile.
+inline void yield( void ) {}
+
+// ctype.h wrappers (matches UNO R3/R4's Arduino.h "Characters" category) —
+// thin bool-returning renames of the standard <cctype> functions
+inline bool isAlphaNumeric( int c )    { return	isalnum( c ); }
+inline bool isAlpha( int c )           { return	isalpha( c ); }
+inline bool isAscii( int c )           { return	(unsigned)c < 128; }
+inline bool isWhitespace( int c )      { return	isspace( c ); }
+inline bool isControl( int c )         { return	iscntrl( c ); }
+inline bool isDigit( int c )           { return	isdigit( c ); }
+inline bool isGraph( int c )           { return	isgraph( c ); }
+inline bool isLowerCase( int c )       { return	islower( c ); }
+inline bool isPrintable( int c )       { return	isprint( c ); }
+inline bool isPunct( int c )           { return	ispunct( c ); }
+inline bool isSpace( int c )           { return	isspace( c ); }
+inline bool isUpperCase( int c )       { return	isupper( c ); }
+inline bool isHexadecimalDigit( int c ){ return	isxdigit( c ); }
 
 #endif // !R01LIB_ARDUINO_H

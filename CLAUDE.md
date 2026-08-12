@@ -214,6 +214,15 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 - 確認用スケッチ: `examples/Arduino_compatible_API/test_Serial_stream_helpers/`（Serial1ループバックで各関数を検証、最後にタイムアウトパス（`setTimeout(500)`未達時の待ち時間）も実測）。実機確認済み、全項目OK — タイムアウト実測値は設定通り500ms
 - README.mdのAPI対応表にも追加
 
+### 残りの低優先度ギャップ対応（analogReference / analogRead・WriteResolution / yield / ctype.h系）
+- ギャップ調査リストの最後の項目群。これで洗い出した抜けはすべて対応完了
+- `analogReference(uint8_t mode)`: no-opスタブ（`arduino_analog.h/.cpp`）。このボードのLPADCリファレンス電圧はハードウェアで固定（`AnalogIn.cpp`で`kLPADC_ReferenceVoltageAlt3`固定）でユーザー切り替え不可のため、互換性のための宣言のみ
+- `analogReadResolution(int bits)` / `analogWriteResolution(int bits)`: no-opではなく実際にスケーリングする実装。`adc_resolution_bits`（デフォルト10）/`pwm_resolution_bits`（デフォルト8）を静的変数として保持し、`analogRead()`は`read_u16() >> (16 - adc_resolution_bits)`、`analogWrite()`は`(1 << pwm_resolution_bits) - 1`を上限にスケーリングするよう変更。1-16の範囲にクランプ
+- `yield()`: `arduino.h`にinline no-opスタブとして追加。本コアはRTOSなしの単純ループ構成で協調スケジューラが存在しないため、譲る先がない
+- ctype.h系ラッパー: `arduino.h`に`<cctype>`をinclude追加し、`isAlpha`/`isAlphaNumeric`/`isAscii`/`isWhitespace`/`isControl`/`isDigit`/`isGraph`/`isLowerCase`/`isPrintable`/`isPunct`/`isSpace`/`isUpperCase`/`isHexadecimalDigit`をinline関数として追加（標準`<cctype>`関数の薄いラッパー、`isAscii`のみ`newlib`の`isascii()`に依存せず`(unsigned)c < 128`で自前実装）
+- 確認用スケッチ: `examples/Arduino_compatible_API/test_analog_resolution_and_misc/`（A0の同一信号を10bit/12bitで読み比べ約4倍の関係を確認、ctype.h系は既知の文字で網羅的に検証）。実機確認済み、全項目OK
+- README.mdのAPI対応表にも追加
+
 ---
 
 ## 動作確認済み
@@ -225,6 +234,7 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 | Serial.flush() | ✅ | v0.2.1で追加。Serial1@9600bpsで実測値と理論値を比較し実機確認済み |
 | Serial.peek() | ✅ | v0.2.1で追加。Serial1ループバックで実機確認済み |
 | Serial Stream系（setTimeout/readBytes/readBytesUntil/parseInt/parseFloat/find） | ✅ | v0.2.1で追加。Serial1ループバックで実機確認済み、タイムアウトパスも実測 |
+| analogReference / analogRead・WriteResolution / yield / ctype.h系 | ✅ | v0.2.1で追加。実機確認済み（A0の10bit/12bit比較、ctype.h系は既知文字で検証） |
 | Wire (I2C) | ✅ | |
 | Wire1 (I3C, I2Cモード) | ✅ | オンボードP3T1755で確認、重大バグ修正済み |
 | SPI | ✅ | |

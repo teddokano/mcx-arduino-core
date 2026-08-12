@@ -169,14 +169,18 @@ Other named pins/peripherals:
 | `SPI.begin` / `beginTransaction` / `transfer` / `transfer16` | ✅ | |
 | `delay` | ✅ | |
 | `delayMicroseconds` | ✅ | |
-| `analogRead` | ✅ | LPADC, `A0`-`A3`, 10bit (0-1023) |
+| `analogRead` | ✅ | LPADC, `A0`-`A3`, 10bit (0-1023) default |
 | `analogWrite` (PWM) | ✅ | FlexPWM0, `PWM0`-`PWM5` only, fixed 1kHz period (not configurable) |
+| `analogReference` | ✅ | No-op — this board's ADC reference voltage is fixed in hardware |
+| `analogReadResolution` / `analogWriteResolution` | ✅ | 1-16 bit; defaults match classic Arduino (10bit read / 8bit write) |
 | `millis` / `micros` | ✅ | SysTick(1ms) + DWT cycle counter |
 | `tone` / `noTone` | ✅ | CTIMER0, any digital pin, 1 tone at a time |
 | `shiftOut` / `shiftIn` | ✅ | Software bit-banged |
 | `pulseIn` / `pulseInLong` | ✅ | |
 | `random` / `randomSeed` | ✅ | |
 | Math constants / compat macros | ✅ | `PI`, `min`/`max`, `bitRead`/`bitWrite`, `map`, etc. (UNO R3/R4 compatible) |
+| `yield` | ✅ | No-op — no cooperative scheduler on this core |
+| Character functions (`isAlpha`, `isDigit`, `isSpace`, etc.) | ✅ | Thin wrappers over `<cctype>` |
 | `String` class | ✅ | Original implementation (not a WString port); concatenation, `substring`/`indexOf`/`replace`, `toInt`/`toFloat`, etc. |
 
 ## Relationship to ArduinoCore-zephyr
