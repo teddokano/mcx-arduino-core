@@ -3,7 +3,8 @@
 Arduino board support package for NXP FRDM MCX Series boards.
 
 New here? Start with the [tutorial](TUTORIAL.md) ([日本語版](TUTORIAL.ja.md)).
-See [CHANGELOG.md](CHANGELOG.md) for release history.
+See [API_COMPATIBILITY.md](API_COMPATIBILITY.md) for the full Arduino API support status,
+and [CHANGELOG.md](CHANGELOG.md) for release history.
 
 ## Supported Boards
 
@@ -150,53 +151,13 @@ Other named pins/peripherals:
 
 ## Supported Arduino APIs
 
-| API | Status | Notes |
-|-----|--------|-------|
-| `pinMode` | ✅ | `INPUT` / `OUTPUT` / `INPUT_PULLUP` / `INPUT_PULLDOWN` / `OUTPUT_OPENDRAIN` |
-| `digitalWrite` / `digitalRead` | ✅ | |
-| `attachInterrupt` | ✅ | RISING / FALLING / CHANGE / LOW (level-triggered, fires repeatedly while held) |
-| `detachInterrupt` | ✅ | |
-| `digitalPinToInterrupt` / `NOT_AN_INTERRUPT` | ✅ | Every valid GPIO pin on this MCU supports interrupts, so `digitalPinToInterrupt()` never actually returns `NOT_AN_INTERRUPT` -- it's provided so sketches that check for it still compile |
-| `digitalPinToPort` / `digitalPinToBitMask` / `portOutputRegister` / `portInputRegister` / `portModeRegister` | ✅ | For fast-GPIO/bit-banging libraries; pin must have `pinMode()` called first |
-| `Serial.begin` / `print` / `println` / `printf` | ✅ | |
-| `Serial.read` / `available` / `write` | ✅ | `write` has all 4 standard overloads (`uint8_t`, `const char*`, `(const uint8_t*, size_t)`, `(const char*, size_t)`) |
-| `Serial.print`/`println` with `BIN` base | ✅ | Fixed in v0.2.1 — previously silently printed decimal instead of binary |
-| `Serial.flush` | ✅ | Blocks until the hardware finishes shifting out the last byte, not just until the software TX buffer is empty |
-| `Serial.peek` | ✅ | Only meaningful after `begin()` (always the case for `Serial`/`Serial1`), since it reads the RX ring buffer |
-| `Serial.setTimeout` / `readBytes` / `readBytesUntil` / `readString` / `readStringUntil` / `parseInt` / `parseFloat` / `find` | ✅ | Polled, `millis()`-based timeout (default 1000ms) |
-| `Serial.find(target, length)` / `findUntil(target, terminator)` | ✅ | Added in v0.2.1 |
-| `Serial.availableForWrite` | ✅ | Added in v0.2.1 — free bytes in the TX ring buffer (max 255) |
-| `Serial1` | ✅ | Hardware UART on `D0`/`D1`, separate from USB-bridged `Serial` |
-| `Wire.begin` / `beginTransmission` / `endTransmission` | ✅ | |
-| `Wire.write` / `read` / `requestFrom` / `available` | ✅ | |
-| `Wire.setClock` | ✅ | |
-| `Wire.end` | ✅ | Added in v0.2.1 — releases the I2C/I3C peripheral |
-| `Wire.setWireTimeout` / `clearWireTimeoutFlag` / `getWireTimeoutFlag` | ❌ | Not supported — a real implementation needs a deadline check inside the blocking SDK transfer calls (`LPI2C_MasterStart`/`Send`/`Receive`/`Stop`), not just the Arduino layer; a stub that doesn't actually abort a hung bus would be misleading |
-| I2C slave mode (`Wire.begin(address)`, `onReceive`, `onRequest`) | ❌ | Not supported — master mode only. r01lib has no slave-mode I2C/LPI2C driver to build on; would need new low-level driver work, not just an Arduino-layer shim |
-| `Wire1` (I3C, I2C mode) | ✅ | On-board P3T1755 temperature sensor |
-| `SPI.begin` / `end` / `beginTransaction` / `endTransaction` / `transfer` / `transfer16` | ✅ | `bitOrder` in `SPISettings` is now actually applied to hardware (was silently ignored before v0.2.1) |
-| `SPI.usingInterrupt` / `notUsingInterrupt` | ✅ | No-op — declared for sketch compatibility only |
-| `SPI.setBitOrder` / `setDataMode` / `setClockDivider` | ✅ | Legacy pre-1.6 API; `setClockDivider` divides `SPI`'s peripheral input clock, not `F_CPU` |
-| `delay` | ✅ | |
-| `delayMicroseconds` | ✅ | |
-| `analogRead` | ✅ | LPADC, `A0`-`A3`, 10bit (0-1023) default |
-| `analogWrite` (PWM) | ✅ | FlexPWM0, `PWM0`-`PWM5` only, fixed 1kHz period (not configurable) |
-| `analogReference` | ✅ | No-op — this board's ADC reference voltage is fixed in hardware |
-| `analogReadResolution` / `analogWriteResolution` | ✅ | 1-16 bit; defaults match classic Arduino (10bit read / 8bit write) |
-| `millis` / `micros` | ✅ | SysTick(1ms) + DWT cycle counter |
-| `tone` / `noTone` | ✅ | CTIMER0, any digital pin, 1 tone at a time |
-| `shiftOut` / `shiftIn` | ✅ | Software bit-banged |
-| `pulseIn` / `pulseInLong` | ✅ | |
-| `random` / `randomSeed` | ✅ | |
-| Math constants / compat macros | ✅ | `PI`, `min`/`max`, `bitRead`/`bitWrite`, `map`, etc. (UNO R3/R4 compatible) |
-| `yield` | ✅ | No-op — no cooperative scheduler on this core |
-| Character functions (`isAlpha`, `isDigit`, `isSpace`, etc.) | ✅ | Thin wrappers over `<cctype>` |
-| `String` class | ✅ | Original implementation (not a WString port); concatenation (including `long long`/`unsigned long long`, and `F("...")`), `substring`/`indexOf`/`replace`, `toInt`/`toFloat`, `getBytes`/`toCharArray`, free `operator+` for all numeric types and `F("...")`, etc. `reserve()` is a no-op (always allocates exact-fit) |
-| `Printable` interface | ✅ | `Serial.print`/`println` accept any class implementing `size_t printTo(Print&) const`. Caveat: this core's own `print()`/`println()` overloads return `void`, not `size_t` like real Arduino's `Print` class — a `printTo()` body written as `size_t n = 0; n += p.print(x); ...; return n;` (a common idiom in third-party libraries) won't compile as-is here; write it to call `print()` without accumulating a return value instead |
-| `PROGMEM` / `pgm_read_byte`/`_word`/`_dword`/`_float`/`_ptr` / `PSTR` | ✅ | No-ops — flash and RAM share one address space on this Cortex-M target, unlike AVR's Harvard split. Declared for sketch/library compatibility only |
-| `F("...")` / `__FlashStringHelper` | ✅ | Works with `Serial.print`/`println` and `String` (construct/concat) |
-| `ARDUINO` version macro | ✅ | Defined as `10819` via `platform.txt`, for libraries that gate on `#if ARDUINO >= 100` etc. |
-| `ARDUINO_ARCH_MCX` / `ARDUINO_FRDM_MCXA153` | ✅ | Defined via `platform.txt` (the latter derived from `boards.txt`'s `build.board`) |
+GPIO, interrupts, Serial (USB + hardware UART), Wire (I2C and I3C-as-I2C),
+SPI, analogRead/analogWrite, millis/micros, tone/noTone, delay family,
+String, Printable, F()/PROGMEM, and UNO R3/R4 compatibility macros are all
+supported. I2C slave mode and `Wire.setWireTimeout` are the two known gaps.
+
+See [API_COMPATIBILITY.md](API_COMPATIBILITY.md) for the full per-API status
+table and notes/caveats.
 
 ## Relationship to ArduinoCore-zephyr
 
