@@ -230,7 +230,15 @@ void SPI::mode( uint8_t mode )
 	masterConfig.cpha	= (lpspi_clock_phase_t   )((mode >> 0) & 0x1);
 
 	LPSPI_Deinit( unit_base );
-	LPSPI_MasterInit( unit_base, &masterConfig, master_clk_freq );	
+	LPSPI_MasterInit( unit_base, &masterConfig, master_clk_freq );
+}
+
+void SPI::bit_order( uint8_t order )
+{
+	masterConfig.direction	= order ? kLPSPI_MsbFirst : kLPSPI_LsbFirst;
+
+	LPSPI_Deinit( unit_base );
+	LPSPI_MasterInit( unit_base, &masterConfig, master_clk_freq );
 }
 
 status_t SPI::write( uint8_t *wp, uint8_t *rp, int length )

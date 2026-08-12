@@ -41,6 +41,17 @@ public:
 	bool			isEmpty( void ) const	{ return _len == 0; }
 	const char*		c_str( void ) const		{ return _buf ? _buf : ""; }
 
+	/*
+	 *  reserve() is a no-op here: this implementation always allocates each
+	 *  buffer as an exact fit on concat/assign (see _alloc_copy()), so
+	 *  there's no separate "capacity" ahead of "length" to pre-grow. Kept
+	 *  for source compatibility only -- always returns true.
+	 */
+	bool	reserve( unsigned int size );
+
+	void	getBytes( unsigned char *buf, unsigned int bufsize ) const;
+	void	toCharArray( char *buf, unsigned int bufsize ) const;
+
 	bool	concat( const String &s );
 	bool	concat( const char *cstr );
 	bool	concat( char c );
@@ -81,6 +92,7 @@ public:
 	char&	operator[]( unsigned int index );
 
 	bool	startsWith( const String &s ) const;
+	bool	startsWith( const String &s, unsigned int offset ) const;
 	bool	endsWith( const String &s ) const;
 
 	int		indexOf( char ch, unsigned int fromIndex = 0 ) const;

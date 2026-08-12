@@ -52,6 +52,21 @@ void TwoWire::begin( int baud )
 	i2c->err_callback( nullptr );
 }
 
+void TwoWire::setClock( uint32_t freq )
+{
+	if ( !i2c )
+		return;	// no-op before begin() -- nothing to reconfigure yet
+
+	baudrate	= (int)freq;
+
+	bool	is_i3c	= ( I3C_SDA == _sda ) && ( I3C_SCL == _scl );
+
+	if ( is_i3c )
+		static_cast<I3C *>( i2c )->frequency( baudrate, 0, 0 );
+	else
+		i2c->frequency( baudrate );
+}
+
 void TwoWire::beginTransmission( const uint8_t address )
 {
 	targ_addr		= address;

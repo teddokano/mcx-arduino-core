@@ -231,6 +231,17 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 - `LICENSE`のThird-Party Noticesに、この探索ロジックがArduinoCore-zephyrから移植したものである旨を追記
 - **注意**: これはコードの改善であり、実際にLinux環境上でBoards Managerインストール〜ビルド〜書き込みまでの一連の流れを検証したわけではない。実機（実OS）での検証は引き続き未実施（残りのPendingタスク#1のまま）
 
+### 2周目のAPI互換性精査と「すぐ対応するもの」実装（Wire/SPI/String/Serial）
+- 1周目のギャップ調査（言語リファレンスの関数群）が完了したのを受け、Wire/TwoWire・SPI・Stringクラス・Print系の完成度を2周目として精査（Explore agentに依頼）
+- **バグ発見・修正**: `SPI.beginTransaction()`は`SPISettings`の`clock`/`dataMode`はハードウェアに反映していたが、`bitOrder`（MSBFIRST/LSBFIRST）は保存されるだけで一切適用されていなかった。r01lib側の`SPI`クラスに`bit_order()`メソッドを新設（`spi.h/.cpp`、`masterConfig.direction`を書き換えて`LPSPI_MasterInit`し直す、`mode()`と同じパターン）し、`beginTransaction()`から呼ぶよう修正
+- **副次的に発見したもう1つの不整合**: `arduino_spi.h`が独自定義していた`enum endian { MSBFIRST=0, LSBFIRST=1 }`が、`arduino.h`側の`#define LSBFIRST 0 / #define MSBFIRST 1`（本家Arduino標準値）と**値が逆**だった。マクロは`arduino.h`内で`arduino_spi.h`のinclude後に定義されるため、スケッチ側で`MSBFIRST`と書くとマクロ経由で値1になる一方、`SPISettings`のデフォルトコンストラクタ内（`arduino_spi.h`自身、マクロ未定義の時点で解決）ではenum経由で値0になる、という食い違いがあった。enumの値を`LSBFIRST=0, MSBFIRST=1`に修正して整合させた
+- **SPI**: `end()`（`spi`インスタンスを`delete`）、`transfer16()`（現在の`bitOrder`に応じてMSB/LSBどちらのバイトを先に送るか切り替え）、`usingInterrupt()`/`notUsingInterrupt()`（no-opスタブ）を追加。`beginTransaction()`内の`static`ローカル変数だった`last_clock`/`last_mode`を`SPIClass`のメンバ変数に変更（`transfer16()`から現在の設定を参照する必要があったため）
+- **Wire**: `setClock(uint32_t)`を追加。`begin()`内のI3C/I2C分岐ロジック（BusFault修正時に確立したI3Cの3引数`frequency()`呼び出し）をそのまま再利用
+- **Serial**: `readString()`/`readStringUntil(char)`を追加（`String`クラスと`_timed_read()`を組み合わせるだけ）
+- **String**: `reserve()`（no-op、常にtrue。このクラスはconcat/assign毎にexact-fit再確保する設計のため予約する容量という概念がそもそもない）、`getBytes()`/`toCharArray()`、`startsWith(s, offset)`オーバーロードを追加
+- 確認用スケッチ: `test_SPI_bitorder_end_transfer16`（MOSI-MISOループバック配線要）、`test_Wire_setClock`（オンボードP3T1755、配線不要）、`test_Serial_readString`（Serial1 D1-D0ジャンパ要）。3本とも実機確認済み、全項目OK
+- README.mdのAPI対応表を全項目更新。**I2Cスレーブモード**（`Wire.begin(address)`, `onReceive`, `onRequest`）は未対応であることを❌付きで明記 — r01lib側にスレーブ用I2C/LPI2Cドライバが一切存在せず、Arduino層だけでは実装不可能で新規の低レベルドライバ開発が必要という規模の大きさから、既知の制限事項として記録
+
 ---
 
 ## 動作確認済み
@@ -243,6 +254,9 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 | Serial.peek() | ✅ | v0.2.1で追加。Serial1ループバックで実機確認済み |
 | Serial Stream系（setTimeout/readBytes/readBytesUntil/parseInt/parseFloat/find） | ✅ | v0.2.1で追加。Serial1ループバックで実機確認済み、タイムアウトパスも実測 |
 | analogReference / analogRead・WriteResolution / yield / ctype.h系 | ✅ | v0.2.1で追加。実機確認済み（A0の10bit/12bit比較、ctype.h系は既知文字で検証） |
+| SPI.end / transfer16 / bitOrderバグ修正 | ✅ | v0.2.1で追加・修正。MOSI-MISOループバックで実機確認済み |
+| Wire.setClock | ✅ | v0.2.1で追加。オンボードP3T1755で実機確認済み |
+| Serial.readString / readStringUntil、String::reserve/getBytes/toCharArray/startsWith(offset) | ✅ | v0.2.1で追加。Serial1ループバック＋純粋ロジック検証で実機確認済み |
 | Wire (I2C) | ✅ | |
 | Wire1 (I3C, I2Cモード) | ✅ | オンボードP3T1755で確認、重大バグ修正済み |
 | SPI | ✅ | |

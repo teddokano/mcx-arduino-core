@@ -189,6 +189,28 @@ String& String::operator=( const char *cstr )
 	return	*this;
 }
 
+bool String::reserve( unsigned int size )
+{
+	(void)size;
+	return	true;
+}
+
+void String::getBytes( unsigned char *buf, unsigned int bufsize ) const
+{
+	if ( buf == nullptr || bufsize == 0 )
+		return;
+
+	unsigned int	n	= ( _len < bufsize - 1 ) ? _len : ( bufsize - 1 );
+
+	memcpy( buf, c_str(), n );
+	buf[ n ]	= '\0';
+}
+
+void String::toCharArray( char *buf, unsigned int bufsize ) const
+{
+	getBytes( (unsigned char *)buf, bufsize );
+}
+
 bool String::concat( const String &s )
 {
 	return	concat( s.c_str() );
@@ -288,9 +310,14 @@ char& String::operator[]( unsigned int index )
 
 bool String::startsWith( const String &s ) const
 {
-	if ( s._len > _len )
+	return	startsWith( s, 0 );
+}
+
+bool String::startsWith( const String &s, unsigned int offset ) const
+{
+	if ( offset > _len || s._len > ( _len - offset ) )
 		return	false;
-	return	strncmp( c_str(), s.c_str(), s._len ) == 0;
+	return	strncmp( c_str() + offset, s.c_str(), s._len ) == 0;
 }
 
 bool String::endsWith( const String &s ) const

@@ -204,6 +204,28 @@ size_t SerialClass::readBytesUntil( char terminator, char *buffer, size_t length
 	return	count;
 }
 
+String SerialClass::readString( void )
+{
+	String	result;
+	int		c;
+
+	while ( ( c = _timed_read() ) >= 0 )
+		result.concat( (char)c );
+
+	return	result;
+}
+
+String SerialClass::readStringUntil( char terminator )
+{
+	String	result;
+	int		c;
+
+	while ( ( c = _timed_read() ) >= 0 && c != terminator )
+		result.concat( (char)c );
+
+	return	result;
+}
+
 double SerialClass::_parseNumber( bool allow_decimal )
 {
 	bool	negative	= false;

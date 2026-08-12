@@ -83,6 +83,9 @@ public:
 	size_t	readBytes( char *buffer, size_t length );
 	size_t	readBytesUntil( char terminator, char *buffer, size_t length );
 
+	String	readString( void );
+	String	readStringUntil( char terminator );
+
 	long	parseInt( void );
 	float	parseFloat( void );
 

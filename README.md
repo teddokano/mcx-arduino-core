@@ -161,12 +161,15 @@ Other named pins/peripherals:
 | `Serial.read` / `available` / `write` | ✅ | |
 | `Serial.flush` | ✅ | Blocks until the hardware finishes shifting out the last byte, not just until the software TX buffer is empty |
 | `Serial.peek` | ✅ | Only meaningful after `begin()` (always the case for `Serial`/`Serial1`), since it reads the RX ring buffer |
-| `Serial.setTimeout` / `readBytes` / `readBytesUntil` / `parseInt` / `parseFloat` / `find` | ✅ | Polled, `millis()`-based timeout (default 1000ms) |
+| `Serial.setTimeout` / `readBytes` / `readBytesUntil` / `readString` / `readStringUntil` / `parseInt` / `parseFloat` / `find` | ✅ | Polled, `millis()`-based timeout (default 1000ms) |
 | `Serial1` | ✅ | Hardware UART on `D0`/`D1`, separate from USB-bridged `Serial` |
 | `Wire.begin` / `beginTransmission` / `endTransmission` | ✅ | |
 | `Wire.write` / `read` / `requestFrom` / `available` | ✅ | |
+| `Wire.setClock` | ✅ | |
+| I2C slave mode (`Wire.begin(address)`, `onReceive`, `onRequest`) | ❌ | Not supported — master mode only. r01lib has no slave-mode I2C/LPI2C driver to build on; would need new low-level driver work, not just an Arduino-layer shim |
 | `Wire1` (I3C, I2C mode) | ✅ | On-board P3T1755 temperature sensor |
-| `SPI.begin` / `beginTransaction` / `transfer` / `transfer16` | ✅ | |
+| `SPI.begin` / `end` / `beginTransaction` / `endTransaction` / `transfer` / `transfer16` | ✅ | `bitOrder` in `SPISettings` is now actually applied to hardware (was silently ignored before v0.2.1) |
+| `SPI.usingInterrupt` / `notUsingInterrupt` | ✅ | No-op — declared for sketch compatibility only |
 | `delay` | ✅ | |
 | `delayMicroseconds` | ✅ | |
 | `analogRead` | ✅ | LPADC, `A0`-`A3`, 10bit (0-1023) default |
@@ -181,7 +184,7 @@ Other named pins/peripherals:
 | Math constants / compat macros | ✅ | `PI`, `min`/`max`, `bitRead`/`bitWrite`, `map`, etc. (UNO R3/R4 compatible) |
 | `yield` | ✅ | No-op — no cooperative scheduler on this core |
 | Character functions (`isAlpha`, `isDigit`, `isSpace`, etc.) | ✅ | Thin wrappers over `<cctype>` |
-| `String` class | ✅ | Original implementation (not a WString port); concatenation, `substring`/`indexOf`/`replace`, `toInt`/`toFloat`, etc. |
+| `String` class | ✅ | Original implementation (not a WString port); concatenation, `substring`/`indexOf`/`replace`, `toInt`/`toFloat`, `getBytes`/`toCharArray`, etc. `reserve()` is a no-op (always allocates exact-fit) |
 
 ## Relationship to ArduinoCore-zephyr
 

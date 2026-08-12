@@ -62,6 +62,13 @@ public:
 	 */
 	virtual void	mode( uint8_t mode = 0 );
 
+	/** Bit order setting
+	 *
+	 * @param order 0 = LSB first, non-zero = MSB first (matches Arduino's
+	 *              LSBFIRST=0/MSBFIRST=1 convention)
+	 */
+	virtual void	bit_order( uint8_t order );
+
 	/** Data transfer on SPI
 	 *  
 	 * @param wp data to write

@@ -23,20 +23,31 @@ void SPIClass::begin( void )
 		spi	= new r01libSPI( ARD_MOSI, ARD_MISO, ARD_SCK, ARD_CS );
 }
 
+void SPIClass::end( void )
+{
+	delete spi;
+	spi			= nullptr;
+	_last_clock	= 0;
+	_last_mode	= -1;
+	_last_order	= -1;
+}
+
 void	SPIClass::beginTransaction( SPISettings settings )
 {
-	static uint32_t	last_clock	= 0;
-	static int		last_mode	= -1;
-
-	if ( settings.clock != last_clock )
+	if ( settings.clock != _last_clock )
 	{
 		spi->frequency( settings.clock );
-		last_clock	= settings.clock;
+		_last_clock	= settings.clock;
 	}
-	if ( settings.dataMode != last_mode )
+	if ( settings.dataMode != _last_mode )
 	{
 		spi->mode( settings.dataMode );
-		last_mode	= settings.dataMode;
+		_last_mode	= settings.dataMode;
+	}
+	if ( settings.bitOrder != _last_order )
+	{
+		spi->bit_order( (uint8_t)settings.bitOrder );
+		_last_order	= settings.bitOrder;
 	}
 }
 
@@ -48,6 +59,27 @@ uint8_t SPIClass::transfer( uint8_t data )
 {
 	txrx( &data, 1 );
 	return data;
+}
+
+uint16_t SPIClass::transfer16( uint16_t data )
+{
+	union { uint16_t val; struct { uint8_t lo; uint8_t hi; } b; } t;
+
+	t.val	= data;
+
+	// MSBFIRST: high byte goes out first on the wire; LSBFIRST: low byte first
+	if ( _last_order == MSBFIRST )
+	{
+		t.b.hi	= transfer( t.b.hi );
+		t.b.lo	= transfer( t.b.lo );
+	}
+	else
+	{
+		t.b.lo	= transfer( t.b.lo );
+		t.b.hi	= transfer( t.b.hi );
+	}
+
+	return	t.val;
 }
 
 void SPIClass::transfer( void *buf, size_t count )
