@@ -5,7 +5,36 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## [Unreleased] — 0.2.0
+## [0.2.1] - 2026-08-12
+
+### Added
+- `String` class (original implementation, not a WString port): concatenation (including `long long`/`unsigned long long` and `F("...")`), `substring`/`indexOf`/`replace`, `toInt`/`toFloat`, `getBytes`/`toCharArray`, free `operator+` for all numeric types
+- Real `Print`/`Stream`/`Printable` abstract base classes (original implementation, not a port of ArduinoCore-avr/API's LGPL 2.1 `Print`/`Stream`). `Serial`/`Serial1` now derive from `Stream`; any class can inherit `Print` directly (no hardware required) and get `print()`/`println()` for free by implementing `write(uint8_t)`. `print()`/`println()` now return `size_t` (bytes written), matching real Arduino
+- `Serial.flush()`, `Serial.peek()`, `Serial.availableForWrite()`
+- Serial/Stream helpers: `setTimeout`, `readBytes`, `readBytesUntil`, `readString`, `readStringUntil`, `parseInt`, `parseFloat`, `find`, `find(target, length)`, `findUntil`
+- `delayMicroseconds()`, `detachInterrupt()`
+- `Wire.setClock()`, `Wire.end()`
+- `SPI.end()`, `SPI.transfer16()`, `SPI.usingInterrupt()`/`notUsingInterrupt()`, legacy `SPI.setBitOrder()`/`setDataMode()`/`setClockDivider()`
+- `analogReference()`, `analogReadResolution()`, `analogWriteResolution()`
+- `INPUT_PULLDOWN`, `OUTPUT_OPENDRAIN` pin modes
+- `NOT_AN_INTERRUPT`, `digitalPinToPort`/`digitalPinToBitMask`/`portOutputRegister`/`portInputRegister`/`portModeRegister` (fast-GPIO/bit-banging support)
+- `PROGMEM`/`pgm_read_byte`/etc./`PSTR`, `F("...")`/`__FlashStringHelper`, `ARDUINO`/`ARDUINO_ARCH_MCX`/`ARDUINO_FRDM_MCXA153` macros
+- `F_CPU`, `clockCyclesPerMicrosecond()`/`clockCyclesToMicroseconds()`/`microsecondsToClockCycles()`, `BitOrder` typedef
+- `yield()`, character functions (`isAlpha`, `isDigit`, `isSpace`, etc.)
+- Improved Linux `LinkServer` discovery in `upload.sh` (adapted from ArduinoCore-zephyr, Apache 2.0)
+
+### Fixed
+- SPI `bitOrder` in `SPISettings` was declared but never actually applied to hardware
+- `Serial.print()`/`println()` with `BIN` base silently printed decimal instead (both `Serial` and `String`)
+- `Serial.write()` missing overloads due to C++ name hiding (only `write(uint8_t)` was reachable)
+- `attachInterrupt(pin, isr, LOW)` silently behaved as `RISING` due to a numeric constant collision with the digital-level `LOW` constant
+- BusFault/hang in `Wire.end()` on an I3C-backed `TwoWire` (I2C's destructor dereferenced an intentionally-uninitialized hardware pointer)
+- Third-party libraries that inherit `Print` directly or take `Stream&` (ArduinoJson, LiquidCrystal, DHT sensor library, etc.) failed to compile — no real `Print`/`Stream` base classes existed
+
+### Changed
+- `README.md`'s full API compatibility table moved to `API_COMPATIBILITY.md`
+
+## [0.2.0] - 2026-08-12
 
 ### Added
 - `analogRead` (LPADC, `A0`-`A3`, 10bit) and `analogWrite` (FlexPWM0, `PWM0`-`PWM5`, fixed 1kHz period)
