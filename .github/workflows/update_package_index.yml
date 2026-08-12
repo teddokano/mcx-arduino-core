@@ -51,12 +51,24 @@ jobs:
 
       - name: Download platform ZIP and compute checksum
         run: |
-          URL=$(python3 -c "
-          import json
+          # package_nxp_mcx_index.json's platforms[] holds one entry per
+          # released version (so Boards Manager can offer older versions,
+          # not just the latest) -- match by platform.txt's version rather
+          # than assuming index 0, so this only ever touches the entry for
+          # the version actually being released.
+          VERSION=$(grep '^version=' hardware/nxp/mcx/platform.txt | cut -d= -f2)
+          echo "Target version: $VERSION"
+          URL=$(VERSION="$VERSION" python3 << 'PYEOF'
+          import json, os
+          version = os.environ["VERSION"]
           with open('package_nxp_mcx_index.json') as f:
               pkg = json.load(f)
-          print(pkg['packages'][0]['platforms'][0]['url'])
-          ")
+          match = [p for p in pkg['packages'][0]['platforms'] if p['version'] == version]
+          if not match:
+              raise SystemExit(f'No platforms[] entry found for version {version} -- add one before running this workflow')
+          print(match[0]['url'])
+          PYEOF
+          )
           echo "Platform URL: $URL"
           curl -L --silent --show-error "$URL" -o /tmp/platform.zip
           SHA256=$(sha256sum /tmp/platform.zip | awk '{print $1}')
@@ -69,8 +81,11 @@ jobs:
 
       - name: Update platform checksum in package_index.json
         run: |
-          python3 << 'PYEOF'
-          import json
+          VERSION=$(grep '^version=' hardware/nxp/mcx/platform.txt | cut -d= -f2)
+          VERSION="$VERSION" python3 << 'PYEOF'
+          import json, os
+
+          version = os.environ["VERSION"]
 
           with open("package_nxp_mcx_index.json") as f:
               pkg = json.load(f)
@@ -80,9 +95,13 @@ jobs:
           with open("/tmp/platform_size.txt") as f:
               platform_size = f.read().strip()
 
-          pkg["packages"][0]["platforms"][0]["checksum"] = platform_sha256
-          pkg["packages"][0]["platforms"][0]["size"] = platform_size
+          match = [p for p in pkg["packages"][0]["platforms"] if p["version"] == version]
+          if not match:
+              raise SystemExit(f"No platforms[] entry found for version {version}")
+          match[0]["checksum"] = platform_sha256
+          match[0]["size"] = platform_size
 
+          print(f"Version:            {version}")
           print(f"Platform checksum: {platform_sha256}")
           print(f"Platform size:     {platform_size}")
 

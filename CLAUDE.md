@@ -7,6 +7,12 @@
 - **内容**: NXP FRDM-MCXA153 (Cortex-M33) 向けArduino IDEボードサポートパッケージ
 - v0.2.1の主な内容: `String`クラス独自実装、`Print`/`Stream`/`Printable`抽象基底クラス新設（サードパーティライブラリ互換性向上）、Serial/Stream系ヘルパー一式、複数の実バグ修正（SPI bitOrder、Serial BIN基数、Serial.writeオーバーロード、attachInterrupt LOW、Wire.end() BusFault）。詳細は本ファイル内の「v0.2.1 で作業中の内容」セクションおよび[CHANGELOG.md](CHANGELOG.md)を参照
 - **Linux対応の扱い**: v0.2.1にxPack GCC（Linux x86_64/arm64）・`upload.sh`のLinux分岐を含めたが、実機（実Linux環境）でのBoards Managerインストール〜ビルド〜書き込みは未検証（README.mdに明記済み）。ユーザー方針: このリリース版を使って実際にLinuxマシンで検証し、確認できた時点で正式サポート確定とする（残りのPendingタスク#1）
+- **重要な変更（`package_nxp_mcx_index.json`の構造・過去バージョン対応）**: v0.2.1インストール検証中、Boards Managerで過去バージョン（0.2.0等）を選択できないことが判明。原因は`package_nxp_mcx_index.json`の`platforms`配列が**常にエントリ1つだけ**で、リリースのたびに`version`/`url`/`checksum`等を上書きする方式だったため（0.1.0リリース以来ずっとこの方式）。ユーザー指示で過去バージョンも選択可能にする方針に変更し、以下を実施:
+  - `platforms`配列を11エントリ（0.1.0〜0.2.1）に拡張。各バージョンの正しいchecksum/sizeはgit履歴から機械的に抽出（各バージョンが「最新」だった期間の最終コミット時点のスナップショットを採用、手打ちでの転記ミスを回避）し、実際にGitHub Releaseからダウンロードして全11バージョンのchecksum一致を検証済み
+  - ツールチェーンは2種類混在（0.1.0〜0.1.4は`arm-none-eabi-gcc 14.2.rel1`＝ARM公式配布、0.1.5〜0.2.1は`14.2.1-1.1`＝xPack）。`tools`配列に両方を保持するよう変更
+  - 過去バージョンのzip自体（0.1.0/0.1.5/0.1.8/0.2.0で個別確認）は全て単一トップレベルディレクトリ（`mcx/`）を持つ正しい構造で問題なし——構造バグはv0.2.1の初回zipのみの一過性のミスだったと確定
+  - **`.github/workflows/update_package_index.yml`の重大な設計ミスを修正**: 「Download platform ZIP and compute checksum」「Update platform checksum」の2ステップが`platforms[0]`を決め打ちで参照・上書きしていた（エントリが1つしかない前提のコード）。`hardware/nxp/mcx/platform.txt`の`version=`行を読み、`platforms[]`の中から**そのバージョンに一致するエントリだけ**を検索して更新するよう変更。シェル変数をpythonのヒアドキュメントに未クォートで埋め込む脆い書き方だった箇所も、`VERSION="$VERSION" python3 << 'PYEOF'`（環境変数経由・quotedヒアドキュメント）に修正し安全性も向上
+  - **今後のリリース手順の変更点**: 新バージョンをリリースする際は、`package_nxp_mcx_index.json`の既存エントリを上書きするのではなく、**`platforms`配列に新しいエントリを追加**すること（`checksum`/`size`は他バージョンと同様に一旦古い値のまま、または適当なプレースホルダーで良い——`update_package_index.yml`のworkflow_dispatch実行時に`platform.txt`のバージョンと一致するエントリを見つけて自動的に正しい値へ更新される）
 
 ---
 

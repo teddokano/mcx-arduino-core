@@ -30,6 +30,226 @@
               "version": "14.2.1-1.1"
             }
           ]
+        },
+        {
+          "name": "NXP FRDM MCX Series",
+          "architecture": "mcx",
+          "version": "0.2.0",
+          "category": "Contributed",
+          "url": "https://github.com/teddokano/mcx-arduino-core/releases/download/0.2.0/mcx-arduino-core-0.2.0.zip",
+          "archiveFileName": "mcx-arduino-core-0.2.0.zip",
+          "checksum": "SHA-256:4beef79ec0def9aff3c9d878336b650ffc758cf9ce8ab1a0b6c3a8f5571f96f7",
+          "size": "13020412",
+          "boards": [
+            {
+              "name": "FRDM-MCXA153 (NXP Cortex-M33)"
+            }
+          ],
+          "toolsDependencies": [
+            {
+              "packager": "nxp",
+              "name": "arm-none-eabi-gcc",
+              "version": "14.2.1-1.1"
+            }
+          ]
+        },
+        {
+          "name": "NXP FRDM MCX Series",
+          "architecture": "mcx",
+          "version": "0.1.8",
+          "category": "Contributed",
+          "url": "https://github.com/teddokano/mcx-arduino-core/releases/download/0.1.8/mcx-arduino-core-0.1.8.zip",
+          "archiveFileName": "mcx-arduino-core-0.1.8.zip",
+          "checksum": "SHA-256:353a784a93e50d2cef57242f0e8c034534b37b5c0734b25bbec4748bf4e2cd8a",
+          "size": "11181493",
+          "boards": [
+            {
+              "name": "FRDM-MCXA153 (NXP Cortex-M33)"
+            }
+          ],
+          "toolsDependencies": [
+            {
+              "packager": "nxp",
+              "name": "arm-none-eabi-gcc",
+              "version": "14.2.1-1.1"
+            }
+          ]
+        },
+        {
+          "name": "NXP FRDM MCX Series",
+          "architecture": "mcx",
+          "version": "0.1.7",
+          "category": "Contributed",
+          "url": "https://github.com/teddokano/mcx-arduino-core/releases/download/0.1.7/mcx-arduino-core-0.1.7.zip",
+          "archiveFileName": "mcx-arduino-core-0.1.7.zip",
+          "checksum": "SHA-256:286c102f1601034eec309d646d69ba82e717fbce38b716348693bac0954037b4",
+          "size": "11180938",
+          "boards": [
+            {
+              "name": "FRDM-MCXA153 (NXP Cortex-M33)"
+            }
+          ],
+          "toolsDependencies": [
+            {
+              "packager": "nxp",
+              "name": "arm-none-eabi-gcc",
+              "version": "14.2.1-1.1"
+            }
+          ]
+        },
+        {
+          "name": "NXP FRDM MCX Series",
+          "architecture": "mcx",
+          "version": "0.1.6",
+          "category": "Contributed",
+          "url": "https://github.com/teddokano/mcx-arduino-core/releases/download/0.1.6/mcx-arduino-core-0.1.6.zip",
+          "archiveFileName": "mcx-arduino-core-0.1.6.zip",
+          "checksum": "SHA-256:76b786773232f41dbdec0a07457492e898ef0dba51abf27c1ea48da4c74cd2a4",
+          "size": "18976517",
+          "boards": [
+            {
+              "name": "FRDM-MCXA153 (NXP Cortex-M33)"
+            }
+          ],
+          "toolsDependencies": [
+            {
+              "packager": "nxp",
+              "name": "arm-none-eabi-gcc",
+              "version": "14.2.1-1.1"
+            }
+          ]
+        },
+        {
+          "name": "NXP FRDM MCX Series",
+          "architecture": "mcx",
+          "version": "0.1.5",
+          "category": "Contributed",
+          "url": "https://github.com/teddokano/mcx-arduino-core/releases/download/0.1.5/mcx-arduino-core-0.1.5.zip",
+          "archiveFileName": "mcx-arduino-core-0.1.5.zip",
+          "checksum": "SHA-256:3d43227e0d7a9afd1d8223c4b88ba995a964cd8e683c0978d1454903acee389e",
+          "size": "18978453",
+          "boards": [
+            {
+              "name": "FRDM-MCXA153 (NXP Cortex-M33)"
+            }
+          ],
+          "toolsDependencies": [
+            {
+              "packager": "nxp",
+              "name": "arm-none-eabi-gcc",
+              "version": "14.2.1-1.1"
+            }
+          ]
+        },
+        {
+          "name": "NXP FRDM MCX Series",
+          "architecture": "mcx",
+          "version": "0.1.4",
+          "category": "Contributed",
+          "url": "https://github.com/teddokano/mcx-arduino-core/releases/download/0.1.4/mcx-arduino-core-0.1.4.zip",
+          "archiveFileName": "mcx-arduino-core-0.1.4.zip",
+          "checksum": "SHA-256:e9edb3e4382c93fc96dd8d96332464042768ff2a8731b31b2dd4eaf98ffe215e",
+          "size": "18975004",
+          "boards": [
+            {
+              "name": "FRDM-MCXA153 (NXP Cortex-M33)"
+            }
+          ],
+          "toolsDependencies": [
+            {
+              "packager": "nxp",
+              "name": "arm-none-eabi-gcc",
+              "version": "14.2.rel1"
+            }
+          ]
+        },
+        {
+          "name": "NXP FRDM MCX Series",
+          "architecture": "mcx",
+          "version": "0.1.3",
+          "category": "Contributed",
+          "url": "https://github.com/teddokano/mcx-arduino-core/releases/download/0.1.3/mcx-arduino-core-0.1.3.zip",
+          "archiveFileName": "mcx-arduino-core-0.1.3.zip",
+          "checksum": "SHA-256:bfbc5773a7198dcea8395152e1b42253433edc261db373f3beeaa2d7c44621b3",
+          "size": "18974662",
+          "boards": [
+            {
+              "name": "FRDM-MCXA153 (NXP Cortex-M33)"
+            }
+          ],
+          "toolsDependencies": [
+            {
+              "packager": "nxp",
+              "name": "arm-none-eabi-gcc",
+              "version": "14.2.rel1"
+            }
+          ]
+        },
+        {
+          "name": "NXP FRDM MCX Series",
+          "architecture": "mcx",
+          "version": "0.1.2",
+          "category": "Contributed",
+          "url": "https://github.com/teddokano/mcx-arduino-core/releases/download/0.1.2/mcx-arduino-core-0.1.2.zip",
+          "archiveFileName": "mcx-arduino-core-0.1.2.zip",
+          "checksum": "SHA-256:2c1b73db9e7de0ae99981d195f80585d6b4c9160538fc5f3dcb2e3607c7f18a6",
+          "size": "18974624",
+          "boards": [
+            {
+              "name": "FRDM-MCXA153 (NXP Cortex-M33)"
+            }
+          ],
+          "toolsDependencies": [
+            {
+              "packager": "nxp",
+              "name": "arm-none-eabi-gcc",
+              "version": "14.2.rel1"
+            }
+          ]
+        },
+        {
+          "name": "NXP FRDM MCX Series",
+          "architecture": "mcx",
+          "version": "0.1.1",
+          "category": "Contributed",
+          "url": "https://github.com/teddokano/mcx-arduino-core/releases/download/0.1.1/mcx-arduino-core-0.1.1.zip",
+          "archiveFileName": "mcx-arduino-core-0.1.1.zip",
+          "checksum": "SHA-256:063d20dfff6debd4e28e9354b8b0e3f572ff303851435848a6588c74e1d82db9",
+          "size": "18972799",
+          "boards": [
+            {
+              "name": "FRDM-MCXA153 (NXP Cortex-M33)"
+            }
+          ],
+          "toolsDependencies": [
+            {
+              "packager": "nxp",
+              "name": "arm-none-eabi-gcc",
+              "version": "14.2.rel1"
+            }
+          ]
+        },
+        {
+          "name": "NXP FRDM MCX Series",
+          "architecture": "mcx",
+          "version": "0.1.0",
+          "category": "Contributed",
+          "url": "https://github.com/teddokano/mcx-arduino-core/releases/download/0.1.0/mcx-arduino-core-0.1.0.zip",
+          "archiveFileName": "mcx-arduino-core-0.1.0.zip",
+          "checksum": "SHA-256:5d4f30de2c7f1b13023e5af717c3b5fb97d380db0a15eade2fc942789524b67a",
+          "size": "9128",
+          "boards": [
+            {
+              "name": "FRDM-MCXA153 (NXP Cortex-M33)"
+            }
+          ],
+          "toolsDependencies": [
+            {
+              "packager": "nxp",
+              "name": "arm-none-eabi-gcc",
+              "version": "14.2.rel1"
+            }
+          ]
         }
       ],
       "tools": [
@@ -71,6 +291,47 @@
               "archiveFileName": "xpack-arm-none-eabi-gcc-14.2.1-1.1-win32-x64.zip",
               "checksum": "SHA-256:0b2d496b383ba578182eb57b3f7d35ff510e36eda56257883b902fa07c3bba55",
               "size": "323368593"
+            }
+          ]
+        },
+        {
+          "name": "arm-none-eabi-gcc",
+          "version": "14.2.rel1",
+          "systems": [
+            {
+              "host": "arm64-apple-darwin",
+              "url": "https://developer.arm.com/-/media/Files/downloads/gnu/14.2.rel1/binrel/arm-gnu-toolchain-14.2.rel1-darwin-arm64-arm-none-eabi.tar.xz",
+              "archiveFileName": "arm-gnu-toolchain-14.2.rel1-darwin-arm64-arm-none-eabi.tar.xz",
+              "checksum": "SHA-256:c7c78ffab9bebfce91d99d3c24da6bf4b81c01e16cf551eb2ff9f25b9e0a3818",
+              "size": "134812148"
+            },
+            {
+              "host": "x86_64-apple-darwin",
+              "url": "https://developer.arm.com/-/media/Files/downloads/gnu/14.2.rel1/binrel/arm-gnu-toolchain-14.2.rel1-darwin-x86_64-arm-none-eabi.tar.xz",
+              "archiveFileName": "arm-gnu-toolchain-14.2.rel1-darwin-x86_64-arm-none-eabi.tar.xz",
+              "checksum": "SHA-256:2d9e717dd4f7751d18936ae1365d25916534105ebcb7583039eff1092b824505",
+              "size": "145118692"
+            },
+            {
+              "host": "x86_64-linux-gnu",
+              "url": "https://developer.arm.com/-/media/Files/downloads/gnu/14.2.rel1/binrel/arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-eabi.tar.xz",
+              "archiveFileName": "arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-eabi.tar.xz",
+              "checksum": "SHA-256:62a63b981fe391a9cbad7ef51b17e49aeaa3e7b0d029b36ca1e9c3b2a9b78823",
+              "size": "149739784"
+            },
+            {
+              "host": "aarch64-linux-gnu",
+              "url": "https://developer.arm.com/-/media/Files/downloads/gnu/14.2.rel1/binrel/arm-gnu-toolchain-14.2.rel1-aarch64-arm-none-eabi.tar.xz",
+              "archiveFileName": "arm-gnu-toolchain-14.2.rel1-aarch64-arm-none-eabi.tar.xz",
+              "checksum": "SHA-256:87330bab085dd8749d4ed0ad633674b9dc48b237b61069e3b481abd364d0a684",
+              "size": "151967360"
+            },
+            {
+              "host": "i686-mingw32",
+              "url": "https://developer.arm.com/-/media/Files/downloads/gnu/13.3.rel1/binrel/arm-gnu-toolchain-13.3.rel1-mingw-w64-i686-arm-none-eabi.zip",
+              "archiveFileName": "arm-gnu-toolchain-13.3.rel1-mingw-w64-i686-arm-none-eabi.zip",
+              "checksum": "SHA-256:6facb152ce431ba9a4517e939ea46f057380f8f1e56b62e8712b3f3b87d994e1",
+              "size": "305393359"
             }
           ]
         }
