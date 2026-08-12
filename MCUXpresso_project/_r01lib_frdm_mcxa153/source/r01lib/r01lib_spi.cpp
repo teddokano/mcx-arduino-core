@@ -19,7 +19,7 @@ extern "C" {
 }
 
 #include	"io.h"
-#include	"spi.h"
+#include	"r01lib_spi.h"
 #include	"mcu.h"
 
 #ifdef	CPU_MCXC444VLH

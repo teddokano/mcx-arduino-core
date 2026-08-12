@@ -5,7 +5,7 @@
  */
 
 #include	"Stream.h"
-#include	"arduino.h"		// for millis(), used by the timeout-based helpers below
+#include	"Arduino.h"		// for millis(), used by the timeout-based helpers below
 
 #include	<cstring>
 

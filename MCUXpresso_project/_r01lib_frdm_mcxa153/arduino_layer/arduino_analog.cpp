@@ -5,7 +5,7 @@
  */
 
 #include	"r01lib.h"
-#include	"arduino.h"
+#include	"Arduino.h"
 
 #define	MAX_ANALOG_PINS		128
 #define	PWM_PERIOD_US		1000	// 1kHz, common Arduino-like PWM rate

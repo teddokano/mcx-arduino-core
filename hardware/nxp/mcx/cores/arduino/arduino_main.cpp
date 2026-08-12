@@ -5,7 +5,7 @@
  */
 
 #include	"r01lib.h"
-#include	"arduino.h"
+#include	"Arduino.h"
 
 extern "C" {
 #include	"fsl_clock.h"

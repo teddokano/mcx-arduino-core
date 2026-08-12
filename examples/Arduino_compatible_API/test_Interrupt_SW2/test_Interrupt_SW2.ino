@@ -4,7 +4,7 @@
  *  Released under the MIT license
  */
 
-#include "arduino.h"
+#include <Arduino.h>
 
 volatile bool sw_pressed = false;
 bool led_state = true;

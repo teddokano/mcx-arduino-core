@@ -4,7 +4,7 @@
  * This is a sample of the using GPIO instead of calling digitalWrite().
  */
 
-#include "arduino.h"
+#include <Arduino.h>
 
 void setup( void )
 {

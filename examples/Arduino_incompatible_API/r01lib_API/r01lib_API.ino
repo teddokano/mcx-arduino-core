@@ -6,7 +6,7 @@
  * This is a sample of the using DigitalOut class.
  */
 
-#include "arduino.h"
+#include <Arduino.h>
 
 DigitalOut	led( P3_13 );
 

@@ -176,6 +176,20 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 
 ---
 
+## v0.2.1リリース後に発覚: Linux実機ビルドがファイル名の大文字小文字違いで失敗（未リリースの修正・作業中）
+ユーザーがLinux実機（Ubuntu系、`nxl76485`ユーザー）でv0.2.1をBoards Manager経由インストール→Blinkスケッチのビルドを試したところ「Failed to install platform」は解消していたが、コンパイル自体が`#include <Arduino.h>` の時点で`compilation terminated`エラーで失敗。
+
+- **原因**: このリポジトリの実ファイル名は`arduino.h`（小文字）だが、Arduino IDE/arduino-cliが全スケッチに自動挿入する行は`#include <Arduino.h>`（大文字A）。macOS・Windowsは既定でファイルシステムが大文字小文字を区別しないため今まで気づかれなかったが、Linuxは区別するため、実際に該当ファイルが見つからずビルド不能だった。これはv0.1.0リリース以来ずっと存在していた潜在バグで、今回が初めての実Linux環境でのビルド試行だったため今になって発覚した
+- **同種の問題をコードベース全体で機械的に洗い出し**: 全`#include`文とその参照先ファイルの実際の大文字小文字を突き合わせるPythonスクリプトを書いて検査。もう1件、`#include <SPI.h>`（多くのサンプルスケッチが使用）に対し、実ファイルはr01lib低レベルSPIクラスの`spi.h`（小文字、`arduino_spi.h`とは別物）しか存在しないことが判明——macOS/Windowsでは`SPI.h`が（本来意図しない）`spi.h`にたまたま解決されて実害なく動いていたが、Linuxでは同様に見つからず失敗するはずだった
+- **修正方針**: 大文字小文字違いの2ファイルを同一ディレクトリに共存させる方式は、macOS等の大文字小文字を区別しないファイルシステム上で開発する際にファイル内容が衝突・破壊されるリスクがある（実際に本セッション中、`SPI.h`を書き込んだ際に既存の`spi.h`の内容を上書きしてしまう事故が発生し、要復旧）ため、この方式は避けた:
+  - `arduino.h` → `Arduino.h`にリネーム（真の実体ファイル。内部の`#include "arduino.h"`参照5箇所・サンプルスケッチ7本の`#include "arduino.h"`/`<arduino.h>`もすべて`Arduino.h`表記に統一）
+  - r01libの低レベルSPIクラス`source/r01lib/spi.h`/`.cpp` → `r01lib_spi.h`/`.cpp`にリネーム（`r01lib.h`の参照も更新、自己参照していた無意味な`#include "spi.h"`行も削除）してファイル名を空け、そこに新規`SPI.h`（`#include "arduino_spi.h"`一行だけの薄いラッパー）を追加。既存の`arduino_spi.h`（本体）自体はリネームせず、参照箇所を増やさない
+  - MCUXpressoのビルド設定（`Debug/source/r01lib/subdir.mk`）も`spi.cpp`→`r01lib_spi.cpp`に追従、`.a`をクリーンビルドし直し（リネーム前の`.o`が`ar`アーカイブに残留し重複していたため一度`.a`ファイル自体を削除してからリビルド）
+  - **git側の注意点**: `git config core.ignorecase`がmacOSでは既定で`true`のため、`git mv`ではなく手動コピーで大文字小文字だけ違うパスをリネームすると、`git status`/`git add -A`がリネームとして認識せず「変更」としか見えず、実際には元の小文字パスのままcommitされてしまう罠があった。`git rm --cached`→`mv`（実ファイルをcase-preservingで大文字化）→`git add`で正しく大文字パスとしてindexに反映されることを確認
+- **検証**: 通常のmacOS開発機（大文字小文字を区別しない）でのビルド確認だけでは同じ見落としを再現できないため、`hdiutil create -fs "Case-sensitive APFS"`で一時的にcase-sensitiveなAPFSボリュームを作成し、`hardware/nxp/mcx/`一式をコピーした上でxPack GCCで直接`#include <Arduino.h>`/`<SPI.h>`/`<Wire.h>`を使うテストコードをコンパイル、エラーゼロで通ることを実機Linux相当の条件で確認
+- 全examples（Arduino_compatible_API・Arduino_incompatible_API）の回帰コンパイルも実施、問題なし
+- **未実施**: この修正はまだリリースされていない（`main`にコミットのみ、パッチリリース要否をユーザーと相談中）
+
 ## v0.2.1 で作業中の内容（`prepare0.2.1` ブランチ→`main`マージ済み・2026-08-12リリース済み）
 
 ### リリース後: TUTORIAL.md/TUTORIAL.ja.mdの更新

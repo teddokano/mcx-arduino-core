@@ -15,7 +15,6 @@ extern "C" {
 #endif
 }
 
-#include	"spi.h"
 #include	"io.h"
 
 #define	SPI_FREQ		1'000'000UL

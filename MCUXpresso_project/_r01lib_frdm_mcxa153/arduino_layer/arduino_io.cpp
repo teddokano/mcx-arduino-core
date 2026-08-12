@@ -5,7 +5,7 @@
  */
 
 #include        "r01lib.h"
-#include        "arduino.h"
+#include        "Arduino.h"
 
 #define MAX_DIGITAL_PINS    128
 

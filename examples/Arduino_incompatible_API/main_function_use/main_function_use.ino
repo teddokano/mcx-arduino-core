@@ -4,7 +4,7 @@
  * This is a sample of the using main().
  */
 
-#include "arduino.h"
+#include <Arduino.h>
 
 int main()
 {

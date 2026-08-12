@@ -4,7 +4,7 @@
  *  Released under the MIT license
  */
 
-#include "arduino.h"
+#include <Arduino.h>
 
 void setup(void) {
 	Serial.begin(115200);
