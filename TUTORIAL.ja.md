@@ -120,6 +120,10 @@ English version → [TUTORIAL.md](TUTORIAL.md)
 
 ## 2. 動作確認
 
+このセクションで使うピンをまとめた図です:
+
+![pins-FRDM-MCXA153](img/pins-FRDM-MCXA153.png)
+
 ### 2.1. 最初のスケッチ: オンボードLEDを点滅させる
 
 ボードには3色のオンボードLED（`RED`, `GREEN`, `BLUE`）があり、**アクティブLow**で配線されています —— `LOW`で点灯、`HIGH`で消灯します。`LED_BUILTIN`は`GREEN`のエイリアスです。

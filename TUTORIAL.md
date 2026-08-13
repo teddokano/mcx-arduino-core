@@ -155,6 +155,10 @@ an issue on the
 
 ## 2. Try It Out
 
+The pins used throughout this section, all in one picture:
+
+![pins-FRDM-MCXA153](img/pins-FRDM-MCXA153.png)
+
 ### 2.1. Your first sketch: blink the on-board LED
 
 The board has three on-board LEDs (`RED`, `GREEN`, `BLUE`) wired **active-low**
