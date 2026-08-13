@@ -6,3 +6,7 @@ examples/tests/I2C_device_Arduino/
 examples/tests/LCDDriver_NXP_Arduino/
 examples/tests/LEDDriver_NXP_Arduino/
 examples/tests/TempSensor_NXP_Arduino/
+
+# Reference materials (NXP demos, datasheets, etc.) -- not part of this
+# repo's history
+ref/

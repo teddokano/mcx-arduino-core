@@ -1,7 +1,7 @@
 /*
  *  @author Tedd OKANO
  *
- *  Released under the MIT license License
+ *  Released under the MIT license
  */
 
 /** LED operation library for Arduino
@@ -12,7 +12,7 @@
  *  @class  LED
  *  @author Tedd OKANO
  *
- *  Released under the MIT license License
+ *  Released under the MIT license
  */
 
 #ifndef ARDUINO_LED_NXP_ARD_H
@@ -24,7 +24,7 @@ class LED {
 public:
   LED( LEDDriver& leddp, int ch );
   float operator=(float v);
-private:
+protected:
   LEDDriver&	devp;
   int			channel;
 };

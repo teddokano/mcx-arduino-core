@@ -47,11 +47,13 @@ void SPI_for_AFE::write_r16( uint16_t reg, uint16_t val )
 
 uint16_t SPI_for_AFE::read_r16( uint16_t reg )
 {
+	constexpr int	array_size	= command_length + sizeof( uint16_t );
+	
 	reg	<<= 1;
 	reg	 |= 0x4000;
 
-	uint8_t	v[ 4 ]	= { (uint8_t)(reg >> 8), (uint8_t)(reg & 0xFF), 0xFF, 0xFF };
-	txrx( v, sizeof( v ) );
+	uint8_t	v[ array_size ]	= { (uint8_t)(reg >> 8), (uint8_t)(reg & 0xFF), 0xFF, 0xFF };
+	txrx( v, array_size );
 	
 //	printf( "0x%04X\r\n", byteswap16( *((uint16_t*)(v + command_length)) ) );
 //	return byteswap16( *((uint16_t*)(v + command_length)) );
@@ -69,18 +71,25 @@ void SPI_for_AFE::write_r24( uint16_t reg, uint32_t val )
 
 int32_t SPI_for_AFE::read_r24( uint16_t reg )
 {
+	constexpr int	array_size		= command_length + sizeof( uint32_t );
+	constexpr int	transfer_size	= array_size - 1;	// since the data is 24 bits
+
 	reg	<<= 1;
 	reg	 |= 0x4000;
 
-	uint8_t	v[ 6 ]	= { (uint8_t)(reg >> 8), (uint8_t)(reg & 0xFF) };
-	txrx( v, sizeof( v ) );
-
+	uint8_t	v[ array_size ]	= { (uint8_t)(reg >> 8), (uint8_t)(reg & 0xFF) };
+	txrx( v, transfer_size );
+	
 	return get_data24( v + command_length );
 }
 
 void SPI_for_AFE::burst( uint32_t *data, int length, int width )
 {
-	uint8_t		v[ command_length + 3 * 16 ];
+	constexpr int	data_byte_size		= 3;
+	constexpr int	logical_chanels		= 16;
+	constexpr int	total_data_length	= data_byte_size * logical_chanels;
+
+	uint8_t		v[ command_length + total_data_length ];	
 	uint16_t	reg	  = (0x2005 << 1) | 0x4000;	// CMD_BURST_DATA
 
 	v[ 0 ]	= (uint8_t)(reg >> 8);

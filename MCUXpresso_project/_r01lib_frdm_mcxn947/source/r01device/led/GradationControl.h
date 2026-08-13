@@ -1,14 +1,14 @@
 /*
  *  @author Tedd OKANO
  *
- *  Released under the MIT license License
+ *  Released under the MIT license
  */
 
 /** GradationControl operation library for Arduino
  *
  *  @author Tedd OKANO
  *
- *  Released under the MIT license License
+ *  Released under the MIT license
  */
 
 #ifndef ARDUINO_GRADATION_CONTROL_NXP_ARD_H

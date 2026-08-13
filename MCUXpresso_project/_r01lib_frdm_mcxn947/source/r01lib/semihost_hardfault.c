@@ -4,7 +4,7 @@
 //                  to hang application when debugger not connected.
 //
 // ****************************************************************************
-// Copyright 2017-2024 NXP
+// Copyright 2017-2025 NXP
 // All rights reserved.
 //
 // SPDX-License-Identifier: BSD-3-Clause

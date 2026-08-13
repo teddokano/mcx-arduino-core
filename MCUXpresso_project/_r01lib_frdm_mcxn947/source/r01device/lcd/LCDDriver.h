@@ -1,7 +1,7 @@
 /*
  *  @author Tedd OKANO
  *
- *  Released under the MIT license License
+ *  Released under the MIT license
  */
 
 #ifndef ARDUINO_LCD_DRIVER_H
@@ -76,7 +76,7 @@ public:
 
 	/** Clear display
 	 *	
-	 * @param no_flush no immidiate display clear (display will be cleared at next "putchar()" or "puts()" call)
+	 * @param no_flush no immediate display clear (display will be cleared at next "putchar()" or "puts()" call)
 	 */
 	void clear( bool no_flush = false );
 

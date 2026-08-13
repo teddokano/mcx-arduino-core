@@ -5,6 +5,15 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- FRDM-MCXN947 board support (`nxp:mcx:frdm_mcxn947`). Supported: GPIO, interrupts, `Serial` (USB), `Wire`/`Wire1` (I2C/I3C), `SPI`, `String`, `analogRead`, `analogWrite`, `tone`/`noTone`, and the UNO-compatible macro set — the same feature set as FRDM-MCXA153. `Serial1` (D0/D1 hardware UART) is not available on this board: those pins share their only UART-capable peripheral (FlexComm2) with `Wire`, so the two can't coexist in one sketch. `analogRead` covers A2-A5 only (A0/A1 aren't wired on this board)
+- Per-board `F_CPU`, FPU flags, and upload target are now configurable in `boards.txt` rather than hardcoded, as part of adding the second board
+
+### Fixed
+- `upload.sh`/`upload.bat` always flashed using the FRDM-MCXA153 LinkServer target regardless of which board was selected — harmless before there was only one board, but would have silently flashed the wrong device once a second board existed
+
 ## [0.2.2] - 2026-08-13
 
 ### Fixed

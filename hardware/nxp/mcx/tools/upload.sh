@@ -1,5 +1,6 @@
 #!/bin/sh
 ELF="$1"
+LINKSERVER_TARGET="$2"
 
 # LinkServerを探す（macOS）
 LINKSERVER=""
@@ -40,4 +41,4 @@ fi
 
 echo "Using: $LINKSERVER"
 
-"$LINKSERVER" flash MCXA153:FRDM-MCXA153 load "$ELF"
+"$LINKSERVER" flash "$LINKSERVER_TARGET" load "$ELF"

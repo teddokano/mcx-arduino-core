@@ -2,7 +2,7 @@
  *
  *  @author  Tedd OKANO
  *
- *  Copyright: 2023 - 2024 Tedd OKANO
+ *  Copyright: 2023 - 2026 Tedd OKANO
  *  Released under the MIT license
  */
 

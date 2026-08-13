@@ -3,6 +3,7 @@
 ## プロジェクト概要
 - **リポジトリ**: https://github.com/teddokano/mcx-arduino-core
 - **現在のバージョン**: v0.2.2（`package_nxp_mcx_index.json` 上の最新リリース。`main`上で直接作業・GitHub Release作成済み、`c63ffd4`でchecksum自動更新も確定。2026-08-13リリース。Linux実機での`#include <Arduino.h>`/`<SPI.h>`のファイル名大文字小文字ミスマッチによるビルド失敗を修正するパッチリリース——詳細は後述の専用セクション参照）
+- **作業中**: `prepare0.3.0`ブランチでFRDM-MCXN947ボード対応を進行中（未リリース）。GPIO/Serial(USB)/Wire1(オンボードI3Cセンサー)は実機検証済み、Wire(プレーンI2C)はバススキャンのみ確認済み（実デバイスとの通信は後日検証予定）、String/SPI/UNO互換マクロはコンパイル確認済み、Serial1/analogRead/analogWrite/tone/noToneは既知の未対応。方針: 未実装が残っていてもN947が一通り完成した段階でリリースする。詳細は「v0.3.0 で作業中の内容」セクション参照
 - **v0.2.1**（前バージョン）: `prepare0.2.1`→`main`fast-forwardマージ・GitHub Release作成済み、2026-08-12リリース
 - **重要な学び（リリースzipの構造要件）**: v0.2.1の初回リリース作業で`git archive --format=zip -o ... HEAD:hardware/nxp/mcx`を使ってzipを作成したところ、Arduino IDE経由の実インストールで`Failed to install platform: ... no unique root dir in archive, found '.../cores' and '.../tools'`エラーで失敗。Arduino Boards Managerのインストーラーは**zip直下に単一のラッパーディレクトリが1つだけ**存在することを要求する（インストーラーがそのディレクトリを剥がして`packages/<vendor>/hardware/<arch>/<version>/`に配置する仕組み）。`git archive HEAD:hardware/nxp/mcx`はサブディレクトリの中身を直接展開するため、`boards.txt`/`cores/`/`tools/`/`variants/`等がzip直下に並ぶ「フラットな」構造になってしまい、この要件を満たしていなかった。実際に公開済みのv0.2.0のzipを確認したところ、そちらは`mcx/`という単一のラッパーディレクトリを持つ正しい構造になっており問題なし（0.2.1作成時のみのミス）。**今後リリースzipを作る際は、必ず単一のトップレベルディレクトリ（名前は任意、例: `mcx-arduino-core-<version>/`）でラップすること** — `git archive`で作る場合は一旦別ディレクトリに展開してからラッパーディレクトリごと`zip -r`するか、`--prefix=<name>/`オプションを使う
 - **内容**: NXP FRDM-MCXA153 (Cortex-M33) 向けArduino IDEボードサポートパッケージ
@@ -359,6 +360,133 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 
 ---
 
+## v0.3.0 で作業中の内容（`prepare0.3.0` ブランチ・未リリース）
+
+FRDM-MCXN947のボード追加。ユーザー方針: 「C444とN947のどちらか」でN947を選択（既存スキャフォールディングの多さで判断）、「両方ある」（物理的にA153/N947双方所有）とのことだが技術的な理由でN947から着手。ブランチ名は`prepare0.3.0`とし、以前`prepare0.1.9`が最終的に0.2.0としてリリースされた前例に倣い、ブランチ名の数字は最終リリース番号を縛らない（他ボードが追加で乗ることもあり得る）。**リリース方針: 未実装が残っていてもN947が一通り完成した段階でリリースする**（ユーザー確認済み）。
+
+### ソース取り込み
+`/Users/tedd/dev/mcuxpresso/r01lib_prj_generator/general_tests_FRDM_MCXN947.zip`（2026-08-11付）の`_r01lib_frdm_mcxn947/source/r01lib/`を、リポジトリに既にあった約107コミット分古いコピーへ丸ごと上書き。
+
+### A153から移植したr01libレベルのバックポート
+新しいr01libコピーには以下がまだ無かったため、A153側で確立済みの実装をそのまま移植:
+- `Serial::peek()`/`available()`/`availableForWrite()`/`flush()`（リングバッファ状態＋`LPUART_GetStatusFlags`ベース、チップ非依存でそのままコピー可）
+- `InterruptIn::low()`/`disable()`（`InterruptIn.cpp`はA153版がN947の`#ifdef CPU_MCXN947VDF`分岐を既に含む上位互換だったため丸ごと差し替え）
+- `SPI::bit_order()`・`clock_freq()`アクセサ（`r01lib_spi.h/.cpp`、N947固有の`cs_manual_control()`等は維持したまま追記）
+- `DigitalInOut::input_buffer()`/`gpio_base()`/`gpio_bit()`（fast-GPIO、`io.h/.cpp`）
+
+### ファイル名の大文字小文字統一（v0.2.2の教訓を先取り適用）
+r01libの`spi.h/.cpp`→`r01lib_spi.h/.cpp`にリネーム（自己参照する無意味な`#include "spi.h"`も削除）、新規`arduino_layer/SPI.h`（`#include "arduino_spi.h"`一行のラッパー）を追加。`arduino_layer/arduino.h`→`Arduino.h`もリネーム。**リネーム作業中、macOSの大文字小文字非区別ファイルシステム上で`cp .../Arduino.h`streaming後に`rm -f arduino.h`を実行し、同一inodeのため直前にコピーしたファイルを消してしまう事故が発生**（`core.ignorecase=true`の既知の罠、v0.2.2作業時と同じパターン）。`git rm --cached`→大文字小文字を保持した`mv`/`cp`→`git add`の順で正しくインデックスに反映されることを再確認。
+
+### NXP SDKドライバファイルの調達（重要な教訓）
+`fsl_ctimer`/`fsl_inputmux`（tone/detachInterrupt等で将来必要)が新しいr01libコピーのdriversフォルダに無かったため、**最初A153の同ファイルをそのまま流用しようとしたが、ユーザーから明示的に危険と指摘された**（「driverファイル（fsl_ctimer/fsl_inputmux/fsl_lpadc）をA153からコピーは危険．N947用があるので，それを探して持ってきてください」）。正しい調達手順を確立:
+1. ローカルの実N947プロジェクト（`/Users/tedd/dev/mcuxpresso/shasta_demo_prototypes/__n947/`等）から`fsl_inputmux.c`の実物を発見、デバイスヘッダの型（`INPUTMUX_Type`）と一致することを確認
+2. `/Users/tedd/dev/mcuxpresso/mcuxide_sdk_mac/`に複数バージョンのNXP SDK zipが存在すると判明。既に正しく存在していた`fsl_gpio.c`とのMD5チェックサム一致で候補7個から`SDK_2_16_000_FRDM-MCXN947.zip`を厳密に特定し、そこから`fsl_ctimer.c/h`・`fsl_inputmux.c/h`を抽出
+3. **N947にはLPADCペリフェラルが存在しないと判明**（`MCXN947_cm33_core0.h`に"LPADC"の出現数0、代わりに`ADC0`/`ADC1`＝`ADC_Type`を持つ）。誤って一度A153から`fsl_lpadc.c/h`をコピーしたが、この事実を受けて削除。正しいADCドライバ（`fsl_adc*.c`）はこのSDK zipにも含まれておらず、**未取得のまま**（analogRead/analogWrite/tone/noTone実装は次フェーズへ持ち越し）
+
+### MCUXpresso Debugビルド設定の新規構築
+`_r01lib_frdm_mcxn947`にはDebug設定が一度も存在しなかった（IDEでビルドされたことがなかった）。ユーザーが実際にビルド成功済みの`/Users/tedd/dev/mcuxpresso/__a_p_n947/_r01lib_frdm_mcxn947/Debug/`を教示、これをコピーしてベースに採用（絶対パスを`sed`で書き換え）。`arduino_layer/`用の`subdir.mk`は元々存在しなかったため新規作成（A153のものをモデルに、`-DCPU_MCXN947VDF`系defineと`-mfpu=fpv5-sp-d16 -mfloat-abi=hard`を設定、`arduino_analog.cpp`/`arduino_tone.cpp`はCPP_SRCSから除外）。`makefile`/`sources.mk`に`arduino_layer`を追加。最終ビルド: `lib_r01lib_frdm_mcxn947.a`、コンパイルエラーゼロ。
+
+### リンカスクリプト（手書き）
+MCUXpresso生成の`app_template_FRDM_MCXN947`プロジェクトの`.ld`断片から実メモリマップを確認: `PROGRAM_FLASH0`(1M, 0x0)+`PROGRAM_FLASH1`(1M, 0x100000, 連続)、`SRAM`(384K, 0x20000000)、`SRAMX`(96K, 0x4000000)、`SRAMH`(32K, 0x20060000, SRAMと連続)、`USB_RAM`(4K)。A153の`MCXA153.ld`のセクション配置ロジック（`SRAMX0`/`SRAMX1`という2つの補助高速RAM領域の枠組み）を踏襲しつつ、PROGRAM_FLASH0/1を単一の2M領域に統合、SRAMX→SRAMX0相当、SRAMH→SRAMX1相当としてマッピング。`USB_RAM`は未使用のため省略。ヒープ/スタックはA153よりRAM余裕があるため`_HeapSize=0x4000`/`_StackSize=0x1000`とやや大きめに設定。`hardware/nxp/mcx/variants/frdm_mcxn947/linker/MCXN947.ld`として新規作成。
+
+### boards.txt/platform.txt: マルチボード対応のための構造変更
+1点目、共有ファイル`cores/arduino/Arduino.h`（両ボード共通、`build.core=arduino`）に`F_CPU`が96MHz固定でハードコードされていることが判明（N947は150MHz、`BOARD_BootClockPLL150M()`）。`platform.txt`の`compiler.defines`に`-DF_CPU={build.f_cpu}`を追加し、`#ifndef F_CPU`ガード化。boards.txt側でボードごとに`build.f_cpu`（A153=96000000UL、N947=150000000UL）を設定。同期コピーされている3箇所のArduino.h全てに同じガードを反映。
+2点目、`tools/upload.sh`/`upload.bat`が**LinkServerのターゲット文字列`MCXA153:FRDM-MCXA153`を決め打ち**していたと判明（ボードに依らず常にこの文字列でflashしようとしていた——N947書き込み時に見つかっていなければ誤動作していたバグ）。コマンドライン引数化し、`platform.txt`の`tools.linkserver.upload.pattern`から`{build.linkserver_target}`を渡すよう変更。boards.txtに`frdm_mcxn947.build.linkserver_target=MCXN947:FRDM-MCXN947`を追加（ローカルLinkServerの`devices`一覧で実在確認済み）。
+3点目、`compiler.cpu_flags`に`{build.fpu_flags}`を追加（N947は`-mfpu=fpv5-sp-d16 -mfloat-abi=hard`、A153は空文字列）。
+`frdm_mcxn947.vid.0`/`pid.0`はA153と同じ`0x1FC9`/`0x0143`を仮設定（同系統のMCU-Linkオンボードプローブという推測）→ **実機接続時に`arduino-cli board list`が正しく`nxp:mcx:frdm_mcxn947`を候補に挙げたため、この値で正しいと確認済み**。
+
+### ヘッダ・ライブラリのhardware/側への同期
+`variants/frdm_mcxn947/include/`にr01lib・arduino_layer・board・CMSIS・device・drivers・utilities・componentの各ヘッダを集約（A153のパターンを踏襲）。`AnalogIn.h`/`PwmOut.h`は当初「N947未対応だから」と除外したが、これは誤りと判明——`r01lib.h`がCPU無関係に無条件でこの2つをincludeする作りで、実体は`#if defined(CPU_MCXA153VLH)`で丸ごとガードされ他チップでは空ファイルになる安全設計だったため、除外するとビルドが壊れる（実際に`arduino-cli compile`で`AnalogIn.h: No such file`エラーが発生し発覚）。同様に共有`cores/arduino/Arduino.h`が`arduino_analog.h`/`arduino_tone.h`を無条件includeしており、これも中身が関数プロトタイプ宣言のみ（CPUガードなし、実際に呼ぶスケッチだけがリンクエラーになる設計）と判明したためコピーで対応。`lib_r01lib_frdm_mcxn947.a`を`variants/frdm_mcxn947/lib/`へ配置、リンカスクリプトを`linker/`へ配置。
+
+### arduino-cliコンパイルテスト
+ローカルにローカル開発用symlink（`~/Library/Arduino15/packages/nxp/hardware/mcx/0.2.2-dev`）を再作成。ただし実インストール済みの`0.2.2`が`packages/`配下に共存していると、semverの事前リリースタグ比較で`0.2.2-dev`が`0.2.2`より低優先度と判定され`arduino-cli`から見えなくなる問題が新たに判明（過去バージョンでは実インストール版を毎回退避していたため気づいていなかった罠）。実インストール版をscratchpadへ完全退避してから`0.2.2-dev`のみが見える状態にして検証。`hello_world`/`test_String`/`test_Serial1`/`test_SPI_bitorder_end_transfer16`/`test_arduino_compat_macros`がコンパイル成功（A153側の回帰もなし）。
+
+### 実機バグ発見・修正: `Serial1`のグローバルコンストラクタがstatic初期化時にpanic()
+`hello_world.ino`を実機フラッシュしたところ、setup()の中身に無関係にSOSのモールス信号でLEDが点滅し続ける不具合が発生（panic()自体はRED/GREEN/BLUEを直接操作してSOSを表示する仕組み）。
+- **切り分け**: (1)GPIOのみのスケッチ→正常, (2)`Serial.begin()`のみ追加→SOS再現、という2段階の実機テストでSerial関連と特定
+- **根本原因特定**: LinkServerの`gdbserver`モードで実機に接続し、`arm-none-eabi-gdb`から`Serial::Serial(int,int,int)`と`panic()`両方にブレークポイントを設定してライブ確認。グローバル`Serial`（USBTX/USBRX、tx=42/rx=41）は正常に`_base`が解決される一方、`arduino_serial.cpp`がA153から丸ごと移植された際に残っていたグローバル`Serial1`（D0/D1、tx=97/rx=98）が`panic("Serial: unsupported TX/RX pin combination")`を呼んでいることを直接確認。N947のr01lib `Serial.cpp`の`s_pinMap[]`はUSBTX/USBRX→LPUART4の1エントリのみで、D0/D1に対応するエントリが存在しないため
+- **修正**: `arduino_serial.cpp`のグローバル`Serial1`インスタンス定義と、`arduino_serial.h`の`extern`宣言を削除。`Serial1`を参照するスケッチはコンパイルエラー（`'Serial1' was not declared in this scope`）になるよう変更——以前の「実行時panicで気づく」より診断しやすい失敗モードに変更
+- D0/D1（ARD_D0/ARD_D1、物理P4_3/P4_2）は`FC2_P2`/`FC2_P3`のalt機能を持ちLPUART2として使える可能性があるが、クロックアタッチ/リセットのシンボル特定と実機検証が必要な別作業として`variants/frdm_mcxn947/README.md`に記録、Serial1実装は保留（ユーザー確認: 「Serial1は必要なのであとで実装する事にする」）
+- **後日、Serial1実装に着手しようとしたところ、根本的な資源競合が判明**: `mcu.cpp`の`init_mcu()`を確認したところ、`Wire`（I2C_SDA/SCL=D18/D19）は既に`LPI2C2`＝FlexComm2を使用していると判明（`/* I2C */ CLOCK_AttachClk(kFRO12M_to_FLEXCOMM2)`）。schematicで確認したD0/D1のFlexCommとしてのalt機能は`FC2_P2`/`FC2_P3`のみ——つまりD0/D1をUARTとして使うにも同じFlexComm2が必要で、`Wire`と`Serial1`は同時に使えない（LP_FLEXCOMMは1インスタンスにつき同時にひとつのモードしか持てないため）。ユーザーに提示し（AskUserQuestionで3択: 排他利用として実装/別ピン再検討/見送り）、**「Serial1は見送る」と決定**。`variants/frdm_mcxn947/README.md`の記述を「未特定・検証中」から「意図的に未対応（FlexComm2資源競合のため）」に更新
+- 修正後、`test_Serial1`がN947向けに正しくコンパイルエラーになること、他の全examplesに回帰がないことを再確認
+
+### 実機検証状況（v0.3.0時点、正確に記録）
+- **実機フラッシュして動作確認済み**: GPIO（`pinMode`/`digitalWrite`/`delay`）、Serial（USB経由、`Serial.begin()`/`println()`、RGB LED制御と組み合わせた`hello_world.ino`で確認）
+- **`arduino-cli compile`のみ確認済み（実機フラッシュはまだ）**: `String`、`SPI`（`test_SPI_bitorder_end_transfer16`）、UNO互換マクロ（`test_arduino_compat_macros`）
+- **意図的に未対応**: `Serial1`（上記参照）、`analogRead`/`analogWrite`/`tone`/`noTone`（ADCドライバ未取得・PWMピン未定義のため）
+
+### 実機バグ発見・修正: Wire/Wire1（I2C/I3C）動作確認とI3C2件の実機バグ
+`Serial1`修正後、ユーザーからI2C/Wire実機検証の依頼。ユーザー方針: 「ArduinoコネクタのI2CピンをWireとして，こちらに繋がってる方をWire1とする」（P3T1755オンボードセンサー側＝Wire1）。既存の`arduino_i2c.cpp`（`Wire(I2C_SDA,I2C_SCL)`=D18/D19、`Wire1(I3C_SDA,I3C_SCL)`=MB_RX/MB_TX、I3CをI2C_MODEで使用）はA153から丸ごと移植済みで、コード上は既にこの意図通りだった。schematic（`FRDM-MCXN947SH.pdf`、ユーザー提供）でP3T1755のI2Cアドレスが`0x48`、I3C1_SDA/SCLがP1_16/P1_17（=MB_RX/MB_TX）であることを確認し、外部ライブラリ`P3T1755.h`が無かったため生レジスタアクセスのテストスケッチを新規作成して検証開始。
+
+- **実機バグ1: I3C1のIBE（入力バッファ）が有効化されていない**: `Wire1`で温度センサーのレジスタ読み取りを試すと`requestFrom`が常に失敗（write成功、read失敗）。GDB（LinkServerのgdbserverモード）で`I3C_MasterTransferBlocking()`にブレークポイントを張り、write時は`status=0`、read時は`status=7902`(`kStatus_I3C_Nak`、アドレスフェーズでNAK)であることを直接確認。`pin_mux.c`を調査したところ、I3C1_SDA/SCL(P1_16/P1_17)のIBE設定コードは`BOARD_InitDEBUG_UARTPins()`という関数内にあったが、この関数自体がコードベースのどこからも呼ばれていないと判明（`init_mcu()`は`BOARD_InitBootPins()`/`BOARD_InitBootClocks()`/`BOARD_InitBootPeripherals()`のみ呼ぶ）。`PORT_SetPinMux()`はMUXフィールドしか触らないため、IBEはリセット後デフォルト（無効）のまま——A153のSerial1 D0/D1バグと全く同じ問題パターン。`I3C::I3C()`コンストラクタに`_scl.input_buffer(true)`/`_sda.input_buffer(true)`を追加して解消
+- **実機バグ2: I2C_MODEに切り替える前に一度も実I3Cバス動作をしていないと、以降の読み取りが常にNAKする**: バグ1修正後も読み取り失敗が継続。ユーザーが実機のプルアップ回路をschematicで確認し「R51/R52（標準4.7kプルアップ）がDNP、I3C1_PUR(P1_11)というI3Cペリフェラル駆動の動的プルアップに依存」という設計を指摘。この時点でユーザーから「プルアップはチップ内部で自動的に有効化される．外部プルアップは電流ブースト用のオプション．I2Cモードで動いていれば問題ないはず」との指摘があり、内部弱プルアップ（`DigitalInOut::mode(PullUp)`、PORT_PCR_PS/PE経由）を試したが効果なし（ロールバック）。ユーザー提供のNXP公式デモ（`ref/dm-i3c-temperature-sensor-main.zip`内`P3T1755_FRDM_MCXN947_demo_DAA`、同バスでLM75Bへの I2Cアクセス例も含む）を精査したところ、I2C_MODEへの切り替え前に必ず`ccc_broadcast(CCC::BROADCAST_RSTDAA, ...)`を実行していることを発見。GDBのライブ関数呼び出し（`Wire1`の内部`i2c`ポインタを`I3C*`にキャストして`reg_read()`/`ccc_broadcast()`を直接呼ぶ）でA/Bテストを実施——RSTDAA無し:確実にNAK、RSTDAA有り（それ自体は`kStatus_I3C_WriteAbort`で失敗するのが正常、動的アドレス未割当のため）:確実に成功、を複数回再現。ユーザーからのさらなる指摘「A153で必要なかったのなら，これはN947だけで実行されるようにしておいて」を受け、`#ifdef CPU_MCXN947VDF`でN947限定にガード（A153のI3C_SDA/SCLは実プルアップのある汎用I2Cコネクタと共有ピンのため元々不要）。根本原因は未特定（コード内コメントに明記——I3C仕様上はプルアップアシストが常時有効なはずで、`I3C_MasterInit()`だけではステートマシンが起動せず実際のSTART/STOPサイクルを一度経験する必要がある、というSDK/シリコン初期化順序の問題ではないかという推測にとどまる）
+- ユーザーからの検証依頼で、RSTDAA行を一時的に削除して再ビルド・再フラッシュ→失敗再現、復元して再ビルド・再フラッシュ→成功再現、という**制御されたA/Bテストを実機で2往復実施**し再現性を確定させてから最終版として確定
+- `Wire`（プレーンI2C、D18/D19）はバススキャンスケッチで実機確認済み（ハング・クラッシュなし、外部デバイス未接続のため0件検出）。**ただしこれはスキャンのみの確認——実デバイスとの実通信（read/write）はまだ未検証。ユーザー方針: 後日、実際にI2Cデバイスを接続して確認する**
+- `variants/frdm_mcxn947/README.md`に「Wire / Wire1 の実機検証済み動作（既知の癖あり）」セクションを新設し、上記2件のバグと回避策を詳細に記録
+- 参考資料`ref/dm-i3c-temperature-sensor-main.zip`（NXP公式、ユーザー提供）を`ref/`に配置、`.gitignore`に`ref/`を追加（リポジトリ管理対象外）。ユーザーはさらに`ref/r01lib_pin_table.xlsx`（各ピンのavailability一覧）も配置、今後のピン確認作業で参照する
+
+### SPI実機検証（MOSI-MISOループバック、暫定）
+`transfer()`/`transfer16()`/`setBitOrder(LSBFIRST)`/`end()`→`begin()`再初期化まで一通り往復確認OK。ただしテスト設計時に1件つまずいた: 合否表示にLED `GREEN`を使ったところ「何も点灯していない」ように見えた実機報告があり、GDBで停止位置を確認したところ実際には正常に`ok==true`のGREEN点滅ループ内で動作していた（矛盾）。ユーザーの指摘で判明: `GREEN`はD10で、SPIのデフォルトChip Select（`SPI_CS`/`ARD_CS`）と同じ物理ピンだったため、SPIトランザクション中のCS制御とLED表示用`digitalWrite`が同じピンを取り合っていた。`BLUE`に変更して解消、以後BLUE点滅で正常動作を確認。N947のLED定義（`RED=D9`, `GREEN=D10`, `BLUE=D6`）のうちGREENだけがデフォルトSPI CSと重複するため、SPI関連のテストスケッチではLED表示にGREENを使わないことを`variants/frdm_mcxn947/README.md`に記録。**ユーザー方針: この結果も暫定とし、Wireと同様に後日改めて実機で再確認する**
+
+### Serial（USB経由）モニター出力の取得——最終的に解決（原因はこちらのツール側）
+SPI検証中、LEDベースの判定に頼らずシリアルモニターで結果を読みたいというユーザー要望から調査。`/dev/cu.usbmodemUENBVJCYVDM5J3`（LinkServerのデバッグポートと同じノード）に対し`stty`でボーレート設定後`cat`で2秒間読み取りを試みたが、`Serial.println()`を300ms間隔で連続出力するテストスケッチを実行してもASCIIテキストは得られず、毎回同じ6バイトのゴミデータのみ取得。
+- ユーザー仮説: 「このコードの元にしたr01libのプロジェクトはSemihost設定になっていたため」→ `board.h`を確認したところ`BOARD_DEBUG_UART_TYPE=kSerialPort_Uart`で既にUART指定（semihostではない）と判明
+- 別仮説として、`board.c`の`BOARD_InitDebugConsole()`が`DbgConsole_Init()`経由でLPUART4（r01lib `Serial`クラスがUSBTX/USBRX用に既に初期化済みの同一ペリフェラル）を`init_mcu()`内で再初期化しており、グローバルコンストラクタ（`Serial`のハードウェア初期化はここで走る）より後に実行されるため、Serialの設定を上書き・破壊しているのではと推測。`BOARD_INIT_DEBUG_CONSOLE_PERIPHERAL`（既存のオプトアウト用ガード）を定義して`BOARD_InitDebugConsole()`をスキップし実機再テストしたが、**結果は変化せず同じ6バイトのゴミデータ**——この仮説は否定された（A153も同一パターン（`BOARD_InitDebugConsole()`が同じLPUART0をSerialと共有）だが実績上問題が起きていない点とも整合）
+- 上記2件とも実機テストの上で棄却。同じ6バイトが再現性高く得られる点から、USB列挙時のノイズかCMSIS-DAPプロトコルの混線であり、そもそもこのプローブがLPUART4のCDCブリッジを別ttyとしてこの環境に公開していない可能性が高いと判断。`mcu.cpp`の変更はロールバック（コミットなし）
+- ユーザーから「r01libのprintfを呼んだら出力は出る？」との質問。`fsl_debug_console.h`で`DEBUGCONSOLE_REDIRECT_TO_SDK=1`と確認、`platform.txt`の`-DSDK_DEBUGCONSOLE=0`（0≠1）によりr01lib.hの分岐で`SEMIHOST_OPERATION`が有効になっている（＝`printf`は素のnewlib実装、ARMセミホスティング経由でデバッガ接続時のみ出力される）ことをソースから確認。LinkServerのgdbserverをセミホストポート付き（`--semihost-port 4444`）で起動し`nc`でtelnet接続を試行——ポートバインディングがtarget実行開始後の遅延ありのタイミングでしか有効にならずrace conditionが強く、1回だけ接続成功（セミホスト機構自体は生きている証拠）したが実際の出力バイトは取得できず、以後は接続拒否やハングが再発。ツールチェーン起因の不安定さと判断しこの経路は断念（`crt_emu_cm_redlink`の残存プロセスをkill -9で強制クリーンアップする一幕もあった）
+- ユーザーから「A153では`-DSDK_DEBUGCONSOLE=0`になってる？」との確認質問に対し、`platform.txt`は両ボード共有ファイルなので**A153も同一設定**であると回答。ただしここで重要な整理: `printf`/`PRINTF`（セミホスティング分岐の対象）とArduinoの`Serial.println()`（`SerialClass`/`Print`経由、r01lib `Serial`クラス独自実装がLPUART4レジスタを直接操作、`printf`とは完全に別経路）は無関係——A153の`Serial`出力はこの設定下でも長年実機で安定して確認されてきている実績があり、`SDK_DEBUGCONSOLE`/セミホスティングの話は「N947のSerial出力が読めない」という元々の謎の説明には**ならない**と判明
+- ユーザーから「N947ではUSBTX, USBRXクラスを指定して入出力が得られていた．このr01libのクラスをそのまま使って出力を確認したい」との指摘を受け、Arduinoの`Print`/`Stream`層を完全にバイパスしてr01lib `Serial`クラス自身の`printf()`メンバメソッド（`Serial.printf(...)`、`SerialClass`が`public Serial`を継承しているため直接呼び出し可能）を使うテストスケッチを作成。実機書き込み後、ユーザーに**実際のシリアルターミナルアプリで確認してもらったところ、正常に読めることが判明**（`=== raw r01lib Serial::printf test ===`に続き`raw hello 0/1/2...`が正しく表示）——**ハードウェア・ファームウェアは最初から一貫して正常だった**
+- 原因はこちらの検証環境（sandboxed bashからの`stty`/`cat`）側にあると判明。`stty -f <port> 115200`でボーレートを設定しても、直後に`stty -f <port> -a`で確認すると**常に`9600`のまま変化しない**ことを発見（このUSB CDCデバイスのmacOSドライバがtermios経由のボーレート変更を反映しない挙動があると推測）。これまでの「6バイトのゴミデータ」「ボーレートを変えても同じ崩れ方」は、実際には常に9600固定で読んでいたことによる典型的なボーレート不一致の症状だったと解釈するのが最も整合的。`screen`コマンド（`-Logfile`オプション未対応の古いバージョン）・`arduino-cli monitor`もこの環境では出力を取得できず、同根の問題と推測
+- **結論・今後の方針**: Serial出力自体は完全に正常に動作している。この session環境（sandboxed bash）からの自動読み取りは技術的制限で断念し、Serial出力の確認が必要な場面は引き続きユーザーに実際のターミナルアプリで見てもらう運用とする。自動化された検証は引き続きLED/GDBベースを基本とする
+
+### analogWrite実装（PWM0/FlexPWM、実機検証待ち）
+残りの作業候補「6. analogRead/analogWrite」の後半に着手。A153の`PwmOut`クラス（FlexPWM0ベース）を参考にN947版を新規実装。
+
+- **重大な名前衝突バグを発見・修正**: N947のSDKは`PWM0`というマクロをFlexPWMペリフェラルのインスタンス自体（`(PWM_Type*)PWM0_BASE`）として既に定義している。当初io.hの論理ピン名も`PWM0`-`PWM5`（A153と同じ命名）にしたところ、`PwmOut.cpp`内の`PWM_Init(PWM0,...)`等のSDK呼び出しがことごとく「ピン番号→`PWM_Type*`への変換不可」でコンパイルエラーになった（マクロ展開でピン番号の`PWM0`が優先されてしまうため）。A153はSDKのインスタンスマクロが`FLEXPWM0`だったためこの衝突が起きなかった、というN947固有の落とし穴。論理ピン名を`PWM_0`-`PWM_5`（アンダースコア区切り）にリネームして解消。io.h・arduino_io.h・PwmOut.h/.cppの該当箇所を機械的に置換（Python正規表現で単語境界`\bPWM([0-5])\b`のみを対象にし、`PWM0_A1`等のSDK側alt-function名は巻き込まないよう注意）
+- **NXP公式のFRDM-MCXN947 FlexPWM driver example**（同SDK zip内）を参照して確認: 特別なクロックアタッチは不要（`CLOCK_EnableClock(kCLOCK_Pwm0_SmX)`のみで足り、A153と同様`CLOCK_GetFreq(kCLOCK_MainClk)`を周波数ソースとして使う）。インスタンス名は`FLEXPWM0`ではなく`PWM0`/`PWM1`（`PWM_Type*`）、リセットシンボルは`kPWM0_RST_SHIFT_RSTn`
+- **ピン・サブモジュール・ALT値の導出**: A153と同じ6物理ピン（P3_6..P3_11、モーターコントロール/PWM専用コネクタ由来と見られる、D/A番号と重複しない専用ピン群）を採用したが、サブモジュール番号がA153と異なる（A153=sm0/1/2、N947=sm1/2/3——`pin_mux.c`のpin_signal文字列、例えばP3_6の`.../CT4_MAT2/PWM0_A1/...`のA/B後の数字がサブモジュール番号というNXPの命名規則から確認）。ALT mux値も6ピンで不均一（Alt4とAlt5が混在）——各ピンのalt-function列内でPWM0_Ax/Bxが出現する位置が異なるため（`WUU0_INxx`等が途中に挟まるピンとそうでないピンがある）、I3C1_SDAのAlt10確認で確立した「pin_signal文字列内の位置を数える」方式で個別に導出
+- `arduino_analog.cpp`の`analogWrite()`をA153と同じロジック（`PwmOut`をpin単位でnew、`period_us(1000)`で1kHz固定、`write(duty)`で0.0-1.0のduty設定）に差し替え、`panic()`スタブを置き換え
+- ビルド設定: `Debug/drivers/subdir.mk`は変更不要（fsl_pwm.cは既存の共通ドライバとして既にビルド対象済み）
+- `arduino-cli compile`で確認、hello_world/A153側の回帰なしも確認。実機フラッシュ・動作確認スケッチ（PWM_0のduty比を0→255→0でランプさせ、テスターかLEDで確認する想定）も用意したが、**ユーザー方針でこの実機検証は後日に持ち越し**（Wire/SPIと同様、実装は完了しているが未検証の状態として記録）
+
+### tone/noTone実装（CTIMER0、実機検証待ち）
+残りの作業候補「7」に着手。A153の`arduino_tone.cpp`を確認したところ、この1ファイルはCPU依存の`#ifdef`分岐が一切ない完全にチップ非依存な実装だった（`DigitalInOut`/`CTIMER0`/`CLOCK_AttachClk`など全て汎用r01lib API経由）。そのままN947にコピーして試したところ、クロック分周設定の1行だけがコンパイルエラーになった。
+
+- **N947固有のシンボル差異**: 分周器のマクロ名がA153（`kCLOCK_DivCTIMER0`、全て大文字）とN947（`kCLOCK_DivCtimer0Clk`、大文字小文字混在＋"Clk"サフィックス付き）で異なる。さらに分周設定関数自体の名前も違う（A153=`CLOCK_SetClockDiv`、N947=`CLOCK_SetClkDiv`）。NXP公式のFRDM-MCXN947 CTIMER driver example（`boards/frdmmcxn947/driver_examples/ctimer/simple_match_interrupt`、同SDK zip内）で実際の呼び出し方を確認して修正。`CTIMER0`インスタンス・`CTIMER0_IRQn`・`kFRO12M_to_CTIMER0`・`CLOCK_GetCTimerClkFreq()`はA153と共通の名前でそのまま使えた
+- 以前この作業の準備として`drivers/`に`fsl_ctimer.c/h`をコピー済みだった（version-matched SDK由来）が、Debugビルド設定（`drivers/subdir.mk`）には未登録のままだったと判明——今回追加してビルド対象に含めた。`arduino_layer/subdir.mk`にも`arduino_tone.cpp`を追加
+- `Arduino.h`の`#include "arduino_tone.h"`を有効化（これまでコメントアウトしていた最後の未対応機能）
+- `arduino-cli compile`で確認、hello_world/A153の回帰なしも確認。特筆すべき点: これまでtone()依存でN947向けにリンクエラーになっていた既存example（`test_tone`、`test_shiftOut_pulseIn_random`）が、この実装により両方ともコンパイル成功に転じたことを確認——地味だが「後方互換的に既存exampleが直る」というポジティブな副作用
+- 確認用スケッチ（D3で440Hz→880Hzを繰り返す、ピエゾブザー/スコープ想定）を実機フラッシュまで実施したが、**ユーザー方針でこの実機検証も後日に持ち越し**（Wire/SPI/analogWriteと同じ扱い）
+
+### ドキュメント整備
+残りの作業候補「13〜15」＋ライセンスチェックに着手。
+- **`CHANGELOG.md`**: `[Unreleased]`セクションを新設し、N947ボード対応・`Serial1`非対応の理由・`boards.txt`のper-board化・`upload.sh`/`upload.bat`のLinkServerターゲット決め打ちバグ修正を記載
+- **`API_COMPATIBILITY.md`**: これまでA153単独の記述だったのを両ボード対応に更新。差分がある行（`Serial1`＝N947非対応、`Wire1`＝ボードごとに物理ピンが違う、`analogRead`＝A153はA0-A3・N947はA2-A5、`analogWrite`＝ピン名が`PWM0-5`(A153)/`PWM_0-5`(N947)で異なる、`ARDUINO_FRDM_MCXA153`/`ARDUINO_FRDM_MCXN947`）に個別に注記
+- **`README.md`の"Supported Boards"表**: N947のステータス表示（🔜→✅）についてユーザーに確認したところ、**「🔜のままにする」と回答**——基本機能は実装済みだが一部（Wire実デバイス・SPI再確認・analogWrite・tone実機検証）が未検証のため、正式リリースまでは据え置く判断。ピンマッピング等のN947詳細情報は引き続き`variants/frdm_mcxn947/README.md`側にのみ記載し、トップレベルREADME/TUTORIALには今回は追加しない方針
+- **`boards.txt`最終レビュー**: `build.pyocd_target`プロパティが実は`platform.txt`のどのレシピからも参照されていない（LinkServerのみ実装済みでpyOCDアップロードは未実装）ことに気づき、ユーザーに確認。**「コメントを追加」を選択**——A153・N947両方に「現在未使用、将来pyOCD対応する際のための先行メタデータ」という趣旨のコメントを追加（プロパティ自体は削除せず維持）。VID/PID（`0x1FC9`/`0x0143`）は実機接続時の`arduino-cli board list`自動検出で確認済みである旨のコメントも追加
+- **ライセンスチェック**（ユーザーからの明示的なリマインダー対応）: `LICENSE`のThird-Party Noticesセクションで`hardware/nxp/mcx/cores/arduino/arduino.h`という**古いパス参照**（v0.2.2で`Arduino.h`にリネーム済みだが未追従だった）を発見・修正。また、今回追加したNXP SDKドライバファイル（`fsl_lpadc.c/h`等）のcopyrightヘッダーが正しく保持されていることを確認した上で、**NXP MCUXpresso SDK由来のdriverファイル群についてLICENSEに一切言及がない**（A153の頃からの既存ギャップ）ことをユーザーに提示。**「LICENSEに追記」を選択**——BSD-3-Clauseである旨とリポジトリURLをThird-Party Noticesに新規追加
+
+### コミット
+`prepare0.3.0`ブランチに4コミット（`9e3774e`本体、`6baaf7c`ヘッダ同期時に誤って`variants/frdm_mcxn947/include/`へコピーしてしまった`arduino_serial.cpp`の削除、`aeceb3f`CLAUDE.md更新、`bb48646`Wire/Wire1のI3Cバグ2件の修正）。以降さらにコミットを重ねている（下記参照）。
+
+### Serial1: FlexComm2の資源競合により見送り決定
+`Serial1`実装に着手しようとしたところ、D0/D1のFlexCommとしてのalt機能はFC2_P2/FC2_P3のみで、これは`Wire`（I2C_SDA/SCL=D18/D19、`LPI2C2`＝FlexComm2）が既に専用で使っているのと同じFlexComm2インスタンスだと判明。LP_FLEXCOMMは1インスタンスにつき同時にひとつのモード（UART/I2C/SPI）しか持てないため、`Wire`と`Serial1`は同じスケッチで同時に使えない。AskUserQuestionで3択（排他利用として実装/別ピン再検討/見送り）を提示し、「Serial1は見送る」と決定。`variants/frdm_mcxn947/README.md`を「未特定・検証中」から「意図的に未対応（FlexComm2資源競合のため）」に更新
+
+### analogRead実装（LPADC/ADC0、実機検証済み）
+残りの作業候補リストから「6. analogRead/analogWrite」に着手。**重大な訂正が判明**: 以前「N947にはLPADCが存在せず`ADC0`/`ADC1`(`ADC_Type`)を持つため正しいADCドライバが未取得」と誤って判断し`fsl_lpadc.c/h`を削除していたが、これは誤りだった。version-matched SDK zip（`SDK_2_16_000_FRDM-MCXN947.zip`）を再確認したところ、`devices/MCXN947/drivers/`には`fsl_lpadc.c/h`しか存在せず、しかもその関数群（`LPADC_Init(ADC_Type *base, ...)`等）は`ADC_Type*`を引数に取ると判明。A153の`fsl_lpadc.h`も同様に`ADC_Type*`を使っており（A153の`ADC0`マクロも`(ADC_Type*)ADC0_BASE`）——NXPは両チップともこのペリフェラルの構造体型名を`ADC_Type`と呼んでいるだけで、ドライバ自体（LPADC API）は共通。「device headerに"LPADC"という文字列がない」＝「LPADCが存在しない」という以前の判断が誤りだったと確定し、`fsl_lpadc.c/h`をSDK zipから復元した
+
+- **NXP公式のFRDM-MCXN947 LPADC pollingサンプル**（同SDK zip内）と突き合わせてA153との相違点を特定:
+  1. **VREF初期化が追加で必要**: `SPC_EnableActiveModeAnalogModules(SPC0, kSPC_controlVref)` → `VREF_Init(VREF0, ...)`（LPADCのバイアス電流供給用、A153では不要だったステップ）。`fsl_vref.c/h`を同SDK zipから新規取得
+  2. **FIFOインデックス引数が必要**: `FSL_FEATURE_LPADC_FIFO_COUNT`がN947では`2`（A153は`1`）のため、`LPADC_GetConvResult()`/`LPADC_DoResetFIFO()`はFIFO index引数付きの版（`LPADC_DoResetFIFO0()`、`LPADC_GetConvResult(base,&result,0U)`）が必要
+  3. **A/B面の明示指定が必要**: N947のA2-A5はpin_mux.cのschematicコメントから channel_id が重複するペア構成と判明（A2=ch14/Bside, A3=ch14/Aside, A4=ch15/Bside, A5=ch15/Aside）。A153は各A-pinが別々のチャンネル番号だったため意識せずに済んでいた差異。`lpadc_conv_command_config_t.sampleChannelMode`に`kLPADC_SampleChannelSingleEndSideA`/`SideB`を明示
+  4. **`port_pin_config_t`の位置指定初期化がコンパイルエラー**: A153のコードは`{val1, val2, ...}`という位置指定の集成体初期化を使っていたが、この構造体はビットフィールドで、実際に存在するフィールドは`FSL_FEATURE_PORT_HAS_*`マクロの組み合わせでチップごとに変わる（N947には`driveStrength1`フィールドが存在せず`FSL_FEATURE_PORT_HAS_DRIVE_STRENGTH1=(0)`）。フィールド名を明示する初期化（`cfg.pullSelect = ...`等）に書き換えて解消——今後同種の構造体を他チップに移植する際は位置指定初期化を避けるべき教訓
+- io.hのA0/A1はN947では`DISABLED_PIN`（配線なし）と確認済み、A2-A5のみ対応
+- ビルド設定: `Debug/drivers/subdir.mk`に`fsl_lpadc.c`/`fsl_vref.c`を追加、`Debug/arduino_layer/subdir.mk`に`arduino_analog.cpp`を追加。`arduino_analog.h`はA153から無変更でコピー、`arduino_analog.cpp`は新規作成（`analogRead()`は実装、`analogWrite()`は宣言のみで呼ぶと`panic()`——FlexPWMのピンマッピングという別作業が必要なため未実装であることを明示）。`Arduino.h`に`#include "arduino_analog.h"`を追加（`arduino_tone.h`は引き続き未追加）
+- 確認用スケッチ: A3をLEDのBLINK回数（読み取り値/100）に変換するテストをArduino-cli経由で実機フラッシュ。**ユーザーがA3をGND/3.3Vにショートさせ、点滅回数が実際に変化することを確認** — analogRead()が実機で正しく動作することを確認済み
+- ユーザーからのリマインダー: リリース前にライセンス関連のチェックを行うこと（未実施、todo）
+
+---
+
 ## 動作確認済み
 
 | API | 状態 | 備考 |
@@ -420,5 +548,6 @@ UNO R3（`ArduinoCore-avr`、ローカルインストール済み）・UNO R4（
 
 ## 残りのPendingタスク
 1. ~~Linux対応の実機検証~~ **解消済み（v0.2.2で確定）**: v0.2.1リリース後の実機検証で、ファイル名の大文字小文字ミスマッチ（`arduino.h`/`Arduino.h`、`spi.h`/`SPI.h`）によりLinuxでビルドが失敗することが判明・修正し、v0.2.2としてリリース。Linux実機（Ubuntu系）でBoards Manager経由インストール〜Blinkスケッチのビルド〜書き込み〜実行まで成功を確認済み。README.md/TUTORIAL.md/TUTORIAL.ja.mdの「未検証」表記もすべて「macOS, Windows 11, Linuxで検証済み」に更新済み
-2. マルチボード対応（MCXN947, MCXA156, MCXN236）
+2. マルチボード対応（MCXN947, MCXA156, MCXN236）— **N947は`prepare0.3.0`ブランチで作業中**（GPIO/Serial実機検証済み、詳細は「v0.3.0 で作業中の内容」セクション参照）。A156/N236は未着手
 3. （低優先度）`examples/tests/GPIO_NXP_Arduino`の不要なgitlinkエントリの整理
+4. **N947のピン配置図**: A153の`img/pins-FRDM-MCXA153.png`と同様のものをN947用にも用意する。A153の図はユーザーが**手書きで作成**したもの（元データ・生成ツールはリポジトリになし、完成したPNGのみを配置）。N947版も同様にユーザーが手書きで作成する予定——出来上がったら`img/`に配置し、`variants/frdm_mcxn947/README.md`（および正式リリース時にはトップレベルREADME/TUTORIAL）から参照する

@@ -8,7 +8,6 @@
 #include	"fsl_gpio.h"
 #include	"fsl_common.h"
 #include	"fsl_debug_console.h"
-
 #include	"irq.h"
 
 #ifdef	CPU_MCXN947VDF
@@ -34,6 +33,17 @@ void GPIO40_IRQHandler( void )
 
 void GPIO50_IRQHandler( void )
 {	irq_handler( 5 );
+}
+
+#elif	CPU_MCXC444VLH
+void PORTA_DriverIRQHandler( void )
+{
+	irq_handler( 0 );
+}
+
+void PORTC_PORTD_DriverIRQHandler( void )
+{
+	irq_handler( 1 );
 }
 
 #else // CPU_MCXN947VDF

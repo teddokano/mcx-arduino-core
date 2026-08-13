@@ -1,17 +1,17 @@
 /*
  *  @author Tedd OKANO
  *
- *  Released under the MIT license License
+ *  Released under the MIT license
  */
 
 /** GPIO SPI device abstracting class
  *
- *	This class provides common methods for all I2C devices
+ *	This class provides common methods for all GPIO SPI devices
  *
- *  @class   I2C_device
+ *  @class   GPIO_SPI
  *  @author  Tedd OKANO
  *
- *  Released under the MIT license License
+ *  Released under the MIT license
  */
 
 #ifndef ARDUINO_GPIO_SPI_H
@@ -31,7 +31,7 @@ public:
 	 */
 	GPIO_SPI( SPI& interface, uint8_t device_address );
 
-    /** Destructor of I2C_device
+    /** Destructor of GPIO_SPI
      */
     virtual ~GPIO_SPI();
 	
@@ -83,13 +83,13 @@ public:
 	/** Register write, 8 bit
 	 *
 	 * @param reg register index/address/pointer
-	 * @return data value
+	 * @param val data value
 	 */
 	void write_r8( uint8_t reg, uint8_t val );
 
 	/** Register write, 16 bit
 	 * 
-	 *	This 16 bit access may ot be common but it's useful for sensor devices
+	 *	This 16 bit access may not be common but it's useful for sensor devices
 	 *
 	 * @param reg register index/address/pointer
 	 * @param val data value
@@ -105,7 +105,7 @@ public:
 
 	/** Register read, 16 bit
 	 *	
-	 *	This 16 bit access may ot be common but it's useful for sensor devices
+	 *	This 16 bit access may not be common but it's useful for sensor devices
 	 *
 	 * @param reg register index/address/pointer
 	 * @return data value

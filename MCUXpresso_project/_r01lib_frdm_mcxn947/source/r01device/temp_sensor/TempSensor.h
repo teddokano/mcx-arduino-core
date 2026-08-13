@@ -1,7 +1,7 @@
 /*
  *  @author Tedd OKANO
  *
- *  Released under the MIT license License
+ *  Released under the MIT license
  */
 
 #ifndef ARDUINO_TEMP_SENSOR_H
@@ -54,7 +54,7 @@ public:
 	 */
 	virtual float temp( void );
 
-	/** A short hand for reading pins
+	/** Operator for reading temperature as float
 	 */
 	operator	float();
 	
@@ -79,7 +79,7 @@ public:
 		Temp,	/**< Temp register	*/
 		Conf,	/**< Conf register	*/
 		Thyst,	/**< Thyst register	*/
-		Tos,	/**< Tos registe	*/
+		Tos,	/**< Tos register*/
 	};
 
 	/** Create a LM75B instance connected to specified I2C pins with specified address
@@ -164,7 +164,7 @@ public:
 
 	/** Register write, 16 bit
 	 * 
-	 *	This 16 bit access may ot be common but it's useful for sensor devices
+	 *	This 16 bit access may not be common but it's useful for sensor devices
 	 *
 	 * @param reg register index/address/pointer
 	 * @param val data value
@@ -180,7 +180,7 @@ public:
 
 	/** Register read, 16 bit
 	 *	
-	 *	This 16 bit access may ot be common but it's useful for sensor devices
+	 *	This 16 bit access may not be common but it's useful for sensor devices
 	 *
 	 * @param reg register index/address/pointer
 	 * @return data value
@@ -217,7 +217,7 @@ public:
 		Temp,	/**< Temp register	*/
 		Conf,	/**< Conf register	*/
 		Thyst,	/**< Thyst register	*/
-		Tos,	/**< Tos registe	*/
+		Tos,	/**< Tos register*/
 		Tidle,	/**< Tidle register	*/
 	};
 	
@@ -271,7 +271,7 @@ public:
 
 	/** Register write, 16 bit
 	 * 
-	 *	This 16 bit access may ot be common but it's useful for sensor devices
+	 *	This 16 bit access may not be common but it's useful for sensor devices
 	 *
 	 * @param reg register index/address/pointer
 	 * @param val data value
@@ -287,7 +287,7 @@ public:
 
 	/** Register read, 16 bit
 	 *	
-	 *	This 16 bit access may ot be common but it's useful for sensor devices
+	 *	This 16 bit access may not be common but it's useful for sensor devices
 	 *
 	 * @param reg register index/address/pointer
 	 * @return data value
@@ -312,7 +312,7 @@ public:
  *	
  *  @class P3T1755
 
- *  About P3T1085:
+ *  About P3T1755:
  *		https://www.nxp.com/products/sensors/i3c-ic-digital-temp-sensors/i3c-ic-bus-0-5-c-accurate-digital-temperature-sensor:P3T1755DP
  */
 
@@ -324,7 +324,7 @@ public:
 		Temp,	/**< Temp register	*/
 		Conf,	/**< Conf register	*/
 		T_LOW,	/**< Thyst register	*/
-		T_HIGH,	/**< Tos registe	*/
+		T_HIGH,	/**< Tos register*/
 	};
 	
 	/** Create a P3T1755 instance connected to specified I2C pins with specified address
@@ -377,7 +377,7 @@ public:
 
 	/** Register write, 16 bit
 	 * 
-	 *	This 16 bit access may ot be common but it's useful for sensor devices
+	 *	This 16 bit access may not be common but it's useful for sensor devices
 	 *
 	 * @param reg register index/address/pointer
 	 * @param val data value
@@ -393,7 +393,7 @@ public:
 
 	/** Register read, 16 bit
 	 *	
-	 *	This 16 bit access may ot be common but it's useful for sensor devices
+	 *	This 16 bit access may not be common but it's useful for sensor devices
 	 *
 	 * @param reg register index/address/pointer
 	 * @return data value
@@ -441,10 +441,10 @@ public:
 	 */	
 	virtual void os_mode( mode flag ) override;
 
-	/** Clear ALERT (Clear interurpt)
-	 * 
-	 * @return true if FH flag in Congiguration register is set 
-	 */	
+	/** Clear ALERT (Clear interrupt)
+	 *
+	 * @return true if FH flag in Configuration register is set
+	 */
 	virtual bool clear( void );
 
 #if DOXYGEN_ONLY
@@ -474,7 +474,7 @@ public:
 
 	/** Register write, 16 bit
 	 * 
-	 *	This 16 bit access may ot be common but it's useful for sensor devices
+	 *	This 16 bit access may not be common but it's useful for sensor devices
 	 *
 	 * @param reg register index/address/pointer
 	 * @param val data value
@@ -483,7 +483,7 @@ public:
 
 	/** Register read, 16 bit
 	 *	
-	 *	This 16 bit access may ot be common but it's useful for sensor devices
+	 *	This 16 bit access may not be common but it's useful for sensor devices
 	 *
 	 * @param reg register index/address/pointer
 	 * @return data value
@@ -520,7 +520,7 @@ public:
 		Temp,	/**< Temp register	*/
 		Conf,	/**< Conf register	*/
 		T_LOW,	/**< Thyst register	*/
-		T_HIGH,	/**< Tos registe	*/
+		T_HIGH,	/**< Tos register*/
 	};
 	
 	/** Create a P3T1035 instance connected to specified I2C pins with specified address
@@ -575,7 +575,7 @@ public:
 
 	/** Register write, 16 bit
 	 * 
-	 *	This 16 bit access may ot be common but it's useful for sensor devices
+	 *	This 16 bit access may not be common but it's useful for sensor devices
 	 *
 	 * @param reg register index/address/pointer
 	 * @param val data value
@@ -591,7 +591,7 @@ public:
 
 	/** Register read, 16 bit
 	 *	
-	 *	This 16 bit access may ot be common but it's useful for sensor devices
+	 *	This 16 bit access may not be common but it's useful for sensor devices
 	 *
 	 * @param reg register index/address/pointer
 	 * @return data value
@@ -628,7 +628,7 @@ public:
 		Temp,	/**< Temp register	*/
 		Conf,	/**< Conf register	*/
 		T_LOW,	/**< Thyst register	*/
-		T_HIGH,	/**< Tos registe	*/
+		T_HIGH,	/**< Tos register*/
 	};
 	
 	/** Create a P3T2030 instance connected to specified I2C pins with specified address
@@ -637,7 +637,7 @@ public:
 	 */
 	P3T2030( I2C& interface, uint8_t i2c_address = (0xE0 >> 1) );
 
-	/** Destructor of P3T1035
+	/** Destructor of P3T2030
 	 */
 	virtual ~P3T2030();
 	
@@ -670,7 +670,7 @@ public:
 	 * 
 	 *	This is dummy method since P3T2030 doesn't have the thermostat mode
 	 *
-	 * @param flag use P3T2030::COMPARATOR or P3T1755::INTERRUPT values
+	 * @param flag use P3T2030::COMPARATOR or P3T2030::INTERRUPT values
 	 */	
 	virtual void os_mode( mode flag );	
 
@@ -683,7 +683,7 @@ public:
 
 	/** Register write, 16 bit
 	 * 
-	 *	This 16 bit access may ot be common but it's useful for sensor devices
+	 *	This 16 bit access may not be common but it's useful for sensor devices
 	 *
 	 * @param reg register index/address/pointer
 	 * @param val data value
@@ -699,7 +699,7 @@ public:
 
 	/** Register read, 16 bit
 	 *	
-	 *	This 16 bit access may ot be common but it's useful for sensor devices
+	 *	This 16 bit access may not be common but it's useful for sensor devices
 	 *
 	 * @param reg register index/address/pointer
 	 * @return data value

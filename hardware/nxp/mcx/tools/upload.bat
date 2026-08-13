@@ -1,5 +1,6 @@
 @echo off
 set ELF=%1
+set LINKSERVER_TARGET=%2
 
 for /f "delims=" %%i in ('dir /b /ad "C:\NXP\LinkServer*" 2^>nul ^| sort /r') do (
     set LINKSERVER=C:\NXP\%%i\LinkServer.exe
@@ -15,4 +16,4 @@ exit /b 1
 
 :found
 echo Using: %LINKSERVER%
-"%LINKSERVER%" flash MCXA153:FRDM-MCXA153 load "%ELF%"
+"%LINKSERVER%" flash %LINKSERVER_TARGET% load "%ELF%"

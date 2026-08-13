@@ -141,6 +141,7 @@ void I2C_device::address_overwrite( uint8_t address )
 	i2c_addr	= address;
 }
 
+#ifdef I3C_SUPPORTED
 void I2C_device::ccc_set( CCC ccc, uint8_t data )
 {
 	i2c.ccc_set( ccc, i2c_addr, data );
@@ -152,4 +153,5 @@ uint8_t* I2C_device::ccc_get( CCC ccc, uint8_t *dp, uint8_t length )
 	
 	return dp;
 }
-
+#else	//	I3C_SUPPORTED
+#endif	//	I3C_SUPPORTED

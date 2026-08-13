@@ -1,7 +1,7 @@
 /*
  *  @author Tedd OKANO
  *
- *  Released under the MIT license License
+ *  Released under the MIT license
  */
 
 #ifndef ARDUINO_I2C_DEVICE_H
@@ -69,7 +69,7 @@ public:
 	 * 
 	 * @param data pointer to data buffer
 	 * @param size data size
-	 * @param stop option: generating STOP-condition after transaction. Defailt: true
+	 * @param stop (optional) generate STOP-condition after transaction. Default: true
 	 * @return transferred data size or error code in negative number: -1=data too long, -2=NACK for address, -3=NACK for data, -4=Other error, -5=Time out
 	 */
 	int tx( const uint8_t *data, uint16_t size, bool stop = true );
@@ -92,10 +92,9 @@ public:
 	int reg_w( uint8_t reg_adr, const uint8_t *data, uint16_t size );
 
 	/** Single register write
-	 * 
-	 * @param reg register index/address/pointer
-	 * @param data pointer to data buffer
-	 * @param size data size
+	 *
+	 * @param reg  register index/address/pointer
+	 * @param data data to write
 	 * @return transferred data size
 	 */
 	int reg_w( uint8_t reg_adr, uint8_t data );
@@ -110,24 +109,22 @@ public:
 	int reg_r( uint8_t reg_adr, uint8_t *data, uint16_t size );
 
 	/** Single register read
-	 * 
+	 *
 	 * @param reg register index/address/pointer
-	 * @param data pointer to data buffer
-	 * @param size data size
-	 * @return read data size
+	 * @return read data
 	 */
 	uint8_t	reg_r( uint8_t reg_adr );
 
 	/** Register write, 8 bit
 	 *
 	 * @param reg register index/address/pointer
-	 * @return data value
+	 * @param val data value to write
 	 */
 	void write_r8( uint8_t reg, uint8_t val );
 
 	/** Register write, 16 bit
 	 * 
-	 *	This 16 bit access may ot be common but it's useful for sensor devices
+	 *	This 16 bit access may not be common but it's useful for sensor devices
 	 *
 	 * @param reg register index/address/pointer
 	 * @param val data value
@@ -143,7 +140,7 @@ public:
 
 	/** Register read, 16 bit
 	 *	
-	 *	This 16 bit access may ot be common but it's useful for sensor devices
+	 *	This 16 bit access may not be common but it's useful for sensor devices
 	 *
 	 * @param reg register index/address/pointer
 	 * @return data value
@@ -176,7 +173,7 @@ public:
 	static bool ping( uint8_t addr );
 	
 	/** scan (class method)
-	 * 		thsi is a class-method to scan devices
+	 * 		this is a class method to scan devices
 	 * 		
 	 * @param target_i2c I2C instance
 	 * @param last	the last address to limit scan range
@@ -198,22 +195,24 @@ public:
 	 */		
 	void				address_overwrite( uint8_t address );
 
-	/** Set Commion Command Code
+#ifdef I3C_SUPPORTED
+	/** Set Common Command Code
 	 *
-	 * @param ccc Commion Command Code
+	 * @param ccc Common Command Code
 	 * @param data data for setting
 	 */		
 	virtual void ccc_set( CCC ccc, uint8_t data );
 
-	/** Get Commion Command Code
+	/** Get Common Command Code
 	 *
-	 * @param ccc Commion Command Code
+	 * @param ccc Common Command Code
 	 * @param dp pointer to data array
 	 * @param length data array length
 	 * @return pointer to data array
 	 */		
 	virtual uint8_t* ccc_get( CCC ccc, uint8_t *dp, uint8_t length );
-
+#else	//	I3C_SUPPORTED
+#endif	//	I3C_SUPPORTED
 
 protected:
 	I2C&		i2c;

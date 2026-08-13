@@ -1,7 +1,7 @@
 /*
  *  @author Tedd OKANO
  *
- *  Released under the MIT license License
+ *  Released under the MIT license
  */
 
 #ifndef ARDUINO_GPIO_NXP_ARD_PORT_H
@@ -17,8 +17,8 @@
  */
 class PORT {
 public:
-	/** Constractor
-	 * 
+	/** Constructor
+	 *
 	 * @param gpio 	Pointer to GPIO device instance
 	 * @param port_num	Port number
 	 * @param mask		(option) bit mask for output

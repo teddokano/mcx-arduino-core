@@ -407,8 +407,64 @@ static gpio_pin pins[]	= {
 	{ 3, 30 },
 	{ 3, 31 },
 };
+
+#elif	CPU_MCXC444VLH
+
+static gpio_pin pins[]	= {
+	{ DISABLED_GPIO, DISABLED_PIN },
+	{ 0,  0 },
+	{ 0,  1 },
+	{ 0,  2 },
+	{ 0,  3 },
+	{ 0,  4 },
+	{ 0,  5 },
+	{ 0, 12 },
+	{ 0, 13 },
+	{ 0, 14 },
+	{ 0, 15 },
+	{ 0, 16 },
+	{ 1,  0 },
+	{ 1,  1 },
+	{ 1,  2 },
+	{ 1,  3 },
+	{ 1, 16 },
+	{ 1, 17 },
+	{ 1, 18 },
+	{ 1, 19 },
+	{ 2,  0 },
+	{ 2,  1 },
+	{ 2,  2 },
+	{ 2,  3 },
+	{ 2,  4 },
+	{ 2,  5 },
+	{ 2,  6 },
+	{ 2,  7 },
+	{ 2, 20 },
+	{ 2, 21 },
+	{ 2, 22 },
+	{ 2, 23 },
+	{ 3,  0 },
+	{ 3,  1 },
+	{ 3,  2 },
+	{ 3,  3 },
+	{ 3,  4 },
+	{ 3,  5 },
+	{ 3,  6 },
+	{ 3,  7 },
+	{ 4,  0 },
+	{ 4,  1 },
+	{ 4, 20 },
+	{ 4, 21 },
+	{ 4, 22 },
+	{ 4, 23 },
+	{ 4, 24 },
+	{ 4, 25 },
+	{ 4, 29 },
+	{ 4, 30 },
+	{ 4, 31 },
+};
 #else
-	#error Target CPU is not supported
+#error Target CPU is not supported
 #endif // CPU_MCXN947VDF
 
 extern "C" {
@@ -479,6 +535,14 @@ void DigitalInOut::direction( bool dir )
 void DigitalInOut::pin_mux( int mux )
 {
 	PORT_SetPinMux( port_n, gpio_pin, (port_mux_t)mux );
+}
+
+void DigitalInOut::input_buffer( bool enable )
+{
+	if ( enable )
+		port_n->PCR[ gpio_pin ] |= PORT_PCR_IBE_MASK;
+	else
+		port_n->PCR[ gpio_pin ] &= ~PORT_PCR_IBE_MASK;
 }
 
 void DigitalInOut::mode( int pin_mode )

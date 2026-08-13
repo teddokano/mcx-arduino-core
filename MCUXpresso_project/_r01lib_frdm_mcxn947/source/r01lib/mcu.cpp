@@ -7,20 +7,25 @@
 extern "C" {
 #include "peripherals.h"
 #include "fsl_common.h"
-#include "fsl_debug_console.h"
-#include "fsl_i3c.h"
-#include "fsl_lpi2c.h"
 #include "pin_mux.h"
 #include "clock_config.h"
 #include "board.h"
-
-#include "fsl_utick.h"
 #include "fsl_clock.h"
-#include "fsl_reset.h"
+#include "fsl_debug_console.h"
+
+#if	CPU_MCXC444VLH
+	#include "fsl_i2c.h"
+#else
+	#include "fsl_reset.h"
+	#include "fsl_utick.h"
+	#include "fsl_i3c.h"
+	#include "fsl_lpi2c.h"
+#endif
 }
 
 #include "mcu.h"
 #include "obj.h"
+#include "io.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wprio-ctor-dtor"
@@ -176,12 +181,33 @@ void init_mcu( void )
 	BOARD_InitBootClocks();
 	BOARD_InitDebugConsole();
 
+#elif	CPU_MCXC444VLH
+	/* Init board hardware. */
+	BOARD_InitBootPins();
+	BOARD_InitBootClocks();
+	BOARD_InitDebugConsole();
+
+#if (defined(SDK_DEBUGCONSOLE) && (SDK_DEBUGCONSOLE == DEBUGCONSOLE_REDIRECT_TO_SDK))	
+	/* PORTA1 (pin 23) is configured as LPUART0_RX */
+	/* PORTA2 (pin 24) is configured as LPUART0_TX */
+	PORT_SetPinMux( BOARD_INITPINS_DEBUG_UART_RX_PORT, BOARD_INITPINS_DEBUG_UART_RX_PIN, kPORT_MuxAlt2 );
+	PORT_SetPinMux( BOARD_INITPINS_DEBUG_UART_TX_PORT, BOARD_INITPINS_DEBUG_UART_TX_PIN, kPORT_MuxAlt2 );
+#else
+	/* PORTA1 (pin 23) is configured as LPUART0_RX */
+	/* PORTA2 (pin 24) is configured as LPUART0_TX */
+	PORT_SetPinMux( BOARD_INITPINS_DEBUG_UART_RX_PORT, BOARD_INITPINS_DEBUG_UART_RX_PIN, kPORT_MuxAsGpio );
+	PORT_SetPinMux( BOARD_INITPINS_DEBUG_UART_TX_PORT, BOARD_INITPINS_DEBUG_UART_TX_PIN, kPORT_MuxAsGpio );
+#endif // (defined(SDK_DEBUGCONSOLE) && (SDK_DEBUGCONSOLE == DEBUGCONSOLE_REDIRECT_TO_SDK))
+
+
 #else
 	#error Not supported CPU
 	
 #endif
 
+#ifndef	CPU_MCXC444VLH
 	UTICK_Init( UTICK0 );
+#endif
 }
 
 void wait( double delayTime_sec )

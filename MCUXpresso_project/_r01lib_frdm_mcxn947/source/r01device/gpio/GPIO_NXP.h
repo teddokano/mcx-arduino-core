@@ -1,7 +1,7 @@
 /*
  *  @author Tedd OKANO
  *
- *  Released under the MIT license License
+ *  Released under the MIT license
  */
 
 #ifndef ARDUINO_GPIO_NXP_ARD_H
@@ -56,7 +56,7 @@ public:
 	/** Number of IO ports */
 	const int	n_ports;
 	
-	/** Constractor
+	/** Constructor
 	 * 
 	 * @param interface I2C instance
 	 * @param i2c_address I2C target address
@@ -66,7 +66,7 @@ public:
 	 */
 	GPIO_base( I2C& interface, uint8_t i2c_address, int nbits, const uint8_t* arp, uint8_t ai );
 
-	/** Constractor
+	/** Constructor
 	 * 
 	 * @param interface I2C instance
 	 * @param i2c_address I2C target address
@@ -76,7 +76,7 @@ public:
 	 */
 	GPIO_base( SPI& interface, uint8_t dev_address, int nbits, const uint8_t* arp, uint8_t ai );
 
-	/** Destractor */
+	/** Destructor */
 	virtual ~GPIO_base();
 
 	/** Device/board initialization
@@ -84,9 +84,9 @@ public:
 	 * This method is needed to initialize Arduino-shield type evaluation boards from NXP. 
 	 * This method takes one argument of "GPIO_base::ARDUINO_SHIELD" to set RESET and ADDRESS pins. 
 	 * 
-	 * If the devoce is used as it self, this method doesn't need to be called. 
+	 * If the device is used as it self, this method doesn't need to be called. 
 	 *	
-	 * @param env	This argument can be given as "GPIO_base::NONE" ot "GPIO_base::ARDUINO_SHIELD"
+	 * @param env	This argument can be given as "GPIO_base::NONE" or "GPIO_base::ARDUINO_SHIELD"
 	 */
 	virtual void	begin( board env = NONE );
 	
@@ -148,7 +148,7 @@ public:
 	 * 
 	 *	All port register access function using word of 'access_word'
 	 *
-	 * @param w		Accsess word. This should be choosen from access_word'
+	 * @param w		Access word. This should be chosen from 'access_word'
 	 * @param vp	Pointer to an array of values. The array should have 'n_ports' length
 	 */
 	void		write_port( access_word w, const uint8_t* vp );
@@ -157,7 +157,7 @@ public:
 	 * 
 	 *	All port 16 bit register access function using word of 'access_word'
 	 *
-	 * @param w		Accsess word. This should be choosen from access_word'
+	 * @param w		Access word. This should be chosen from 'access_word'
 	 * @param vp	Pointer to an array of values. The array should have 'n_ports' length
 	 */
 	void		write_port16( access_word w, const uint16_t* vp );
@@ -166,7 +166,7 @@ public:
 	 * 
 	 *	All port register access function using word of 'access_word'
 	 *
-	 * @param w		Accsess word. This should be choosen from access_word'
+	 * @param w		Access word. This should be chosen from 'access_word'
 	 * @param vp	Pointer to an array of values. The array should have 'n_ports' length
 	 * @return	Pointer to vp
 	 */
@@ -176,7 +176,7 @@ public:
 	 * 
 	 *	All port 16 bit register access function using word of 'access_word'
 	 *
-	 * @param w		Accsess word. This should be choosen from access_word'
+	 * @param w		Access word. This should be chosen from 'access_word'
 	 * @param vp	Pointer to an array of values. The array should have 'n_ports' length
 	 * @return	Pointer to vp
 	 */
@@ -186,7 +186,7 @@ public:
 	 * 
 	 *	Single port register access function using word of 'access_word'
 	 *
-	 * @param w			Accsess word. This should be choosen from access_word'
+	 * @param w			Access word. This should be chosen from 'access_word'
 	 * @param value		Value to be written into a register
 	 * @param port_num	Option, to specify port number
 	 */
@@ -196,7 +196,7 @@ public:
 	 * 
 	 *	Single port 16 bit register access function using word of 'access_word'
 	 *
-	 * @param w			Accsess word. This should be choosen from access_word'
+	 * @param w			Access word. This should be chosen from 'access_word'
 	 * @param value		Value to be written into a register
 	 * @param port_num	Option, to specify port number
 	 */
@@ -206,7 +206,7 @@ public:
 	 * 
 	 *	Single port register access function using word of 'access_word'
 	 *
-	 * @param w			Accsess word. This should be choosen from access_word'
+	 * @param w			Access word. This should be chosen from 'access_word'
 	 * @param port_num	Option, to specify port number
 	 * @return Register read value
 	 */
@@ -216,7 +216,7 @@ public:
 	 * 
 	 *	Single port 16 bit register access function using word of 'access_word'
 	 *
-	 * @param w			Accsess word. This should be choosen from access_word'
+	 * @param w			Access word. This should be chosen from 'access_word'
 	 * @param port_num	Option, to specify port number
 	 * @return Register read value
 	 */
@@ -251,14 +251,14 @@ public:
 		Configuration,
 	};
 	
-	/** Constractor
+	/** Constructor
 	 * 
 	 * @param interface I2C instance
 	 * @param i2c_address I2C target address
 	 */
 	PCA9554( I2C& interface, uint8_t i2c_address = (0x40 >> 1) + 0 );
 
-	/** Destractor */
+	/** Destructor */
 	virtual ~PCA9554();
 
 	static constexpr uint8_t	access_ref[ NUM_access_word ]	= {
@@ -293,9 +293,9 @@ public:
 	 * This method is needed to initialize Arduino-shield type evaluation boards from NXP. 
 	 * This method takes one argument of "PCA9554::ARDUINO_SHIELD" to set RESET and ADDRESS pins. 
 	 * 
-	 * If the devoce is used as it self, this method doesn't need to be called. 
+	 * If the device is used as it self, this method doesn't need to be called. 
 	 *	
-	 * @param env	This argument can be given as "PCA9554::NONE" ot "PCA9554::ARDUINO_SHIELD"
+	 * @param env	This argument can be given as "PCA9554::NONE" or "PCA9554::ARDUINO_SHIELD"
 	 */
 	virtual void	begin( board env = NONE );
 	
@@ -357,7 +357,7 @@ public:
 	 * 
 	 *	All port register access function using word of 'access_word'
 	 *
-	 * @param w		Accsess word. This should be choosen from access_word'
+	 * @param w		Access word. This should be chosen from 'access_word'
 	 * @param vp	Pointer to an array of values. The array should have 'n_ports' length
 	 */
 	void		write_port( access_word w, const uint8_t* vp );
@@ -366,7 +366,7 @@ public:
 	 * 
 	 *	All port 16 bit register access function using word of 'access_word'
 	 *
-	 * @param w		Accsess word. This should be choosen from access_word'
+	 * @param w		Access word. This should be chosen from 'access_word'
 	 * @param vp	Pointer to an array of values. The array should have 'n_ports' length
 	 */
 	void		write_port16( access_word w, const uint16_t* vp );
@@ -375,7 +375,7 @@ public:
 	 * 
 	 *	All port register access function using word of 'access_word'
 	 *
-	 * @param w		Accsess word. This should be choosen from access_word'
+	 * @param w		Access word. This should be chosen from 'access_word'
 	 * @param vp	Pointer to an array of values. The array should have 'n_ports' length
 	 * @return	Pointer to vp
 	 */
@@ -385,7 +385,7 @@ public:
 	 * 
 	 *	All port 16 bit register access function using word of 'access_word'
 	 *
-	 * @param w		Accsess word. This should be choosen from access_word'
+	 * @param w		Access word. This should be chosen from 'access_word'
 	 * @param vp	Pointer to an array of values. The array should have 'n_ports' length
 	 * @return	Pointer to vp
 	 */
@@ -395,7 +395,7 @@ public:
 	 * 
 	 *	Single port register access function using word of 'access_word'
 	 *
-	 * @param w			Accsess word. This should be choosen from access_word'
+	 * @param w			Access word. This should be chosen from 'access_word'
 	 * @param value		Value to be written into a register
 	 * @param port_num	Option, to specify port number
 	 */
@@ -405,7 +405,7 @@ public:
 	 * 
 	 *	Single port 16 bit register access function using word of 'access_word'
 	 *
-	 * @param w			Accsess word. This should be choosen from access_word'
+	 * @param w			Access word. This should be chosen from 'access_word'
 	 * @param value		Value to be written into a register
 	 * @param port_num	Option, to specify port number
 	 */
@@ -415,7 +415,7 @@ public:
 	 * 
 	 *	Single port register access function using word of 'access_word'
 	 *
-	 * @param w			Accsess word. This should be choosen from access_word'
+	 * @param w			Access word. This should be chosen from 'access_word'
 	 * @param port_num	Option, to specify port number
 	 * @return Register read value
 	 */
@@ -425,7 +425,7 @@ public:
 	 * 
 	 *	Single port 16 bit register access function using word of 'access_word'
 	 *
-	 * @param w			Accsess word. This should be choosen from access_word'
+	 * @param w			Access word. This should be chosen from 'access_word'
 	 * @param port_num	Option, to specify port number
 	 * @return Register read value
 	 */
@@ -480,7 +480,7 @@ public:
 
 	/** Register write, 16 bit
 	 * 
-	 *	This 16 bit access may ot be common but it's useful for sensor devices
+	 *	This 16 bit access may not be common but it's useful for sensor devices
 	 *
 	 * @param reg register index/address/pointer
 	 * @param val data value
@@ -496,7 +496,7 @@ public:
 
 	/** Register read, 16 bit
 	 *	
-	 *	This 16 bit access may ot be common but it's useful for sensor devices
+	 *	This 16 bit access may not be common but it's useful for sensor devices
 	 *
 	 * @param reg register index/address/pointer
 	 * @return data value
@@ -532,14 +532,14 @@ public:
 		Configuration_Port_0, Configuration_Port_1, 
 	};
 	
-	/** Constractor
+	/** Constructor
 	 * 
 	 * @param interface I2C instance
 	 * @param i2c_address I2C target address
 	 */
 	PCA9555( I2C& interface, uint8_t i2c_address = (0x40 >> 1) + 0 );
 
-	/** Destractor */
+	/** Destructor */
 	virtual ~PCA9555();
 
 	static constexpr uint8_t	access_ref[ NUM_access_word ]	= {
@@ -574,9 +574,9 @@ public:
 	 * This method is needed to initialize Arduino-shield type evaluation boards from NXP. 
 	 * This method takes one argument of "PCA9555::ARDUINO_SHIELD" to set RESET and ADDRESS pins. 
 	 * 
-	 * If the devoce is used as it self, this method doesn't need to be called. 
+	 * If the device is used as it self, this method doesn't need to be called. 
 	 *	
-	 * @param env	This argument can be given as "PCA9555::NONE" ot "PCA9555::ARDUINO_SHIELD"
+	 * @param env	This argument can be given as "PCA9555::NONE" or "PCA9555::ARDUINO_SHIELD"
 	 */
 	virtual void	begin( board env = NONE );
 	
@@ -638,7 +638,7 @@ public:
 	 * 
 	 *	All port register access function using word of 'access_word'
 	 *
-	 * @param w		Accsess word. This should be choosen from access_word'
+	 * @param w		Access word. This should be chosen from 'access_word'
 	 * @param vp	Pointer to an array of values. The array should have 'n_ports' length
 	 */
 	void		write_port( access_word w, const uint8_t* vp );
@@ -647,7 +647,7 @@ public:
 	 * 
 	 *	All port 16 bit register access function using word of 'access_word'
 	 *
-	 * @param w		Accsess word. This should be choosen from access_word'
+	 * @param w		Access word. This should be chosen from 'access_word'
 	 * @param vp	Pointer to an array of values. The array should have 'n_ports' length
 	 */
 	void		write_port16( access_word w, const uint16_t* vp );
@@ -656,7 +656,7 @@ public:
 	 * 
 	 *	All port register access function using word of 'access_word'
 	 *
-	 * @param w		Accsess word. This should be choosen from access_word'
+	 * @param w		Access word. This should be chosen from 'access_word'
 	 * @param vp	Pointer to an array of values. The array should have 'n_ports' length
 	 * @return	Pointer to vp
 	 */
@@ -666,7 +666,7 @@ public:
 	 * 
 	 *	All port 16 bit register access function using word of 'access_word'
 	 *
-	 * @param w		Accsess word. This should be choosen from access_word'
+	 * @param w		Access word. This should be chosen from 'access_word'
 	 * @param vp	Pointer to an array of values. The array should have 'n_ports' length
 	 * @return	Pointer to vp
 	 */
@@ -676,7 +676,7 @@ public:
 	 * 
 	 *	Single port register access function using word of 'access_word'
 	 *
-	 * @param w			Accsess word. This should be choosen from access_word'
+	 * @param w			Access word. This should be chosen from 'access_word'
 	 * @param value		Value to be written into a register
 	 * @param port_num	Option, to specify port number
 	 */
@@ -686,7 +686,7 @@ public:
 	 * 
 	 *	Single port 16 bit register access function using word of 'access_word'
 	 *
-	 * @param w			Accsess word. This should be choosen from access_word'
+	 * @param w			Access word. This should be chosen from 'access_word'
 	 * @param value		Value to be written into a register
 	 * @param port_num	Option, to specify port number
 	 */
@@ -696,7 +696,7 @@ public:
 	 * 
 	 *	Single port register access function using word of 'access_word'
 	 *
-	 * @param w			Accsess word. This should be choosen from access_word'
+	 * @param w			Access word. This should be chosen from 'access_word'
 	 * @param port_num	Option, to specify port number
 	 * @return Register read value
 	 */
@@ -706,7 +706,7 @@ public:
 	 * 
 	 *	Single port 16 bit register access function using word of 'access_word'
 	 *
-	 * @param w			Accsess word. This should be choosen from access_word'
+	 * @param w			Access word. This should be chosen from 'access_word'
 	 * @param port_num	Option, to specify port number
 	 * @return Register read value
 	 */
@@ -761,7 +761,7 @@ public:
 
 	/** Register write, 16 bit
 	 * 
-	 *	This 16 bit access may ot be common but it's useful for sensor devices
+	 *	This 16 bit access may not be common but it's useful for sensor devices
 	 *
 	 * @param reg register index/address/pointer
 	 * @param val data value
@@ -777,7 +777,7 @@ public:
 
 	/** Register read, 16 bit
 	 *	
-	 *	This 16 bit access may ot be common but it's useful for sensor devices
+	 *	This 16 bit access may not be common but it's useful for sensor devices
 	 *
 	 * @param reg register index/address/pointer
 	 * @return data value
@@ -835,14 +835,14 @@ public:
 		Output_port_configuration,
 	};
 	
-	/** Constractor
+	/** Constructor
 	 * 
 	 * @param interface I2C instance
 	 * @param i2c_address I2C target address
 	 */
 	PCAL6408A( I2C& interface, uint8_t i2c_address = (0x40 >> 1) + 0 );
 
-	/** Destractor */
+	/** Destructor */
 	virtual ~PCAL6408A();
 
 	static constexpr uint8_t	access_ref[ NUM_access_word ]	= {
@@ -877,9 +877,9 @@ public:
 	 * This method is needed to initialize Arduino-shield type evaluation boards from NXP. 
 	 * This method takes one argument of "PCAL6408A::ARDUINO_SHIELD" to set RESET and ADDRESS pins. 
 	 * 
-	 * If the devoce is used as it self, this method doesn't need to be called. 
+	 * If the device is used as it self, this method doesn't need to be called. 
 	 *	
-	 * @param env	This argument can be given as "PCAL6408A::NONE" ot "PCAL6408A::ARDUINO_SHIELD"
+	 * @param env	This argument can be given as "PCAL6408A::NONE" or "PCAL6408A::ARDUINO_SHIELD"
 	 */
 	virtual void	begin( board env = NONE );
 	
@@ -941,7 +941,7 @@ public:
 	 * 
 	 *	All port register access function using word of 'access_word'
 	 *
-	 * @param w		Accsess word. This should be choosen from access_word'
+	 * @param w		Access word. This should be chosen from 'access_word'
 	 * @param vp	Pointer to an array of values. The array should have 'n_ports' length
 	 */
 	void		write_port( access_word w, const uint8_t* vp );
@@ -950,7 +950,7 @@ public:
 	 * 
 	 *	All port 16 bit register access function using word of 'access_word'
 	 *
-	 * @param w		Accsess word. This should be choosen from access_word'
+	 * @param w		Access word. This should be chosen from 'access_word'
 	 * @param vp	Pointer to an array of values. The array should have 'n_ports' length
 	 */
 	void		write_port16( access_word w, const uint16_t* vp );
@@ -959,7 +959,7 @@ public:
 	 * 
 	 *	All port register access function using word of 'access_word'
 	 *
-	 * @param w		Accsess word. This should be choosen from access_word'
+	 * @param w		Access word. This should be chosen from 'access_word'
 	 * @param vp	Pointer to an array of values. The array should have 'n_ports' length
 	 * @return	Pointer to vp
 	 */
@@ -969,7 +969,7 @@ public:
 	 * 
 	 *	All port 16 bit register access function using word of 'access_word'
 	 *
-	 * @param w		Accsess word. This should be choosen from access_word'
+	 * @param w		Access word. This should be chosen from 'access_word'
 	 * @param vp	Pointer to an array of values. The array should have 'n_ports' length
 	 * @return	Pointer to vp
 	 */
@@ -979,7 +979,7 @@ public:
 	 * 
 	 *	Single port register access function using word of 'access_word'
 	 *
-	 * @param w			Accsess word. This should be choosen from access_word'
+	 * @param w			Access word. This should be chosen from 'access_word'
 	 * @param value		Value to be written into a register
 	 * @param port_num	Option, to specify port number
 	 */
@@ -989,7 +989,7 @@ public:
 	 * 
 	 *	Single port 16 bit register access function using word of 'access_word'
 	 *
-	 * @param w			Accsess word. This should be choosen from access_word'
+	 * @param w			Access word. This should be chosen from 'access_word'
 	 * @param value		Value to be written into a register
 	 * @param port_num	Option, to specify port number
 	 */
@@ -999,7 +999,7 @@ public:
 	 * 
 	 *	Single port register access function using word of 'access_word'
 	 *
-	 * @param w			Accsess word. This should be choosen from access_word'
+	 * @param w			Access word. This should be chosen from 'access_word'
 	 * @param port_num	Option, to specify port number
 	 * @return Register read value
 	 */
@@ -1009,7 +1009,7 @@ public:
 	 * 
 	 *	Single port 16 bit register access function using word of 'access_word'
 	 *
-	 * @param w			Accsess word. This should be choosen from access_word'
+	 * @param w			Access word. This should be chosen from 'access_word'
 	 * @param port_num	Option, to specify port number
 	 * @return Register read value
 	 */
@@ -1064,7 +1064,7 @@ public:
 
 	/** Register write, 16 bit
 	 * 
-	 *	This 16 bit access may ot be common but it's useful for sensor devices
+	 *	This 16 bit access may not be common but it's useful for sensor devices
 	 *
 	 * @param reg register index/address/pointer
 	 * @param val data value
@@ -1080,7 +1080,7 @@ public:
 
 	/** Register read, 16 bit
 	 *	
-	 *	This 16 bit access may ot be common but it's useful for sensor devices
+	 *	This 16 bit access may not be common but it's useful for sensor devices
 	 *
 	 * @param reg register index/address/pointer
 	 * @return data value
@@ -1123,14 +1123,14 @@ public:
 		Output_port_configuration_register,  
 	};
 	
-	/** Constractor
+	/** Constructor
 	 * 
 	 * @param interface I2C instance
 	 * @param i2c_address I2C target address
 	 */
 	PCAL6416A( I2C& interface, uint8_t i2c_address = (0x40 >> 1) + 0 );
 
-	/** Destractor */
+	/** Destructor */
 	virtual ~PCAL6416A();
 
 	static constexpr uint8_t	access_ref[ NUM_access_word ]	= {
@@ -1165,9 +1165,9 @@ public:
 	 * This method is needed to initialize Arduino-shield type evaluation boards from NXP. 
 	 * This method takes one argument of "PCAL6416A::ARDUINO_SHIELD" to set RESET and ADDRESS pins. 
 	 * 
-	 * If the devoce is used as it self, this method doesn't need to be called. 
+	 * If the device is used as it self, this method doesn't need to be called. 
 	 *	
-	 * @param env	This argument can be given as "PCAL6416A::NONE" ot "PCAL6416A::ARDUINO_SHIELD"
+	 * @param env	This argument can be given as "PCAL6416A::NONE" or "PCAL6416A::ARDUINO_SHIELD"
 	 */
 	virtual void	begin( board env = NONE );
 	
@@ -1229,7 +1229,7 @@ public:
 	 * 
 	 *	All port register access function using word of 'access_word'
 	 *
-	 * @param w		Accsess word. This should be choosen from access_word'
+	 * @param w		Access word. This should be chosen from 'access_word'
 	 * @param vp	Pointer to an array of values. The array should have 'n_ports' length
 	 */
 	void		write_port( access_word w, const uint8_t* vp );
@@ -1238,7 +1238,7 @@ public:
 	 * 
 	 *	All port 16 bit register access function using word of 'access_word'
 	 *
-	 * @param w		Accsess word. This should be choosen from access_word'
+	 * @param w		Access word. This should be chosen from 'access_word'
 	 * @param vp	Pointer to an array of values. The array should have 'n_ports' length
 	 */
 	void		write_port16( access_word w, const uint16_t* vp );
@@ -1247,7 +1247,7 @@ public:
 	 * 
 	 *	All port register access function using word of 'access_word'
 	 *
-	 * @param w		Accsess word. This should be choosen from access_word'
+	 * @param w		Access word. This should be chosen from 'access_word'
 	 * @param vp	Pointer to an array of values. The array should have 'n_ports' length
 	 * @return	Pointer to vp
 	 */
@@ -1257,7 +1257,7 @@ public:
 	 * 
 	 *	All port 16 bit register access function using word of 'access_word'
 	 *
-	 * @param w		Accsess word. This should be choosen from access_word'
+	 * @param w		Access word. This should be chosen from 'access_word'
 	 * @param vp	Pointer to an array of values. The array should have 'n_ports' length
 	 * @return	Pointer to vp
 	 */
@@ -1267,7 +1267,7 @@ public:
 	 * 
 	 *	Single port register access function using word of 'access_word'
 	 *
-	 * @param w			Accsess word. This should be choosen from access_word'
+	 * @param w			Access word. This should be chosen from 'access_word'
 	 * @param value		Value to be written into a register
 	 * @param port_num	Option, to specify port number
 	 */
@@ -1277,7 +1277,7 @@ public:
 	 * 
 	 *	Single port 16 bit register access function using word of 'access_word'
 	 *
-	 * @param w			Accsess word. This should be choosen from access_word'
+	 * @param w			Access word. This should be chosen from 'access_word'
 	 * @param value		Value to be written into a register
 	 * @param port_num	Option, to specify port number
 	 */
@@ -1287,7 +1287,7 @@ public:
 	 * 
 	 *	Single port register access function using word of 'access_word'
 	 *
-	 * @param w			Accsess word. This should be choosen from access_word'
+	 * @param w			Access word. This should be chosen from 'access_word'
 	 * @param port_num	Option, to specify port number
 	 * @return Register read value
 	 */
@@ -1297,7 +1297,7 @@ public:
 	 * 
 	 *	Single port 16 bit register access function using word of 'access_word'
 	 *
-	 * @param w			Accsess word. This should be choosen from access_word'
+	 * @param w			Access word. This should be chosen from 'access_word'
 	 * @param port_num	Option, to specify port number
 	 * @return Register read value
 	 */
@@ -1352,7 +1352,7 @@ public:
 
 	/** Register write, 16 bit
 	 * 
-	 *	This 16 bit access may ot be common but it's useful for sensor devices
+	 *	This 16 bit access may not be common but it's useful for sensor devices
 	 *
 	 * @param reg register index/address/pointer
 	 * @param val data value
@@ -1368,7 +1368,7 @@ public:
 
 	/** Register read, 16 bit
 	 *	
-	 *	This 16 bit access may ot be common but it's useful for sensor devices
+	 *	This 16 bit access may not be common but it's useful for sensor devices
 	 *
 	 * @param reg register index/address/pointer
 	 * @return data value
@@ -1421,14 +1421,14 @@ public:
 		Switch_debounce_enable_0, Switch_debounce_enable_1, Switch_debounce_count, 
 	};
 	
-	/** Constractor
+	/** Constructor
 	 * 
 	 * @param interface I2C instance
 	 * @param i2c_address I2C target address
 	 */
 	PCAL6524( I2C& interface, uint8_t i2c_address = (0x44 >> 1) + 0 );
 
-	/** Destractor */
+	/** Destructor */
 	virtual ~PCAL6524();
 
 	static constexpr uint8_t	access_ref[ NUM_access_word ]	= {
@@ -1463,9 +1463,9 @@ public:
 	 * This method is needed to initialize Arduino-shield type evaluation boards from NXP. 
 	 * This method takes one argument of "PCAL6524::ARDUINO_SHIELD" to set RESET and ADDRESS pins. 
 	 * 
-	 * If the devoce is used as it self, this method doesn't need to be called. 
+	 * If the device is used as it self, this method doesn't need to be called. 
 	 *	
-	 * @param env	This argument can be given as "PCAL6524::NONE" ot "PCAL6524::ARDUINO_SHIELD"
+	 * @param env	This argument can be given as "PCAL6524::NONE" or "PCAL6524::ARDUINO_SHIELD"
 	 */
 	virtual void	begin( board env = NONE );
 	
@@ -1527,7 +1527,7 @@ public:
 	 * 
 	 *	All port register access function using word of 'access_word'
 	 *
-	 * @param w		Accsess word. This should be choosen from access_word'
+	 * @param w		Access word. This should be chosen from 'access_word'
 	 * @param vp	Pointer to an array of values. The array should have 'n_ports' length
 	 */
 	void		write_port( access_word w, const uint8_t* vp );
@@ -1536,7 +1536,7 @@ public:
 	 * 
 	 *	All port 16 bit register access function using word of 'access_word'
 	 *
-	 * @param w		Accsess word. This should be choosen from access_word'
+	 * @param w		Access word. This should be chosen from 'access_word'
 	 * @param vp	Pointer to an array of values. The array should have 'n_ports' length
 	 */
 	void		write_port16( access_word w, const uint16_t* vp );
@@ -1545,7 +1545,7 @@ public:
 	 * 
 	 *	All port register access function using word of 'access_word'
 	 *
-	 * @param w		Accsess word. This should be choosen from access_word'
+	 * @param w		Access word. This should be chosen from 'access_word'
 	 * @param vp	Pointer to an array of values. The array should have 'n_ports' length
 	 * @return	Pointer to vp
 	 */
@@ -1555,7 +1555,7 @@ public:
 	 * 
 	 *	All port 16 bit register access function using word of 'access_word'
 	 *
-	 * @param w		Accsess word. This should be choosen from access_word'
+	 * @param w		Access word. This should be chosen from 'access_word'
 	 * @param vp	Pointer to an array of values. The array should have 'n_ports' length
 	 * @return	Pointer to vp
 	 */
@@ -1565,7 +1565,7 @@ public:
 	 * 
 	 *	Single port register access function using word of 'access_word'
 	 *
-	 * @param w			Accsess word. This should be choosen from access_word'
+	 * @param w			Access word. This should be chosen from 'access_word'
 	 * @param value		Value to be written into a register
 	 * @param port_num	Option, to specify port number
 	 */
@@ -1575,7 +1575,7 @@ public:
 	 * 
 	 *	Single port 16 bit register access function using word of 'access_word'
 	 *
-	 * @param w			Accsess word. This should be choosen from access_word'
+	 * @param w			Access word. This should be chosen from 'access_word'
 	 * @param value		Value to be written into a register
 	 * @param port_num	Option, to specify port number
 	 */
@@ -1585,7 +1585,7 @@ public:
 	 * 
 	 *	Single port register access function using word of 'access_word'
 	 *
-	 * @param w			Accsess word. This should be choosen from access_word'
+	 * @param w			Access word. This should be chosen from 'access_word'
 	 * @param port_num	Option, to specify port number
 	 * @return Register read value
 	 */
@@ -1595,7 +1595,7 @@ public:
 	 * 
 	 *	Single port 16 bit register access function using word of 'access_word'
 	 *
-	 * @param w			Accsess word. This should be choosen from access_word'
+	 * @param w			Access word. This should be chosen from 'access_word'
 	 * @param port_num	Option, to specify port number
 	 * @return Register read value
 	 */
@@ -1650,7 +1650,7 @@ public:
 
 	/** Register write, 16 bit
 	 * 
-	 *	This 16 bit access may ot be common but it's useful for sensor devices
+	 *	This 16 bit access may not be common but it's useful for sensor devices
 	 *
 	 * @param reg register index/address/pointer
 	 * @param val data value
@@ -1666,7 +1666,7 @@ public:
 
 	/** Register read, 16 bit
 	 *	
-	 *	This 16 bit access may ot be common but it's useful for sensor devices
+	 *	This 16 bit access may not be common but it's useful for sensor devices
 	 *
 	 * @param reg register index/address/pointer
 	 * @return data value
@@ -1722,14 +1722,14 @@ public:
 		Switch_debounce_count,
 	};
 	
-	/** Constractor
+	/** Constructor
 	 * 
 	 * @param interface I2C instance
 	 * @param i2c_address I2C target address
 	 */
 	PCAL6534( I2C& interface, uint8_t i2c_address = (0x44 >> 1) + 0 );
 
-	/** Destractor */
+	/** Destructor */
 	virtual ~PCAL6534();
 
 	static constexpr uint8_t	access_ref[ NUM_access_word ]	= {
@@ -1764,9 +1764,9 @@ public:
 	 * This method is needed to initialize Arduino-shield type evaluation boards from NXP. 
 	 * This method takes one argument of "PCAL6534::ARDUINO_SHIELD" to set RESET and ADDRESS pins. 
 	 * 
-	 * If the devoce is used as it self, this method doesn't need to be called. 
+	 * If the device is used as it self, this method doesn't need to be called. 
 	 *	
-	 * @param env	This argument can be given as "PCAL6534::NONE" ot "PCAL6534::ARDUINO_SHIELD"
+	 * @param env	This argument can be given as "PCAL6534::NONE" or "PCAL6534::ARDUINO_SHIELD"
 	 */
 	virtual void	begin( board env = NONE );
 	
@@ -1828,7 +1828,7 @@ public:
 	 * 
 	 *	All port register access function using word of 'access_word'
 	 *
-	 * @param w		Accsess word. This should be choosen from access_word'
+	 * @param w		Access word. This should be chosen from 'access_word'
 	 * @param vp	Pointer to an array of values. The array should have 'n_ports' length
 	 */
 	void		write_port( access_word w, const uint8_t* vp );
@@ -1837,7 +1837,7 @@ public:
 	 * 
 	 *	All port 16 bit register access function using word of 'access_word'
 	 *
-	 * @param w		Accsess word. This should be choosen from access_word'
+	 * @param w		Access word. This should be chosen from 'access_word'
 	 * @param vp	Pointer to an array of values. The array should have 'n_ports' length
 	 */
 	void		write_port16( access_word w, const uint16_t* vp );
@@ -1846,7 +1846,7 @@ public:
 	 * 
 	 *	All port register access function using word of 'access_word'
 	 *
-	 * @param w		Accsess word. This should be choosen from access_word'
+	 * @param w		Access word. This should be chosen from 'access_word'
 	 * @param vp	Pointer to an array of values. The array should have 'n_ports' length
 	 * @return	Pointer to vp
 	 */
@@ -1856,7 +1856,7 @@ public:
 	 * 
 	 *	All port 16 bit register access function using word of 'access_word'
 	 *
-	 * @param w		Accsess word. This should be choosen from access_word'
+	 * @param w		Access word. This should be chosen from 'access_word'
 	 * @param vp	Pointer to an array of values. The array should have 'n_ports' length
 	 * @return	Pointer to vp
 	 */
@@ -1866,7 +1866,7 @@ public:
 	 * 
 	 *	Single port register access function using word of 'access_word'
 	 *
-	 * @param w			Accsess word. This should be choosen from access_word'
+	 * @param w			Access word. This should be chosen from 'access_word'
 	 * @param value		Value to be written into a register
 	 * @param port_num	Option, to specify port number
 	 */
@@ -1876,7 +1876,7 @@ public:
 	 * 
 	 *	Single port 16 bit register access function using word of 'access_word'
 	 *
-	 * @param w			Accsess word. This should be choosen from access_word'
+	 * @param w			Access word. This should be chosen from 'access_word'
 	 * @param value		Value to be written into a register
 	 * @param port_num	Option, to specify port number
 	 */
@@ -1886,7 +1886,7 @@ public:
 	 * 
 	 *	Single port register access function using word of 'access_word'
 	 *
-	 * @param w			Accsess word. This should be choosen from access_word'
+	 * @param w			Access word. This should be chosen from 'access_word'
 	 * @param port_num	Option, to specify port number
 	 * @return Register read value
 	 */
@@ -1896,7 +1896,7 @@ public:
 	 * 
 	 *	Single port 16 bit register access function using word of 'access_word'
 	 *
-	 * @param w			Accsess word. This should be choosen from access_word'
+	 * @param w			Access word. This should be chosen from 'access_word'
 	 * @param port_num	Option, to specify port number
 	 * @return Register read value
 	 */
@@ -1951,7 +1951,7 @@ public:
 
 	/** Register write, 16 bit
 	 * 
-	 *	This 16 bit access may ot be common but it's useful for sensor devices
+	 *	This 16 bit access may not be common but it's useful for sensor devices
 	 *
 	 * @param reg register index/address/pointer
 	 * @param val data value
@@ -1967,7 +1967,7 @@ public:
 
 	/** Register read, 16 bit
 	 *	
-	 *	This 16 bit access may ot be common but it's useful for sensor devices
+	 *	This 16 bit access may not be common but it's useful for sensor devices
 	 *
 	 * @param reg register index/address/pointer
 	 * @return data value
@@ -1993,7 +1993,7 @@ public:
  *	
  *  @class PCAL97xx_base
  *
- *	Yet another abstraction class for PCAL6xxx devices
+ *	Yet another abstraction class for PCAL97xx devices
  *	This class is just passing parameters to GPIO_base class in this version
  */
 class PCAL97xx_base : public GPIO_base
@@ -2036,24 +2036,24 @@ public:
 		Switch_debounce_enable_0, Switch_debounce_enable_1, Switch_debounce_count, 
 	};
 	
-	/** Constractor
+	/** Constructor
 	 * 
 	 * @param interface I2C instance
 	 * @param i2c_address I2C target address
 	 */
 	PCAL9722( SPI& interface, uint8_t dev_address = (0x40 >> 1) + 0 );
 
-	/** Destractor */
+	/** Destructor */
 	virtual ~PCAL9722();
 
 	/** Device/board initialization
 	 *
-	 * This method is needed to initialize Arduino-shield type evaluation boards from NXP. 
-	 * This method takes one argument of "PCAL6534::ARDUINO_SHIELD" to set RESET and ADDRESS pins. 
-	 * 
-	 * If the devoce is used as it self, this method doesn't need to be called. 
-	 *	
-	 * @param env	This argument can be given as "PCAL6534::NONE" ot "PCAL6534::ARDUINO_SHIELD"
+	 * This method is needed to initialize Arduino-shield type evaluation boards from NXP.
+	 * This method takes one argument of "PCAL9722::ARDUINO_SHIELD" to set RESET and ADDRESS pins.
+	 *
+	 * If the device is used as it self, this method doesn't need to be called.
+	 *
+	 * @param env	This argument can be given as "PCAL9722::NONE" or "PCAL9722::ARDUINO_SHIELD"
 	 */
 	void	begin( board env = NONE );
 	

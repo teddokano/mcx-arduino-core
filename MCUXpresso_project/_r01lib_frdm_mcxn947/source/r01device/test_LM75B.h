@@ -1,7 +1,7 @@
 /*
  *  @author Tedd OKANO
  *
- *  Released under the MIT license License
+ *  Released under the MIT license
  */
 
 #ifndef ARDUINO_TEMP_SENSOR_H
@@ -34,17 +34,17 @@ public:
 		Temp,	/**< Temp register	*/
 		Conf,	/**< Conf register	*/
 		Thyst,	/**< Thyst register	*/
-		Tos,	/**< Tos registe	*/
+		Tos,	/**< Tos register	*/
 	};
 
-	/** Create a PCT2075 instance connected to specified I2C pins with specified address
+	/** Create a test_LM75B instance connected to specified I2C pins with specified address
 	 *
-	 * @param wire TwoWire instance
+	 * @param interface   I2C instance
 	 * @param i2c_address I2C-bus address (default: (0x90>>1))
 	 */
 	test_LM75B( I2C& interface, const uint8_t i2c_address = (0x90 >> 1) );
 
-	/** Destructor of PCT2075
+	/** Destructor of test_LM75B
 	 */
 	~test_LM75B();
 	
@@ -57,7 +57,7 @@ public:
 	/** Set Overtemperature shutdown threshold (Tos) and hysteresis (Thyst) in degree Celsius [°C] 
 	 *
 	 *	This method takes 2 values and higher value will set as the threshold (Tos) and 
-	 *. another will be the hysteresis (Thyst)
+	 * another will be the hysteresis (Thyst)
 	 *
 	 * @param v0 a value in degree Celsius
 	 * @param v1 a value in degree Celsius
@@ -66,7 +66,7 @@ public:
 
 	/** Set OS operation mode 
 	 *
-	 * @param flag use PCT2075::COMPARATOR or PCT2075::INTERRUPT values
+	 * @param flag use test_LM75B::COMPARATOR or test_LM75B::INTERRUPT values
 	 */	
 	void os_mode( const mode flag );
 };

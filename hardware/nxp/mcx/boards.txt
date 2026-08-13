@@ -9,6 +9,8 @@ frdm_mcxa153.name=FRDM-MCXA153 (NXP Cortex-M33)
 
 # CPU
 frdm_mcxa153.build.mcu=cortex-m33+nodsp
+frdm_mcxa153.build.fpu_flags=
+frdm_mcxa153.build.f_cpu=96000000UL
 
 # Arduino IDE internal identifiers
 frdm_mcxa153.build.board=FRDM_MCXA153
@@ -33,19 +35,74 @@ frdm_mcxa153.build.ldscript=MCXA153.ld
 frdm_mcxa153.build.variant_lib=_r01lib_frdm_mcxa153
 
 # Upload
+# build.pyocd_target is currently unused -- no recipe in platform.txt
+# references it (only the LinkServer upload path is implemented).
+# Kept as forward-looking metadata for if pyOCD upload support is added.
 frdm_mcxa153.build.pyocd_target=mcxa153
+frdm_mcxa153.build.linkserver_target=MCXA153:FRDM-MCXA153
 frdm_mcxa153.upload.tool=linkserver
 frdm_mcxa153.upload.tool.default=linkserver
 frdm_mcxa153.upload.protocol=
+
+frdm_mcxa153.vid.0=0x1FC9
+frdm_mcxa153.pid.0=0x0143
+frdm_mcxa153.upload_port.0.vid=0x1FC9
+frdm_mcxa153.upload_port.0.pid=0x0143
+
+
+##############################################################
+# FRDM-MCXN947
+##############################################################
+
+frdm_mcxn947.name=FRDM-MCXN947 (NXP Cortex-M33)
+
+# CPU
+frdm_mcxn947.build.mcu=cortex-m33
+frdm_mcxn947.build.fpu_flags=-mfpu=fpv5-sp-d16 -mfloat-abi=hard
+frdm_mcxn947.build.f_cpu=150000000UL
+
+# Arduino IDE internal identifiers
+frdm_mcxn947.build.board=FRDM_MCXN947
+frdm_mcxn947.build.core=arduino
+frdm_mcxn947.build.variant=frdm_mcxn947
+
+# Board-specific preprocessor defines
+frdm_mcxn947.build.board_defines=-DCPU_MCXN947VDF -DCPU_MCXN947VDF_cm33 -DCPU_MCXN947VDF_cm33_core0 -DTARGET_N947
+
+# Optimization (release build)
+frdm_mcxn947.build.opt_flags=-O2
+
+# Flash / RAM
+frdm_mcxn947.upload.maximum_size=2097152
+frdm_mcxn947.upload.maximum_data_size=393216
+
+# Linker script filename (inside variants/frdm_mcxn947/linker/)
+frdm_mcxn947.build.ldscript=MCXN947.ld
+
+# Prebuilt library name  →  lib/lib_r01lib_frdm_mcxn947.a
+#   linker flag: -l_r01lib_frdm_mcxn947
+frdm_mcxn947.build.variant_lib=_r01lib_frdm_mcxn947
+
+# Upload
+# build.pyocd_target is currently unused (see the same note on A153's entry
+# above).
+frdm_mcxn947.build.pyocd_target=mcxn947
+frdm_mcxn947.build.linkserver_target=MCXN947:FRDM-MCXN947
+frdm_mcxn947.upload.tool=linkserver
+frdm_mcxn947.upload.tool.default=linkserver
+frdm_mcxn947.upload.protocol=
+
+# Same MCU-Link VID/PID as A153 -- confirmed correct on real hardware:
+# with the board connected, `arduino-cli board list` correctly offered
+# nxp:mcx:frdm_mcxn947 as a match for its port.
+frdm_mcxn947.vid.0=0x1FC9
+frdm_mcxn947.pid.0=0x0143
+frdm_mcxn947.upload_port.0.vid=0x1FC9
+frdm_mcxn947.upload_port.0.pid=0x0143
 
 
 ##############################################################
 # （将来追加予定）
 # frdm_mcxa156.name=FRDM-MCXA156 ...
-# frdm_mcxn947.name=FRDM-MCXN947 ...
 # frdm_mcxn236.name=FRDM-MCXN236 ...
 ##############################################################
-frdm_mcxa153.vid.0=0x1FC9
-frdm_mcxa153.pid.0=0x0143
-frdm_mcxa153.upload_port.0.vid=0x1FC9
-frdm_mcxa153.upload_port.0.pid=0x0143

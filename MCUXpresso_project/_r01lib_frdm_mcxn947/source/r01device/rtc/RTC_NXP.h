@@ -1,7 +1,7 @@
 /*
  *  @author Tedd OKANO
  *
- *  Released under the MIT license License
+ *  Released under the MIT license
  */
 
 #ifndef ARDUINO_RTC_DRIVER_NXP_ARD_H
@@ -128,7 +128,7 @@ public:
 	 * 
 	 * @param data pointer to data buffer
 	 * @param size data size
-	 * @param stop option: generating STOP-condition after transaction. Defailt: true
+	 * @param stop option: generating STOP-condition after transaction. Default: true
 	 * @return transferred data size
 	 */
 	void txrx( uint8_t *data, int size );
@@ -198,7 +198,7 @@ private:
 /** PCF2131 class
  *	
  *	A base class for PCF2131
- *	Implementing register operation with abstarcted interface
+ *	Implementing register operation with abstracted interface
  *
  *  @class PCF2131
  */
@@ -254,8 +254,8 @@ public:
 	/** Destructor */
 	virtual ~PCF2131();
 	
-	/** Initializer 
-	 * Clears penginf interrupt
+	/** Initializer
+	 * Clears pending interrupt
 	 */
 	void begin( void );
 
@@ -289,7 +289,7 @@ public:
 	 * 
 	 * @param digit to specify which parameter to set: SECOND, MINUTE, HOUR, DAY, WEEKDAY in 'enum alarm_setting'
 	 * @param val Setting value. Set 0x80 to disabling
-	 * @param int_sel Interrupt output selector. ) for INT_A, 1 for INT_B
+	 * @param int_sel Interrupt output selector. 0 for INT_A, 1 for INT_B
 	 */
 	void alarm( alarm_setting digit, int val, int int_sel );
 
@@ -305,7 +305,7 @@ public:
 	 * 
 	 * @param num timestamp number: 1~4
 	 * @param ts_setting event recording option. Choose LAST or FIRST in 'enum timestanp_setting'
-	 * @param int_sel Interrupt output selector. ) for INT_A, 1 for INT_B
+	 * @param int_sel Interrupt output selector. 0 for INT_A, 1 for INT_B
 	 */
 	void timestamp( int num, timestanp_setting ts_setting, int int_sel = 0 );
 
@@ -327,7 +327,7 @@ public:
 	/** Enabling every second/minute interrupt
 	 * 
 	 * @param sel choose DISABLE, EVERY_SECOND or EVERY_MINUTE in 'enum periodic_int_select'
-	 * @param int_sel Interrupt output selector. ) for INT_A, 1 for INT_B
+	 * @param int_sel Interrupt output selector. 0 for INT_A, 1 for INT_B
 	 */
 	void periodic_interrupt_enable( periodic_int_select sel, int int_sel = 0 );
 
@@ -365,7 +365,7 @@ public:
 	/** Destructor */
 	virtual ~PCF85063_base();
 	
-	/** Initializer but nothing done with this menthod in this version. 
+	/** Initializer but nothing done with this method in this version. 
 	 * Don't need to call
 	 */
 	void begin( void );
@@ -437,7 +437,7 @@ class PCF85063A : public PCF85063_base, public I2C_device
 public:
 	/** Create a PCF85063A instance connected to specified I2C pins with specified address
 	 *
-	 * @param wire TwoWire instance
+	 * @param interface I2C instance
 	 * @param i2c_address I2C-bus address (default: (0xBC>>1))
 	 */
 	PCF85063A( I2C& interface, uint8_t i2c_address = (0xA2 >> 1) );
@@ -465,7 +465,7 @@ public:
 	 */
 	time_t time( time_t* tp );
 
-	/** Initializer but nothing done with this menthod in this version. 
+	/** Initializer but nothing done with this method in this version. 
 	 * Don't need to call
 	 */
 	void begin( void );
@@ -591,7 +591,7 @@ class PCF85063TP : public PCF85063A
 public:
 	/** Create a PCF85063TP instance connected to specified I2C pins with specified address
 	 *
-	 * @param wire TwoWire instance
+	 * @param interface I2C instance
 	 * @param i2c_address I2C-bus address (default: (0xBC>>1))
 	 */
 	PCF85063TP( I2C& interface, uint8_t i2c_address = (0xA2 >> 1) );
@@ -616,7 +616,7 @@ public:
 	 */
 	time_t time( time_t* tp );
 	
-	/** Initializer but nothing done with this menthod in this version. 
+	/** Initializer but nothing done with this method in this version. 
 	 * Don't need to call
 	 */
 	void begin( void );
@@ -772,7 +772,7 @@ public:
 	};
 	/** Create a PCF85263A instance connected to specified I2C pins with specified address
 	 *
-	 * @param wire TwoWire instance
+	 * @param interface I2C instance
 	 * @param i2c_address I2C-bus address (default: (0xBC>>1))
 	 */
 	PCF85263A( I2C& interface, uint8_t i2c_address = (0xA2 >> 1) );
@@ -780,7 +780,7 @@ public:
 	/** Destructor */
 	virtual ~PCF85263A();
 	
-	/** Initializer but nothing done with this menthod in this version. 
+	/** Initializer but nothing done with this method in this version. 
 	 * Don't need to call
 	 */
 	void begin( void );
@@ -808,7 +808,7 @@ public:
 	 * 
 	 * @param digit to specify which parameter to set: SECOND, MINUTE, HOUR, DAY, WEEKDAY in 'enum alarm_setting'
 	 * @param val Setting value. Set 0x80 to disabling
-	 * @param int_sel Interrupt output selector. ) for INT_A, 1 for INT_B
+	 * @param int_sel Interrupt output selector. 0 for INT_A, 1 for INT_B
 	 */
 	void alarm( alarm_setting digit, int val, int int_sel );
 
@@ -845,8 +845,8 @@ public:
 
 	/** Pin configuration
 	 * 
-	 * @param cfg_a To choose INT_A pin congiguration: Use CLKOUT, BATTERY_MODE_INDICATION, INTTERRUPT or HIGH_Z
-	 * @param cfg_b To choose INT_A pin congiguration: Use DISABLE, INTTERRUPT, CLKOUT or INPUTMODE
+	 * @param cfg_a To choose INT_A pin configuration: Use CLKOUT, BATTERY_MODE_INDICATION, INTTERRUPT or HIGH_Z
+	 * @param cfg_b To choose INT_B pin configuration: Use DISABLE, INTTERRUPT, CLKOUT or INPUTMODE
 	 */
 	void pin_congfig(inta cfg_a, intb cfg_b);
 	
@@ -956,7 +956,7 @@ public:
 	
 	/** Create a PCF85053A instance connected to specified I2C pins with specified address
 	 *
-	 * @param wire TwoWire instance
+	 * @param interface I2C instance
 	 * @param i2c_address I2C-bus address (default: (0xBC>>1))
 	 */
 	PCF85053A( I2C& interface, uint8_t i2c_address = (0xDE >> 1) );
@@ -964,7 +964,7 @@ public:
 	/** Destructor */
 	virtual ~PCF85053A();
 	
-	/** Initializer but nothing done with this menthod in this version. 
+	/** Initializer but nothing done with this method in this version. 
 	 * Don't need to call
 	 */
 	void begin( void );
@@ -1090,7 +1090,7 @@ public:
 	/** Destructor */
 	virtual ~ForFutureExtention();
 	
-	/** Initializer but nothing done with this menthod in this version. 
+	/** Initializer but nothing done with this method in this version. 
 	 * Don't need to call
 	 */
 	void begin( void );

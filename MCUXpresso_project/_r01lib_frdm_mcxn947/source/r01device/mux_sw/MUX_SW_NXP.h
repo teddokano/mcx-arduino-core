@@ -1,7 +1,7 @@
 /*
  *  @author Tedd OKANO
  *
- *  Released under the MIT license License
+ *  Released under the MIT license
  */
 
 #ifndef ARDUINO_MUX_SW_H
@@ -34,7 +34,7 @@ public:
 	
 	/** Create a PCA9846 instance with specified address
 	 *
-	 * @param wire TwoWire instance
+	 * @param interface I2C instance
 	 * @param i2c_address I2C-bus address (default: (0xE2>>1))
 	 */
 	PCA9846( I2C& wire, uint8_t i2c_address = (0xE2 >> 1) );

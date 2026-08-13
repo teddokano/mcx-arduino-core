@@ -11,7 +11,13 @@ extern "C" {
 #include "clock_config.h"
 #include "board.h"
 #include "fsl_debug_console.h"
+
+#ifdef	CPU_MCXC444VLH
+#include "fsl_i2c.h"
+#else
 #include "fsl_lpi2c.h"
+#endif
+
 #include "fsl_port.h"
 }
 
@@ -32,6 +38,10 @@ extern "C" {
 	#define EXAMPLE_I2C_MASTER_BASE			LPI2C0
 	#define LPI2C_MASTER_CLOCK_FREQUENCY	CLOCK_GetLpi2cClkFreq()
 	#define EXAMPLE_I2C_MASTER				((LPI2C_Type *)EXAMPLE_I2C_MASTER_BASE)
+#elif	CPU_MCXC444VLH
+	#define I2C_MASTER_CLK_SRC				I2C0_CLK_SRC
+	#define I2C_MASTER_CLOCK_FREQUENCY      CLOCK_GetFreq(I2C0_CLK_SRC)
+	#define EXAMPLE_I2C_MASTER_BASEADDR		I2C1
 #else
 	#error Not supported CPU
 #endif
@@ -114,12 +124,31 @@ I2C::I2C( int sda, int scl, bool no_hw ) : Obj( true ), _sda( sda ), _scl( scl )
 	unit_base	= EXAMPLE_I2C_MASTER;
 	
 	RESET_ReleasePeripheralReset( kLPI2C0_RST_SHIFT_RSTn );
+	
+#elif	CPU_MCXC444VLH
+	int	mux_setting	= kPORT_MuxAlt2;
+
+	if ( (sda == D18) && (scl == D19) )
+		mux_setting	= kPORT_MuxAlt6;
+	else if ( (sda == A4) && (scl == A5) )
+		mux_setting	= kPORT_MuxAlt2;
+	else
+		panic( "FRDM-MCXA153 supports I3C_SDA/I3C_SCL, I2C_SDA(D18)/I2C_SCL(D19), MB_SDA/MB_SCL or MB_MOSI/MB_SCK pins for I2C" );
+
+	unit_base	= I2C1;
+	repeated_start_required_flag	= false;
 #else
 	#error Not supported CPU
 #endif
 
+
+#if	CPU_MCXC444VLH
+	I2C_MasterGetDefaultConfig( &masterConfig );
+	I2C_MasterInit( unit_base, &masterConfig, I2C_MASTER_CLOCK_FREQUENCY );
+#else
 	LPI2C_MasterGetDefaultConfig( &masterConfig );
 	LPI2C_MasterInit( unit_base, &masterConfig, LPI2C_MASTER_CLOCK_FREQUENCY );
+#endif
 	
 //	frequency( I2C_FREQ );
 	
@@ -131,12 +160,20 @@ I2C::I2C( int sda, int scl, bool no_hw ) : Obj( true ), _sda( sda ), _scl( scl )
 
 I2C::~I2C()
 {
+#if	CPU_MCXC444VLH
+	I2C_MasterDeinit( unit_base );
+#else
 	LPI2C_MasterDeinit( unit_base );
+#endif
 }
 
 void I2C::frequency( uint32_t frequency )
 {
+#if	CPU_MCXC444VLH
+	I2C_MasterSetBaudRate( unit_base, I2C_MASTER_CLOCK_FREQUENCY, frequency );
+#else
 	LPI2C_MasterSetBaudRate( unit_base, LPI2C_MASTER_CLOCK_FREQUENCY, frequency );
+#endif
 }
 
 void I2C::pullup( bool enable )
@@ -169,6 +206,51 @@ status_t I2C::read( uint8_t address, uint8_t *dp, int length, bool stop )
 	return r;
 }
 
+#if	CPU_MCXC444VLH
+status_t I2C::write_core( uint8_t address, const uint8_t *dp, int length, bool stop )
+{
+	i2c_master_transfer_t	masterXfer;
+	
+	memset( &masterXfer, 0, sizeof( masterXfer ) );
+
+	masterXfer.slaveAddress   = address;
+	masterXfer.direction      = kI2C_Write;
+	masterXfer.subaddress     = 0;
+	masterXfer.subaddressSize = 0;
+	masterXfer.data           = const_cast<uint8_t *>( dp );
+	masterXfer.dataSize       = length;
+	masterXfer.flags          = kI2C_TransferDefaultFlag;
+
+	masterXfer.flags	|= !stop						? kI2C_TransferNoStopFlag			: 0x0;
+	masterXfer.flags	|= repeated_start_required_flag	? kI2C_TransferRepeatedStartFlag	: 0x0;
+
+	repeated_start_required_flag	= !stop;
+
+	return I2C_MasterTransferBlocking( unit_base, &masterXfer );
+}
+
+status_t I2C::read_core( uint8_t address, uint8_t *dp, int length, bool stop )
+{
+	i2c_master_transfer_t	masterXfer;
+	
+	memset( &masterXfer, 0, sizeof( masterXfer ) );
+
+	masterXfer.slaveAddress   = address;
+	masterXfer.direction      = kI2C_Read;
+	masterXfer.subaddress     = 0;
+	masterXfer.subaddressSize = 0;
+	masterXfer.data           = dp;
+	masterXfer.dataSize       = length;
+	masterXfer.flags          = kI2C_TransferDefaultFlag;
+
+	masterXfer.flags	|= !stop						? kI2C_TransferNoStopFlag			: 0x0;
+	masterXfer.flags	|= repeated_start_required_flag	? kI2C_TransferRepeatedStartFlag	: 0x0;
+
+	repeated_start_required_flag	= !stop;
+
+	return I2C_MasterTransferBlocking( unit_base, &masterXfer );
+}
+#else
 status_t I2C::write_core( uint8_t address, const uint8_t *dp, int length, bool stop )
 {
 	status_t reVal        = kStatus_Fail;
@@ -197,10 +279,13 @@ status_t I2C::write_core( uint8_t address, const uint8_t *dp, int length, bool s
 			return reVal;
 		}
 
-		reVal = LPI2C_MasterStop( unit_base );
-		if ( reVal != kStatus_Success )
+		if ( stop )
 		{
-			return reVal;
+			reVal = LPI2C_MasterStop( unit_base );
+			if ( reVal != kStatus_Success )
+			{
+				return reVal;
+			}
 		}
 	}
 	return reVal;
@@ -230,6 +315,8 @@ status_t I2C::read_core( uint8_t address, uint8_t *dp, int length, bool stop )
 	}
 	return reVal;
 }
+#endif
+
 
 status_t I2C::reg_write( uint8_t targ, uint8_t reg, const uint8_t *dp, int length )
 {
@@ -293,7 +380,12 @@ I2C::err_cb_ptr I2C::err_callback( err_cb_ptr callback )
 
 void I2C::err_handling( status_t error, uint8_t address )
 {
-	if ( kStatus_LPI2C_Nak == error )
+#if	CPU_MCXC444VLH
+#define	NAK_FLAG	kStatus_I2C_Nak
+#else
+#define	NAK_FLAG	kStatus_LPI2C_Nak
+#endif
+	if ( NAK_FLAG == error )
 		printf( "NACK from target: 0x%02X\r\n", address );
 	else
 		printf( "error 0x%04lX @transfer on 0x%02X\r\n", error, address );

@@ -4,6 +4,8 @@
  *  Released under the MIT license License
  */
 
+
+#ifndef	CPU_MCXC444VLH
 extern "C" {
 #include "fsl_common.h"
 #include "fsl_debug_console.h"
@@ -33,3 +35,4 @@ void Ticker::attach( ticker_callback_fp_t callback, float sec )
 	fp	= callback;
 	UTICK_SetTick( utick_type, kUTICK_Repeat, (uint32_t)(sec * 1000000.0) - 1, _ticker_callback );
 }
+#endif // !CPU_MCXC444VLH
