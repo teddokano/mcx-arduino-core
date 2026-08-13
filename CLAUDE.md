@@ -466,8 +466,23 @@ SPI検証中、LEDベースの判定に頼らずシリアルモニターで結�
 - **`boards.txt`最終レビュー**: `build.pyocd_target`プロパティが実は`platform.txt`のどのレシピからも参照されていない（LinkServerのみ実装済みでpyOCDアップロードは未実装）ことに気づき、ユーザーに確認。**「コメントを追加」を選択**——A153・N947両方に「現在未使用、将来pyOCD対応する際のための先行メタデータ」という趣旨のコメントを追加（プロパティ自体は削除せず維持）。VID/PID（`0x1FC9`/`0x0143`）は実機接続時の`arduino-cli board list`自動検出で確認済みである旨のコメントも追加
 - **ライセンスチェック**（ユーザーからの明示的なリマインダー対応）: `LICENSE`のThird-Party Noticesセクションで`hardware/nxp/mcx/cores/arduino/arduino.h`という**古いパス参照**（v0.2.2で`Arduino.h`にリネーム済みだが未追従だった）を発見・修正。また、今回追加したNXP SDKドライバファイル（`fsl_lpadc.c/h`等）のcopyrightヘッダーが正しく保持されていることを確認した上で、**NXP MCUXpresso SDK由来のdriverファイル群についてLICENSEに一切言及がない**（A153の頃からの既存ギャップ）ことをユーザーに提示。**「LICENSEに追記」を選択**——BSD-3-Clauseである旨とリポジトリURLをThird-Party Noticesに新規追加
 
+### push時に発覚: `.a`肥大化によるGitHub拒否と履歴の一本化
+ドキュメント整備完了後、ユーザーから「まだpushしてない？」との確認を受けpushを試行したところ、GitHubに**reject**された——`hardware/nxp/mcx/variants/frdm_mcxn947/lib/lib_r01lib_frdm_mcxn947.a`が複数コミットで100MB超（最大224MB）になっており、GitHubのファイルサイズ上限（100MB）に抵触。
+
+- **原因調査**: A153の`.a`（約50MB）と比較したところ、N947は(1) オブジェクト数がA153の54個に対し84個と多く、(2) 同じ`AnalogIn.cpp`ファイルでもN947のオブジェクトがA153の約2.6倍のサイズ（3.06MB vs 1.16MB）——2点の原因を特定
+  1. **`r01device`配下の無関係なドライバがビルドに紛れ込んでいた**: `Debug/sources.mk`/`makefile`が、セッション冒頭でコピー元にした`__a_p_n947`プロジェクト（このN947 Debugビルド設定の取得元）のフル機能テストスイート設定をそのまま引き継いでおり、RTC（PCF2131等）・LCD・LEDドライバ・ADC（NAFE33352）・EEPROM等、Arduino層が一切使わない約27個の`source/r01device/*`オブジェクトがアーカイブに含まれていた。A153の`sources.mk`/`makefile`と比較して該当サブディレクトリを完全に除外
+  2. **デバッグシンボル（`-g3 -gdwarf-4`）がN947のSDKヘッダの複雑さで異常に肥大化**: 上記1を修正した後も142MBと依然超過。個別オブジェクトを調査したところ、どのファイルも一律約3MBというデバッグ情報由来と思われる肥大化を確認。`arm-none-eabi-strip --strip-debug`で配布用`.a`のデバッグシンボルを除去したところ**142MB→約500KB**まで縮小。リンク・動作に必要なコード/シンボルテーブルは無傷（実際に複数のテストスケッチで再コンパイル・リンク確認済み）。プレビルドライブラリはリンク用途のみで、エンドユーザーがソースレベルデバッグする用途はそもそも想定していないため、デバッグシンボルの同梱自体が無意味だったと判断
+- **履歴の一本化**: この時点で`.a`を含む問題のあるコミットが5つ（初期ポート・Wire/I3Cバグ修正・analogRead・analogWrite・tone実装）に渡って存在し、pushはまだ一度も成功していなかった（originに`prepare0.3.0`は未作成）ため、履歴を書き換えても安全と判断。ユーザーに「各コミットを個別修正」か「履歴を一本化」かを確認し、**「履歴を一本化」を選択**——`git reset --soft`でmainとの分岐点（`17b4959`）まで戻し、修正済みの軽量`.a`を含む全体を単一コミット`23846ce`として再コミット。分岐点からのブロブサイズを全チェックし50MB超のオブジェクトが皆無であることを確認してからpush、成功
+- A153側の`.a`（既にリリース済み、50MBで問題なし）はこのブランチでは触れず、スコープを最小限に維持
+- 今後の教訓としてCLAUDE.mdに記録: プレビルド`.a`は配布前に必ず`--strip-debug`すること、他プロジェクトのDebug設定をコピーする際は`sources.mk`/`makefile`のSUBDIRSがArduino層に本当に必要なものだけかを確認すること
+
+### `PIN_MAPPING.md`の新設
+ユーザーから「READMEのpin mappingの項、A153だけしかない。N947も入れないといけない。でもそれでは大きくなりすぎるので、別ファイルにする？」との提案。`API_COMPATIBILITY.md`/`CHANGELOG.md`/`TUTORIAL.md`も同じ理由（README肥大化）で過去に分離した前例があり、同じパターンを踏襲することで合意・実施。
+- 新規`PIN_MAPPING.md`を作成し、A153の既存ピンマッピング表（画像含む）をそのまま移設、N947のピンマッピング表を新規追加（`io.h`から機械的に抽出: D0-D19、A0/A1非対応・A2-A5対応、`PWM_0`-`PWM_5`、`USBTX`/`USBRX`、`I3C_SDA`/`I3C_SCL`(`MB_RX`/`MB_TX`)、`SW2`/`SW3`——`SW2`が`A5`とピン共有している点、`Serial1`非対応の理由も注記）
+- `README.md`の該当セクションは簡潔なポインタ＋画像1枚に圧縮、冒頭のリンク一覧にも`PIN_MAPPING.md`を追加
+
 ### コミット
-`prepare0.3.0`ブランチに4コミット（`9e3774e`本体、`6baaf7c`ヘッダ同期時に誤って`variants/frdm_mcxn947/include/`へコピーしてしまった`arduino_serial.cpp`の削除、`aeceb3f`CLAUDE.md更新、`bb48646`Wire/Wire1のI3Cバグ2件の修正）。以降さらにコミットを重ねている（下記参照）。
+`prepare0.3.0`ブランチは`git reset --soft`による履歴一本化後、単一コミット`23846ce`（"Add FRDM-MCXN947 board support"）としてpush済み（`origin/prepare0.3.0`）。以降の作業（`PIN_MAPPING.md`新設等）は別途追加コミットとして重ねている。
 
 ### Serial1: FlexComm2の資源競合により見送り決定
 `Serial1`実装に着手しようとしたところ、D0/D1のFlexCommとしてのalt機能はFC2_P2/FC2_P3のみで、これは`Wire`（I2C_SDA/SCL=D18/D19、`LPI2C2`＝FlexComm2）が既に専用で使っているのと同じFlexComm2インスタンスだと判明。LP_FLEXCOMMは1インスタンスにつき同時にひとつのモード（UART/I2C/SPI）しか持てないため、`Wire`と`Serial1`は同じスケッチで同時に使えない。AskUserQuestionで3択（排他利用として実装/別ピン再検討/見送り）を提示し、「Serial1は見送る」と決定。`variants/frdm_mcxn947/README.md`を「未特定・検証中」から「意図的に未対応（FlexComm2資源競合のため）」に更新
