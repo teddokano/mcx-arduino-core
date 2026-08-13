@@ -113,6 +113,8 @@ Arduino pin names (`D0`-`D13`, `D18`/`D19`, `A0`-`A5`, `PWM0`-`PWM5`) are define
 [`hardware/nxp/mcx/variants/frdm_mcxa153/include/io.h`](hardware/nxp/mcx/variants/frdm_mcxa153/include/io.h),
 which maps each one to its physical MCXA153 port pin.
 
+![pins-FRDM-MCXA153](img/pins-FRDM-MCXA153.png)
+
 | Arduino pin | MCU pin | Notes |
 |---|---|---|
 | `D0` | `P1_4` | `Serial1` RX |
