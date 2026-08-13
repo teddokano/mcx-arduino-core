@@ -4,8 +4,8 @@ Arduino board support package for NXP FRDM MCX Series boards.
 
 New here? Start with the [tutorial](TUTORIAL.md) ([日本語版](TUTORIAL.ja.md)).
 See [API_COMPATIBILITY.md](API_COMPATIBILITY.md) for the full Arduino API support status,
-[PIN_MAPPING.md](PIN_MAPPING.md) for each board's pin assignments, and
-[CHANGELOG.md](CHANGELOG.md) for release history.
+[PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) / [PIN_MAPPING_N947.md](PIN_MAPPING_N947.md)
+for each board's pin assignments, and [CHANGELOG.md](CHANGELOG.md) for release history.
 
 ## Supported Boards
 
@@ -110,13 +110,13 @@ MIT License — see [LICENSE](LICENSE)
 
 ## Pin Mapping
 
-See [PIN_MAPPING.md](PIN_MAPPING.md) for the full Arduino-pin-to-MCU-pin
-table for each supported board, including the on-board LEDs/buttons and
-peripheral pins (`Wire1`, `SPI`, `PWM`, etc.).
+See [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) / [PIN_MAPPING_N947.md](PIN_MAPPING_N947.md)
+for the full Arduino-pin-to-MCU-pin table for each supported board, including
+the on-board LEDs/buttons and peripheral pins (`Wire1`, `SPI`, `PWM`, etc.).
 
 ![pins-FRDM-MCXA153](img/pins-FRDM-MCXA153.png)
 
-*FRDM-MCXA153 pin assignment — see [PIN_MAPPING.md](PIN_MAPPING.md) for the full table and FRDM-MCXN947's equivalent.*
+*FRDM-MCXA153 pin assignment — see [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) for the full table.*
 
 ## Supported Arduino APIs
 

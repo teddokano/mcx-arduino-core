@@ -476,13 +476,14 @@ SPI検証中、LEDベースの判定に頼らずシリアルモニターで結�
 - A153側の`.a`（既にリリース済み、50MBで問題なし）はこのブランチでは触れず、スコープを最小限に維持
 - 今後の教訓としてCLAUDE.mdに記録: プレビルド`.a`は配布前に必ず`--strip-debug`すること、他プロジェクトのDebug設定をコピーする際は`sources.mk`/`makefile`のSUBDIRSがArduino層に本当に必要なものだけかを確認すること
 
-### `PIN_MAPPING.md`の新設
-ユーザーから「READMEのpin mappingの項、A153だけしかない。N947も入れないといけない。でもそれでは大きくなりすぎるので、別ファイルにする？」との提案。`API_COMPATIBILITY.md`/`CHANGELOG.md`/`TUTORIAL.md`も同じ理由（README肥大化）で過去に分離した前例があり、同じパターンを踏襲することで合意・実施。
-- 新規`PIN_MAPPING.md`を作成し、A153の既存ピンマッピング表（画像含む）をそのまま移設、N947のピンマッピング表を新規追加（`io.h`から機械的に抽出: D0-D19、A0/A1非対応・A2-A5対応、`PWM_0`-`PWM_5`、`USBTX`/`USBRX`、`I3C_SDA`/`I3C_SCL`(`MB_RX`/`MB_TX`)、`SW2`/`SW3`——`SW2`が`A5`とピン共有している点、`Serial1`非対応の理由も注記）
-- `README.md`の該当セクションは簡潔なポインタ＋画像1枚に圧縮、冒頭のリンク一覧にも`PIN_MAPPING.md`を追加
+### `PIN_MAPPING.md`の新設 → ボードごとに`PIN_MAPPING_A153.md`/`PIN_MAPPING_N947.md`に分割
+ユーザーから「READMEのpin mappingの項、A153だけしかない。N947も入れないといけない。でもそれでは大きくなりすぎるので、別ファイルにする？」との提案。`API_COMPATIBILITY.md`/`CHANGELOG.md`/`TUTORIAL.md`も同じ理由（README肥大化）で過去に分離した前例があり、同じパターンを踏襲することで合意・実施。まず単一の`PIN_MAPPING.md`にA153（既存表を移設）＋N947（新規表、`io.h`から機械的に抽出: D0-D19、A0/A1非対応・A2-A5対応、`PWM_0`-`PWM_5`、`USBTX`/`USBRX`、`I3C_SDA`/`I3C_SCL`(`MB_RX`/`MB_TX`)、`SW2`/`SW3`——`SW2`が`A5`とピン共有している点、`Serial1`非対応の理由も注記）の2セクションを同居させる形で作成。
+- 直後にユーザーから「PIN_MAPPING.mdはボードで分けるべきではない？」と再提案。API_COMPATIBILITY.mdは「共通部分＋一部差分」の性質でまとめる合理性があったが、ピンマッピングは物理ピンがボード間でほぼ完全に別物（比較のメリットが薄い）で、かつ実ユーザーは通常どちらか一方のボードしか持たないため、1ファイルにまとめるより探しやすいという判断で分割に合意
+- ユーザーから「`variants/*/README.md`は深いところにあって見つけにくくないか」との確認があり、分割後のファイルは`variants/`配下ではなくリポジトリ直下（`README.md`と同階層）に置く方針であることを明確化してから実施
+- `PIN_MAPPING.md`を削除し、`PIN_MAPPING_A153.md`/`PIN_MAPPING_N947.md`をリポジトリ直下に新設（各ファイル末尾に相互リンク）。`README.md`冒頭のリンク一覧と「## Pin Mapping」セクションの参照を両ファイルへのリンクに更新
 
 ### コミット
-`prepare0.3.0`ブランチは`git reset --soft`による履歴一本化後、単一コミット`23846ce`（"Add FRDM-MCXN947 board support"）としてpush済み（`origin/prepare0.3.0`）。以降の作業（`PIN_MAPPING.md`新設等）は別途追加コミットとして重ねている。
+`prepare0.3.0`ブランチは`git reset --soft`による履歴一本化後、単一コミット`23846ce`（"Add FRDM-MCXN947 board support"）としてpush済み（`origin/prepare0.3.0`）。以降の作業（`PIN_MAPPING.md`新設→ボード別分割等）は別途追加コミットとして重ねている。
 
 ### Serial1: FlexComm2の資源競合により見送り決定
 `Serial1`実装に着手しようとしたところ、D0/D1のFlexCommとしてのalt機能はFC2_P2/FC2_P3のみで、これは`Wire`（I2C_SDA/SCL=D18/D19、`LPI2C2`＝FlexComm2）が既に専用で使っているのと同じFlexComm2インスタンスだと判明。LP_FLEXCOMMは1インスタンスにつき同時にひとつのモード（UART/I2C/SPI）しか持てないため、`Wire`と`Serial1`は同じスケッチで同時に使えない。AskUserQuestionで3択（排他利用として実装/別ピン再検討/見送り）を提示し、「Serial1は見送る」と決定。`variants/frdm_mcxn947/README.md`を「未特定・検証中」から「意図的に未対応（FlexComm2資源競合のため）」に更新
