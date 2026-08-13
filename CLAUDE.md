@@ -499,7 +499,13 @@ SPI検証中、LEDベースの判定に頼らずシリアルモニターで結�
 - io.hのA0/A1はN947では`DISABLED_PIN`（配線なし）と確認済み、A2-A5のみ対応
 - ビルド設定: `Debug/drivers/subdir.mk`に`fsl_lpadc.c`/`fsl_vref.c`を追加、`Debug/arduino_layer/subdir.mk`に`arduino_analog.cpp`を追加。`arduino_analog.h`はA153から無変更でコピー、`arduino_analog.cpp`は新規作成（`analogRead()`は実装、`analogWrite()`は宣言のみで呼ぶと`panic()`——FlexPWMのピンマッピングという別作業が必要なため未実装であることを明示）。`Arduino.h`に`#include "arduino_analog.h"`を追加（`arduino_tone.h`は引き続き未追加）
 - 確認用スケッチ: A3をLEDのBLINK回数（読み取り値/100）に変換するテストをArduino-cli経由で実機フラッシュ。**ユーザーがA3をGND/3.3Vにショートさせ、点滅回数が実際に変化することを確認** — analogRead()が実機で正しく動作することを確認済み
-- ユーザーからのリマインダー: リリース前にライセンス関連のチェックを行うこと（未実施、todo）
+- ユーザーからのリマインダー: リリース前にライセンス関連のチェックを行うこと（後日実施、下記参照）
+
+### analogRead関連の追加コードのライセンスチェック（実施済み）
+上記のTODOへの対応。ユーザーから「これらのコードはどこかからのコピーだったりして、ライセンスに触れることはないか」と確認があり、`analogRead`実装で新規追加・復元した以下2種類のコードを実際に確認した:
+- **ドライバファイル自体**（`fsl_vref.c/h`、復元した`fsl_lpadc.c/h`、および先行して取り込み済みの`fsl_ctimer.c/h`/`fsl_inputmux.c/h`）: 全ファイルでNXP/Freescaleのオリジナル`SPDX-License-Identifier: BSD-3-Clause`ヘッダーが無改変で残っていることを確認。`drivers/`配下・`fsl_*`接頭辞というLICENSEの既存の包括的な記述（「NXP MCUXpresso SDK由来、BSD-3-Clause」）でそのままカバーされており、追記不要と判断
+- **Arduino層のコード**（`AnalogIn.cpp`/`PwmOut.cpp`のN947分岐、`arduino_tone.cpp`のクロック設定）: 実際の中身を確認したところ、ピンテーブル（`s_pins[]`等）はschematicから独自導出した独自データ、初期化の呼び出し順序はNXP公式サンプル（LPADC polling example、CTIMER example）を参照して「正しいAPI呼び出し順序・シンボル名」を確認しただけと判明。これはAPIの標準的な使用パターン（関数呼び出し順序）であって著作権保護される創作的表現のコピーではなく、コード中のコメントにも参照元サンプル名を明記済み（透明性確保）。仮に厳しく解釈しても参照元サンプル自体が同じSDK内のBSD-3-Clauseのため問題にならない
+- 結論: LICENSE追記不要、問題なしと確定
 
 ---
 
