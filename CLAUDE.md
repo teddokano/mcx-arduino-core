@@ -3,7 +3,7 @@
 ## プロジェクト概要
 - **リポジトリ**: https://github.com/teddokano/mcx-arduino-core
 - **現在のバージョン**: v0.2.2（`package_nxp_mcx_index.json` 上の最新リリース。`main`上で直接作業・GitHub Release作成済み、`c63ffd4`でchecksum自動更新も確定。2026-08-13リリース。Linux実機での`#include <Arduino.h>`/`<SPI.h>`のファイル名大文字小文字ミスマッチによるビルド失敗を修正するパッチリリース——詳細は後述の専用セクション参照）
-- **作業中**: `prepare0.3.0`ブランチでFRDM-MCXN947ボード対応を進行中（未リリース）。GPIO/Serial(USB)/Wire1(オンボードI3Cセンサー)/Wire(プレーンI2C、外部LM75系センサーとの実通信も確認済み)/SPI/analogRead/analogWrite(全6チャンネル・独立性込み)/tone・noTone(圧電サウンダで実音確認)は実機検証済み、String/UNO互換マクロはコンパイル確認済み、Serial1は意図的に未対応（FlexComm2資源競合のため）。これでN947の主要機能は一通り実機検証済み（残るのは任意項目のanalogRead精度確認のみ）。**重要な実機バグ2件を修正済み**: (1) `analogWrite`の物理ピンが当初A153流用のP3_6-P3_11（実際は未配線のテストポイント）のままだった → 回路図でP2_2-P2_7/FlexPWM1が正しいピンと判明・修正、(2) その修正時のALT値導出（pin_mux.cのコメント内位置カウント方式）がP2_2/P2_3の2ピンだけ誤っていた → Zephyrのpinctrlヘッダ（シリコン正確）で全ピンAlt5と確定・修正。方針: 未実装が残っていてもN947が一通り完成した段階でリリースする。詳細は「v0.3.0 で作業中の内容」セクション参照
+- **作業中**: `prepare0.3.0`ブランチでFRDM-MCXN947ボード対応を進行中（未リリース）。GPIO/Serial(USB)/Wire1(オンボードI3Cセンサー)/Wire(プレーンI2C、外部LM75系センサーとの実通信も確認済み)/SPI/analogRead/analogWrite(全6チャンネル・独立性込み)/tone・noTone(圧電サウンダで実音確認)は実機検証済み、String/UNO互換マクロはコンパイル確認済み、Serial1は意図的に未対応（FlexComm2資源競合のため）。これでN947の主要機能は一通り実機検証済み（任意項目のanalogRead精度確認も定電圧源で完了）。**重要な実機バグ2件を修正済み**: (1) `analogWrite`の物理ピンが当初A153流用のP3_6-P3_11（実際は未配線のテストポイント）のままだった → 回路図でP2_2-P2_7/FlexPWM1が正しいピンと判明・修正、(2) その修正時のALT値導出（pin_mux.cのコメント内位置カウント方式）がP2_2/P2_3の2ピンだけ誤っていた → Zephyrのpinctrlヘッダ（シリコン正確）で全ピンAlt5と確定・修正。方針: 未実装が残っていてもN947が一通り完成した段階でリリースする。詳細は「v0.3.0 で作業中の内容」セクション参照
 - **v0.2.1**（前バージョン）: `prepare0.2.1`→`main`fast-forwardマージ・GitHub Release作成済み、2026-08-12リリース
 - **重要な学び（リリースzipの構造要件）**: v0.2.1の初回リリース作業で`git archive --format=zip -o ... HEAD:hardware/nxp/mcx`を使ってzipを作成したところ、Arduino IDE経由の実インストールで`Failed to install platform: ... no unique root dir in archive, found '.../cores' and '.../tools'`エラーで失敗。Arduino Boards Managerのインストーラーは**zip直下に単一のラッパーディレクトリが1つだけ**存在することを要求する（インストーラーがそのディレクトリを剥がして`packages/<vendor>/hardware/<arch>/<version>/`に配置する仕組み）。`git archive HEAD:hardware/nxp/mcx`はサブディレクトリの中身を直接展開するため、`boards.txt`/`cores/`/`tools/`/`variants/`等がzip直下に並ぶ「フラットな」構造になってしまい、この要件を満たしていなかった。実際に公開済みのv0.2.0のzipを確認したところ、そちらは`mcx/`という単一のラッパーディレクトリを持つ正しい構造になっており問題なし（0.2.1作成時のみのミス）。**今後リリースzipを作る際は、必ず単一のトップレベルディレクトリ（名前は任意、例: `mcx-arduino-core-<version>/`）でラップすること** — `git archive`で作る場合は一旦別ディレクトリに展開してからラッパーディレクトリごと`zip -r`するか、`--prefix=<name>/`オプションを使う
 - **内容**: NXP FRDM-MCXA153 (Cortex-M33) 向けArduino IDEボードサポートパッケージ
@@ -541,7 +541,14 @@ Wire検証完了後、ユーザーから「analogWrite」を指定。「どの�
 - `PIN_MAPPING_N947.md`・`variants/frdm_mcxn947/README.md`の`analogWrite`セクションを、正しい`P2_2`-`P2_7`/`FlexPWM1`ベースの情報および2件の実機バグの経緯に全面更新
 
 ### tone/noToneの実機検証: 圧電サウンダで実音確認完了
-analogWrite検証完了後、ユーザーから「tone/noTone」を指定。既存の`examples/Arduino_compatible_API/test_tone`（D13、"Twinkle Twinkle Little Star"のメロディを262Hz-440Hzの範囲で演奏、`tone()`/`noTone()`の呼び出しペアも含む）をそのままN947向けにコンパイル・実機書き込み。`tone()`はanalogWriteのような固定ピンテーブルを持たず、任意のデジタルピンを汎用GPIOトグルで駆動する完全にチップ非依存な実装（CTIMER0の周波数分周設定のみN947固有のシンボル名に対応済み）だったため、analogWriteで発生したような「ピン自体が間違っている」「ALT値が違う」という類のバグが起こりうる構造ではなく、一度の書き込みでユーザーが圧電サウンダを接続し**「圧電サウンダでメロディがなっていることを確認できた」**と実機確認完了を報告——音として実際に聞こえる形での確認のため、ロジアナのキャプチャよりもさらに直接的な実機検証となった。`variants/frdm_mcxn947/README.md`の該当セクションを実機検証済みに更新。これでN947の主要ペリフェラル（GPIO/Serial/Wire/Wire1/SPI/analogRead/analogWrite/tone・noTone）は全て実機検証済みとなり、残るのは任意項目のanalogRead精度確認（定電圧源使用）のみ
+analogWrite検証完了後、ユーザーから「tone/noTone」を指定。既存の`examples/Arduino_compatible_API/test_tone`（D13、"Twinkle Twinkle Little Star"のメロディを262Hz-440Hzの範囲で演奏、`tone()`/`noTone()`の呼び出しペアも含む）をそのままN947向けにコンパイル・実機書き込み。`tone()`はanalogWriteのような固定ピンテーブルを持たず、任意のデジタルピンを汎用GPIOトグルで駆動する完全にチップ非依存な実装（CTIMER0の周波数分周設定のみN947固有のシンボル名に対応済み）だったため、analogWriteで発生したような「ピン自体が間違っている」「ALT値が違う」という類のバグが起こりうる構造ではなく、一度の書き込みでユーザーが圧電サウンダを接続し**「圧電サウンダでメロディがなっていることを確認できた」**と実機確認完了を報告——音として実際に聞こえる形での確認のため、ロジアナのキャプチャよりもさらに直接的な実機検証となった。`variants/frdm_mcxn947/README.md`の該当セクションを実機検証済みに更新。これでN947の主要ペリフェラル（GPIO/Serial/Wire/Wire1/SPI/analogRead/analogWrite/tone・noTone）は全て実機検証済みとなり、残るのは任意項目のanalogRead精度確認のみ
+
+### analogReadの実機検証: 定電圧源による精度確認完了
+tone/noTone検証完了後、ユーザーから最後の任意項目「analogRead」を指定。新規テストスケッチ`examples/Arduino_compatible_API/test_analogRead_precision_N947/test_analogRead_precision_N947.ino`を作成——`A2`-`A5`の4チャンネルを毎ループ読み取り、10bit生値と`raw*3.3/1023`で計算した電圧をSerialに出力する単純な実装。ユーザーが`A2`（`P0_14`）に定電圧源を接続できることを確認したうえで実機書き込み。
+
+- ユーザーが`A2`-`A5`の4チャンネル全てに既知の電圧（0-3.3V範囲）を順に与え、**「それぞれに与えた電圧を正確に測定できた」**と報告——全チャンネルの精度を確認完了
+- `variants/frdm_mcxn947/README.md`の`analogRead`セクションに、当初のGND/3.3Vショート確認（A3のみ、変化の有無だけ確認）に加えて、この定電圧源による4チャンネル精度確認（実際の電圧値との一致）を追記
+- これでN947の実機検証タスクは全て完了（Serial1は意図的に未対応として既知の制限に位置づけ済み）
 
 ---
 
