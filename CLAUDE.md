@@ -3,7 +3,7 @@
 ## プロジェクト概要
 - **リポジトリ**: https://github.com/teddokano/mcx-arduino-core
 - **現在のバージョン**: v0.2.2（`package_nxp_mcx_index.json` 上の最新リリース。`main`上で直接作業・GitHub Release作成済み、`c63ffd4`でchecksum自動更新も確定。2026-08-13リリース。Linux実機での`#include <Arduino.h>`/`<SPI.h>`のファイル名大文字小文字ミスマッチによるビルド失敗を修正するパッチリリース——詳細は後述の専用セクション参照）
-- **作業中**: `prepare0.3.0`ブランチでFRDM-MCXN947ボード対応を進行中（未リリース）。GPIO/Serial(USB)/Wire1(オンボードI3Cセンサー)/SPI/analogReadは実機検証済み、Wire(プレーンI2C)はバススキャンのみ確認済み（実デバイスとの通信は後日検証予定）、analogWrite/tone・noToneは実装・コンパイル確認済みだが実機検証待ち、String/UNO互換マクロはコンパイル確認済み、Serial1は意図的に未対応（FlexComm2資源競合のため）。方針: 未実装が残っていてもN947が一通り完成した段階でリリースする。詳細は「v0.3.0 で作業中の内容」セクション参照
+- **作業中**: `prepare0.3.0`ブランチでFRDM-MCXN947ボード対応を進行中（未リリース）。GPIO/Serial(USB)/Wire1(オンボードI3Cセンサー)/Wire(プレーンI2C、外部LM75系センサーとの実通信も確認済み)/SPI/analogReadは実機検証済み、analogWrite/tone・noToneは実装・コンパイル確認済みだが実機検証待ち、String/UNO互換マクロはコンパイル確認済み、Serial1は意図的に未対応（FlexComm2資源競合のため）。方針: 未実装が残っていてもN947が一通り完成した段階でリリースする。詳細は「v0.3.0 で作業中の内容」セクション参照
 - **v0.2.1**（前バージョン）: `prepare0.2.1`→`main`fast-forwardマージ・GitHub Release作成済み、2026-08-12リリース
 - **重要な学び（リリースzipの構造要件）**: v0.2.1の初回リリース作業で`git archive --format=zip -o ... HEAD:hardware/nxp/mcx`を使ってzipを作成したところ、Arduino IDE経由の実インストールで`Failed to install platform: ... no unique root dir in archive, found '.../cores' and '.../tools'`エラーで失敗。Arduino Boards Managerのインストーラーは**zip直下に単一のラッパーディレクトリが1つだけ**存在することを要求する（インストーラーがそのディレクトリを剥がして`packages/<vendor>/hardware/<arch>/<version>/`に配置する仕組み）。`git archive HEAD:hardware/nxp/mcx`はサブディレクトリの中身を直接展開するため、`boards.txt`/`cores/`/`tools/`/`variants/`等がzip直下に並ぶ「フラットな」構造になってしまい、この要件を満たしていなかった。実際に公開済みのv0.2.0のzipを確認したところ、そちらは`mcx/`という単一のラッパーディレクトリを持つ正しい構造になっており問題なし（0.2.1作成時のみのミス）。**今後リリースzipを作る際は、必ず単一のトップレベルディレクトリ（名前は任意、例: `mcx-arduino-core-<version>/`）でラップすること** — `git archive`で作る場合は一旦別ディレクトリに展開してからラッパーディレクトリごと`zip -r`するか、`--prefix=<name>/`オプションを使う
 - **内容**: NXP FRDM-MCXA153 (Cortex-M33) 向けArduino IDEボードサポートパッケージ
@@ -421,7 +421,7 @@ MCUXpresso生成の`app_template_FRDM_MCXN947`プロジェクトの`.ld`断片�
 - **実機バグ1: I3C1のIBE（入力バッファ）が有効化されていない**: `Wire1`で温度センサーのレジスタ読み取りを試すと`requestFrom`が常に失敗（write成功、read失敗）。GDB（LinkServerのgdbserverモード）で`I3C_MasterTransferBlocking()`にブレークポイントを張り、write時は`status=0`、read時は`status=7902`(`kStatus_I3C_Nak`、アドレスフェーズでNAK)であることを直接確認。`pin_mux.c`を調査したところ、I3C1_SDA/SCL(P1_16/P1_17)のIBE設定コードは`BOARD_InitDEBUG_UARTPins()`という関数内にあったが、この関数自体がコードベースのどこからも呼ばれていないと判明（`init_mcu()`は`BOARD_InitBootPins()`/`BOARD_InitBootClocks()`/`BOARD_InitBootPeripherals()`のみ呼ぶ）。`PORT_SetPinMux()`はMUXフィールドしか触らないため、IBEはリセット後デフォルト（無効）のまま——A153のSerial1 D0/D1バグと全く同じ問題パターン。`I3C::I3C()`コンストラクタに`_scl.input_buffer(true)`/`_sda.input_buffer(true)`を追加して解消
 - **実機バグ2: I2C_MODEに切り替える前に一度も実I3Cバス動作をしていないと、以降の読み取りが常にNAKする**: バグ1修正後も読み取り失敗が継続。ユーザーが実機のプルアップ回路をschematicで確認し「R51/R52（標準4.7kプルアップ）がDNP、I3C1_PUR(P1_11)というI3Cペリフェラル駆動の動的プルアップに依存」という設計を指摘。この時点でユーザーから「プルアップはチップ内部で自動的に有効化される．外部プルアップは電流ブースト用のオプション．I2Cモードで動いていれば問題ないはず」との指摘があり、内部弱プルアップ（`DigitalInOut::mode(PullUp)`、PORT_PCR_PS/PE経由）を試したが効果なし（ロールバック）。ユーザー提供のNXP公式デモ（`ref/dm-i3c-temperature-sensor-main.zip`内`P3T1755_FRDM_MCXN947_demo_DAA`、同バスでLM75Bへの I2Cアクセス例も含む）を精査したところ、I2C_MODEへの切り替え前に必ず`ccc_broadcast(CCC::BROADCAST_RSTDAA, ...)`を実行していることを発見。GDBのライブ関数呼び出し（`Wire1`の内部`i2c`ポインタを`I3C*`にキャストして`reg_read()`/`ccc_broadcast()`を直接呼ぶ）でA/Bテストを実施——RSTDAA無し:確実にNAK、RSTDAA有り（それ自体は`kStatus_I3C_WriteAbort`で失敗するのが正常、動的アドレス未割当のため）:確実に成功、を複数回再現。ユーザーからのさらなる指摘「A153で必要なかったのなら，これはN947だけで実行されるようにしておいて」を受け、`#ifdef CPU_MCXN947VDF`でN947限定にガード（A153のI3C_SDA/SCLは実プルアップのある汎用I2Cコネクタと共有ピンのため元々不要）。根本原因は未特定（コード内コメントに明記——I3C仕様上はプルアップアシストが常時有効なはずで、`I3C_MasterInit()`だけではステートマシンが起動せず実際のSTART/STOPサイクルを一度経験する必要がある、というSDK/シリコン初期化順序の問題ではないかという推測にとどまる）
 - ユーザーからの検証依頼で、RSTDAA行を一時的に削除して再ビルド・再フラッシュ→失敗再現、復元して再ビルド・再フラッシュ→成功再現、という**制御されたA/Bテストを実機で2往復実施**し再現性を確定させてから最終版として確定
-- `Wire`（プレーンI2C、D18/D19）はバススキャンスケッチで実機確認済み（ハング・クラッシュなし、外部デバイス未接続のため0件検出）。**ただしこれはスキャンのみの確認——実デバイスとの実通信（read/write）はまだ未検証。ユーザー方針: 後日、実際にI2Cデバイスを接続して確認する**
+- `Wire`（プレーンI2C、D18/D19）はバススキャンスケッチで実機確認済み（ハング・クラッシュなし、外部デバイス未接続のため0件検出）。実デバイスとの実通信は後日ロジアナ入手後に確認予定としていた（後日実施・確認済み、下記「Wireの実機検証: 外部LM75系センサーとの実通信確認完了」セクション参照）
 - `variants/frdm_mcxn947/README.md`に「Wire / Wire1 の実機検証済み動作（既知の癖あり）」セクションを新設し、上記2件のバグと回避策を詳細に記録
 - 参考資料`ref/dm-i3c-temperature-sensor-main.zip`（NXP公式、ユーザー提供）を`ref/`に配置、`.gitignore`に`ref/`を追加（リポジトリ管理対象外）。ユーザーはさらに`ref/r01lib_pin_table.xlsx`（各ピンのavailability一覧）も配置、今後のピン確認作業で参照する
 
@@ -515,6 +515,15 @@ SPI検証中、LEDベースの判定に頼らずシリアルモニターで結�
 - MOSI(D11)-MISO(D12)ループバック配線＋ロジアナをD10(CS)/D11(MOSI)/D12(MISO)/D13(SCLK)にプローブしてキャプチャ。`transfer(0xA5)`・`transfer16(0x1234, MSBFIRST)`は素直に期待値どおりの波形（16bit転送はCSが2バイト分LOWを維持する1トランザクションとして見える）
 - `transfer16(0x5678, LSBFIRST)`の波形で、ロジアナのSPIデコーダ（デフォルトMSBファースト解釈）が`0x1E`→`0x6A`という一見不可解な値を表示し、ユーザーから確認依頼。計算で説明: `0x78`（下位バイト）をビット反転すると`0x1E`、`0x56`（上位バイト）をビット反転すると`0x6A`——`LSBFIRST`時は(1)バイト内のビット順がハードウェアレベルで反転され、(2)`transfer16()`実装が下位バイトを先に送る、という2つの仕様がそのまま波形に表れていると判明。ユーザーがロジアナ側のデコーダ設定を「Bit order: LSB first」に切り替えて再キャプチャしたところ`0x78`→`0x56`と正しい値・順序で表示され、実装が正しいことを実機で最終確認
 - `variants/frdm_mcxn947/README.md`の「SPI の実機検証（暫定・要再確認）」を「SPI の実機検証済み動作」に更新し、上記ロジアナ確認の詳細を追記
+
+### Wireの実機検証: 外部LM75系センサーとの実通信確認完了
+SPI検証完了後、ユーザーから次の対象として「Wire実デバイス通信。Arduino I²C端子にLM75B温度センサを接続。アドレス0x48に対して温度データを読んでこれるか」と指定。
+
+- プロジェクトに既存のI2C温度センサー用サンプルは`P3T1755.h`（外部ライブラリ、`.gitignore`対象）に依存する高レベルAPIのみだったため、レジスタに直接アクセスする新規テストスケッチ`examples/Arduino_compatible_API/test_Wire_LM75B/test_Wire_LM75B.ino`を作成。`Wire.beginTransmission`→レジスタポインタ0x00へ`write`→`endTransmission(false)`（リピートスタート）→`requestFrom(addr, 2)`→2バイトread、という素朴な実装。LM75/P3T1755系の温度レジスタフォーマット（2バイトMSBファースト、11-bit二の補数値が16bit中の上位11bit(bit15:5)に左詰め、bit5が0.125℃刻み）に基づき、`(int16_t)((msb<<8)|lsb) >> 5`のシフト＋`×0.125`で℃に変換
+- N947実機へ`arduino-cli upload --fqbn nxp:mcx:frdm_mcxn947`で書き込み（SPI検証と同じ手順、ボードは口頭確認）
+- ユーザーは手元のLM75Bの代わりに**P3T1035xUK-ARD**（NXP製、同じ温度レジスタフォーマット系列）を使用、実機のアドレスに合わせてスケッチ内の定数を`0x48`→`0x72`に変更（ユーザー自身が直接編集）。この変更を尊重し、コメント・定数名（`LM75B_ADDR`→`SENSOR_ADDR`）をLM75B固定ではなく「LM75系センサー全般、テストはP3T1035xUK-ARD@0x72で実施」という表現に更新
+- ロジアナでD0(SDA)/D1(SCL)相当のI2Cバスをキャプチャし、`Write[0x72]+ACK`→レジスタポインタ`0x00+ACK`→リピートスタート`Read[0x72]+ACK`→データ2バイト（最終バイトはI2Cの作法どおりNAK）という正しい読み出しシーケンスを確認。Serial出力は`raw = 0x1b70  temp = 27.375 degC`を安定して3回連続出力——室温として妥当な値
+- これで`Wire`（プレーンI2C、D18/D19）はバススキャンだけでなく実デバイスとの実通信（write/read）まで実機確認完了。`variants/frdm_mcxn947/README.md`の該当セクションを更新
 
 ---
 
