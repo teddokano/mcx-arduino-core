@@ -185,23 +185,27 @@ enum {
 	#define	GREEN	D10
 	#define	BLUE	D6
 
-	// Same 6 physical pins as A153's PWM0-PWM5 (P3_6..P3_11), but named
-	// PWM_0.."PWM_5" here (not "PWM0".."PWM5") because this chip's SDK
-	// already defines a bare `PWM0` macro for the FlexPWM peripheral
-	// instance itself ((PWM_Type*)PWM0_BASE) -- reusing that exact name
-	// for the logical pin caused every PWM_Init(PWM0,...)/PWM0->SM[...]
-	// call in PwmOut.cpp to silently expand to a *pin number* instead of
-	// the peripheral pointer (compile error, but would have been a nasty
-	// silent bug if the types had happened to line up). A153 avoided this
-	// collision by luck: its SDK instance macro is "FLEXPWM0", not "PWM0".
-	// Submodule numbers also differ from A153 (sm1/2/3 here, not sm0/1/2)
-	// -- see PwmOut.h/.cpp for the full derivation.
-	#define	PWM_0	P3_11	/* PWM0 sm3 chB */
-	#define	PWM_1	P3_10	/* PWM0 sm3 chA */
-	#define	PWM_2	P3_9	/* PWM0 sm2 chB */
-	#define	PWM_3	P3_8	/* PWM0 sm2 chA */
-	#define	PWM_4	P3_7	/* PWM0 sm1 chB */
-	#define	PWM_5	P3_6	/* PWM0 sm1 chA */
+	// NOTE (corrected after initial real-hardware bring-up): an earlier
+	// version of this file reused A153's physical pin numbers (P3_6..P3_11)
+	// verbatim. On N947 those pins are bare test points (TP8/TP12-18/TP31 in
+	// pin_mux.c's schematic labels), not routed to any populated header --
+	// so analogWrite() compiled and ran but drove pins nobody could reach.
+	// The real PWM-capable, header-accessible pins are P2_2..P2_7 (Arduino
+	// Shield Compatible Headers sheet, FRDM-MCXN947SH.pdf page 12), on
+	// FlexPWM1 (not FlexPWM0 -- see PwmOut.cpp for that instance-name
+	// collision too). Named PWM_0.."PWM_5" (not "PWM0".."PWM5") because this
+	// chip's SDK defines bare `PWM0`/`PWM1` macros for the FlexPWM peripheral
+	// instances themselves ((PWM_Type*)PWM0_BASE / PWM1_BASE) -- reusing
+	// either name for a logical pin would silently collide. The PWM_0..
+	// PWM_5 -> physical pin assignment below matches the "PWM0".."PWM5"
+	// silkscreen labels printed directly on that schematic sheet's header,
+	// not physical pin order.
+	#define	PWM_0	P2_3	/* PWM1 sm2 chB */
+	#define	PWM_1	P2_2	/* PWM1 sm2 chA */
+	#define	PWM_2	P2_5	/* PWM1 sm1 chB */
+	#define	PWM_3	P2_4	/* PWM1 sm1 chA */
+	#define	PWM_4	P2_7	/* PWM1 sm0 chB */
+	#define	PWM_5	P2_6	/* PWM1 sm0 chA */
 
 	#define	I3C_SDA		MB_RX
 	#define	I3C_SCL		MB_TX

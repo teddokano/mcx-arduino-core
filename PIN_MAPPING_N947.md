@@ -27,7 +27,25 @@ for the full verification status and per-feature notes this table summarizes.
 | `D19` | `P4_1` | `Wire` (I2C) SCL |
 | `A0`, `A1` | — | **not available** — not wired to an ADC channel on this board |
 | `A2`-`A5` | `P0_14`, `P0_22`, `P0_15`, `P0_23` | `analogRead` (LPADC/ADC0), 10bit |
-| `PWM_0`-`PWM_5` | `P3_11`...`P3_6` | `analogWrite` (PWM0/FlexPWM). Named `PWM_0`-`PWM_5` (underscore), not `PWM0`-`PWM5` — this chip's SDK already uses the bare `PWM0` identifier for the FlexPWM peripheral instance itself |
+
+`analogWrite` pins (FlexPWM1, not FlexPWM0 — see note below):
+
+| Arduino pin | MCU pin | Submodule | Channel |
+|---|---|---|---|
+| `PWM_0` | `P2_3` | sm2 | B |
+| `PWM_1` | `P2_2` | sm2 | A |
+| `PWM_2` | `P2_5` | sm1 | B |
+| `PWM_3` | `P2_4` | sm1 | A |
+| `PWM_4` | `P2_7` | sm0 | B |
+| `PWM_5` | `P2_6` | sm0 | A |
+
+> **Note on `PWM_0`-`PWM_5`**: these are on the "Arduino Shield Compatible
+> Headers" sheet's dedicated PWM row (`P2_2`-`P2_7`, shared with header `J12`/
+> `J3`), not the `D0`-`D19` pins, and not physically sequential — the
+> assignment above matches the "PWM0"-"PWM5" silkscreen labels printed
+> directly on that header in the schematic. Named `PWM_0`-`PWM_5`
+> (underscore), not `PWM0`-`PWM5` — this chip's SDK already uses the bare
+> `PWM0`/`PWM1` identifiers for the FlexPWM peripheral instances themselves.
 
 Other named pins/peripherals:
 

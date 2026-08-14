@@ -129,33 +129,53 @@ private:
 /**
  * FRDM-MCXN947 PwmOut.
  *
- * | Logical pin | Physical pin | PWM0 submodule | Channel | PORT3 ALT |
- * |-------------|--------------|-----------------|---------|-----------|
- * | PWM_0       | P3_11        | sm3             | B       | Alt5      |
- * | PWM_1       | P3_10        | sm3             | A       | Alt4      |
- * | PWM_2       | P3_9         | sm2             | B       | Alt4      |
- * | PWM_3       | P3_8         | sm2             | A       | Alt5      |
- * | PWM_4       | P3_7         | sm1             | B       | Alt4      |
- * | PWM_5       | P3_6         | sm1             | A       | Alt4      |
+ * | Logical pin | Physical pin | FlexPWM1 submodule | Channel | PORT2 ALT |
+ * |-------------|--------------|---------------------|---------|-----------|
+ * | PWM_0       | P2_3         | sm2                 | B       | Alt5      |
+ * | PWM_1       | P2_2         | sm2                 | A       | Alt5      |
+ * | PWM_2       | P2_5         | sm1                 | B       | Alt5      |
+ * | PWM_3       | P2_4         | sm1                 | A       | Alt5      |
+ * | PWM_4       | P2_7         | sm0                 | B       | Alt5      |
+ * | PWM_5       | P2_6         | sm0                 | A       | Alt5      |
  *
- * Same 6 physical pins (P3_6..P3_11) as A153's PWM0-PWM5, but named
- * PWM_0.."PWM_5" (not "PWM0".."PWM5") -- this chip's SDK already defines a
- * bare `PWM0` macro for the FlexPWM peripheral instance itself
- * ((PWM_Type*)PWM0_BASE), so reusing that name for the logical pin would
- * make every `PWM_Init(PWM0,...)` call below silently expand to a pin
- * number instead of the peripheral pointer. A153 didn't hit this because
- * its SDK instance macro is "FLEXPWM0", not "PWM0". Submodule numbers
- * also differ from A153 (sm1/2/3 here, not sm0/1/2 -- confirmed from
- * pin_mux.c's pin_signal strings, e.g. P3_6's alt-function list is
- * ".../CT4_MAT2/PWM0_A1/...", and the digit after A/B is the submodule
- * number per NXP's own naming). ALT mux values are NOT uniform across
- * these 6 pins (unlike A153) -- each pin's PWM0_Ax/Bx entry sits at a
- * different position in its own alt-function list depending on how many
- * other functions (e.g. an extra WUU0_INxx) precede it, so each pin needs
- * its own ALT value (derived by counting position in the pin_signal
- * string, the same method already verified against I3C1_SDA's Alt10).
- * The instance itself is `PWM0` (PWM_Type*) -- N947 has no "FLEXPWM0"
- * macro, just PWM0/PWM1.
+ * NOTE (corrected twice after real-hardware bring-up):
+ *
+ * 1. An earlier version of this driver reused A153's physical pin numbers
+ *    (P3_6..P3_11) verbatim. On N947 those pins are bare test points in
+ *    pin_mux.c's schematic labels (TP8/TP12-18/TP31), not routed to any
+ *    populated header -- analogWrite() compiled, linked, and even produced
+ *    a clean PWM waveform on the die pad, but nobody could reach it from
+ *    outside the board. Caught via logic analyzer finding nothing on the
+ *    documented pin; the user traced the real, header-accessible
+ *    PWM-capable pins in the schematic (FRDM-MCXN947SH.pdf, "Arduino
+ *    Shield Compatible Headers" sheet, page 12): P2_2..P2_7, wired to
+ *    FlexPWM1 (not FlexPWM0). The PWM_0..PWM_5 assignment above matches
+ *    the "PWM0".."PWM5" silkscreen labels printed directly on that header
+ *    in the schematic, which is why it isn't in physical pin order.
+ *
+ * 2. The first fix for (1) derived each pin's ALT value by counting
+ *    position in pin_mux.c's pin_signal string -- the same method already
+ *    verified against I3C1_SDA's Alt10 and (coincidentally) correct for
+ *    P2_4..P2_7 here. It gave Alt6 for P2_2 and Alt4 for P2_3, both wrong:
+ *    P2_2's pin_signal list has an extra "CLKOUT" entry ahead of PWM1_A2
+ *    that doesn't actually consume a mux slot, throwing the count off by
+ *    one, and P2_3 was wrong for a similar reason. Both silently produced
+ *    zero PWM output on all six probed pins (not just the two wrong ones)
+ *    on real hardware -- reported by the user via logic analyzer, no
+ *    signal anywhere. Re-derived from Zephyr's silicon-accurate pinctrl
+ *    header instead (MCXN947VDF-pinctrl.h, `N9X_MUX(port,pin,mux)`
+ *    macros), which shows ALT is uniformly 5 for all six PWM1_Ax/Bx pins
+ *    here. Lesson: position-counting in pin_mux.c's comment text is a
+ *    useful fallback but not reliable on its own -- cross-check against an
+ *    authoritative pinctrl source when one is available, and always
+ *    confirm the final result on real hardware.
+ *
+ * Named PWM_0.."PWM_5" (not "PWM0".."PWM5") because this chip's SDK defines
+ * bare `PWM0`/`PWM1` macros for the FlexPWM peripheral instances themselves
+ * ((PWM_Type*)PWM0_BASE / PWM1_BASE) -- reusing either name for a logical
+ * pin would make every `PWM_Init(PWM1,...)` call below silently expand to a
+ * pin number instead of the peripheral pointer. A153 didn't hit this
+ * because its SDK instance macro is "FLEXPWM0", not "PWM0"/"PWM1".
  */
 
 extern "C" {
@@ -195,7 +215,7 @@ private:
     static void _release_module( void );
     static uint8_t _instance_count;
 
-    uint8_t  _submodule;   // 1=sm1, 2=sm2, 3=sm3
+    uint8_t  _submodule;   // 0=sm0, 1=sm1, 2=sm2
     uint8_t  _channel;     // 0=chA, 1=chB
     int      _pin;
 
