@@ -3,7 +3,7 @@
 ## プロジェクト概要
 - **リポジトリ**: https://github.com/teddokano/mcx-arduino-core
 - **現在のバージョン**: v0.2.2（`package_nxp_mcx_index.json` 上の最新リリース。`main`上で直接作業・GitHub Release作成済み、`c63ffd4`でchecksum自動更新も確定。2026-08-13リリース。Linux実機での`#include <Arduino.h>`/`<SPI.h>`のファイル名大文字小文字ミスマッチによるビルド失敗を修正するパッチリリース——詳細は後述の専用セクション参照）
-- **作業中**: `prepare0.3.0`ブランチでFRDM-MCXN947ボード対応を進行中（未リリース）。GPIO/Serial(USB)/Wire1(オンボードI3Cセンサー)は実機検証済み、Wire(プレーンI2C)はバススキャンのみ確認済み（実デバイスとの通信は後日検証予定）、String/SPI/UNO互換マクロはコンパイル確認済み、Serial1/analogRead/analogWrite/tone/noToneは既知の未対応。方針: 未実装が残っていてもN947が一通り完成した段階でリリースする。詳細は「v0.3.0 で作業中の内容」セクション参照
+- **作業中**: `prepare0.3.0`ブランチでFRDM-MCXN947ボード対応を進行中（未リリース）。GPIO/Serial(USB)/Wire1(オンボードI3Cセンサー)/SPI/analogReadは実機検証済み、Wire(プレーンI2C)はバススキャンのみ確認済み（実デバイスとの通信は後日検証予定）、analogWrite/tone・noToneは実装・コンパイル確認済みだが実機検証待ち、String/UNO互換マクロはコンパイル確認済み、Serial1は意図的に未対応（FlexComm2資源競合のため）。方針: 未実装が残っていてもN947が一通り完成した段階でリリースする。詳細は「v0.3.0 で作業中の内容」セクション参照
 - **v0.2.1**（前バージョン）: `prepare0.2.1`→`main`fast-forwardマージ・GitHub Release作成済み、2026-08-12リリース
 - **重要な学び（リリースzipの構造要件）**: v0.2.1の初回リリース作業で`git archive --format=zip -o ... HEAD:hardware/nxp/mcx`を使ってzipを作成したところ、Arduino IDE経由の実インストールで`Failed to install platform: ... no unique root dir in archive, found '.../cores' and '.../tools'`エラーで失敗。Arduino Boards Managerのインストーラーは**zip直下に単一のラッパーディレクトリが1つだけ**存在することを要求する（インストーラーがそのディレクトリを剥がして`packages/<vendor>/hardware/<arch>/<version>/`に配置する仕組み）。`git archive HEAD:hardware/nxp/mcx`はサブディレクトリの中身を直接展開するため、`boards.txt`/`cores/`/`tools/`/`variants/`等がzip直下に並ぶ「フラットな」構造になってしまい、この要件を満たしていなかった。実際に公開済みのv0.2.0のzipを確認したところ、そちらは`mcx/`という単一のラッパーディレクトリを持つ正しい構造になっており問題なし（0.2.1作成時のみのミス）。**今後リリースzipを作る際は、必ず単一のトップレベルディレクトリ（名前は任意、例: `mcx-arduino-core-<version>/`）でラップすること** — `git archive`で作る場合は一旦別ディレクトリに展開してからラッパーディレクトリごと`zip -r`するか、`--prefix=<name>/`オプションを使う
 - **内容**: NXP FRDM-MCXA153 (Cortex-M33) 向けArduino IDEボードサポートパッケージ
@@ -411,8 +411,8 @@ MCUXpresso生成の`app_template_FRDM_MCXN947`プロジェクトの`.ld`断片�
 - 修正後、`test_Serial1`がN947向けに正しくコンパイルエラーになること、他の全examplesに回帰がないことを再確認
 
 ### 実機検証状況（v0.3.0時点、正確に記録）
-- **実機フラッシュして動作確認済み**: GPIO（`pinMode`/`digitalWrite`/`delay`）、Serial（USB経由、`Serial.begin()`/`println()`、RGB LED制御と組み合わせた`hello_world.ino`で確認）
-- **`arduino-cli compile`のみ確認済み（実機フラッシュはまだ）**: `String`、`SPI`（`test_SPI_bitorder_end_transfer16`）、UNO互換マクロ（`test_arduino_compat_macros`）
+- **実機フラッシュして動作確認済み**: GPIO（`pinMode`/`digitalWrite`/`delay`）、Serial（USB経由、`Serial.begin()`/`println()`、RGB LED制御と組み合わせた`hello_world.ino`で確認）、SPI（後述のロジックアナライザ検証セクション参照）
+- **`arduino-cli compile`のみ確認済み（実機フラッシュはまだ）**: `String`、UNO互換マクロ（`test_arduino_compat_macros`）
 - **意図的に未対応**: `Serial1`（上記参照）、`analogRead`/`analogWrite`/`tone`/`noTone`（ADCドライバ未取得・PWMピン未定義のため）
 
 ### 実機バグ発見・修正: Wire/Wire1（I2C/I3C）動作確認とI3C2件の実機バグ
@@ -506,6 +506,15 @@ SPI検証中、LEDベースの判定に頼らずシリアルモニターで結�
 - **ドライバファイル自体**（`fsl_vref.c/h`、復元した`fsl_lpadc.c/h`、および先行して取り込み済みの`fsl_ctimer.c/h`/`fsl_inputmux.c/h`）: 全ファイルでNXP/Freescaleのオリジナル`SPDX-License-Identifier: BSD-3-Clause`ヘッダーが無改変で残っていることを確認。`drivers/`配下・`fsl_*`接頭辞というLICENSEの既存の包括的な記述（「NXP MCUXpresso SDK由来、BSD-3-Clause」）でそのままカバーされており、追記不要と判断
 - **Arduino層のコード**（`AnalogIn.cpp`/`PwmOut.cpp`のN947分岐、`arduino_tone.cpp`のクロック設定）: 実際の中身を確認したところ、ピンテーブル（`s_pins[]`等）はschematicから独自導出した独自データ、初期化の呼び出し順序はNXP公式サンプル（LPADC polling example、CTIMER example）を参照して「正しいAPI呼び出し順序・シンボル名」を確認しただけと判明。これはAPIの標準的な使用パターン（関数呼び出し順序）であって著作権保護される創作的表現のコピーではなく、コード中のコメントにも参照元サンプル名を明記済み（透明性確保）。仮に厳しく解釈しても参照元サンプル自体が同じSDK内のBSD-3-Clauseのため問題にならない
 - 結論: LICENSE追記不要、問題なしと確定
+
+### SPIの実機検証: ロジックアナライザによる最終確認完了
+ユーザーが「ロジアナと定電圧源を用意した」と報告、実機検証フェーズを開始。まずSPIから着手（選択肢として analogWrite/SPI再検証/tone/analogRead精度確認をAskUserQuestionで提示し、ユーザーが直接「SPI」と指定）。
+
+- `test_SPI_bitorder_end_transfer16.ino`をコンパイル→N947実機（`arduino-cli upload`、LinkServer経由、ポート`/dev/cu.usbmodemUENBVJCYVDM5J3`）に書き込み。arduino-cliの`board list`はA153/N947がVID/PID共通のため区別できず候補が複数出るが、`--fqbn nxp:mcx:frdm_mcxn947`を明示すれば正しいボードプロファイルで書き込める（ユーザーに接続中のボードがN947であることは口頭で確認）
+- ユーザー要望で「ロジアナでの波形を見やすくするため、各テストごとにprint/printlnせず、先に全SPIトランザクションを連続実行してから結果をまとめて表示する」構成に変更。判定用の`bool`/`uint16_t`変数にいったん結果を保持し、4回のトランザクションを`Serial`呼び出しなしで連続実行、最後に`check()`をまとめて呼ぶ形にリファクタ（`examples/Arduino_compatible_API/test_SPI_bitorder_end_transfer16/test_SPI_bitorder_end_transfer16.ino`）
+- MOSI(D11)-MISO(D12)ループバック配線＋ロジアナをD10(CS)/D11(MOSI)/D12(MISO)/D13(SCLK)にプローブしてキャプチャ。`transfer(0xA5)`・`transfer16(0x1234, MSBFIRST)`は素直に期待値どおりの波形（16bit転送はCSが2バイト分LOWを維持する1トランザクションとして見える）
+- `transfer16(0x5678, LSBFIRST)`の波形で、ロジアナのSPIデコーダ（デフォルトMSBファースト解釈）が`0x1E`→`0x6A`という一見不可解な値を表示し、ユーザーから確認依頼。計算で説明: `0x78`（下位バイト）をビット反転すると`0x1E`、`0x56`（上位バイト）をビット反転すると`0x6A`——`LSBFIRST`時は(1)バイト内のビット順がハードウェアレベルで反転され、(2)`transfer16()`実装が下位バイトを先に送る、という2つの仕様がそのまま波形に表れていると判明。ユーザーがロジアナ側のデコーダ設定を「Bit order: LSB first」に切り替えて再キャプチャしたところ`0x78`→`0x56`と正しい値・順序で表示され、実装が正しいことを実機で最終確認
+- `variants/frdm_mcxn947/README.md`の「SPI の実機検証（暫定・要再確認）」を「SPI の実機検証済み動作」に更新し、上記ロジアナ確認の詳細を追記
 
 ---
 

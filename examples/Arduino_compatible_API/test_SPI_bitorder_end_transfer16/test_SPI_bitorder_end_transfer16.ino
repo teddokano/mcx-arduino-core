@@ -6,6 +6,10 @@
  *  but it does confirm: transfer16() round-trips correctly, switching
  *  bitOrder doesn't break subsequent transfers, and end()/begin() can
  *  tear down and restart cleanly.
+ *
+ *  All SPI transfers run back-to-back before any Serial output, so a logic
+ *  analyzer capture shows an uninterrupted burst of transactions; results
+ *  print together at the end.
  */
 
 #include <Arduino.h>
@@ -23,6 +27,10 @@ void setup() {
 
   Serial.println("SPI transfer16 / bitOrder / end test");
 
+  // Run every SPI transaction back-to-back first, with no Serial calls in
+  // between, so a logic analyzer capture shows a clean, uninterrupted burst
+  // of transfers. Results are collected and printed together afterward.
+
   pinMode(SS, OUTPUT);
   digitalWrite(SS, HIGH);
   SPI.begin();
@@ -31,12 +39,10 @@ void setup() {
   digitalWrite(SS, LOW);
   uint8_t b = SPI.transfer(0xA5);
   digitalWrite(SS, HIGH);
-  check("transfer(uint8_t) loopback", b == 0xA5);
 
   digitalWrite(SS, LOW);
   uint16_t w1 = SPI.transfer16(0x1234);
   digitalWrite(SS, HIGH);
-  check("transfer16 (MSBFIRST) loopback", w1 == 0x1234);
   SPI.endTransaction();
 
   // switch bit order mid-session -- should not break subsequent transfers
@@ -44,7 +50,6 @@ void setup() {
   digitalWrite(SS, LOW);
   uint16_t w2 = SPI.transfer16(0x5678);
   digitalWrite(SS, HIGH);
-  check("transfer16 (LSBFIRST) loopback", w2 == 0x5678);
   SPI.endTransaction();
 
   // end() then begin() again -- should be able to restart cleanly
@@ -55,6 +60,11 @@ void setup() {
   uint8_t b2 = SPI.transfer(0x5A);
   digitalWrite(SS, HIGH);
   SPI.endTransaction();
+
+  // All transfers done -- now report results.
+  check("transfer(uint8_t) loopback", b == 0xA5);
+  check("transfer16 (MSBFIRST) loopback", w1 == 0x1234);
+  check("transfer16 (LSBFIRST) loopback", w2 == 0x5678);
   check("transfer after end()+begin()", b2 == 0x5A);
 }
 

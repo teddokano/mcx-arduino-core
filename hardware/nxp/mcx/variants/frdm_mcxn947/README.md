@@ -84,7 +84,7 @@ board, clock_config, pin_mux              ← board files
      にし、他チップに正体不明の追加I2Cバストランザクションが起きないように
      してある。
 
-## SPI の実機検証（暫定・要再確認）
+## SPI の実機検証済み動作
 
 MOSI(D11)-MISO(D12)ジャンパーによるループバックで`transfer()`/`transfer16()`/
 `setBitOrder(LSBFIRST)`/`end()`→`begin()`再初期化まで一通り往復確認OK。
@@ -97,7 +97,16 @@ MOSI(D11)-MISO(D12)ジャンパーによるループバックで`transfer()`/`tr
   `BLUE=D6`）のうちGREENだけがデフォルトSPI CSと重複するので、SPI関連の
   テストスケッチではLED表示にGREENを使わないこと**（ユーザー提供の
   `ref/r01lib_pin_table.xlsx`にピンの用途一覧あり、以後の確認で参照）。
-- ユーザー方針: この結果も暫定とし、後日改めて実機で再確認する。
+- **ロジックアナライザによる最終確認済み**: `test_SPI_bitorder_end_transfer16.ino`
+  をD10(CS)/D11(MOSI)/D12(MISO)/D13(SCLK)にプローブしてキャプチャ。
+  ロジアナのSPIデコーダをMSBファースト（デフォルト）のままにすると、
+  `LSBFIRST`設定時の`transfer16(0x5678)`はバイト内ビットが反転した値
+  （下位バイト`0x78`→`0x1E`、上位バイト`0x56`→`0x6A`、下位バイトが先）と
+  して表示される——デコーダ側を「Bit order: LSB first」に切り替えると
+  `0x78`→`0x56`と正しい値・順序で表示されることを確認し、`bitOrder`が
+  ハードウェアレベルで正しく反映されていることを実証した。CSが16ビット
+  転送の間ずっとLOWを維持していること（1ワード=1トランザクション）も
+  波形上で確認済み。Serial出力の`OK`判定と合わせて全項目確認完了。
 
 ## analogRead の実機検証済み動作
 
