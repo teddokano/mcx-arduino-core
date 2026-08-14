@@ -252,3 +252,37 @@ MOSI(D11)-MISO(D12)ジャンパーによるループバックで`transfer()`/`tr
   が`nullptr`のままなことを確認して特定・修正済み——`Serial1`を参照する
   スケッチは現在コンパイルエラー（`'Serial1' was not declared in this
   scope`）になる。）
+
+## 全GPIOピンの出力確認と`pinMode()`のバグ修正（実機検証済み）
+
+`D0`-`D19`（16本）・`A2`-`A5`（4本）・MikroBusヘッダ（`J5`/`J6`、11本、
+`MB_AN`除く）の全`digitalWrite`対応ピンで出力が出ることを、それぞれ
+専用のテストスケッチ（1本ずつ200msのHIGHパルスを順番に出す「歩くビット」
+パターン）とロジックアナライザで実機確認済み。
+
+- **実機バグ発見・修正: `MB_RX`/`MB_TX`だけ出力が出ない**: MikroBus
+  ピンのテスト中、`MB_RX`/`MB_TX`（`P1_16`/`P1_17`）だけ信号が全く出ない
+  現象が発覚。原因を`pin_mux.c`で調査したところ、`BOARD_InitPins()`が
+  起動時にこの2ピンを**明示的にALT10（I3C1_SDA/I3C1_SCL）へ固定**して
+  いると判明——オンボードP3T1755温度センサー用のI3Cバスとして使うための
+  設計。一方`DigitalInOut`側の`pinMode()`実装は、ピンが既にGPIO(ALT0)で
+  ある前提でGPIOレジスタ（方向・出力値）だけを操作し、PORT MUXフィールド
+  には一切触れない作りだった。`I2C`/`I3C`クラスの`begin()`は`pin_mux()`
+  を明示的に呼んでALT変更するが、その逆方向（一度I2C/I3Cで使ったピンを
+  `pinMode()`でGPIOへ戻す）はコード上どこにも実装されていなかった——
+  他の全ピンはブート時デフォルトが偶然ALT0（GPIO）なため今まで問題が
+  表面化しなかっただけで、`D18`/`D19`（`Wire`用）も含め本来同じ欠陥を
+  抱えていたことが判明。`arduino_layer/arduino_io.cpp`の`pinMode()`を
+  修正し、新規ピン生成時・既存ピン再設定時のどちらでも明示的に
+  `->pin_mux( 0 )`（ALT0=GPIO）を呼ぶよう変更。これにより`pinMode()`は
+  そのピンが直前にどの周辺機能（I2C/I3C/SPI/PWM等）で使われていたかに
+  関わらず、確実にGPIOとして再取得する
+- **双方向切り替えの実機確認**: `onboard_temperature_sensor.ino`
+  （`Wire1`経由でI3Cモードのオンボードセンサーにアクセス）→
+  `test_digitalWrite_mikrobus_pins_N947.ino`（同じ`MB_RX`/`MB_TX`ピンを
+  プレーンGPIOとして駆動）の順に実機で連続実行し、`MB_RX`/`MB_TX`が
+  I3CモードとプレーンGPIOモードの間で正しく切り替わることを確認完了
+- 確認用スケッチ: `test_digitalWrite_all_pins_N947`（D0-D13,D18,D19）、
+  `test_digitalWrite_mikrobus_pins_N947`（MikroBusヘッダ）、
+  `test_digitalWrite_analog_pins_N947`（A2-A5）。いずれも実機ロジアナで
+  確認済み

@@ -3,7 +3,7 @@
 ## プロジェクト概要
 - **リポジトリ**: https://github.com/teddokano/mcx-arduino-core
 - **現在のバージョン**: v0.2.2（`package_nxp_mcx_index.json` 上の最新リリース。`main`上で直接作業・GitHub Release作成済み、`c63ffd4`でchecksum自動更新も確定。2026-08-13リリース。Linux実機での`#include <Arduino.h>`/`<SPI.h>`のファイル名大文字小文字ミスマッチによるビルド失敗を修正するパッチリリース——詳細は後述の専用セクション参照）
-- **作業中**: `prepare0.3.0`ブランチでFRDM-MCXN947ボード対応を進行中（未リリース）。GPIO/Serial(USB)/Wire1(オンボードI3Cセンサー)/Wire(プレーンI2C、外部LM75系センサーとの実通信も確認済み)/SPI/analogRead/analogWrite(全6チャンネル・独立性込み)/tone・noTone(圧電サウンダで実音確認)は実機検証済み、String/UNO互換マクロはコンパイル確認済み、Serial1は意図的に未対応（FlexComm2資源競合のため）。これでN947の主要機能は一通り実機検証済み（任意項目のanalogRead精度確認も定電圧源で完了）。**重要な実機バグ2件を修正済み**: (1) `analogWrite`の物理ピンが当初A153流用のP3_6-P3_11（実際は未配線のテストポイント）のままだった → 回路図でP2_2-P2_7/FlexPWM1が正しいピンと判明・修正、(2) その修正時のALT値導出（pin_mux.cのコメント内位置カウント方式）がP2_2/P2_3の2ピンだけ誤っていた → Zephyrのpinctrlヘッダ（シリコン正確）で全ピンAlt5と確定・修正。方針: 未実装が残っていてもN947が一通り完成した段階でリリースする。詳細は「v0.3.0 で作業中の内容」セクション参照
+- **作業中**: `prepare0.3.0`ブランチでFRDM-MCXN947ボード対応を進行中（未リリース）。GPIO/Serial(USB)/Wire1(オンボードI3Cセンサー)/Wire(プレーンI2C、外部LM75系センサーとの実通信も確認済み)/SPI/analogRead/analogWrite(全6チャンネル・独立性込み)/tone・noTone(圧電サウンダで実音確認)は実機検証済み、String/UNO互換マクロはコンパイル確認済み、Serial1は意図的に未対応（FlexComm2資源競合のため）。これでN947の主要機能は一通り実機検証済み（任意項目のanalogRead精度確認も定電圧源で完了、さらにD0-D19/A2-A5/MikroBusヘッダの全GPIO出力も実機確認済み）。**重要な実機バグ3件を修正済み**: (1) `analogWrite`の物理ピンが当初A153流用のP3_6-P3_11（実際は未配線のテストポイント）のままだった → 回路図でP2_2-P2_7/FlexPWM1が正しいピンと判明・修正、(2) その修正時のALT値導出（pin_mux.cのコメント内位置カウント方式）がP2_2/P2_3の2ピンだけ誤っていた → Zephyrのpinctrlヘッダ（シリコン正確）で全ピンAlt5と確定・修正、(3) `pinMode()`がPORT MUXを一切変更しない実装だったため、起動時にI3C用ALT10へ固定されている`MB_RX`/`MB_TX`（`P1_16`/`P1_17`）だけ`digitalWrite`が効かなかった → `pinMode()`で常にALT0(GPIO)へ明示的に再設定するよう修正し、`Wire1`⇔`digitalWrite`の双方向切り替えを実機確認。方針: 未実装が残っていてもN947が一通り完成した段階でリリースする。詳細は「v0.3.0 で作業中の内容」セクション参照
 - **v0.2.1**（前バージョン）: `prepare0.2.1`→`main`fast-forwardマージ・GitHub Release作成済み、2026-08-12リリース
 - **重要な学び（リリースzipの構造要件）**: v0.2.1の初回リリース作業で`git archive --format=zip -o ... HEAD:hardware/nxp/mcx`を使ってzipを作成したところ、Arduino IDE経由の実インストールで`Failed to install platform: ... no unique root dir in archive, found '.../cores' and '.../tools'`エラーで失敗。Arduino Boards Managerのインストーラーは**zip直下に単一のラッパーディレクトリが1つだけ**存在することを要求する（インストーラーがそのディレクトリを剥がして`packages/<vendor>/hardware/<arch>/<version>/`に配置する仕組み）。`git archive HEAD:hardware/nxp/mcx`はサブディレクトリの中身を直接展開するため、`boards.txt`/`cores/`/`tools/`/`variants/`等がzip直下に並ぶ「フラットな」構造になってしまい、この要件を満たしていなかった。実際に公開済みのv0.2.0のzipを確認したところ、そちらは`mcx/`という単一のラッパーディレクトリを持つ正しい構造になっており問題なし（0.2.1作成時のみのミス）。**今後リリースzipを作る際は、必ず単一のトップレベルディレクトリ（名前は任意、例: `mcx-arduino-core-<version>/`）でラップすること** — `git archive`で作る場合は一旦別ディレクトリに展開してからラッパーディレクトリごと`zip -r`するか、`--prefix=<name>/`オプションを使う
 - **内容**: NXP FRDM-MCXA153 (Cortex-M33) 向けArduino IDEボードサポートパッケージ
@@ -548,7 +548,17 @@ tone/noTone検証完了後、ユーザーから最後の任意項目「analogRea
 
 - ユーザーが`A2`-`A5`の4チャンネル全てに既知の電圧（0-3.3V範囲）を順に与え、**「それぞれに与えた電圧を正確に測定できた」**と報告——全チャンネルの精度を確認完了
 - `variants/frdm_mcxn947/README.md`の`analogRead`セクションに、当初のGND/3.3Vショート確認（A3のみ、変化の有無だけ確認）に加えて、この定電圧源による4チャンネル精度確認（実際の電圧値との一致）を追記
-- これでN947の実機検証タスクは全て完了（Serial1は意図的に未対応として既知の制限に位置づけ済み）
+
+### 全GPIOピンの出力確認と`pinMode()`のバグ発見・修正
+analogRead精度確認完了後、ユーザーから「サポートしてる全てのGPIOで出力が出ることを確認したい」との依頼。`D0`-`D19`（16本、A0/A1は`DISABLED_PIN`のため対象外）を1本ずつ200msのHIGHパルスで順番に光らせる「歩くビット」パターンのテストスケッチ`test_digitalWrite_all_pins_N947`を新規作成・実機確認——**正常動作**。
+
+- ユーザーから「MicroBusのピンはどう？A153ではサポートしてなかった？」と追加の指摘。調査したところ、`io.h`/`arduino_io.h`に`MB_AN`/`MB_RST`/`MB_CS`/`MB_SCK`/`MB_MISO`/`MB_MOSI`/`MB_PWM`/`MB_INT`/`MB_RX`/`MB_TX`/`MB_SCL`/`MB_SDA`というMikroBusピンマクロがA153・N947両方に既に存在していたが、**どちらのボードでも一度もテスト・ドキュメント化されていない**（`PIN_MAPPING_*.md`未掲載）ことが判明。`pin_mux.c`で実配線を確認したところ（`P3_6`-`P3_11`のときのようなテストポイントではなく）`J5`/`J6`（Mikro Busコネクタ）に実際に配線されていることを確認——回路図の"Mikro Bus"セクションのラベルとも一致。ユーザー承認のうえ、同じ「歩くビット」パターンのテストスケッチ`test_digitalWrite_mikrobus_pins_N947`（`MB_AN`除く11本）を新規作成・実機確認
+- **実機バグ発見: `MB_RX`/`MB_TX`だけ出力が出ない**: 全11本のうち`MB_RX`/`MB_TX`（`P1_16`/`P1_17`）だけロジアナに何も出ないとユーザーから報告。ユーザー自身が「ああ、I2C(I3C)になってるのか」とほぼ即座に原因を言い当てた——`pin_mux.c`の`BOARD_InitPins()`がオンボードP3T1755センサー用にこの2ピンを起動時にALT10（I3C1_SDA/SCL）へ固定しており、`DigitalInOut`の`pinMode()`実装がPORT MUXフィールドを一切触らず（ピンが既にGPIOである前提でGPIOレジスタのみ操作）、ALT10のまま残っていたことが根本原因
+- ユーザーから「D18, D19がI²CとGPIOで切り替えれるように，MB_RX, MB_TXも切り替えできるように」と修正依頼。調査の結果、`I2C`/`I3C`クラスの`begin()`は`pin_mux()`を明示的に呼んでALT変更する一方、GPIO側に戻す経路がコード上どこにも存在しないと判明——`D18`/`D19`も含め全ピンが本来同じ欠陥を抱えていたが、他のピンはブート時デフォルトが偶然ALT0（GPIO）だったため今まで表面化していなかっただけ、と特定
+- `arduino_layer/arduino_io.cpp`の`pinMode()`を修正——新規ピン生成時・既存ピン再設定時のどちらでも`->pin_mux( 0 )`（ALT0=GPIO）を明示的に呼ぶよう変更。これにより`pinMode()`は直前にどの周辺機能で使われていたかに関わらず、確実にGPIOとして再取得するようになった。ライブラリ再ビルド（strip込み）・関連スケッチの回帰コンパイル確認（`onboard_temperature_sensor`は外部ライブラリ`P3T1755.h`未インストールによる無関係な既存エラーのみ、回帰なしと確認）・実機書き込み
+- **双方向切り替えの実機確認完了**: ユーザーが`onboard_temperature_sensor.ino`（`Wire1`経由でI3Cモードのオンボードセンサーにアクセス）→`test_digitalWrite_mikrobus_pins_N947.ino`（同じ`MB_RX`/`MB_TX`をプレーンGPIOとして駆動）の順に実機で連続実行し、**「GPIOとI²Cのどちらでも切り替えて動かせることを確認できた」**と報告
+- 最後にユーザーから「A2〜A5は使える？」との質問。`arduino_io.h`でA2-A5がD-pin/MikroBusピンと同じenumに属することを確認して「使える」と回答、同じ「歩くビット」パターンのテストスケッチ`test_digitalWrite_analog_pins_N947`を新規作成・実機確認——**正常動作**
+- `PIN_MAPPING_N947.md`にMikroBusピン表を新規追加、`variants/frdm_mcxn947/README.md`に「全GPIOピンの出力確認と`pinMode()`のバグ修正」セクションを新設し、上記の経緯・バグ・修正内容を記録
 
 ---
 

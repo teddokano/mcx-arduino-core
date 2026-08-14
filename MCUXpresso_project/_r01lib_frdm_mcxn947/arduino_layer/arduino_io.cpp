@@ -39,6 +39,7 @@ void pinMode( int pin_num, int mode )
 						digital_pins[ pin_num ]->input();
 
 				digital_pins[ pin_num ]->mode( pin_mode );
+				digital_pins[ pin_num ]->pin_mux( 0 );   // reclaim as plain GPIO (ALT0), regardless of any peripheral mode a prior begin() (I2C/I3C/SPI/PWM) left the pin in
 		}
 		else
 		{
@@ -46,6 +47,8 @@ void pinMode( int pin_num, int mode )
 
 				if ( digital_pins[ pin_num ] == nullptr )
 						panic( "error @ new, in pinMode()" );
+
+				digital_pins[ pin_num ]->pin_mux( 0 );   // some pins (e.g. MB_RX/MB_TX = I3C_SDA/I3C_SCL) boot up muxed to a non-GPIO peripheral function instead of the usual ALT0 default
 		}
 }
 

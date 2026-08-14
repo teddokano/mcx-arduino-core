@@ -55,10 +55,33 @@ Other named pins/peripherals:
 | `I3C_SDA` / `I3C_SCL` (`MB_RX` / `MB_TX`) | `P1_16` / `P1_17` | `Wire1` (I3C, I2C mode) — on-board P3T1755 temperature sensor |
 | `SW2` / `SW3` | `A5` (`P0_23`) / `P0_6` | on-board push buttons — note `SW2` shares its pin with `A5` |
 
+MikroBus header pins (connector `J5`/`J6`) — plain `digitalWrite`/`digitalRead`
+GPIO, verified on real hardware:
+
+| Name | MCU pin | Notes |
+|---|---|---|
+| `MB_AN` | — | **not available** — `DISABLED_PIN` on this board |
+| `MB_RST` | `P1_3` | |
+| `MB_CS` | `P3_23` | |
+| `MB_SCK` | `P3_21` | |
+| `MB_MISO` | `P3_22` | |
+| `MB_MOSI` | `P3_20` | |
+| `MB_PWM` | `P3_19` | |
+| `MB_INT` | `P5_7` | |
+| `MB_RX` | `P1_16` | same pin as `I3C_SDA` — see below |
+| `MB_TX` | `P1_17` | same pin as `I3C_SCL` — see below |
+| `MB_SCL` | `P1_1` | |
+| `MB_SDA` | `P1_0` | |
+
 > **Note on `Wire1`**: same I3C-in-I2C-mode design as A153 (see
 > [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md)'s note), but on different physical pins —
 > `I3C_SDA`/`I3C_SCL` here are `MB_RX`/`MB_TX` (the MikroBus RX/TX pins), not the same
-> pins as `Wire`.
+> pins as `Wire`. Boot firmware pre-muxes `P1_16`/`P1_17` to the I3C peripheral
+> function, but `pinMode()` explicitly reclaims a pin as plain GPIO (ALT0)
+> whenever it's called, so `MB_RX`/`MB_TX` freely switch between `Wire1` and
+> plain `digitalWrite`/`digitalRead` — confirmed on real hardware by running
+> `onboard_temperature_sensor` (I3C access) followed by
+> `test_digitalWrite_mikrobus_pins_N947` (GPIO) back to back.
 
 > **`Serial1` is not available on this board.** `D0`/`D1`'s only UART-capable
 > peripheral (FlexComm2) is the same instance `Wire` already uses for I2C — a
