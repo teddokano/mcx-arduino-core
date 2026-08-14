@@ -207,11 +207,10 @@ MOSI(D11)-MISO(D12)ジャンパーによるループバックで`transfer()`/`tr
   独立という設計どおりの動作）を、ロジアナで全6ピン同時キャプチャして
   確認済み
 
-## tone / noTone の実装（実機検証待ち）
+## tone / noTone の実機検証済み動作
 
-`tone()`/`noTone()`はCTIMER0ベースで実装済み（A153とほぼ同一のロジック、
-任意のデジタルピンでソフトウェアトグル）。**まだ実機検証していない**
-（ユーザー方針: 後日確認）。
+`tone()`/`noTone()`はCTIMER0ベースで実装済み・実機検証済み（A153とほぼ
+同一のロジック、任意のデジタルピンでソフトウェアトグル）。
 
 - このファイル（`arduino_tone.cpp`）はCPU依存の`#ifdef`分岐が一切ない、
   完全にチップ非依存な実装だった。ただしN947のSDKではクロック分周器の
@@ -226,11 +225,14 @@ MOSI(D11)-MISO(D12)ジャンパーによるループバックで`transfer()`/`tr
 - `drivers/subdir.mk`に`fsl_ctimer.c`（既にdriversフォルダには存在して
   いたが未ビルドだった）を追加、`arduino_layer/subdir.mk`に
   `arduino_tone.cpp`を追加
-- 確認用スケッチ: D3ピンで440Hz→880Hzを繰り返すテスト（ピエゾブザーか
-  スコープでの確認を想定）を用意したが、実機確認はWire/SPI/analogWrite
-  と同様後日に持ち越し。`test_tone`/`test_shiftOut_pulseIn_random`
+- **実機確認済み**: `examples/Arduino_compatible_API/test_tone`
+  （D13、"Twinkle Twinkle Little Star"のメロディを262Hz-440Hzの範囲で
+  演奏）を実機フラッシュし、圧電サウンダで実際にメロディが鳴ることを
+  確認。`tone()`は任意のデジタルピンを使う汎用GPIOトグル実装のため、
+  analogWriteのような固定ピンテーブルに起因するバグのリスクはなく、
+  一度で正常動作を確認できた。`test_tone`/`test_shiftOut_pulseIn_random`
   （tone()依存）が以前はN947でリンクエラーになっていたが、今回の実装で
-  `arduino-cli compile`成功に転じたことは確認済み
+  解消したことも確認済み
 - `Serial1`（D0/D1ハードウェアUART）は**見送り（意図的に未対応）**。
   D0/D1（ARD_D0/ARD_D1、物理ピンP4_3/P4_2）のFlexCommとしての alt機能は
   FC2_P2/FC2_P3のみで、これは`Wire`（I2C_SDA/SCL=D18/D19、`LPI2C2`＝

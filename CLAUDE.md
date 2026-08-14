@@ -3,7 +3,7 @@
 ## プロジェクト概要
 - **リポジトリ**: https://github.com/teddokano/mcx-arduino-core
 - **現在のバージョン**: v0.2.2（`package_nxp_mcx_index.json` 上の最新リリース。`main`上で直接作業・GitHub Release作成済み、`c63ffd4`でchecksum自動更新も確定。2026-08-13リリース。Linux実機での`#include <Arduino.h>`/`<SPI.h>`のファイル名大文字小文字ミスマッチによるビルド失敗を修正するパッチリリース——詳細は後述の専用セクション参照）
-- **作業中**: `prepare0.3.0`ブランチでFRDM-MCXN947ボード対応を進行中（未リリース）。GPIO/Serial(USB)/Wire1(オンボードI3Cセンサー)/Wire(プレーンI2C、外部LM75系センサーとの実通信も確認済み)/SPI/analogRead/analogWrite(全6チャンネル・独立性込み)は実機検証済み、tone・noToneは実装・コンパイル確認済みだが実機検証待ち、String/UNO互換マクロはコンパイル確認済み、Serial1は意図的に未対応（FlexComm2資源競合のため）。**重要な実機バグ2件を修正済み**: (1) `analogWrite`の物理ピンが当初A153流用のP3_6-P3_11（実際は未配線のテストポイント）のままだった → 回路図でP2_2-P2_7/FlexPWM1が正しいピンと判明・修正、(2) その修正時のALT値導出（pin_mux.cのコメント内位置カウント方式）がP2_2/P2_3の2ピンだけ誤っていた → Zephyrのpinctrlヘッダ（シリコン正確）で全ピンAlt5と確定・修正。方針: 未実装が残っていてもN947が一通り完成した段階でリリースする。詳細は「v0.3.0 で作業中の内容」セクション参照
+- **作業中**: `prepare0.3.0`ブランチでFRDM-MCXN947ボード対応を進行中（未リリース）。GPIO/Serial(USB)/Wire1(オンボードI3Cセンサー)/Wire(プレーンI2C、外部LM75系センサーとの実通信も確認済み)/SPI/analogRead/analogWrite(全6チャンネル・独立性込み)/tone・noTone(圧電サウンダで実音確認)は実機検証済み、String/UNO互換マクロはコンパイル確認済み、Serial1は意図的に未対応（FlexComm2資源競合のため）。これでN947の主要機能は一通り実機検証済み（残るのは任意項目のanalogRead精度確認のみ）。**重要な実機バグ2件を修正済み**: (1) `analogWrite`の物理ピンが当初A153流用のP3_6-P3_11（実際は未配線のテストポイント）のままだった → 回路図でP2_2-P2_7/FlexPWM1が正しいピンと判明・修正、(2) その修正時のALT値導出（pin_mux.cのコメント内位置カウント方式）がP2_2/P2_3の2ピンだけ誤っていた → Zephyrのpinctrlヘッダ（シリコン正確）で全ピンAlt5と確定・修正。方針: 未実装が残っていてもN947が一通り完成した段階でリリースする。詳細は「v0.3.0 で作業中の内容」セクション参照
 - **v0.2.1**（前バージョン）: `prepare0.2.1`→`main`fast-forwardマージ・GitHub Release作成済み、2026-08-12リリース
 - **重要な学び（リリースzipの構造要件）**: v0.2.1の初回リリース作業で`git archive --format=zip -o ... HEAD:hardware/nxp/mcx`を使ってzipを作成したところ、Arduino IDE経由の実インストールで`Failed to install platform: ... no unique root dir in archive, found '.../cores' and '.../tools'`エラーで失敗。Arduino Boards Managerのインストーラーは**zip直下に単一のラッパーディレクトリが1つだけ**存在することを要求する（インストーラーがそのディレクトリを剥がして`packages/<vendor>/hardware/<arch>/<version>/`に配置する仕組み）。`git archive HEAD:hardware/nxp/mcx`はサブディレクトリの中身を直接展開するため、`boards.txt`/`cores/`/`tools/`/`variants/`等がzip直下に並ぶ「フラットな」構造になってしまい、この要件を満たしていなかった。実際に公開済みのv0.2.0のzipを確認したところ、そちらは`mcx/`という単一のラッパーディレクトリを持つ正しい構造になっており問題なし（0.2.1作成時のみのミス）。**今後リリースzipを作る際は、必ず単一のトップレベルディレクトリ（名前は任意、例: `mcx-arduino-core-<version>/`）でラップすること** — `git archive`で作る場合は一旦別ディレクトリに展開してからラッパーディレクトリごと`zip -r`するか、`--prefix=<name>/`オプションを使う
 - **内容**: NXP FRDM-MCXA153 (Cortex-M33) 向けArduino IDEボードサポートパッケージ
@@ -411,8 +411,7 @@ MCUXpresso生成の`app_template_FRDM_MCXN947`プロジェクトの`.ld`断片�
 - 修正後、`test_Serial1`がN947向けに正しくコンパイルエラーになること、他の全examplesに回帰がないことを再確認
 
 ### 実機検証状況（v0.3.0時点、正確に記録）
-- **実機フラッシュして動作確認済み**: GPIO（`pinMode`/`digitalWrite`/`delay`）、Serial（USB経由、`Serial.begin()`/`println()`、RGB LED制御と組み合わせた`hello_world.ino`で確認）、SPI・Wire・Wire1・analogRead・analogWrite（後述の各専用セクション参照）
-- **実装・コンパイル確認済みだが実機検証待ち**: `tone`/`noTone`
+- **実機フラッシュして動作確認済み**: GPIO（`pinMode`/`digitalWrite`/`delay`）、Serial（USB経由、`Serial.begin()`/`println()`、RGB LED制御と組み合わせた`hello_world.ino`で確認）、SPI・Wire・Wire1・analogRead・analogWrite・tone/noTone（後述の各専用セクション参照）
 - **`arduino-cli compile`のみ確認済み（実機フラッシュはまだ）**: `String`、UNO互換マクロ（`test_arduino_compat_macros`）
 - **意図的に未対応**: `Serial1`（上記参照）
 
@@ -540,6 +539,9 @@ Wire検証完了後、ユーザーから「analogWrite」を指定。「どの�
 - ユーザーが再度ロジアナで確認し**「10msごとの変化とした．正常」**（`delay(3000)`を`delay(10)`にユーザー自身が編集して確認速度を上げた）と報告、`PWM_0`単体の動作を確認
 - 追加でユーザーから「全チャンネルの出力と，独立性が保たれているかを検証」との依頼。新規テストスケッチ`test_analogWrite_all_channels_N947.ino`を作成——(A) 6チャンネル同時に異なる固定duty比（`PWM_0`≈10%〜`PWM_4`≈90%）を8秒間出力し全チャンネルの個別動作を確認、(B) `PWM_0`/`PWM_1`（sm2共有）・`PWM_2`/`PWM_3`（sm1共有）・`PWM_4`/`PWM_5`（sm0共有）の3ペアそれぞれで片方を50%固定しもう片方を0→25→50→75→100%で掃引し、周期共有・duty独立というFlexPWMサブモジュールの設計どおり固定側が影響を受けないことを検証する2フェーズ構成。実機書き込み後、ユーザーが**「確認できた」**と報告——全6チャンネルの出力とチャンネル間の独立性を実機で確認完了
 - `PIN_MAPPING_N947.md`・`variants/frdm_mcxn947/README.md`の`analogWrite`セクションを、正しい`P2_2`-`P2_7`/`FlexPWM1`ベースの情報および2件の実機バグの経緯に全面更新
+
+### tone/noToneの実機検証: 圧電サウンダで実音確認完了
+analogWrite検証完了後、ユーザーから「tone/noTone」を指定。既存の`examples/Arduino_compatible_API/test_tone`（D13、"Twinkle Twinkle Little Star"のメロディを262Hz-440Hzの範囲で演奏、`tone()`/`noTone()`の呼び出しペアも含む）をそのままN947向けにコンパイル・実機書き込み。`tone()`はanalogWriteのような固定ピンテーブルを持たず、任意のデジタルピンを汎用GPIOトグルで駆動する完全にチップ非依存な実装（CTIMER0の周波数分周設定のみN947固有のシンボル名に対応済み）だったため、analogWriteで発生したような「ピン自体が間違っている」「ALT値が違う」という類のバグが起こりうる構造ではなく、一度の書き込みでユーザーが圧電サウンダを接続し**「圧電サウンダでメロディがなっていることを確認できた」**と実機確認完了を報告——音として実際に聞こえる形での確認のため、ロジアナのキャプチャよりもさらに直接的な実機検証となった。`variants/frdm_mcxn947/README.md`の該当セクションを実機検証済みに更新。これでN947の主要ペリフェラル（GPIO/Serial/Wire/Wire1/SPI/analogRead/analogWrite/tone・noTone）は全て実機検証済みとなり、残るのは任意項目のanalogRead精度確認（定電圧源使用）のみ
 
 ---
 
