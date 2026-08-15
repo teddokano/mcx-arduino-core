@@ -5,7 +5,7 @@
 # FRDM-MCXA153
 ##############################################################
 
-frdm_mcxa153.name=FRDM-MCXA153 (NXP Cortex-M33)
+frdm_mcxa153.name=FRDM-MCXA153 (mcx-arduino-core)
 
 # CPU
 frdm_mcxa153.build.mcu=cortex-m33+nodsp
@@ -54,7 +54,7 @@ frdm_mcxa153.upload_port.0.pid=0x0143
 # FRDM-MCXN947
 ##############################################################
 
-frdm_mcxn947.name=FRDM-MCXN947 (NXP Cortex-M33)
+frdm_mcxn947.name=FRDM-MCXN947 (mcx-arduino-core)
 
 # CPU
 frdm_mcxn947.build.mcu=cortex-m33
