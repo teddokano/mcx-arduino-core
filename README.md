@@ -13,7 +13,7 @@ for each board's pin assignments, and [CHANGELOG.md](CHANGELOG.md) for release h
 |-------|-----|------|
 | FRDM-MCXA153 | MCXA153 (Cortex-M33) | ✅ |
 | FRDM-MCXA156 | MCXA156 (Cortex-M33) | 🔜 |
-| FRDM-MCXN947 | MCXN947 (Cortex-M33) | 🔜 |
+| FRDM-MCXN947 | MCXN947 (Cortex-M33) | ✅ |
 | FRDM-MCXN236 | MCXN236 (Cortex-M33) | 🔜 |
 
 <img src="img/FRDM-MCXA153.jpg" alt="FRDM-MCXA153 running an mcx-arduino-core sketch" width="400">  

@@ -723,6 +723,7 @@ SD読み取りが全体の85.9%を占め、96バイトのチャンク読み取�
 
 ## 残りのPendingタスク
 1. ~~Linux対応の実機検証~~ **解消済み（v0.2.2で確定）**: v0.2.1リリース後の実機検証で、ファイル名の大文字小文字ミスマッチ（`arduino.h`/`Arduino.h`、`spi.h`/`SPI.h`）によりLinuxでビルドが失敗することが判明・修正し、v0.2.2としてリリース。Linux実機（Ubuntu系）でBoards Manager経由インストール〜Blinkスケッチのビルド〜書き込み〜実行まで成功を確認済み。README.md/TUTORIAL.md/TUTORIAL.ja.mdの「未検証」表記もすべて「macOS, Windows 11, Linuxで検証済み」に更新済み
-2. マルチボード対応（MCXN947, MCXA156, MCXN236）— **N947は`prepare0.3.0`ブランチで作業中**（GPIO/Serial実機検証済み、詳細は「v0.3.0 で作業中の内容」セクション参照）。A156/N236は未着手
+2. マルチボード対応（MCXN947, MCXA156, MCXN236）— **N947は`prepare0.3.0`ブランチで完了**。GPIO/Serial/Wire/Wire1/SPI/analogRead/analogWrite/tone・noTone・MikroBusの`SPI1`/`Wire2`/`Serial1`まで実機検証済み、`README.md`の対応ボード表もA153と同じ✅に変更済み（ユーザー判断、2026-08-16）。残るはバージョン番号の更新とリリース手順（下記5）のみ。A156/N236は未着手
 3. （低優先度）`examples/tests/GPIO_NXP_Arduino`の不要なgitlinkエントリの整理
-4. **N947のピン配置図**: A153の`img/pins-FRDM-MCXA153.png`と同様のものをN947用にも用意する。A153の図はユーザーが**手書きで作成**したもの（元データ・生成ツールはリポジトリになし、完成したPNGのみを配置）。N947版も同様にユーザーが手書きで作成する予定——出来上がったら`img/`に配置し、`variants/frdm_mcxn947/README.md`（および正式リリース時にはトップレベルREADME/TUTORIAL）から参照する
+4. ~~N947のピン配置図~~ **完了**: ユーザーが手書きで作成（`img/pins-FRDM-MCXN947.png`）、`PIN_MAPPING_N947.md`から参照。A153の図も同時にArduinoヘッダ用/MikroBusヘッダ用の2枚に分割（`pins-FRDM-MCXA153-ard.png`/`-mb.png`）
+5. **v0.3.0リリース**: `platform.txt`/`package_nxp_mcx_index.json`のバージョン番号がまだ`0.2.2`のまま更新されていない。実際にリリースする際は、これまでと同じ手順（`platforms`配列に新エントリ追加→タグpush→`update_package_index.yml`の自動push失敗を確認→`main`に対して`workflow_dispatch`を手動実行してchecksum確定）を踏む必要がある。リリースzip作成時は単一トップレベルディレクトリでラップすることを忘れないこと（v0.2.1初回リリースの教訓）
