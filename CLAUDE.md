@@ -577,6 +577,15 @@ analogRead精度確認完了後、ユーザーから「サポートしてる全�
 - **3モード排他切り替えの実機確認完了**: ユーザーが`onboard_temperature_sensor`（`Wire1`でI3Cアクセス）→`test_digitalWrite_mikrobus_pins_N947`（プレーンGPIO）→`test_Serial1_MikroBus_N947`（UART）→再度GPIO、の順に実機で連続実行し、同じ2物理ピンがI3C・GPIO・UARTの3モードを正しく切り替えられることを確認
 - `PIN_MAPPING_N947.md`・`variants/frdm_mcxn947/README.md`を更新（セクション名を「MikroBusのSPI/I2C/UART」に拡張、D0/D1の`Serial1`見送り注記にもMikroBus側で実現した旨を追記）
 
+### GitHub Issue対応: #1「標準MOSI/MISO/SCKマクロが未定義」
+ユーザーから「githubに来ているIssueを確認して」と依頼。`gh issue list`で2件のオープンIssue（両方ともリポジトリオーナー本人が、別プロジェクト`Waveshare_TFT_Touch_Arduino`のCI設定中に発見・報告したもの）を確認・要約して提示し、ユーザーが「#1に対応する」と指定。
+
+- **Issue #1の内容**: 各ボードの`arduino_io.h`は`SPI_MOSI`/`ARD_MOSI`/`MB_MOSI`等の接頭辞付き名前しか定義しておらず、AVR/SAMD/ESP32/Renesas UNO R4など他の全Arduinoコアが標準で提供する裸の`MOSI`/`MISO`/`SCK`が無いため、それらを直接参照するサードパーティライブラリ（例: 公式`SD`ライブラリ）のコンパイルが`'MOSI' was not declared in this scope`等で失敗する、という報告
+- **対応**: A153・N947（このリポジトリで実際に配布している2ボードのみ、A156/N236/C444はまだ未配布のため対象外）の`arduino_io.h`に、`ARDUINO_PIN_RENUMBERING`のenum定義が閉じた直後（`LED_BUILTIN`と同様の「既存ピンへのエイリアス」パターン）に`#define MOSI ARD_MOSI` / `#define MISO ARD_MISO` / `#define SCK ARD_SCK`を追加。`ARD_MOSI`等は既に`SPI`グローバルインスタンスが使うデフォルトSPIピン（A153/N947ともD11/D12/D13）なので、素直なエイリアスとして機能する
+- 両ボードのライブラリを再ビルド・再配置。**ついでにA153の配布用`.a`も初めてstrip-debugした**（従来49.5MBのunstrippedのままだったが、GitHub制限内で問題にならなかったため手つかずだった。今回コード変更に伴いどのみち差し替えが必要だったため、N947で確立した教訓を適用し440KBまで圧縮）
+- 実際にIssue記載の再現手順（`arduino-cli lib install SD`→`#include <SD.h>`するスケッチをビルド）で検証——**両ボードとも`MOSI`/`MISO`/`SCK`関連のエラーは解消したことを確認**。ただし`SD`ライブラリ自体は`setWriteError`/`clearWriteError`/`getWriteError`という別の未実装API（`Print`/`Stream`周りのギャップ、Issue #1の範囲外）でコンパイルが通らない状態は残る——これは新規Issueとして別途起票すべき事項だが、今回はスコープ外として深追いせず
+- 確認用スケッチ`test_MOSI_MISO_SCK_macros`（`MOSI==ARD_MOSI`等を検証、配線不要）を新規作成、両ボードでコンパイル確認。`API_COMPATIBILITY.md`のSPIセクション・`CHANGELOG.md`のUnreleasedセクションに追記
+
 ---
 
 ## 動作確認済み

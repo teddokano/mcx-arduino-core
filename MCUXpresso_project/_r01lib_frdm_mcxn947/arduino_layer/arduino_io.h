@@ -249,6 +249,16 @@ enum ArduinoPinNum {
 	PWM_5,
 };
 
+// Bare MOSI/MISO/SCK, aliased to this board's default SPI pins (ARD_MOSI/
+// ARD_MISO/ARD_SCK, the same ones the global `SPI` instance uses). Every
+// other Arduino core (AVR, SAMD, ESP32, Renesas UNO R4, ...) provides these
+// as standard board-pin identifiers; without them, any third-party library
+// that references MOSI/MISO/SCK directly (e.g. the official SD library)
+// fails to compile here.
+#define	MOSI	ARD_MOSI
+#define	MISO	ARD_MISO
+#define	SCK		ARD_SCK
+
 #endif // ARDUINO_PIN_RENUMBERING
 
 #endif // !R01LIB_ARDUINO_IO_H

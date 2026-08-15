@@ -49,6 +49,8 @@ surface except where a row below notes a difference. See the main
 | `SPI.begin` / `end` / `beginTransaction` / `endTransaction` / `transfer` / `transfer16` | ✅ | `bitOrder` in `SPISettings` is now actually applied to hardware (was silently ignored before v0.2.1) |
 | `SPI.usingInterrupt` / `notUsingInterrupt` | ✅ | No-op — declared for sketch compatibility only |
 | `SPI.setBitOrder` / `setDataMode` / `setClockDivider` | ✅ | Legacy pre-1.6 API; `setClockDivider` divides `SPI`'s peripheral input clock, not `F_CPU` |
+| Bare `MOSI` / `MISO` / `SCK` pin macros | ✅ | Aliased to this board's default SPI pins (`ARD_MOSI`/`ARD_MISO`/`ARD_SCK`); needed by third-party libraries (e.g. the official `SD` library) that reference them directly |
+| Second SPI instance on MikroBus (`SPI1`) | ✅ (N947 only) | `SPI1` on `MB_MOSI`/`MB_MISO`/`MB_SCK`/`MB_CS`, own peripheral (`LPSPI6`), independent of `SPI` — see [PIN_MAPPING_N947.md](PIN_MAPPING_N947.md) |
 
 ## Timing & Tone
 

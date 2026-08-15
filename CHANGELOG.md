@@ -8,11 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
-- FRDM-MCXN947 board support (`nxp:mcx:frdm_mcxn947`). Supported: GPIO, interrupts, `Serial` (USB), `Wire`/`Wire1` (I2C/I3C), `SPI`, `String`, `analogRead`, `analogWrite`, `tone`/`noTone`, and the UNO-compatible macro set — the same feature set as FRDM-MCXA153. `Serial1` (D0/D1 hardware UART) is not available on this board: those pins share their only UART-capable peripheral (FlexComm2) with `Wire`, so the two can't coexist in one sketch. `analogRead` covers A2-A5 only (A0/A1 aren't wired on this board)
+- FRDM-MCXN947 board support (`nxp:mcx:frdm_mcxn947`). Supported: GPIO, interrupts, `Serial` (USB), `Wire`/`Wire1` (I2C/I3C), `SPI`, `String`, `analogRead`, `analogWrite`, `tone`/`noTone`, and the UNO-compatible macro set — the same feature set as FRDM-MCXA153. `analogRead` covers A2-A5 only (A0/A1 aren't wired on this board)
+- FRDM-MCXN947: independent SPI/I2C/UART instances on the MikroBus header — `SPI1` (`MB_MOSI`/`MB_MISO`/`MB_SCK`/`MB_CS`), `Wire2` (`MB_SDA`/`MB_SCL`), and `Serial1` (`MB_TX`/`MB_RX`) — each on its own peripheral, so all can be used alongside `SPI`/`Wire`/`Serial` in the same sketch. `Serial1` is on the MikroBus header rather than D0/D1: those pins share their only UART-capable peripheral (FlexComm2) with `Wire`, so the two can't coexist there, but MikroBus's `MB_TX`/`MB_RX` have a free FlexComm of their own
+- Bare `MOSI`/`MISO`/`SCK` pin macros (both boards), aliased to each board's default SPI pins — standard on every other Arduino core and required by third-party libraries (e.g. the official `SD` library) that reference them directly (fixes [#1](https://github.com/teddokano/mcx-arduino-core/issues/1))
 - Per-board `F_CPU`, FPU flags, and upload target are now configurable in `boards.txt` rather than hardcoded, as part of adding the second board
 
 ### Fixed
 - `upload.sh`/`upload.bat` always flashed using the FRDM-MCXA153 LinkServer target regardless of which board was selected — harmless before there was only one board, but would have silently flashed the wrong device once a second board existed
+- FRDM-MCXN947: `pinMode()` never touched a pin's PORT mux, only its GPIO direction/data registers — harmless for pins that boot up already muxed to GPIO (true almost everywhere), but `MB_RX`/`MB_TX` boot pre-muxed to the on-board I3C sensor, so `digitalWrite` on them was silently a no-op. `pinMode()` now explicitly reclaims ALT0 (GPIO) on every call
 
 ## [0.2.2] - 2026-08-13
 
