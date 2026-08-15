@@ -670,6 +670,7 @@ SD読み取りが全体の85.9%を占め、96バイトのチャンク読み取�
 - **リリース前ローカル検証（今回新規に実施）**: 過去のv0.2.1（zip構造バグ）・v0.2.2（Linux大文字小文字バグ）がいずれも「ローカル開発用symlink環境では再現せず、実際に公開されたzipをインストールして初めて発覚」した教訓を踏まえ、今回は**実際に作成したリリースzipをローカルで展開し、開発用symlinkを一時退避した上で本物のBoards Manager相当のインストール状態を再現**（`~/Library/Arduino15/packages/nxp/hardware/mcx/0.3.0`に実ファイルとしてコピー）。この状態で`hello_world`・SPI CS修正回帰・PWM0/PWM1修正回帰を含む4スケッチを両ボードでコンパイル確認——全て成功。検証後、開発用symlinkを復元
 - **GitHub Release作成**: `gh release create 0.3.0`でzip添付・CHANGELOG該当セクションをリリースノートとして使用。タグpush時の自動`update_package_index.yml`実行は既知のdetached HEAD問題で失敗することを確認（想定通り）、`gh workflow run update_package_index.yml --ref main`で手動実行しchecksum確定（`de9c8bd`、SHA-256:`f253a06284b78a41f5709dc2dd7d6abf75d56ea9905c8d4d8c1f2eff54510772`、ローカルで計算した値と完全一致確認済み）
 - **Issue #1/#2/#3**: `main`マージ時、各コミットメッセージの`fixes #N`表記によりGitHubが自動的にclose——手動でcloseする前に気づき、代わりに各Issueへ「Shipped in 0.3.0」コメントを追加してリリースへのリンクを残した
+- **Arduino IDE Boards Manager経由インストールの実機検証**: ユーザー依頼で開発用symlink（`0.3.0-dev`）を一時退避し、ローカルのpackage indexキャッシュ（0.2.2時点のまま古かった）も削除した上でユーザー自身がArduino IDEを再起動しBoards Manager経由でインストール。**macOSでインストール〜ビルド〜アップロード〜動作までN947で確認完了**と報告。検証後、開発用symlinkを復元
 
 ---
 
