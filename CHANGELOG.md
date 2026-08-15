@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `Print::setWriteError`/`getWriteError`/`clearWriteError` (both boards), matching ArduinoCore-API's placement/signatures — needed by third-party libraries that derive from `Print` and track write failures this way (e.g. the official `SD` library's `SdFile`/`File`) (fixes [#3](https://github.com/teddokano/mcx-arduino-core/issues/3))
 - Per-board `F_CPU`, FPU flags, and upload target are now configurable in `boards.txt` rather than hardcoded, as part of adding the second board
 
+### Changed
+- Board display names in the Boards Manager/IDE picker changed from "FRDM-MCXA153 (NXP Cortex-M33)" / "FRDM-MCXN947 (NXP Cortex-M33)" to "... (mcx-arduino-core)", so this core is distinguishable from other packages offering the same boards (e.g. Zephyr's)
+
 ### Fixed
 - `upload.sh`/`upload.bat` always flashed using the FRDM-MCXA153 LinkServer target regardless of which board was selected — harmless before there was only one board, but would have silently flashed the wrong device once a second board existed
 - Both boards: `pinMode()` never touched a pin's PORT mux, only its GPIO direction/data registers — harmless for pins that boot up already muxed to GPIO (true almost everywhere), but N947's `MB_RX`/`MB_TX` boot pre-muxed to the on-board I3C sensor, so `digitalWrite` on them was silently a no-op. `pinMode()` now explicitly reclaims ALT0 (GPIO) on every call

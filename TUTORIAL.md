@@ -98,7 +98,7 @@ package doesn't use for anything in this tutorial.
    first time, which can take several minutes depending on your
    connection. Watch the progress bar at the bottom of the Boards Manager
    window; it isn't frozen, just downloading
-4. **Tools → Board**, select **FRDM-MCXA153 (NXP Cortex-M33)**
+4. **Tools → Board**, select **FRDM-MCXA153 (mcx-arduino-core)**
 5. Plug the board into the **MCU-Link USB (J15)** connector and select its
    port under **Tools → Port**
 

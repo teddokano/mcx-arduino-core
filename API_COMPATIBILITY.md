@@ -46,7 +46,7 @@ surface except where a row below notes a difference. See the main
 
 | API | Status | Notes |
 |-----|--------|-------|
-| `SPI.begin` / `end` / `beginTransaction` / `endTransaction` / `transfer` / `transfer16` | ✅ | `bitOrder` in `SPISettings` is now actually applied to hardware (was silently ignored before v0.2.1) |
+| `SPI.begin` / `end` / `beginTransaction` / `endTransaction` / `transfer` / `transfer16` | ✅ | `bitOrder` in `SPISettings` is now actually applied to hardware (was silently ignored before v0.2.1). CS is always plain GPIO, fully sketch-controlled via `pinMode`/`digitalWrite` -- never muxed to the LPSPI hardware chip-select function -- so multiple devices can correctly share one bus with separate CS pins (e.g. an LCD + an SD card), matching standard Arduino SPI semantics |
 | `SPI.usingInterrupt` / `notUsingInterrupt` | ✅ | No-op — declared for sketch compatibility only |
 | `SPI.setBitOrder` / `setDataMode` / `setClockDivider` | ✅ | Legacy pre-1.6 API; `setClockDivider` divides `SPI`'s peripheral input clock, not `F_CPU` |
 | Bare `MOSI` / `MISO` / `SCK` pin macros | ✅ | Aliased to this board's default SPI pins (`ARD_MOSI`/`ARD_MISO`/`ARD_SCK`); needed by third-party libraries (e.g. the official `SD` library) that reference them directly |

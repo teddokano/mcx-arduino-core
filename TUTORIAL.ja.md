@@ -80,7 +80,7 @@ English version → [TUTORIAL.md](TUTORIAL.md)
    回線速度によっては数分かかります。Boards Managerウィンドウ下部の
    プログレスバーが進んでいれば、フリーズしているわけではなく
    ダウンロード中なので待ってください
-4. **Tools → Board**で**FRDM-MCXA153 (NXP Cortex-M33)**を選択
+4. **Tools → Board**で**FRDM-MCXA153 (mcx-arduino-core)**を選択
 5. ボードを**MCU-Link USB（J15）**コネクタに接続し、**Tools → Port**でポートを選択
 
 詳細は[README.md](README.md#installation)を参照してください。
