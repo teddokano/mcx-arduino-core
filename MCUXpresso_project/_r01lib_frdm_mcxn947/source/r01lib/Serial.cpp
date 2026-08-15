@@ -221,6 +221,7 @@ static Serial *s_instances[ 10 ] = {};
 extern "C"
 {
     void LP_FLEXCOMM4_IRQHandler( void ) { if ( s_instances[4] ) s_instances[4]->_irq_handler(); SDK_ISR_EXIT_BARRIER; }
+    void LP_FLEXCOMM5_IRQHandler( void ) { if ( s_instances[5] ) s_instances[5]->_irq_handler(); SDK_ISR_EXIT_BARRIER; }
 }
 
 struct lpuart_pin_map_t {
@@ -236,6 +237,8 @@ struct lpuart_pin_map_t {
 static const lpuart_pin_map_t s_pinMap[] = {
     //  USBTX=P1_9(TX) / USBRX=P1_8(RX) -> FC4 LPUART4, Alt2
     { USBTX, USBRX, LPUART4, 4U, kPORT_MuxAlt2, kFC4_RST_SHIFT_RSTn, LP_FLEXCOMM4_IRQn, kFRO12M_to_FLEXCOMM4 },
+    //  MB_TX=P1_17(TX) / MB_RX=P1_16(RX) -> FC5 LPUART5, Alt2 (MikroBus, Serial1)
+    { MB_TX, MB_RX, LPUART5, 5U, kPORT_MuxAlt2, kFC5_RST_SHIFT_RSTn, LP_FLEXCOMM5_IRQn, kFRO12M_to_FLEXCOMM5 },
 };
 
 void Serial::resolve_pins( int tx, int rx )

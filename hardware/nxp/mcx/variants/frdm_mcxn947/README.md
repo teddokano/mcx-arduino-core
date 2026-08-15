@@ -236,7 +236,7 @@ MOSI(D11)-MISO(D12)ジャンパーによるループバックで`transfer()`/`tr
   一度で正常動作を確認できた。`test_tone`/`test_shiftOut_pulseIn_random`
   （tone()依存）が以前はN947でリンクエラーになっていたが、今回の実装で
   解消したことも確認済み
-- `Serial1`（D0/D1ハードウェアUART）は**見送り（意図的に未対応）**。
+- `Serial1`（D0/D1ハードウェアUART）は**D0/D1では見送り（意図的に未対応）**。
   D0/D1（ARD_D0/ARD_D1、物理ピンP4_3/P4_2）のFlexCommとしての alt機能は
   FC2_P2/FC2_P3のみで、これは`Wire`（I2C_SDA/SCL=D18/D19、`LPI2C2`＝
   FlexComm2）が既に専用で使っているのと**同じFlexComm2インスタンス**。
@@ -249,9 +249,11 @@ MOSI(D11)-MISO(D12)ジャンパーによるループバックで`transfer()`/`tr
   r01lib `Serial.cpp`の`s_pinMap[]`（USBTX/USBRX→LPUART4の1エントリのみ）に
   解決できず`panic()`が`static`初期化時（`setup()`実行前）に発火し、SOSの
   モールス信号でLEDが点滅し続ける実機バグが最初に見つかった。GDBで`_base`
-  が`nullptr`のままなことを確認して特定・修正済み——`Serial1`を参照する
-  スケッチは現在コンパイルエラー（`'Serial1' was not declared in this
+  が`nullptr`のままなことを確認して特定・修正済み——D0/D1で`Serial1`を参照
+  するスケッチは現在コンパイルエラー（`'Serial1' was not declared in this
   scope`）になる。）
+  **後日、`Serial1`自体はMikroBusヘッダ（`MB_TX`/`MB_RX`）向けに実装・実機
+  検証済み——後述の「MikroBusのSPI/I2C/UART」セクション参照。**
 
 ## 全GPIOピンの出力確認と`pinMode()`のバグ修正（実機検証済み）
 
@@ -286,3 +288,81 @@ MOSI(D11)-MISO(D12)ジャンパーによるループバックで`transfer()`/`tr
   `test_digitalWrite_mikrobus_pins_N947`（MikroBusヘッダ）、
   `test_digitalWrite_analog_pins_N947`（A2-A5）。いずれも実機ロジアナで
   確認済み
+
+## MikroBusのSPI/I2C/UART: `Wire2`/`SPI1`/`Serial1`（実機検証済み）
+
+MikroBusヘッダの`MB_SDA`/`MB_SCL`（I2C）・`MB_MOSI`/`MB_MISO`/`MB_SCK`/
+`MB_CS`（SPI）を、`Wire`/`SPI`とは独立したペリフェラルインスタンスとして
+使えるようにした。新規グローバルインスタンス`Wire2`（I2C）・`SPI1`
+（SPI）を追加。
+
+- **ペリフェラルインスタンスの特定**: `I2C`/`SPI`クラスのコンストラクタ
+  は、渡されたピンに関わらず`unit_base`（実際に叩くLPI2C/LPSPIレジスタ）
+  がコンパイル時に単一のマクロへ固定されている作りだった（`Wire`は常に
+  `LPI2C2`、`SPI`は常に`LPSPI1`）。そのままMikroBusピンを渡しても、
+  MUXだけMikroBus側に切り替わり中身はD18/D19やD10-D13用のペリフェラルの
+  ままという不整合になるため、新規ペリフェラル追加が必要だった。
+  `pin_mux.c`のalt-function一覧とZephyrの`MCXN947VDF-pinctrl.h`
+  （シリコン正確、位置カウント方式の失敗を教訓に最初から採用）を突き合
+  わせ、`MB_SDA`(`P1_0`)/`MB_SCL`(`P1_1`)は`FlexComm3`(`LPI2C3`)・Alt2、
+  `MB_MOSI`(`P3_20`)/`MB_MISO`(`P3_22`)/`MB_SCK`(`P3_21`)/`MB_CS`(`P3_23`)
+  は`FlexComm6`(`LPSPI6`)・Alt3で、4ピンとも統一されていることを確認
+- **他ボードに既存パターンあり**: `i2c.cpp`/`r01lib_spi.cpp`を確認したと
+  ころ、A156向けの分岐には既に`MB_SDA`/`MB_SCL`・`MB_MOSI`/`MB_SCK`
+  （SPI版はMikroBus専用ピンセット）をサポートするコードが存在していた
+  （N947だけ未実装だった）。この既存パターンをそのままN947向けに移植
+- **実装**: `mcu.cpp`の`init_mcu()`にFlexComm3/FlexComm6のクロック供給
+  （`CLOCK_SetClkDiv`+`CLOCK_AttachClk(kFRO12M_to_FLEXCOMMx)`、既存の
+  FlexComm1/2と同じ設定）を追加。`i2c.cpp`の`I2C`コンストラクタに
+  `MB_SDA`/`MB_SCL`分岐（`unit_base=LPI2C3`）、`r01lib_spi.cpp`の`SPI`
+  コンストラクタに`MB_MOSI`/`MB_MISO`/`MB_SCK`/`MB_CS`分岐
+  （`unit_base=LPSPI6`）を追加
+- **`SPIClass`の構造変更**: 従来`SPIClass`は引数なしの単一インスタンス
+  固定（`D10`-`D13`決め打ち、内部の`r01libSPI*`もファイルstatic変数で
+  全インスタンス共有）だった。`TwoWire`と同じ設計（コンストラクタで
+  ピンを受け取る）に変更——`SPIClass(int mosi=ARD_MOSI, int miso=ARD_MISO,
+  int sclk=ARD_SCK, int cs=ARD_CS)`、`r01libSPI*`もインスタンスメンバに
+  変更。既存の`SPI`（引数なしデフォルト構築、後方互換）はそのまま、
+  新規`SPI1(MB_MOSI, MB_MISO, MB_SCK, MB_CS)`を追加
+- **実機確認済み**: `Wire2`は`test_Wire2_MikroBus_N947`（バススキャン、
+  デバイス未接続でもハング・クラッシュなし）、`SPI1`は
+  `test_SPI1_MikroBus_N947`（`MB_MOSI`-`MB_MISO`ループバック、
+  `transfer()`/`transfer16()`）で実機確認——ロジアナ波形・Serial出力の
+  両方でOK
+
+### `Serial1`（MikroBus UART、`MB_TX`/`MB_RX`）
+
+ユーザーから「`MB_RX`/`MB_TX`を`Serial1`にできる？」と依頼。D0/D1の
+`Serial1`は上記のとおりFlexComm2競合で見送り済みだったが、`MB_RX`/
+`MB_TX`（`P1_16`/`P1_17`）は事情が異なると判明——`pin_mux.c`のalt-function
+一覧を確認したところ`FC5_P0`/`FC5_P1`（`FlexComm5`、Zephyrのpinctrlヘッダ
+でAlt2と確認）という、`Wire2`が使う`FlexComm3`とも`I3C1`（専用ペリフェラ
+ルでFlexCommを消費しない）とも別の、**未使用のFlexCommインスタンス**が
+使えた。つまりこの2物理ピンは、GPIO・`Wire1`（I3C1）・`Serial1`
+（FlexComm5/LPUART5）の3用途を排他的に切り替えて使える。
+
+- **実装**: `mcu.cpp`にFlexComm5クロック分周設定を追加。`Serial.cpp`の
+  `s_pinMap[]`（USBTX/USBRX→LPUART4の1エントリのみだった）に`MB_TX`/
+  `MB_RX`→`LPUART5`のエントリを追加、`LP_FLEXCOMM5_IRQHandler`も追加。
+  `arduino_serial.cpp`/`.h`に、以前D0/D1向けに一度削除した`Serial1`グロー
+  バルインスタンスを、今度は`MB_TX`/`MB_RX`向けとして復活
+- **実機バグ発見・修正: SOSパニック（`arduino_io.h`のインクルードによる
+  ピン値の衝突）**: 実装直後、実機フラッシュしたところSOSのモールス信号
+  でLEDが点滅し続ける不具合が発生——過去のA153移植時のD0/D1バグと全く同じ
+  症状。原因は`arduino_serial.cpp`が`arduino_io.h`をincludeしていたこと。
+  `arduino_io.h`は`MB_TX`/`MB_RX`をArduinoピン番号リナンバリングの対象に
+  含んでおり（`#undef`してから小さな連番の`enum`値として再定義する仕組
+  み）、`SerialClass Serial1( MB_TX, MB_RX )`の宣言がこのincludeより後にあ
+  ったため、`MB_TX`/`MB_RX`が生のr01lib物理ピン値ではなく再番号化された
+  値に置き換わっていた。一方`Serial.cpp`の`s_pinMap[]`は生のr01lib
+  `io.h`の値と比較する作りのため一致せず、`Serial::resolve_pins()`が
+  `_base`を`nullptr`のままにし、コンストラクタ内の`panic()`が`static`初
+  期化時（`setup()`実行前）に発火していた。`arduino_io.h`のinclude・
+  リナンバリングが効く**前**に`constexpr int SERIAL1_TX_PIN = MB_TX;`等
+  で生の値を退避し、`Serial1`の構築にはその退避値を使うよう修正
+- **実機確認済み（3用途の排他切り替えを含む）**: `test_Serial1_MikroBus_N947`
+  （`MB_TX`-`MB_RX`ループバック）で波形・Serial出力とも問題なしを確認。
+  さらに`onboard_temperature_sensor`（`Wire1`でI3Cアクセス）→
+  `test_digitalWrite_mikrobus_pins_N947`（プレーンGPIO）→
+  `test_Serial1_MikroBus_N947`（UART）の順に実機で連続実行し、同じ2本の
+  物理ピンがI3C・GPIO・UARTの3モードを正しく切り替えられることを確認

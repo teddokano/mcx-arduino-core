@@ -116,6 +116,14 @@ DigitalOut* SPI::cs_manual_control( bool flag )
 	#define EXAMPLE_LPSPI_MASTER_PCS_FOR_INIT     (kLPSPI_Pcs0)
 	#define EXAMPLE_LPSPI_MASTER_PCS_FOR_TRANSFER (kLPSPI_MasterPcs0)
 	#define LPSPI_MASTER_CLK_FREQ CLOCK_GetLPFlexCommClkFreq(1u)
+
+	// MikroBus header (MB_MOSI/MB_MISO/MB_SCK/MB_CS, P3_20/22/21/23) ->
+	// FlexComm6 -> LPSPI6, Alt3 (confirmed against Zephyr's silicon-accurate
+	// pinctrl header, uniform across all 4 pins).
+	#define EXAMPLE_LPSPI_MB_BASEADDR (LPSPI6)
+	#define EXAMPLE_LPSPI_MB_PCS_FOR_INIT     (kLPSPI_Pcs0)
+	#define EXAMPLE_LPSPI_MB_PCS_FOR_TRANSFER (kLPSPI_MasterPcs0)
+	#define LPSPI_MB_CLK_FREQ CLOCK_GetLPFlexCommClkFreq(6u)
 #elif	CPU_MCXN236VDF
 	#define EXAMPLE_LPSPI_MASTER_BASEADDR (LPSPI3)
 	#define EXAMPLE_LPSPI_MASTER_PCS_FOR_INIT     (kLPSPI_Pcs0)
@@ -151,6 +159,8 @@ DigitalOut* SPI::cs_manual_control( bool flag )
 
 SPI::SPI( int mosi, int miso, int sclk, int cs ) : Obj( true ), chip_select( cs )
 {
+	uint8_t	mux_setting	= 2;   // overridden below for pin-sets needing a different ALT (e.g. N947's MikroBus header)
+
 #ifdef	CPU_MCXN947VDF
 #elif	CPU_MCXN236VDF
 #elif	CPU_MCXA156VLL
@@ -167,20 +177,41 @@ SPI::SPI( int mosi, int miso, int sclk, int cs ) : Obj( true ), chip_select( cs 
 	if ( (mosi == MB_MOSI) && (miso == MB_MISO) && (sclk == MB_SCK) && (cs == MB_CS) )
 	{
 		unit_base			= EXAMPLE_LPSPI_MASTER_BASEADDR0;
-		master_clk_freq		= LPSPI_MASTER_CLK_FREQ0;	
+		master_clk_freq		= LPSPI_MASTER_CLK_FREQ0;
 		master_pcs_for_init	= EXAMPLE_LPSPI_MASTER_PCS_FOR_INIT0;
 		master_pcs_4_xfer	= EXAMPLE_LPSPI_MASTER_PCS_FOR_TRANSFER0;
 	}
 	else if ( (mosi == ARD_MOSI) && (miso == ARD_MISO) && (sclk == ARD_SCK) && (cs == ARD_CS) )
 	{
 		unit_base			= EXAMPLE_LPSPI_MASTER_BASEADDR1;
-		master_clk_freq		= LPSPI_MASTER_CLK_FREQ1;	
+		master_clk_freq		= LPSPI_MASTER_CLK_FREQ1;
 		master_pcs_for_init	= EXAMPLE_LPSPI_MASTER_PCS_FOR_INIT1;
 		master_pcs_4_xfer	= EXAMPLE_LPSPI_MASTER_PCS_FOR_TRANSFER1;
 	}
 	else
 	{
 		panic( "FRDM-MCXA156 SPI on Arduino pin and MikroBus are supported. To use Arduino pins, change jumper setting (short 2-3 pins on R59 and R60) and use \"ARD_MOSI\" and \"ARD_CS\" keywords instead of D10 and D11." );
+	}
+#elif	CPU_MCXN947VDF
+	if ( (mosi == MB_MOSI) && (miso == MB_MISO) && (sclk == MB_SCK) && (cs == MB_CS) )
+	{
+		unit_base			= EXAMPLE_LPSPI_MB_BASEADDR;
+		master_clk_freq		= LPSPI_MB_CLK_FREQ;
+		master_pcs_for_init	= EXAMPLE_LPSPI_MB_PCS_FOR_INIT;
+		master_pcs_4_xfer	= EXAMPLE_LPSPI_MB_PCS_FOR_TRANSFER;
+		mux_setting			= 3;
+		RESET_ReleasePeripheralReset( kFC6_RST_SHIFT_RSTn );
+	}
+	else if ( (mosi == ARD_MOSI) && (miso == ARD_MISO) && (sclk == ARD_SCK) && (cs == ARD_CS) )
+	{
+		unit_base			= EXAMPLE_LPSPI_MASTER_BASEADDR;
+		master_clk_freq		= LPSPI_MASTER_CLK_FREQ;
+		master_pcs_for_init	= EXAMPLE_LPSPI_MASTER_PCS_FOR_INIT;
+		master_pcs_4_xfer	= EXAMPLE_LPSPI_MASTER_PCS_FOR_TRANSFER;
+	}
+	else
+	{
+		panic( "FRDM-MCXN947 supports SPI on Arduino pins (D10-D13) or MikroBus (MB_MOSI/MB_MISO/MB_SCK/MB_CS)" );
 	}
 #else
 	unit_base			= EXAMPLE_LPSPI_MASTER_BASEADDR;
@@ -202,12 +233,10 @@ SPI::SPI( int mosi, int miso, int sclk, int cs ) : Obj( true ), chip_select( cs 
 	mode( 0 );
 
 	//	pin enable
-	
+
 	DigitalInOut	_mosi( mosi );
 	DigitalInOut	_miso( miso );
 	DigitalInOut	_sclk( sclk );
-
-	constexpr uint8_t	mux_setting	= 2;
 
 	_mosi.pin_mux( mux_setting );
 	_sclk.pin_mux( mux_setting );

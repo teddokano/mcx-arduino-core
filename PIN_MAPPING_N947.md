@@ -9,8 +9,8 @@ for the full verification status and per-feature notes this table summarizes.
 
 | Arduino pin | MCU pin | Notes |
 |---|---|---|
-| `D0` | `P4_3` | not `Serial1` — see the `Serial1` note below |
-| `D1` | `P4_2` | not `Serial1` — see the `Serial1` note below |
+| `D0` | `P4_3` | not `Serial1` (see the `Serial1` note below — it's on the MikroBus header instead) |
+| `D1` | `P4_2` | not `Serial1` (see the `Serial1` note below — it's on the MikroBus header instead) |
 | `D2` | `P0_29` | |
 | `D3` | `P1_23` | |
 | `D4` | `P0_30` | |
@@ -56,36 +56,51 @@ Other named pins/peripherals:
 | `SW2` / `SW3` | `A5` (`P0_23`) / `P0_6` | on-board push buttons — note `SW2` shares its pin with `A5` |
 
 MikroBus header pins (connector `J5`/`J6`) — plain `digitalWrite`/`digitalRead`
-GPIO, verified on real hardware:
+GPIO on all of these (verified on real hardware), plus dedicated I2C/SPI
+peripheral instances on the SPI/I2C rows (see below the table):
 
 | Name | MCU pin | Notes |
 |---|---|---|
 | `MB_AN` | — | **not available** — `DISABLED_PIN` on this board |
 | `MB_RST` | `P1_3` | |
-| `MB_CS` | `P3_23` | |
-| `MB_SCK` | `P3_21` | |
-| `MB_MISO` | `P3_22` | |
-| `MB_MOSI` | `P3_20` | |
+| `MB_CS` | `P3_23` | `SPI1` (MikroBus SPI) CS |
+| `MB_SCK` | `P3_21` | `SPI1` SCK |
+| `MB_MISO` | `P3_22` | `SPI1` MISO |
+| `MB_MOSI` | `P3_20` | `SPI1` MOSI |
 | `MB_PWM` | `P3_19` | |
 | `MB_INT` | `P5_7` | |
-| `MB_RX` | `P1_16` | same pin as `I3C_SDA` — see below |
-| `MB_TX` | `P1_17` | same pin as `I3C_SCL` — see below |
-| `MB_SCL` | `P1_1` | |
-| `MB_SDA` | `P1_0` | |
+| `MB_RX` | `P1_16` | same pin as `I3C_SDA`; also `Serial1` RX — see below |
+| `MB_TX` | `P1_17` | same pin as `I3C_SCL`; also `Serial1` TX — see below |
+| `MB_SCL` | `P1_1` | `Wire2` (MikroBus I2C) SCL |
+| `MB_SDA` | `P1_0` | `Wire2` SDA |
 
-> **Note on `Wire1`**: same I3C-in-I2C-mode design as A153 (see
-> [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md)'s note), but on different physical pins —
-> `I3C_SDA`/`I3C_SCL` here are `MB_RX`/`MB_TX` (the MikroBus RX/TX pins), not the same
-> pins as `Wire`. Boot firmware pre-muxes `P1_16`/`P1_17` to the I3C peripheral
-> function, but `pinMode()` explicitly reclaims a pin as plain GPIO (ALT0)
-> whenever it's called, so `MB_RX`/`MB_TX` freely switch between `Wire1` and
-> plain `digitalWrite`/`digitalRead` — confirmed on real hardware by running
-> `onboard_temperature_sensor` (I3C access) followed by
-> `test_digitalWrite_mikrobus_pins_N947` (GPIO) back to back.
+> **`Wire2`** is a plain I2C instance on `MB_SDA`/`MB_SCL`, backed by its own
+> peripheral (`LPI2C3`/FlexComm3) independent of `Wire` (FlexComm2) and
+> `Wire1` (I3C) — all three can be used in the same sketch. Verified on real
+> hardware with `test_Wire2_MikroBus_N947` (bus scan).
+>
+> **`SPI1`** is a plain SPI instance on `MB_MOSI`/`MB_MISO`/`MB_SCK`/`MB_CS`,
+> backed by its own peripheral (`LPSPI6`/FlexComm6) independent of `SPI`
+> (FlexComm1). Verified on real hardware with `test_SPI1_MikroBus_N947`
+> (MOSI-MISO loopback, logic analyzer + Serial both confirmed OK).
 
-> **`Serial1` is not available on this board.** `D0`/`D1`'s only UART-capable
+> **Note on `Wire1`/`Serial1`**: `MB_RX`/`MB_TX` (`P1_16`/`P1_17`) are shared
+> by three functions — `Wire1` (I3C-in-I2C-mode, same design as A153's
+> `Wire1` but on different physical pins — see
+> [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md)'s note), plain GPIO, and
+> `Serial1` (hardware UART, `LPUART5`/FlexComm5 — a FlexComm instance
+> nothing else on this board claims, unlike the D0/D1 case below). Only one
+> function is active at a time on the two physical pins, but all three
+> switch cleanly between each other: `pinMode()` explicitly reclaims ALT0
+> (GPIO) on every call, and `Wire1.begin()`/`Serial1.begin()` each
+> explicitly set their own ALT — confirmed on real hardware by running
+> `onboard_temperature_sensor` (I3C) → `test_digitalWrite_mikrobus_pins_N947`
+> (GPIO) → `test_Serial1_MikroBus_N947` (UART loopback) back to back.
+
+> **`Serial1` is NOT available on `D0`/`D1`.** Their only UART-capable
 > peripheral (FlexComm2) is the same instance `Wire` already uses for I2C — a
-> FlexComm can only be one peripheral mode at a time, so the two can't coexist
-> in one sketch. Referencing `Serial1` fails to compile.
+> FlexComm can only be one peripheral mode at a time, so the two can't
+> coexist in one sketch. Referencing `Serial1` uses the MikroBus header
+> instead (see above), not D0/D1.
 
 See [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) for FRDM-MCXA153's pin mapping.

@@ -36,5 +36,6 @@ private:
 
 extern TwoWire	Wire;
 extern TwoWire	Wire1;
+extern TwoWire	Wire2;
 
 #endif // !R01LIB_ARDUINO_I2C_H

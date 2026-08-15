@@ -62,9 +62,8 @@ public:
 
 extern SerialClass	Serial;
 
-// Serial1 (D0/D1 hardware UART) is not ported on this board yet -- no global
-// instance is defined (see arduino_serial.cpp). Left undeclared here too, so
-// a sketch referencing it fails at compile time rather than at the (much
-// harder to diagnose) static-init panic() this used to hit.
+// Serial1 is on the MikroBus header (MB_TX/MB_RX), not D0/D1 -- see
+// arduino_serial.cpp for why D0/D1 can't support it on this board.
+extern SerialClass	Serial1;
 
 #endif // !R01LIB_ARDUINO_SERIAL_H

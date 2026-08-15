@@ -5,18 +5,34 @@
  */
 
 #include	"arduino_serial.h"
+
+// Captured here, before arduino_io.h's #include below redefines MB_TX/MB_RX
+// as small Arduino-renumbered indices (they're part of its
+// ARDUINO_PIN_RENUMBERING table, unlike USBTX/USBRX). Serial1 needs the raw
+// r01lib io.h physical-pin values Serial::resolve_pins()'s s_pinMap[]
+// actually matches against -- passing the renumbered ones through
+// unconditionally panic()s ("unsupported TX/RX pin combination") at
+// static-init time, before setup() even runs (confirmed on real hardware).
+constexpr int	SERIAL1_TX_PIN	= MB_TX;
+constexpr int	SERIAL1_RX_PIN	= MB_RX;
+
 #include	"arduino_io.h"
 
 // Global Arduino-compatible Serial instance (no heap, directly inherits r01lib Serial)
 // Serial:  USB-bridged UART (USBTX/USBRX, not part of the pin-renumbering table)
 SerialClass	Serial(  USBTX, USBRX );
 
-// Serial1 (D0/D1 hardware UART) is NOT ported yet on this board. D0/D1 (ARD_D0/
-// ARD_D1, physical P4_3/P4_2) appear to carry FC2_P2/FC2_P3 alt-function pins,
-// which could plausibly become LPUART2 -- but the clock-attach/reset symbols and
-// pin mux value haven't been identified or verified on real hardware yet.
-// r01lib's Serial.cpp only has a single s_pinMap[] entry for this chip (USBTX/
-// USBRX -> LPUART4/FC4), so constructing a global Serial1 object here with D0/D1
-// pins would panic() (unresolved pin combination) at static-init time, before
-// setup() even runs -- confirmed on real hardware via GDB. Add Serial1 back once
-// FC2 is wired up and verified.
+// Serial1 (D0/D1 hardware UART) is intentionally NOT supported on this board:
+// D0/D1's only UART-capable alt-function is FC2_P2/FC2_P3, the same FlexComm2
+// instance Wire already uses for I2C -- a FlexComm can only be one peripheral
+// mode at a time, so the two can't coexist in a sketch. See
+// variants/frdm_mcxn947/README.md for the full writeup.
+//
+// Serial1 IS supported on the MikroBus header instead (MB_TX/MB_RX, physical
+// P1_17/P1_16) via FC5_P1/FC5_P0 -> LPUART5 -- a FlexComm instance nothing
+// else on this board claims. These are the same physical pins as I3C_SDA/
+// I3C_SCL (used by Wire1) and are also plain GPIO-capable; pinMode()
+// explicitly reclaims ALT0 on every call and Wire1/Serial1's begin() each
+// explicitly set their own ALT, so all three switch cleanly on the same two
+// pins (just not simultaneously).
+SerialClass	Serial1( SERIAL1_TX_PIN, SERIAL1_RX_PIN );

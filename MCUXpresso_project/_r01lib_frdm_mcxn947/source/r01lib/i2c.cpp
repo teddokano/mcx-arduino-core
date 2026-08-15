@@ -53,14 +53,26 @@ I2C::I2C( int sda, int scl, bool no_hw ) : Obj( true ), _sda( sda ), _scl( scl )
 		return;
 	
 #ifdef	CPU_MCXN947VDF
+	int	mux_setting;
+
 	if ( (sda == I2C_SDA) && (scl == I2C_SCL) )
-		;
+	{
+		mux_setting	= 2;
+		unit_base	= EXAMPLE_I2C_MASTER;
+	}
+	else if ( (sda == MB_SDA) && (scl == MB_SCL) )
+	{
+		// MikroBus header (P1_0/P1_1) -> FlexComm3 -> LPI2C3, Alt2 (confirmed
+		// against Zephyr's silicon-accurate pinctrl header, not derived by
+		// pin_mux.c position-counting -- see PwmOut.h's ALT-derivation
+		// postmortem for why that method alone isn't trusted anymore).
+		mux_setting	= 2;
+		unit_base	= LPI2C3;
+		RESET_ReleasePeripheralReset( kFC3_RST_SHIFT_RSTn );
+	}
 	else
-		panic( "FRDM-MCXN947 only support I2C_SDA(D18)/I2C_SCL(D19) pins for I2C" );
-	
-	constexpr int	mux_setting	= 2;
-	unit_base	= EXAMPLE_I2C_MASTER;
-	
+		panic( "FRDM-MCXN947 supports I2C_SDA(D18)/I2C_SCL(D19) or MB_SDA/MB_SCL pins for I2C" );
+
 #elif	CPU_MCXN236VDF
 	if ( (sda == A4) && (scl == A5) )
 		;
