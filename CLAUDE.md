@@ -2,7 +2,7 @@
 
 ## プロジェクト概要
 - **リポジトリ**: https://github.com/teddokano/mcx-arduino-core
-- **現在のバージョン**: v0.3.0（`package_nxp_mcx_index.json` 上の最新リリース。FRDM-MCXN947ボード対応の追加が主目的。`prepare0.3.0`ブランチを`main`へfast-forwardマージ・GitHub Release作成済み、`de9c8bd`でchecksum自動更新も確定。2026-08-16リリース。詳細は後述の「v0.3.0 で作業中の内容」セクション参照。Issue #1/#2/#3はこのリリースで解消——`main`マージ時にコミットメッセージの`fixes #N`でGitHubが自動close済み）
+- **現在のバージョン**: v0.3.0（`package_nxp_mcx_index.json` 上の最新リリース。FRDM-MCXN947ボード対応の追加が主目的。`prepare0.3.0`ブランチを`main`へfast-forwardマージ・GitHub Release作成済み、`de9c8bd`でchecksum自動更新も確定。2026-08-16リリース。詳細は後述の「v0.3.0 で作業中の内容」セクション参照。Issue #1/#2/#3はこのリリースで解消——`main`マージ時にコミットメッセージの`fixes #N`でGitHubが自動close済み。**Boards Manager経由インストール〜ビルド〜アップロード〜実機動作をmacOS・Windows・Linuxの3プラットフォームすべてでN947実機検証済み**）
 - **旧バージョン**: v0.2.2（2026-08-13リリース。Linux実機での`#include <Arduino.h>`/`<SPI.h>`のファイル名大文字小文字ミスマッチによるビルド失敗を修正するパッチリリース）
 - **完了**: `prepare0.3.0`ブランチでのFRDM-MCXN947ボード対応は完了し、v0.3.0としてリリース済み。GPIO/Serial(USB)/Wire1(オンボードI3Cセンサー)/Wire(プレーンI2C、外部LM75系センサーとの実通信も確認済み)/SPI/analogRead/analogWrite(全6チャンネル・独立性込み)/tone・noTone(圧電サウンダで実音確認)は実機検証済み、String/UNO互換マクロはコンパイル確認済み。これでN947の主要機能は一通り実機検証済み（任意項目のanalogRead精度確認も定電圧源で完了、D0-D19/A2-A5/MikroBusヘッダの全GPIO出力も実機確認済み）。**MikroBusヘッダにSPI/I2C/UARTの追加インスタンス`SPI1`/`Wire2`/`Serial1`を新規実装・実機確認済み**（`MB_RX`/`MB_TX`は`Wire1`(I3C)・GPIO・`Serial1`(UART)の3モードを排他切り替え可能）。D0/D1自体は引き続きSerial1に意図的に未対応（FlexComm2資源競合のため、`Wire`と同時に使えない）。**重要な実機バグ4件を修正済み**: (1) `analogWrite`の物理ピンが当初A153流用のP3_6-P3_11（実際は未配線のテストポイント）のままだった → 回路図でP2_2-P2_7/FlexPWM1が正しいピンと判明・修正、(2) その修正時のALT値導出（pin_mux.cのコメント内位置カウント方式）がP2_2/P2_3の2ピンだけ誤っていた → Zephyrのpinctrlヘッダ（シリコン正確）で全ピンAlt5と確定・修正、(3) `pinMode()`がPORT MUXを一切変更しない実装だったため、起動時にI3C用ALT10へ固定されている`MB_RX`/`MB_TX`だけ`digitalWrite`が効かなかった → `pinMode()`で常にALT0(GPIO)へ明示的に再設定するよう修正、(4) MikroBus向け`Serial1`追加時、`arduino_serial.cpp`が`arduino_io.h`をincludeしていたため`MB_TX`/`MB_RX`がArduinoリナンバリング後の値にすり替わりSOSパニックが発生 → include前に生の値を退避するよう修正、(5) A153にもMikroBus対応（`SPI1`のみ、`Wire2`/新規`Serial1`はチップの物理制約——I2Cペリフェラルが1系統のみ・既存Serial1とMikroBus UARTが同じLPUART2——により不可能と判明し見送り）を追加した際、新規使用の`LPSPI0`にクロックが供給されておらずCS以外無反応だった → `mcu.cpp`にクロック設定を追加。方針: 未実装が残っていてもN947が一通り完成した段階でリリースする。詳細は「v0.3.0 で作業中の内容」セクション参照
 - **v0.2.1**（前バージョン）: `prepare0.2.1`→`main`fast-forwardマージ・GitHub Release作成済み、2026-08-12リリース
@@ -671,6 +671,7 @@ SD読み取りが全体の85.9%を占め、96バイトのチャンク読み取�
 - **GitHub Release作成**: `gh release create 0.3.0`でzip添付・CHANGELOG該当セクションをリリースノートとして使用。タグpush時の自動`update_package_index.yml`実行は既知のdetached HEAD問題で失敗することを確認（想定通り）、`gh workflow run update_package_index.yml --ref main`で手動実行しchecksum確定（`de9c8bd`、SHA-256:`f253a06284b78a41f5709dc2dd7d6abf75d56ea9905c8d4d8c1f2eff54510772`、ローカルで計算した値と完全一致確認済み）
 - **Issue #1/#2/#3**: `main`マージ時、各コミットメッセージの`fixes #N`表記によりGitHubが自動的にclose——手動でcloseする前に気づき、代わりに各Issueへ「Shipped in 0.3.0」コメントを追加してリリースへのリンクを残した
 - **Arduino IDE Boards Manager経由インストールの実機検証**: ユーザー依頼で開発用symlink（`0.3.0-dev`）を一時退避し、ローカルのpackage indexキャッシュ（0.2.2時点のまま古かった）も削除した上でユーザー自身がArduino IDEを再起動しBoards Manager経由でインストール。**macOSでインストール〜ビルド〜アップロード〜動作までN947で確認完了**と報告。検証後、開発用symlinkを復元
+- **Windows/Linuxでも実機検証完了**: 後日、ユーザーから「WindowsとLinuxの両方で正常に動作．インストールからビルド，アップロード，動作までをN947で確認した」と報告。**これでv0.3.0はmacOS・Windows・Linuxの3プラットフォームすべてでBoards Manager経由インストール〜実機動作まで検証済み**（v0.2.2までの前例と同じ検証範囲）
 
 ---
 
