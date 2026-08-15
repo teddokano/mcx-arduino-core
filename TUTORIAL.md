@@ -5,6 +5,8 @@ installation to every supported peripheral. Each section is a complete,
 runnable sketch. See [README.md](README.md) for the full API reference table
 and [CHANGELOG.md](CHANGELOG.md) for version history.
 
+> **Note**: This tutorial's examples target the **FRDM-MCXA153** board.
+
 日本語版はこちら → [TUTORIAL.ja.md](TUTORIAL.ja.md)
 
 ## Contents
@@ -157,7 +159,7 @@ an issue on the
 
 The pins used throughout this section, all in one picture:
 
-![pins-FRDM-MCXA153](img/pins-FRDM-MCXA153.png)
+![pins-FRDM-MCXA153](img/pins-FRDM-MCXA153-ard.png)
 
 ### 2.1. Your first sketch: blink the on-board LED
 

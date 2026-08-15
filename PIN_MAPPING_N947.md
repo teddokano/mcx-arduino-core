@@ -7,6 +7,9 @@ physical MCU port pin. See that board's own
 [`variants/frdm_mcxn947/README.md`](hardware/nxp/mcx/variants/frdm_mcxn947/README.md)
 for the full verification status and per-feature notes this table summarizes.
 
+![pins-FRDM-MCXN947](img/pins-FRDM-MCXN947.png)  
+*FRDM-MCXN947 Arduino shield and MicroBus socket pins*
+
 | Arduino pin | MCU pin | Notes |
 |---|---|---|
 | `D0` | `P4_3` | not `Serial1` (see the `Serial1` note below — it's on the MikroBus header instead) |
@@ -69,8 +72,8 @@ peripheral instances on the SPI/I2C rows (see below the table):
 | `MB_MOSI` | `P3_20` | `SPI1` MOSI |
 | `MB_PWM` | `P3_19` | |
 | `MB_INT` | `P5_7` | |
-| `MB_RX` | `P1_16` | same pin as `I3C_SDA`; also `Serial1` RX — see below |
-| `MB_TX` | `P1_17` | same pin as `I3C_SCL`; also `Serial1` TX — see below |
+| `MB_RX` | `P1_16` | `Wire1` (same pin as I3C_SDA); also `Serial1` RX — see below |
+| `MB_TX` | `P1_17` | `Wire1` (same pin as I3C_SCL); also `Serial1` TX — see below |
 | `MB_SCL` | `P1_1` | `Wire2` (MikroBus I2C) SCL |
 | `MB_SDA` | `P1_0` | `Wire2` SDA |
 

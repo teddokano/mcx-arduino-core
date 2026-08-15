@@ -5,7 +5,11 @@ Arduino pin names are defined in
 which maps each one (`D0`-`D13`, `D18`/`D19`, `A0`-`A5`, `PWM0`-`PWM5`) to its
 physical MCU port pin.
 
-![pins-FRDM-MCXA153](img/pins-FRDM-MCXA153.png)
+![pins-FRDM-MCXA153](img/pins-FRDM-MCXA153-ard.png)  
+*FRDM-MCXA153 Arduino shield socket pins*
+
+![pins-FRDM-MCXA153](img/pins-FRDM-MCXA153-mb.png)  
+*FRDM-MCXA153 MikroBus socket pins*
 
 | Arduino pin | MCU pin | Notes |
 |---|---|---|

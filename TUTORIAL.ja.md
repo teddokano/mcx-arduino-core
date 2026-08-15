@@ -2,6 +2,8 @@
 
 NXP FRDM-MCXA153ボードでArduino APIを使うためのハンズオンガイドです。インストールから、対応している各種ペリフェラルまで一通り扱います。各セクションはそのまま書き込んで動く完結したスケッチです。API対応表・ピン配置の詳細は[README.md](README.md)、バージョン間の変更点は[CHANGELOG.md](CHANGELOG.md)を参照してください。
 
+> **注**: このチュートリアルの例は**FRDM-MCXA153**を使用しています。
+
 English version → [TUTORIAL.md](TUTORIAL.md)
 
 ## 目次
@@ -122,7 +124,7 @@ English version → [TUTORIAL.md](TUTORIAL.md)
 
 このセクションで使うピンをまとめた図です:
 
-![pins-FRDM-MCXA153](img/pins-FRDM-MCXA153.png)
+![pins-FRDM-MCXA153](img/pins-FRDM-MCXA153-ard.png)
 
 ### 2.1. 最初のスケッチ: オンボードLEDを点滅させる
 

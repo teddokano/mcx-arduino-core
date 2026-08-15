@@ -16,8 +16,7 @@ for each board's pin assignments, and [CHANGELOG.md](CHANGELOG.md) for release h
 | FRDM-MCXN947 | MCXN947 (Cortex-M33) | 🔜 |
 | FRDM-MCXN236 | MCXN236 (Cortex-M33) | 🔜 |
 
-<img src="img/FRDM-MCXA153.jpg" alt="FRDM-MCXA153 running an mcx-arduino-core sketch" width="400">
-
+<img src="img/FRDM-MCXA153.jpg" alt="FRDM-MCXA153 running an mcx-arduino-core sketch" width="400">  
 *FRDM-MCXA153*
 
 > **Note**: mcx-arduino-core is an independent, community project and is not
@@ -113,10 +112,6 @@ MIT License — see [LICENSE](LICENSE)
 See [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) / [PIN_MAPPING_N947.md](PIN_MAPPING_N947.md)
 for the full Arduino-pin-to-MCU-pin table for each supported board, including
 the on-board LEDs/buttons and peripheral pins (`Wire1`, `SPI`, `PWM`, etc.).
-
-![pins-FRDM-MCXA153](img/pins-FRDM-MCXA153.png)
-
-*FRDM-MCXA153 pin assignment — see [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) for the full table.*
 
 ## Supported Arduino APIs
 
