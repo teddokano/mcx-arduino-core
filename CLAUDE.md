@@ -657,7 +657,8 @@ SD読み取りが全体の85.9%を占め、96バイトのチャンク読み取�
   - `PwmOut.cpp`（N947分岐）: `#include "PwmOut.h"`（io.hを間接include）の**前**に`static PWM_Type * const FLEXPWM1 = PWM1;`でSDKの元の意味を退避してから使うよう変更、ドライバ呼び出し9箇所を全て`FLEXPWM1`に置き換え。`s_pins[]`テーブル自体は`PwmOut.h`include**後**に評価されるため、`{ PWM0, ... }`等の記述はio.hが再定義したArduinoピン値を正しく指す（A153の`s_pins[]`と同じ挙動）
   - `arduino_layer/arduino_io.h`: Arduinoピンリナンバリング機構（生のr01lib値を捕捉する配列→`#undef`→小さい連番へ再定義する`enum`という毎ピン共通の仕組み）内の`PWM_0`-`PWM_5`を`PWM0`-`PWM5`に統一
   - `PwmOut.h`のドキュメント表・経緯コメント、`examples/Arduino_compatible_API/test_analogWrite_*_N947`/`test_combined_peripherals_N947`の3スケッチ、`PIN_MAPPING_N947.md`・`API_COMPATIBILITY.md`・`variants/frdm_mcxn947/README.md`も全て新しい命名に追従（`variants/frdm_mcxn947/README.md`は一括置換で「以前は`PWM_0`という名前にしていた」という過去形の説明文まで書き換わってしまう事故が一瞬発生し、手動で修正）
-- ライブラリ再ビルド（`-Wall`警告ゼロ）・ヘッダ同期・全50サンプルの両ボード回帰コンパイルを実施、チェックで見つかった3本を含め問題なくコンパイル成功することを確認（実機検証は未実施、次回のフォローアップ）
+- ライブラリ再ビルド（`-Wall`警告ゼロ）・ヘッダ同期・全50サンプルの両ボード回帰コンパイルを実施、チェックで見つかった3本を含め問題なくコンパイル成功することを確認
+- **実機検証済み**: `test_analogWrite_all_channels_N947`（リネーム後の`PWM0`-`PWM5`で書き直し）をN947実機に書き込み、ロジックアナライザで動作確認——SDKマクロ衝突回避の核心部分である`PWM0`/`PWM1`ペア（sm2共有）を含む全6チャンネルの出力、およびペアごとの独立性（片方固定・片方掃引）が正常動作することを確認
 
 ---
 
