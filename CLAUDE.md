@@ -602,6 +602,15 @@ N947のMikroBus対応が一段落したところで、ユーザーから「A153�
 - GPIO側は`test_digitalWrite_mikrobus_pins_A153`（全12ピン、`MB_AN`はN947と違い`DISABLED_PIN`ではなく実ピンのため含む）で実機確認済み——**「完璧」**とユーザー報告
 - `PIN_MAPPING_A153.md`・`variants/frdm_mcxa153/README.md`を更新（MikroBusピン表・`SPI1`の技術詳細・Wire2/Serial1が物理的に不可能である理由を記録）
 - ユーザーから「test_combined_peripheralsを更新してtest_combined_peripherals_A153とする」と依頼。既存の`test_combined_peripherals`（N947版作成時にA153版の存在に気づき参考にしていたもの）を`test_combined_peripherals_A153`へリネームし、新規`SPI1`（`MB_MOSI`-`MB_MISO`ループバック、`transfer16()`を毎ループ実行）を追加——`Wire1`(I3C0)・`Serial1`(LPUART2)・`analogRead`(ADC)・`analogWrite`(FlexPWM0)・`tone`(CTIMER0)のどれとも衝突しない独立ペリフェラルのため、既存のストレステストにそのまま統合できた。`P3T1755.h`依存のためこの環境では直接コンパイルできず、一時的にセンサー呼び出しをスタブ化したスクラッチコピーで構文面のみ確認（本番ファイルは変更せず）。ユーザー環境でのビルド・実機確認を依頼し「OK」の報告あり
+- コミット時、複数ファイルを1回の`git add`にまとめた際、存在しないパスが1つ混じっていたためコマンド全体が失敗し、他の正当なファイルも巻き込まれて未ステージのまま最初のコミット（`2cb3783`）に含まれていなかったことが判明（push後に`git status`で発覚）。フォローアップコミット（`3e9d6e1`）で残りのファイルを追加して解消——教訓として、`git add`に複数パスを渡す際は個々の存在を事前確認するか、コミット直後に`git status`で漏れがないか確認する習慣が必要
+
+### GitHub Issue対応: #3「Printクラスにwrite error追跡APIが無い」
+Issue #1対応時に見つかっていた`SD`ライブラリの別の未解決エラー（`setWriteError`/`clearWriteError`/`getWriteError`）について、ユーザーが正式にIssueとして起票し（本人がIssue #1と同じ経緯・別プロジェクトのCI設定中に発見）、「issue #3に対応する」と依頼。
+
+- **Issue #3の内容**: `Print`クラスに標準Arduino APIの`setWriteError()`（`protected`、派生クラスが内部で呼ぶ）・`getWriteError()`/`clearWriteError()`（`public`）が無く、これらを使う`SD`ライブラリの`SdFile`/`File`クラスがコンパイルできない、という報告。Issue本文に実装方針まで具体的に記載されていた（`private: int write_error = 0;` / `protected: void setWriteError(int err=1)` / `public: int getWriteError()` / `void clearWriteError()`）
+- **対応**: A153・N947両方の`Print.h`（`arduino_layer/`と`hardware/variants/*/include/`の計4箇所）に、Issue記載のシグネチャ・アクセス指定子どおりに追加。`getWriteError()`/`clearWriteError()`は既存の`availableForWrite()`の直後（`public`セクション）に、`setWriteError()`は既存の`private:`セクション直前に新規`protected:`セクションとして追加し、`_write_error`メンバは既存の`private:`ヘルパー群と一緒に配置
+- ライブラリ再ビルド・両ボードの回帰コンパイル確認（無問題）を経て、実際にIssue記載の再現手順（`SD`ライブラリをインストールし`#include <SD.h>`するスケッチをビルド）で検証——**両ボードとも完全にコンパイル成功**（`-Waddress-of-packed-member`警告のみ残るが、Issue本文に「これは無関係・無害なので無視してよい」と明記済みのもの）。これでIssue #1・#3両方が原因だった`SD`ライブラリのビルド不能が解消
+- 確認用スケッチ`test_Print_writeError`（`FlakyPrint`という`Print`派生クラスを自作し、`setWriteError()`呼び出し前後で`getWriteError()`/`clearWriteError()`が正しく追跡・リセットされるかを検証、配線不要）を新規作成、A153実機で4項目とも「全てOK」の実機確認済み。`API_COMPATIBILITY.md`・`CHANGELOG.md`のUnreleasedセクションに追記
 
 ---
 

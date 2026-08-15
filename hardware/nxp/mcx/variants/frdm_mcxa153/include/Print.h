@@ -44,6 +44,9 @@ public:
 
 	virtual int		availableForWrite( void ) { return 0; }
 
+	int		getWriteError( void ) { return _write_error; }
+	void	clearWriteError( void ) { setWriteError( 0 ); }
+
 	size_t	print( const char *s );
 	size_t	print( char c );
 	size_t	print( const std::string &s );
@@ -75,12 +78,17 @@ public:
 	size_t	println( unsigned long long n, int base = DEC );
 	size_t	println( double n, int digits = 2 );
 
+protected:
+	void	setWriteError( int err = 1 ) { _write_error = err; }
+
 private:
 	size_t	_print_num( long n, int base );
 	size_t	_print_unum( unsigned long n, int base );
 	size_t	_print_num64( long long n, int base );
 	size_t	_print_unum64( unsigned long long n, int base );
 	size_t	_print_double( double val, int digits );
+
+	int		_write_error	= 0;
 };
 
 #endif // !R01LIB_ARDUINO_PRINT_H
