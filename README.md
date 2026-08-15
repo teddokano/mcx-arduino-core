@@ -46,7 +46,7 @@ The install → build → upload flow has been verified on **macOS, Windows 11, 
 
 ## Installation
 
-1. Open Arduino IDE 2.x
+1. Open [Arduino IDE](https://docs.arduino.cc/software/ide/) 2.x
 2. Go to **File → Preferences**
 3. Add the following URL to **Additional boards manager URLs**:
 ```
