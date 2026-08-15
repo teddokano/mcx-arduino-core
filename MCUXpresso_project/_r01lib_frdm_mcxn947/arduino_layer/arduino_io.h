@@ -119,12 +119,12 @@ const int	arduino_pin_by_number[]	=
 	ARD_MISO,
 	ARD_SCK,
 
-	PWM_0,
-	PWM_1,
-	PWM_2,
-	PWM_3,
-	PWM_4,
-	PWM_5,
+	PWM0,
+	PWM1,
+	PWM2,
+	PWM3,
+	PWM4,
+	PWM5,
 };
 
 #undef	D0
@@ -180,12 +180,12 @@ const int	arduino_pin_by_number[]	=
 #undef	ARD_MISO
 #undef	ARD_SCK
 
-#undef	PWM_0
-#undef	PWM_1
-#undef	PWM_2
-#undef	PWM_3
-#undef	PWM_4
-#undef	PWM_5
+#undef	PWM0
+#undef	PWM1
+#undef	PWM2
+#undef	PWM3
+#undef	PWM4
+#undef	PWM5
 
 enum ArduinoPinNum {
 	D0	= 0,
@@ -241,12 +241,12 @@ enum ArduinoPinNum {
 	ARD_MISO,
 	ARD_SCK,
 
-	PWM_0,
-	PWM_1,
-	PWM_2,
-	PWM_3,
-	PWM_4,
-	PWM_5,
+	PWM0,
+	PWM1,
+	PWM2,
+	PWM3,
+	PWM4,
+	PWM5,
 };
 
 // Bare MOSI/MISO/SCK, aliased to this board's default SPI pins (ARD_MOSI/

@@ -4,7 +4,7 @@
  *  interference between them:
  *    - I3C/Wire1  : on-board P3T1755 temperature sensor
  *    - LPADC      : analogRead(A2)
- *    - FlexPWM1   : analogWrite(PWM_0) with a changing duty cycle every loop
+ *    - FlexPWM1   : analogWrite(PWM0) with a changing duty cycle every loop
  *    - CTIMER0    : tone()/noTone() burst, interrupting on top of everything else
  *    - SysTick/DWT: millis()/micros(), printed every loop (runs continuously
  *                   throughout regardless of what else is happening)
@@ -28,7 +28,7 @@
 #include <Wire.h>
 
 #define BUZZER_PIN  D13
-#define PWM_PIN     PWM_0
+#define PWM_PIN     PWM0
 #define ADC_PIN     A2
 
 P3T1755 sensor(Wire1, 0x48);

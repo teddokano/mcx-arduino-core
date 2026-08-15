@@ -193,19 +193,25 @@ enum {
 	// The real PWM-capable, header-accessible pins are P2_2..P2_7 (Arduino
 	// Shield Compatible Headers sheet, FRDM-MCXN947SH.pdf page 12), on
 	// FlexPWM1 (not FlexPWM0 -- see PwmOut.cpp for that instance-name
-	// collision too). Named PWM_0.."PWM_5" (not "PWM0".."PWM5") because this
-	// chip's SDK defines bare `PWM0`/`PWM1` macros for the FlexPWM peripheral
-	// instances themselves ((PWM_Type*)PWM0_BASE / PWM1_BASE) -- reusing
-	// either name for a logical pin would silently collide. The PWM_0..
-	// PWM_5 -> physical pin assignment below matches the "PWM0".."PWM5"
-	// silkscreen labels printed directly on that schematic sheet's header,
-	// not physical pin order.
-	#define	PWM_0	P2_3	/* PWM1 sm2 chB */
-	#define	PWM_1	P2_2	/* PWM1 sm2 chA */
-	#define	PWM_2	P2_5	/* PWM1 sm1 chB */
-	#define	PWM_3	P2_4	/* PWM1 sm1 chA */
-	#define	PWM_4	P2_7	/* PWM1 sm0 chB */
-	#define	PWM_5	P2_6	/* PWM1 sm0 chA */
+	// collision too). This chip's SDK also defines bare `PWM0`/`PWM1` macros
+	// for the FlexPWM peripheral instances themselves ((PWM_Type*)PWM0_BASE /
+	// PWM1_BASE), so those two names have to be explicitly reclaimed here
+	// (#undef, matching the same technique already used in
+	// source/r01device/led/LEDDriver.h for the same collision) before they
+	// can be redefined as logical pin names -- PwmOut.cpp captures the SDK's
+	// original PWM1 meaning into its own alias before including this header,
+	// so its driver calls keep working once this redefinition is in effect.
+	// The PWM0..PWM5 -> physical pin assignment below matches the
+	// "PWM0".."PWM5" silkscreen labels printed directly on that schematic
+	// sheet's header, not physical pin order.
+	#undef	PWM0
+	#undef	PWM1
+	#define	PWM0	P2_3	/* PWM1 sm2 chB */
+	#define	PWM1	P2_2	/* PWM1 sm2 chA */
+	#define	PWM2	P2_5	/* PWM1 sm1 chB */
+	#define	PWM3	P2_4	/* PWM1 sm1 chA */
+	#define	PWM4	P2_7	/* PWM1 sm0 chB */
+	#define	PWM5	P2_6	/* PWM1 sm0 chA */
 
 	#define	I3C_SDA		MB_RX
 	#define	I3C_SCL		MB_TX

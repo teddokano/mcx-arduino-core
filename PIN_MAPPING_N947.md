@@ -2,7 +2,7 @@
 
 Arduino pin names are defined in
 [`hardware/nxp/mcx/variants/frdm_mcxn947/include/io.h`](hardware/nxp/mcx/variants/frdm_mcxn947/include/io.h),
-which maps each one (`D0`-`D13`, `D18`/`D19`, `A0`-`A5`, `PWM_0`-`PWM_5`) to its
+which maps each one (`D0`-`D13`, `D18`/`D19`, `A0`-`A5`, `PWM0`-`PWM5`) to its
 physical MCU port pin. See that board's own
 [`variants/frdm_mcxn947/README.md`](hardware/nxp/mcx/variants/frdm_mcxn947/README.md)
 for the full verification status and per-feature notes this table summarizes.
@@ -35,20 +35,21 @@ for the full verification status and per-feature notes this table summarizes.
 
 | Arduino pin | MCU pin | Submodule | Channel |
 |---|---|---|---|
-| `PWM_0` | `P2_3` | sm2 | B |
-| `PWM_1` | `P2_2` | sm2 | A |
-| `PWM_2` | `P2_5` | sm1 | B |
-| `PWM_3` | `P2_4` | sm1 | A |
-| `PWM_4` | `P2_7` | sm0 | B |
-| `PWM_5` | `P2_6` | sm0 | A |
+| `PWM0` | `P2_3` | sm2 | B |
+| `PWM1` | `P2_2` | sm2 | A |
+| `PWM2` | `P2_5` | sm1 | B |
+| `PWM3` | `P2_4` | sm1 | A |
+| `PWM4` | `P2_7` | sm0 | B |
+| `PWM5` | `P2_6` | sm0 | A |
 
-> **Note on `PWM_0`-`PWM_5`**: these are on the "Arduino Shield Compatible
+> **Note on `PWM0`-`PWM5`**: these are on the "Arduino Shield Compatible
 > Headers" sheet's dedicated PWM row (`P2_2`-`P2_7`, shared with header `J12`/
 > `J3`), not the `D0`-`D19` pins, and not physically sequential — the
 > assignment above matches the "PWM0"-"PWM5" silkscreen labels printed
-> directly on that header in the schematic. Named `PWM_0`-`PWM_5`
-> (underscore), not `PWM0`-`PWM5` — this chip's SDK already uses the bare
-> `PWM0`/`PWM1` identifiers for the FlexPWM peripheral instances themselves.
+> directly on that header in the schematic. This chip's SDK already uses the
+> bare `PWM0`/`PWM1` identifiers for the FlexPWM peripheral instances
+> themselves, so `io.h` explicitly reclaims those two names (`#undef`)
+> before redefining them as pin numbers.
 
 Other named pins/peripherals:
 

@@ -66,7 +66,7 @@ surface except where a row below notes a difference. See the main
 | API | Status | Notes |
 |-----|--------|-------|
 | `analogRead` | ✅ | LPADC. `A0`-`A3` on A153; `A2`-`A5` on N947 (`A0`/`A1` aren't wired to an ADC channel on that board). 10bit (0-1023) default |
-| `analogWrite` (PWM) | ✅ | FlexPWM0, fixed 1kHz period (not configurable). Dedicated pins named `PWM0`-`PWM5` on A153, `PWM_0`-`PWM_5` (underscore) on N947 -- different name on purpose, since N947's SDK already uses the bare `PWM0` identifier for the FlexPWM peripheral instance itself |
+| `analogWrite` (PWM) | ✅ | FlexPWM0 on A153 / FlexPWM1 on N947, fixed 1kHz period (not configurable). Dedicated pins named `PWM0`-`PWM5` on both boards -- on N947, `PWM0`/`PWM1` also collide with the chip's own SDK macros for the FlexPWM peripheral instances themselves, so `io.h` explicitly reclaims those two names (`#undef`) before redefining them as pin numbers |
 | `analogReference` | ✅ | No-op — this board's ADC reference voltage is fixed in hardware |
 | `analogReadResolution` / `analogWriteResolution` | ✅ | 1-16 bit; defaults match classic Arduino (10bit read / 8bit write) |
 

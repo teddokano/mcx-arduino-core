@@ -131,12 +131,12 @@ private:
  *
  * | Logical pin | Physical pin | FlexPWM1 submodule | Channel | PORT2 ALT |
  * |-------------|--------------|---------------------|---------|-----------|
- * | PWM_0       | P2_3         | sm2                 | B       | Alt5      |
- * | PWM_1       | P2_2         | sm2                 | A       | Alt5      |
- * | PWM_2       | P2_5         | sm1                 | B       | Alt5      |
- * | PWM_3       | P2_4         | sm1                 | A       | Alt5      |
- * | PWM_4       | P2_7         | sm0                 | B       | Alt5      |
- * | PWM_5       | P2_6         | sm0                 | A       | Alt5      |
+ * | PWM0        | P2_3         | sm2                 | B       | Alt5      |
+ * | PWM1        | P2_2         | sm2                 | A       | Alt5      |
+ * | PWM2        | P2_5         | sm1                 | B       | Alt5      |
+ * | PWM3        | P2_4         | sm1                 | A       | Alt5      |
+ * | PWM4        | P2_7         | sm0                 | B       | Alt5      |
+ * | PWM5        | P2_6         | sm0                 | A       | Alt5      |
  *
  * NOTE (corrected twice after real-hardware bring-up):
  *
@@ -149,7 +149,7 @@ private:
  *    documented pin; the user traced the real, header-accessible
  *    PWM-capable pins in the schematic (FRDM-MCXN947SH.pdf, "Arduino
  *    Shield Compatible Headers" sheet, page 12): P2_2..P2_7, wired to
- *    FlexPWM1 (not FlexPWM0). The PWM_0..PWM_5 assignment above matches
+ *    FlexPWM1 (not FlexPWM0). The PWM0..PWM5 assignment above matches
  *    the "PWM0".."PWM5" silkscreen labels printed directly on that header
  *    in the schematic, which is why it isn't in physical pin order.
  *
@@ -170,12 +170,15 @@ private:
  *    authoritative pinctrl source when one is available, and always
  *    confirm the final result on real hardware.
  *
- * Named PWM_0.."PWM_5" (not "PWM0".."PWM5") because this chip's SDK defines
- * bare `PWM0`/`PWM1` macros for the FlexPWM peripheral instances themselves
- * ((PWM_Type*)PWM0_BASE / PWM1_BASE) -- reusing either name for a logical
- * pin would make every `PWM_Init(PWM1,...)` call below silently expand to a
- * pin number instead of the peripheral pointer. A153 didn't hit this
- * because its SDK instance macro is "FLEXPWM0", not "PWM0"/"PWM1".
+ * This chip's SDK defines bare `PWM0`/`PWM1` macros for the FlexPWM
+ * peripheral instances themselves ((PWM_Type*)PWM0_BASE / PWM1_BASE) --
+ * A153 doesn't hit this (its SDK instance macro is "FLEXPWM0", not
+ * "PWM0"/"PWM1"), but here io.h has to explicitly reclaim both names
+ * (#undef, same technique as source/r01device/led/LEDDriver.h's identical
+ * collision) before redefining them as logical pin names. PwmOut.cpp
+ * captures the SDK's original PWM1 meaning into its own alias before
+ * including this header, so its own `PWM_Init(...)` calls etc. keep
+ * referring to the actual peripheral rather than a pin number.
  */
 
 extern "C" {

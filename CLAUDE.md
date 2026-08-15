@@ -640,6 +640,25 @@ SD読み取りが全体の85.9%を占め、96バイトのチャンク読み取�
 - **修正**: `SPI`クラスに`transfer_byte(uint8_t)`という軽量パスを新設（A153/N947両方の`r01lib_spi.h/.cpp`）。TCRの動的フィールド（PCS/CONT/CONTC/RXMSK/TXMSK）を「単発・非continuous・TX+RX有効」の固定値へ都度書き込み（FIFO空待ち不要——このパスでは呼び出し間で必ずモジュールがアイドル状態に戻っていることを利用）、あとはSDKの`LPSPI_WriteData()`/`LPSPI_ReadData()`とステータスフラグ（`kLPSPI_TxDataRequestFlag`/`kLPSPI_RxDataReadyFlag`、SDK自身が内部で待っているのと同じフラグ）を直接ポーリングしてTDR/RDRを操作するだけの実装に置き換え、`LPSPI_MasterTransferBlocking()`の防御的な毎回リセットを完全にバイパス。CPOL/CPHA/PRESCALE/LSBF/FRAMESZは`frequency()`/`mode()`/`bit_order()`が既に正しく維持している値をそのまま使うため触れない。`SPIClass::transfer(uint8_t)`（Arduino層）をこの新パスに接続
 - 両ボードとも`-Wall`警告ゼロでビルド確認、回帰コンパイル問題なし。診断スケッチを再書き込みしてユーザーが確認、**「良くなりました」**と改善を確認（正確な計測値・R3比の最終確認は今後のフォローアップ）
 
+### ボード表示名の変更、ピン配置図の追加、リリース前チェック
+- **ボード表示名の変更**: Arduino IDEのボード選択ダイアログで両ボードとも`(NXP Cortex-M33)`と表示され、Zephyr版など同名ボードを提供する他のパッケージと区別が付かないという指摘。`boards.txt`の`frdm_mcxa153.name`/`frdm_mcxn947.name`を`FRDM-MCXA153 (mcx-arduino-core)`/`FRDM-MCXN947 (mcx-arduino-core)`に変更（`arduino-cli board listall`で反映確認済み）。`TUTORIAL.md`/`.ja.md`のボード選択手順の記載も追従
+- **ピン配置図の追加**: ユーザーがN947向けの手書きピン配置図（`img/pins-FRDM-MCXN947.png`）を新規作成、`PIN_MAPPING_N947.md`から参照。A153の既存図（`img/pins-FRDM-MCXA153.png`、単一ファイル）もArduinoヘッダ用（`-ard.png`）とMikroBusヘッダ用（`-mb.png`）の2枚に分割し、`PIN_MAPPING_A153.md`が両方参照、`TUTORIAL.md`/`.ja.md`はArduinoヘッダ図のみ参照。README.mdの単一図埋め込みは削除（各ボードの図は各`PIN_MAPPING_*.md`側に集約する方針に統一）。ユーザーが図の中身を確認・修正した後、`PIN_MAPPING_N947.md`のalt text誤り（`![pins-FRDM-MCXA153](img/pins-FRDM-MCXN947.png)`——N947の画像なのにalt textがA153のままだった）を発見・修正
+- **チュートリアルにボード限定の注記を追加**: N947対応が増えたことで「このチュートリアルはどのボード向けか」が曖昧になりうるため、`TUTORIAL.md`/`.ja.md`冒頭に「このチュートリアルの例はFRDM-MCXA153を使用しています」という注記を追加
+- **リリース前チェック依頼への対応**: ユーザーから「リリース前に確認しておくことは？」と依頼を受け、作業ツリーの未コミット差分（なし）・`.DS_Store`混入（なし）・`ref/`のgitignore状態（正常）・GitHub Issue #1/#2/#3のopen状態（方針通り）・全50サンプルスケッチの両ボード回帰コンパイルを実施。既知の制約（外部ライブラリ`P3T1755.h`未インストール、6本）を除き、**3本のサンプル（`test_Analog_read_write`/`test_PWM_pin_identify`/`test_analog_resolution_and_misc`）がN947でのみコンパイルエラー**になることを新規発見——これらはA153向けの古い汎用サンプルで、素の`PWM0`-`PWM5`（アンダースコアなし）を使っており、当時N947側は名前衝突回避のため`PWM_0`-`PWM_5`（アンダースコア付き）という別名にしていたため
+- また、git追跡外のローカル空ディレクトリ`examples/Arduino_compatible_API/test_String_reserve_getBytes/`（`.ino`ファイルが存在しない）も発見したが、リポジトリに一切影響しないためユーザー判断で放置可とした
+
+### N947の`analogWrite`ピン名を`PWM_0`-`PWM_5`から`PWM0`-`PWM5`に統一（A153と共通化）
+上記チェックで見つかったPWM0/PWM_0問題について、ユーザーから「マクロは共通でPWM0が使えるようにしたい」と依頼。「A153ではどう解決したか」との質問に対し、**A153はこの問題自体が発生していない**（A153のSDKはFlexPWMインスタンス名を`FLEXPWM0`という別文字列で定義しており、`PWM0`というマクロ自体を定義しないため、最初から素の`PWM0`-`PWM5`が自由に使えていた）と回答。N947だけがSDK自体が`PWM0`/`PWM1`をFlexPWMペリフェラルインスタンス（`(PWM_Type*)PWM0_BASE`等）として定義しているため、本物の名前衝突が存在すると説明。
+
+- **既存の前例を発見**: `source/r01device/led/LEDDriver.h`（別のLEDドライバコード、PCA995x系）が、全く同じ「SDKの`PWM0`と自前の`PWM0`（LED enum用）が衝突する」問題を`#undef PWM0`で解決していることを発見——同じ技法をio.hに適用できると判断
+- **PWM1固有の制約**: `PwmOut.cpp`のN947実装は、SDKの`PWM1`（`FlexPWM1`インスタンスへのポインタ）をドライバ呼び出し内で直接使用（`PWM_Init(PWM1,...)`等、計9箇所）。単純に`io.h`で`PWM1`を`#undef`+再定義すると、同じ翻訳単位内で`PwmOut.cpp`自身がSDKの意味を失いビルドが壊れる。`PWM2`-`PWM5`はSDKが定義していないため無条件に安全、`PWM0`はSDKの意味をどこも使っていないため安全、`PWM1`だけがこの制約を受けると特定
+- **実装**:
+  - `io.h`: `PWM0`/`PWM1`を`#undef`してから、6ピン全てを`PWM0`-`PWM5`（アンダースコアなし）として再定義
+  - `PwmOut.cpp`（N947分岐）: `#include "PwmOut.h"`（io.hを間接include）の**前**に`static PWM_Type * const FLEXPWM1 = PWM1;`でSDKの元の意味を退避してから使うよう変更、ドライバ呼び出し9箇所を全て`FLEXPWM1`に置き換え。`s_pins[]`テーブル自体は`PwmOut.h`include**後**に評価されるため、`{ PWM0, ... }`等の記述はio.hが再定義したArduinoピン値を正しく指す（A153の`s_pins[]`と同じ挙動）
+  - `arduino_layer/arduino_io.h`: Arduinoピンリナンバリング機構（生のr01lib値を捕捉する配列→`#undef`→小さい連番へ再定義する`enum`という毎ピン共通の仕組み）内の`PWM_0`-`PWM_5`を`PWM0`-`PWM5`に統一
+  - `PwmOut.h`のドキュメント表・経緯コメント、`examples/Arduino_compatible_API/test_analogWrite_*_N947`/`test_combined_peripherals_N947`の3スケッチ、`PIN_MAPPING_N947.md`・`API_COMPATIBILITY.md`・`variants/frdm_mcxn947/README.md`も全て新しい命名に追従（`variants/frdm_mcxn947/README.md`は一括置換で「以前は`PWM_0`という名前にしていた」という過去形の説明文まで書き換わってしまう事故が一瞬発生し、手動で修正）
+- ライブラリ再ビルド（`-Wall`警告ゼロ）・ヘッダ同期・全50サンプルの両ボード回帰コンパイルを実施、チェックで見つかった3本を含め問題なくコンパイル成功することを確認（実機検証は未実施、次回のフォローアップ）
+
 ---
 
 ## 動作確認済み

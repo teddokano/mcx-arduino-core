@@ -1,6 +1,6 @@
 /** analogWrite() duty-cycle test for FRDM-MCXN947
  *
- *  Drives PWM_0 (physical P2_3, on the "Arduino Shield Compatible Headers"
+ *  Drives PWM0 (physical P2_3, on the "Arduino Shield Compatible Headers"
  *  PWM row -- not one of the D0-D19 header pins) through a fixed sequence
  *  of known duty cycles, holding each for a few seconds so a logic
  *  analyzer / scope / multimeter can measure it. Period is fixed at 1kHz
@@ -29,18 +29,18 @@ void setup() {
   while (!Serial)
     ;
 
-  Serial.println("analogWrite duty-cycle test -- PWM_0 (P2_3), 1kHz");
+  Serial.println("analogWrite duty-cycle test -- PWM0 (P2_3), 1kHz");
 }
 
 void loop() {
   for (int i = 0; i < numSteps; i++) {
-    Serial.print("PWM_0 duty = ");
+    Serial.print("PWM0 duty = ");
     Serial.print(steps[i].label);
     Serial.print(" (value ");
     Serial.print(steps[i].value);
     Serial.println(")");
 
-    analogWrite(PWM_0, steps[i].value);
+    analogWrite(PWM0, steps[i].value);
     delay(10);
   }
 

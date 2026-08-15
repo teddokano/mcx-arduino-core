@@ -275,6 +275,13 @@ extern "C" {
 #include "fsl_reset.h"
 }
 
+// io.h (included below, via PwmOut.h) redefines PWM1 as a logical Arduino
+// pin name, reclaiming it from the SDK's own `PWM1` macro (the FlexPWM1
+// instance pointer, (PWM_Type*)PWM1_BASE) -- capture that original SDK
+// meaning here, before that redefinition takes effect, so this file's own
+// driver calls below keep referring to the actual peripheral.
+static PWM_Type * const FLEXPWM1 = PWM1;
+
 #include "PwmOut.h"
 #include "mcu.h"
 
@@ -283,7 +290,7 @@ uint8_t PwmOut::_instance_count = 0;
 namespace {
 
 struct PwmPinDescriptor {
-    int      pin;         // io.h logical pin (PWM_0..PWM_5)
+    int      pin;         // io.h logical pin (PWM0..PWM5)
     uint32_t port_pin;     // PORT2 pin number
     uint8_t  submodule;    // 0=sm0, 1=sm1, 2=sm2 (this chip's FlexPWM1)
     uint8_t  channel;      // 0=chA, 1=chB
@@ -291,7 +298,7 @@ struct PwmPinDescriptor {
 };
 
 // Physical pins are P2_2..P2_7 on FlexPWM1 (see io.h for why -- P3_6..P3_11
-// used earlier were unrouted test points). PWM_0..PWM_5 assignment below
+// used earlier were unrouted test points). PWM0..PWM5 assignment below
 // matches the "PWM0".."PWM5" silkscreen labels on the Arduino Shield
 // Compatible Headers schematic sheet (FRDM-MCXN947SH.pdf page 12), which is
 // why it isn't in physical pin order.
@@ -308,12 +315,12 @@ struct PwmPinDescriptor {
 // signal on any probed pin) before this fix.
 const PwmPinDescriptor s_pins[] = {
     //  pin    pin#  sm  ch  alt
-    { PWM_0,  3u, 2u, 1u, 5u },   // P2_3, PWM1_B2
-    { PWM_1,  2u, 2u, 0u, 5u },   // P2_2, PWM1_A2
-    { PWM_2,  5u, 1u, 1u, 5u },   // P2_5, PWM1_B1
-    { PWM_3,  4u, 1u, 0u, 5u },   // P2_4, PWM1_A1
-    { PWM_4,  7u, 0u, 1u, 5u },   // P2_7, PWM1_B0
-    { PWM_5,  6u, 0u, 0u, 5u },   // P2_6, PWM1_A0
+    { PWM0,  3u, 2u, 1u, 5u },   // P2_3, PWM1_B2
+    { PWM1,  2u, 2u, 0u, 5u },   // P2_2, PWM1_A2
+    { PWM2,  5u, 1u, 1u, 5u },   // P2_5, PWM1_B1
+    { PWM3,  4u, 1u, 0u, 5u },   // P2_4, PWM1_A1
+    { PWM4,  7u, 0u, 1u, 5u },   // P2_7, PWM1_B0
+    { PWM5,  6u, 0u, 0u, 5u },   // P2_6, PWM1_A0
 };
 
 const clock_ip_name_t s_sm_clock[ 4 ] = { kCLOCK_Pwm1_Sm0, kCLOCK_Pwm1_Sm1, kCLOCK_Pwm1_Sm2, kCLOCK_Pwm1_Sm3 };
@@ -379,13 +386,13 @@ PwmOut::PwmOut( int pin )
         PWM_GetDefaultConfig( &cfg );
         cfg.pairOperation   = kPWM_Independent;   // chA/chB run independently (duty), period still shared by HW
         cfg.enableDebugMode = true;
-        PWM_Init( PWM1, (pwm_submodule_t)_submodule, &cfg );
+        PWM_Init( FLEXPWM1, (pwm_submodule_t)_submodule, &cfg );
 
         // Out of reset every FAULTx input is mapped to disable this submodule's
         // outputs. No fault pins are wired on this design, so clear the map
         // for both channels (same requirement as A153).
-        PWM_SetupFaultDisableMap( PWM1, (pwm_submodule_t)_submodule, kPWM_PwmA, kPWM_faultchannel_0, 0u );
-        PWM_SetupFaultDisableMap( PWM1, (pwm_submodule_t)_submodule, kPWM_PwmB, kPWM_faultchannel_0, 0u );
+        PWM_SetupFaultDisableMap( FLEXPWM1, (pwm_submodule_t)_submodule, kPWM_PwmA, kPWM_faultchannel_0, 0u );
+        PWM_SetupFaultDisableMap( FLEXPWM1, (pwm_submodule_t)_submodule, kPWM_PwmB, kPWM_faultchannel_0, 0u );
 
         s_sm_init[ _submodule ] = true;
     }
@@ -400,11 +407,11 @@ PwmOut::PwmOut( int pin )
     sig.deadtimeValue    = 0;
     sig.faultState       = kPWM_PwmFaultState0;
     sig.pwmchannelenable = true;
-    PWM_SetupPwm( PWM1, (pwm_submodule_t)_submodule, &sig, 1, kPWM_EdgeAligned, 1000u,
+    PWM_SetupPwm( FLEXPWM1, (pwm_submodule_t)_submodule, &sig, 1, kPWM_EdgeAligned, 1000u,
                   CLOCK_GetFreq( kCLOCK_MainClk ) );
 
     apply();   // sets the real default period/duty and calls PWM_SetPwmLdok()
-    PWM_StartTimer( PWM1, (uint8_t)( 1u << _submodule ) );
+    PWM_StartTimer( FLEXPWM1, (uint8_t)( 1u << _submodule ) );
 }
 
 PwmOut::~PwmOut()
@@ -440,18 +447,18 @@ void PwmOut::apply( void )
 
     uint16_t pulseCnt = (uint16_t)pulseCnt64;
 
-    uint16_t cur_prsc = (uint16_t)( ( PWM1->SM[ _submodule ].CTRL & PWM_CTRL_PRSC_MASK ) >> PWM_CTRL_PRSC_SHIFT );
+    uint16_t cur_prsc = (uint16_t)( ( FLEXPWM1->SM[ _submodule ].CTRL & PWM_CTRL_PRSC_MASK ) >> PWM_CTRL_PRSC_SHIFT );
     if ( cur_prsc != prescale )
-        PWM_SetClockMode( PWM1, (pwm_submodule_t)_submodule, (pwm_clock_prescale_t)prescale );
+        PWM_SetClockMode( FLEXPWM1, (pwm_submodule_t)_submodule, (pwm_clock_prescale_t)prescale );
 
     uint64_t dutyTicks = ( (uint64_t)_pulse_us * ( src_clk >> prescale ) ) / 1000000ULL;
     if ( dutyTicks > pulseCnt )
         dutyTicks = pulseCnt;
     uint16_t duty16 = pulseCnt ? (uint16_t)( ( dutyTicks * 65535ULL ) / pulseCnt ) : 0u;
 
-    PWM_UpdatePwmPeriodAndDutycycle( PWM1, (pwm_submodule_t)_submodule, sdk_channel( _channel ),
+    PWM_UpdatePwmPeriodAndDutycycle( FLEXPWM1, (pwm_submodule_t)_submodule, sdk_channel( _channel ),
                                       kPWM_EdgeAligned, pulseCnt, duty16 );
-    PWM_SetPwmLdok( PWM1, (uint8_t)( 1u << _submodule ), true );
+    PWM_SetPwmLdok( FLEXPWM1, (uint8_t)( 1u << _submodule ), true );
 }
 
 void PwmOut::period( float seconds )
