@@ -586,6 +586,13 @@ analogRead精度確認完了後、ユーザーから「サポートしてる全�
 - 実際にIssue記載の再現手順（`arduino-cli lib install SD`→`#include <SD.h>`するスケッチをビルド）で検証——**両ボードとも`MOSI`/`MISO`/`SCK`関連のエラーは解消したことを確認**。ただし`SD`ライブラリ自体は`setWriteError`/`clearWriteError`/`getWriteError`という別の未実装API（`Print`/`Stream`周りのギャップ、Issue #1の範囲外）でコンパイルが通らない状態は残る——これは新規Issueとして別途起票すべき事項だが、今回はスコープ外として深追いせず
 - 確認用スケッチ`test_MOSI_MISO_SCK_macros`（`MOSI==ARD_MOSI`等を検証、配線不要）を新規作成、両ボードでコンパイル確認。`API_COMPATIBILITY.md`のSPIセクション・`CHANGELOG.md`のUnreleasedセクションに追記
 
+### N947版`test_combined_peripherals`の新規作成
+ユーザーから「N947版のtest_combined_peripheralsを作って」と依頼。既存のA153版（`Wire1`のI3Cセンサー・`analogRead`・`analogWrite`・`tone`・`millis`/`micros`・`Serial1`ループバックを1ループ内で同時に回す最終統合確認スケッチ）を参考に、`examples/Arduino_compatible_API/test_combined_peripherals_N947`を新規作成。
+
+- **A153版との構成上の違い**: `Serial1`を含めなかった。N947では`Serial1`（`MB_TX`/`MB_RX`）が`Wire1`のI3Cと全く同じ物理ピンを共有しており（MikroBusのSPI/I2C/UART追加作業で確立済みの制約）、両方を同一ループ内で同時使用するテストは「独立ペリフェラルの同時ストレステスト」にならないため除外——コメントで理由を明記し、代わりに`Wire2`/`SPI1`（こちらは物理的に独立、競合なし）を将来追加する余地があることも記載
+- ピン名の差し替え: `PWM0`→`PWM_0`、`ADC_PIN`を`A0`→`A2`（N947はA0/A1非対応）
+- 依存する`P3T1755.h`（外部ライブラリ、この開発環境には未インストール）のためこちらの環境ではコンパイル確認不可——ユーザー環境でのビルド・実機確認を依頼し、**「動作してる」と実機確認完了の報告あり**
+
 ---
 
 ## 動作確認済み
