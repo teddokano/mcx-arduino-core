@@ -1,4 +1,4 @@
-/** Combined peripheral stress test
+/** Combined peripheral stress test -- FRDM-MCXA153
  *
  *  Exercises all newly-added peripherals together in a single loop to check
  *  for interference between them:
@@ -9,11 +9,14 @@
  *    - SysTick/DWT: millis()/micros(), printed every loop (runs continuously
  *                   throughout regardless of what else is happening)
  *    - Serial1    : D0/D1 hardware UART loopback (requires a D1->D0 jumper wire)
+ *    - SPI1       : MikroBus SPI loopback (requires a MB_MOSI->MB_MISO jumper
+ *                   wire) -- own peripheral (LPSPI0), independent of
+ *                   everything else here
  *
  *  If any of these peripherals share a clock/interrupt resource incorrectly,
  *  expect symptoms here: I2C/I3C read errors or hangs, out-of-range ADC
- *  values, PWM/tone glitches, millis()/micros() drifting/stalling, or
- *  Serial1 bytes going missing.
+ *  values, PWM/tone glitches, millis()/micros() drifting/stalling, Serial1
+ *  bytes going missing, or SPI1 transfers not echoing correctly.
  */
 
 #include <Arduino.h>
@@ -39,7 +42,12 @@ void setup() {
   Wire1.begin();
   Serial1.begin(9600);  // D0/D1 hardware UART -- jumper D1->D0 to loop back
 
-  Serial.println("Combined peripheral test: I3C(Wire1) + analogRead + analogWrite + tone + millis/micros + Serial1");
+  pinMode(MB_CS, OUTPUT);
+  digitalWrite(MB_CS, HIGH);
+  SPI1.begin();  // MikroBus SPI -- jumper MB_MOSI->MB_MISO to loop back
+  SPI1.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
+
+  Serial.println("Combined peripheral test: I3C(Wire1) + analogRead + analogWrite + tone + millis/micros + Serial1 + SPI1");
 }
 
 void loop() {
@@ -67,6 +75,11 @@ void loop() {
     pwmStep = -pwmStep;
   analogWrite(PWM_PIN, pwmDuty);
 
+  // SPI1 (MikroBus, LPSPI0) -- loopback via MB_MOSI->MB_MISO jumper
+  digitalWrite(MB_CS, LOW);
+  uint16_t spi1Echo = SPI1.transfer16(0x1234);
+  digitalWrite(MB_CS, HIGH);
+
   Serial.print("millis=");
   Serial.print(ms);
   Serial.print(" micros=");
@@ -80,6 +93,8 @@ void loop() {
   Serial.print(" serial1=\"");
   Serial.print(serial1Rx);
   Serial.print("\"");
+  Serial.print(" spi1Echo=0x");
+  Serial.print(spi1Echo, HEX);
 
   if (adc < 0 || adc > 1023)
     Serial.print("  <-- WARNING: analogRead out of range!");
@@ -89,6 +104,9 @@ void loop() {
 
   if (loopCount > 0 && serial1Avail == 0)
     Serial.print("  <-- WARNING: Serial1 loopback got nothing!");
+
+  if (spi1Echo != 0x1234)
+    Serial.print("  <-- WARNING: SPI1 loopback echo mismatch!");
 
   Serial.println();
 
