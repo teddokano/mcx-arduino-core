@@ -11,16 +11,18 @@ using r01libSPI = SPI;
 
 #include	"arduino_spi.h"
 
-static r01libSPI	*spi	= nullptr;	//	MOSI, MISO, SCLK, CS (lazy init)
-
 SPISettings::SPISettings( uint32_t freq, int order, int mode ) : clock( freq ), bitOrder( order ), dataMode( mode )
+{
+}
+
+SPIClass::SPIClass( int mosi, int miso, int sclk, int cs ) : _mosi( mosi ), _miso( miso ), _sclk( sclk ), _cs( cs )
 {
 }
 
 void SPIClass::begin( void )
 {
 	if ( !spi )
-		spi	= new r01libSPI( ARD_MOSI, ARD_MISO, ARD_SCK, ARD_CS );
+		spi	= new r01libSPI( _mosi, _miso, _sclk, _cs );
 }
 
 void SPIClass::end( void )
@@ -141,3 +143,4 @@ void SPIClass::txrx( uint8_t *data, size_t size )
 }
 
 SPIClass	SPI;
+SPIClass	SPI1( MB_MOSI, MB_MISO, MB_SCK, MB_CS );

@@ -170,6 +170,10 @@ void init_mcu( void )
 	CLOCK_SetClockDiv(kCLOCK_DivLPSPI1, 1u);
 	CLOCK_AttachClk(kFRO12M_to_LPSPI1);
 
+	/* SPI on MikroBus (MB_MOSI/MB_MISO/MB_SCK/MB_CS -> LPSPI0) */
+	CLOCK_SetClockDiv(kCLOCK_DivLPSPI0, 1u);
+	CLOCK_AttachClk(kFRO12M_to_LPSPI0);
+
 	CLOCK_EnableClock( kCLOCK_GateGPIO0 );
 	CLOCK_EnableClock( kCLOCK_GateGPIO1 );
 	CLOCK_EnableClock( kCLOCK_GateGPIO2 );

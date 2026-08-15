@@ -55,6 +55,11 @@ class SPI;
 class SPIClass
 {
 public:
+	// Defaults to the Arduino-header SPI pins (D10-D13); pass a different
+	// pin set (e.g. MB_MOSI/MB_MISO/MB_SCK/MB_CS) to talk to a different
+	// physical SPI instance -- see the global `SPI1` for the MikroBus one.
+	SPIClass( int mosi = ARD_MOSI, int miso = ARD_MISO, int sclk = ARD_SCK, int cs = ARD_CS );
+
 	void	 begin( void );
 	void	 end( void );
 	void	 beginTransaction( SPISettings settings );
@@ -85,11 +90,18 @@ public:
 private:
 	void	txrx( uint8_t *buf, size_t count );
 
+	const int	_mosi;
+	const int	_miso;
+	const int	_sclk;
+	const int	_cs;
+	SPI			*spi	= nullptr;
+
 	uint32_t	_last_clock	= 0;
 	int			_last_mode	= -1;
 	int			_last_order	= -1;
 };
 
 extern SPIClass	SPI;
+extern SPIClass	SPI1;
 
 #endif // !R01LIB_ARDUINO_SPI_H
