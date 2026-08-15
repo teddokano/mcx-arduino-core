@@ -612,6 +612,34 @@ Issue #1対応時に見つかっていた`SD`ライブラリの別の未解決�
 - ライブラリ再ビルド・両ボードの回帰コンパイル確認（無問題）を経て、実際にIssue記載の再現手順（`SD`ライブラリをインストールし`#include <SD.h>`するスケッチをビルド）で検証——**両ボードとも完全にコンパイル成功**（`-Waddress-of-packed-member`警告のみ残るが、Issue本文に「これは無関係・無害なので無視してよい」と明記済みのもの）。これでIssue #1・#3両方が原因だった`SD`ライブラリのビルド不能が解消
 - 確認用スケッチ`test_Print_writeError`（`FlakyPrint`という`Print`派生クラスを自作し、`setWriteError()`呼び出し前後で`getWriteError()`/`clearWriteError()`が正しく追跡・リセットされるかを検証、配線不要）を新規作成、A153実機で4項目とも「全てOK」の実機確認済み。`API_COMPATIBILITY.md`・`CHANGELOG.md`のUnreleasedセクションに追記
 
+### 実プロジェクト（Waveshare_TFT_Touch_Arduino）での動作確認と、実機バグ2件・Issue #2の発見・修正
+Issue #1・#3が対応済みになったことを受け、これらのIssueの発端となった実プロジェクト`Waveshare_TFT_Touch_Arduino`（ユーザー自身のリポジトリ、ローカルに`~/dev/Arduino/libraries/Waveshare_TFT_Touch/`としてクローン済み）で実際にexampleがコンパイル・動作するかを検証する依頼。当初`examples/SDBitmapViewer/`のみを指定されたが、ユーザー自身が「間違い」と訂正し、ライブラリ全体（親ディレクトリ）を指定し直した。`arduino-cli compile --library <path> ...`（サンプルが標準ライブラリ検索パス外にある場合の正しい指定方法、`upload`単体では`--library`フラグが存在せず`compile --upload`と組み合わせる必要があると判明）で`SDBitmapViewer`（LCD+SDカード、SPIバス共有・別CS）が両ボードともコンパイル成功——Issue #1・#3が実際にこのプロジェクトのビルド不能を解消したことを確認
+
+#### 実機バグ発見1: LCD画像の乱れ（SPIのCSピンがハードウェアPCS機能に強制mux）
+ユーザーが実機（A153）で`SDBitmapViewer`を実行したところ、「R3, Minimaでは正常に表示できたbmpファイルの画像が乱れて表示される．しかも描画が非常に遅い」と報告（写真添付、NXPロゴが斜めの帯状ノイズで乱れる）。ユーザーから「以前の検討ではissue #2は描画速度との直接の関係はなさそうという結論になった．そのため保留にしてある．それよりも画像の乱れを優先してfix」との明確な優先順位指示。
+
+- **切り分け**: SDの読み取り(`f.read`)とLCDへの書き込み(`tft.startWrite/writePixels/endWrite`)を完全に分離した診断スケッチ（Phase A: SD読み取りのみでチェックサム比較、Phase B: `tft.*`を使った合成カラーバーパターンのみ）を作成し実機確認。Phase Aは2回とも同一チェックサムで安定・SHORT READ皆無（SD読み取り自体は正しい）、Phase Bはカラーバーが正しく表示（LCD書き込み自体も正しい）——にも関わらず**Phase A（`tft.*`を一切呼んでいない）実行中に画面に斜めの黒い点が走る**という一見矛盾した結果が得られ、これが決定的な手がかりとなった
+- **根本原因特定**: `r01lib_spi.cpp`の`SPI`コンストラクタが、渡された`cs`引数のピンを無条件で`_cs.pin_mux(2)`によりLPSPIハードウェアのPCS（Peripheral Chip Select）機能へmuxしていた。これにより(1) `ST7789`ライブラリが`pinMode`/`digitalWrite`で行う手動CS制御が`SPI.begin()`実行後は完全に無効化される（ピンがGPIOでなくなるため）、(2) **さらに深刻なのは、同じSPIバスを共有する別デバイス（SDカード、CS=D5）の`SPI.transfer()`呼び出しのたびに、LPSPIハードウェアがLCDのCS(D10)を自動でパルスしていた**ため、SD向けの意味のないデータがLCDのコマンド/データレジスタに誤って取り込まれていた。`chip_select`メンバをコンストラクタ内で確認したところ、N947側には既に未使用の`cs_manual_control()`という手動CS切り替えメソッドが存在していた（A153には存在せず）ことも判明——おそらく過去のIssue #2調査時の未完成の対策と推測
+- **修正**: A153・N947とも、コンストラクタでCSピンをLPSPIハードウェアPCS機能へmuxするのをやめ、常にGPIO（スケッチ側の`digitalWrite`制御下）のままにするよう変更。これは本家Arduinoの標準的なSPI流儀（CSは常にスケッチ側の責任）と一致する。N947は既存の`cs_manual_control(true)`をコンストラクタから呼ぶ形に、A153は該当ピンのmux呼び出し自体を削除する形で対応。両ボードともライブラリ再ビルド・strip・配置、回帰コンパイル、実プロジェクトの`SDBitmapViewer`のコンパイル確認を経て、実機A153に書き込み直し——**ユーザーが画像乱れの解消を確認**（「画像の乱れは解消された．でもまだ遅い」）
+
+#### Issue #2の修正（画像の乱れとは無関係と判明も、Issueとしては正当な修正）
+画像乱れ解消後、ユーザーから「まだ遅い．Issue #2の可能性が高いのでこれもfix」との依頼。`gh issue view 2`で内容確認: `SPI::frequency()`/`mode()`が設定変更のたびに`LPSPI_Deinit()`（クロックゲート停止＋全レジスタリセット）+`LPSPI_MasterInit()`（CFGR1・FIFOウォーターマーク・ダミーデータまで含めた全再構築）という重い処理を行っており、2台のSPIデバイスが毎ループ異なる`SPISettings`で交互動作する構成（例: タッチ+LCD）で無駄なコストを払うという指摘
+
+- **修正**: NXP SDK（`fsl_lpspi.c`）のソースを精査し、`LPSPI_MasterInit()`内部で実際に何が行われているかを確認。`LPSPI_MasterSetBaudRate()`（ボーレート、モジュール無効化のみ必要）・TCRレジスタへの直接書き込み（CPOL/CPHA/LSBF/PRESCALE、`LPSPI_MasterTransferBlocking()`自身がCONT/CONTC/RXMSK/PCS/WIDTH以外のTCRフィールドをtransfer毎に触らないことを確認済み）・`LPSPI_MasterSetDelayTimes()`を使い、「無効化→変更が必要なレジスタだけ直接書き換え→再有効化」という軽量な方式に`frequency()`/`mode()`/`bit_order()`を置き換え（`LPSPI_Deinit()`/`LPSPI_MasterInit()`を使わない）。両ボードとも`-Wall`警告ゼロでビルド確認、実機書き込みして確認を依頼したが、**ユーザーから「速度は変わらない」と報告**——Issue #2のメカニズム自体は正しく修正されたが、このワークロード（`SDBitmapViewer`）における実際のボトルネックではなかったと判明
+
+#### 実機バグ発見2: SDライブラリのスカラーバイト転送が真のボトルネックと判明
+ユーザーから追加情報「R3で3秒の描画にA153では11秒」（約3.7倍遅い）。単発の再初期化コストでは説明しきれない規模のため、実際の`drawBmp()`と同じチャンク単位でSD読み取り/LCD書き込みを別々に`micros()`計測する診断スケッチを新規作成・実機書き込み。結果:
+```
+chunkCount=2400  totalUs=10467071
+sdTotalUs=8998921 (85.9%)  avg SD read per chunk(us)=3749
+lcdTotalUs=1280173 (12.2%)  avg LCD write per chunk(us)=533
+```
+SD読み取りが全体の85.9%を占め、96バイトのチャンク読み取りに平均3749µsもかかっている（同程度のバイト数を送るLCD書き込みの7倍以上）ことが判明。
+
+- **原因**: 標準`SD`ライブラリの`spiRec()`は`SPI.transfer(0xFF)`という**1バイトずつのスカラー転送**をループで呼ぶ実装（`Sd2Card.cpp`で確認）。このプロジェクトの`SPIClass::transfer(uint8_t)`は、LCDの一括転送（`SPI.transfer(buf,size)`）と全く同じ`spi->write()`→`LPSPI_MasterTransferBlocking()`という重い汎用パスを1バイトのためだけに通っていた。`fsl_lpspi.c`のソースを精査したところ、この関数は毎回「無効化→引数チェック→FIFOフラッシュ→ステータスフラグクリア→再有効化→TCR書き込み(TX FIFO空待ち込み)→もう一度TCR書き込み→FIFO経由でのバイト転送」という、大量バイト・複雑な転送を安全に扱うための防御的な処理を1バイトのためだけに毎回フルで行っており、実際のビットクロック時間（4MHzで約2µs）に対し約37µsもの固定オーバーヘッドが乗っていた
+- **修正**: `SPI`クラスに`transfer_byte(uint8_t)`という軽量パスを新設（A153/N947両方の`r01lib_spi.h/.cpp`）。TCRの動的フィールド（PCS/CONT/CONTC/RXMSK/TXMSK）を「単発・非continuous・TX+RX有効」の固定値へ都度書き込み（FIFO空待ち不要——このパスでは呼び出し間で必ずモジュールがアイドル状態に戻っていることを利用）、あとはSDKの`LPSPI_WriteData()`/`LPSPI_ReadData()`とステータスフラグ（`kLPSPI_TxDataRequestFlag`/`kLPSPI_RxDataReadyFlag`、SDK自身が内部で待っているのと同じフラグ）を直接ポーリングしてTDR/RDRを操作するだけの実装に置き換え、`LPSPI_MasterTransferBlocking()`の防御的な毎回リセットを完全にバイパス。CPOL/CPHA/PRESCALE/LSBF/FRAMESZは`frequency()`/`mode()`/`bit_order()`が既に正しく維持している値をそのまま使うため触れない。`SPIClass::transfer(uint8_t)`（Arduino層）をこの新パスに接続
+- 両ボードとも`-Wall`警告ゼロでビルド確認、回帰コンパイル問題なし。診断スケッチを再書き込みしてユーザーが確認、**「良くなりました」**と改善を確認（正確な計測値・R3比の最終確認は今後のフォローアップ）
+
 ---
 
 ## 動作確認済み

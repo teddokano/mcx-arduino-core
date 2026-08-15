@@ -99,10 +99,19 @@ status_t SPI::write( uint8_t *wp, uint8_t *rp, int length )
 	return status;
 }
 
+uint8_t SPI::transfer_byte( uint8_t out )
+{
+	uint8_t	in;
+
+	write( &out, &in, 1 );
+
+	return in;
+}
+
 DigitalOut* SPI::cs_manual_control( bool flag )
 {
 	chip_select	= true;
-	
+
 	return &chip_select;
 }
 
@@ -157,7 +166,7 @@ DigitalOut* SPI::cs_manual_control( bool flag )
 	#error Not supported CPU
 #endif
 
-SPI::SPI( int mosi, int miso, int sclk, int cs ) : Obj( true ), chip_select( cs )
+SPI::SPI( int mosi, int miso, int sclk, int cs ) : Obj( true ), chip_select( cs, 1 )
 {
 	uint8_t	mux_setting	= 2;   // overridden below for pin-sets needing a different ALT (e.g. N947's MikroBus header)
 
@@ -241,9 +250,17 @@ SPI::SPI( int mosi, int miso, int sclk, int cs ) : Obj( true ), chip_select( cs 
 	_mosi.pin_mux( mux_setting );
 	_sclk.pin_mux( mux_setting );
 	_miso.pin_mux( mux_setting );
-	chip_select.pin_mux( mux_setting );
-	
-	manual_cs_control	= false;
+
+	//	cs defaults to manual/GPIO control, never the LPSPI hardware PCS
+	//	function: one physical SPI bus is routinely shared by several
+	//	devices (e.g. an LCD + SD card), each with its own independently
+	//	sketch-managed CS pin via pinMode()/digitalWrite(). If this pin were
+	//	hardware-PCS-driven instead, LPSPI would auto-pulse it on *every*
+	//	SPI.transfer() call for *any* device sharing the bus -- not just
+	//	transfers meant for the device on this pin -- corrupting whichever
+	//	device thinks it's currently deselected.
+	cs_manual_control( true );
+	manual_cs_control	= true;
 
 #pragma GCC diagnostic pop
 }
@@ -253,6 +270,16 @@ SPI::~SPI()
 	LPSPI_Deinit( unit_base );
 }
 
+//	frequency()/mode()/bit_order() reconfigure the peripheral in place --
+//	disable, poke just the registers that actually need to change, re-enable
+//	-- instead of a full LPSPI_Deinit()+LPSPI_MasterInit() (which gates the
+//	peripheral clock off/on and rebuilds every register, CFGR1/FIFO
+//	watermarks/dummy-data included, from scratch). A sketch that interleaves
+//	two devices at different clocks/modes on one bus (e.g. an LCD + an SD
+//	card sharing MOSI/MISO/SCK with separate CS pins) calls these on *every*
+//	beginTransaction() where settings differ from the last transaction, so
+//	the old full-reinit cost was paid on every single alternation -- this is
+//	the fix for issue #2.
 void SPI::frequency( uint32_t frequency )
 {
 	masterConfig.baudRate = frequency;
@@ -261,8 +288,21 @@ void SPI::frequency( uint32_t frequency )
 	masterConfig.lastSckToPcsDelayInNanoSec    = 1000000000U / (masterConfig.baudRate * 2U);
 	masterConfig.betweenTransferDelayInNanoSec = 1000000000U / (masterConfig.baudRate * 2U);
 
-	LPSPI_Deinit( unit_base );
-	LPSPI_MasterInit( unit_base, &masterConfig, master_clk_freq );
+	uint32_t	tcr_prescale;
+
+	LPSPI_Enable( unit_base, false );
+
+	LPSPI_MasterSetBaudRate( unit_base, masterConfig.baudRate, master_clk_freq, &tcr_prescale );
+	unit_base->TCR = (unit_base->TCR & ~LPSPI_TCR_PRESCALE_MASK) | LPSPI_TCR_PRESCALE( tcr_prescale );
+
+	LPSPI_Enable( unit_base, true );
+
+	//	delay times depend on the (now-updated) TCR prescale field, so these
+	//	must come after it's written -- matching LPSPI_MasterInit()'s own
+	//	ordering, which also sets them after enabling
+	LPSPI_MasterSetDelayTimes( unit_base, masterConfig.pcsToSckDelayInNanoSec,        kLPSPI_PcsToSck,        master_clk_freq );
+	LPSPI_MasterSetDelayTimes( unit_base, masterConfig.lastSckToPcsDelayInNanoSec,    kLPSPI_LastSckToPcs,    master_clk_freq );
+	LPSPI_MasterSetDelayTimes( unit_base, masterConfig.betweenTransferDelayInNanoSec, kLPSPI_BetweenTransfer, master_clk_freq );
 }
 
 void SPI::mode( uint8_t mode )
@@ -270,16 +310,19 @@ void SPI::mode( uint8_t mode )
 	masterConfig.cpol	= (lpspi_clock_polarity_t)((mode >> 1) & 0x1);
 	masterConfig.cpha	= (lpspi_clock_phase_t   )((mode >> 0) & 0x1);
 
-	LPSPI_Deinit( unit_base );
-	LPSPI_MasterInit( unit_base, &masterConfig, master_clk_freq );
+	LPSPI_Enable( unit_base, false );
+	unit_base->TCR = (unit_base->TCR & ~(LPSPI_TCR_CPOL_MASK | LPSPI_TCR_CPHA_MASK))
+	                | LPSPI_TCR_CPOL( masterConfig.cpol ) | LPSPI_TCR_CPHA( masterConfig.cpha );
+	LPSPI_Enable( unit_base, true );
 }
 
 void SPI::bit_order( uint8_t order )
 {
 	masterConfig.direction	= order ? kLPSPI_MsbFirst : kLPSPI_LsbFirst;
 
-	LPSPI_Deinit( unit_base );
-	LPSPI_MasterInit( unit_base, &masterConfig, master_clk_freq );
+	LPSPI_Enable( unit_base, false );
+	unit_base->TCR = (unit_base->TCR & ~LPSPI_TCR_LSBF_MASK) | LPSPI_TCR_LSBF( masterConfig.direction );
+	LPSPI_Enable( unit_base, true );
 }
 
 status_t SPI::write( uint8_t *wp, uint8_t *rp, int length )
@@ -292,6 +335,45 @@ status_t SPI::write( uint8_t *wp, uint8_t *rp, int length )
 	masterXfer.configFlags	= master_pcs_4_xfer | kLPSPI_MasterPcsContinuous | kLPSPI_MasterByteSwap;
 
 	return LPSPI_MasterTransferBlocking( unit_base, &masterXfer );
+}
+
+uint8_t SPI::transfer_byte( uint8_t out )
+{
+	//	Fast path for a single scalar byte, bypassing write()/
+	//	LPSPI_MasterTransferBlocking()'s per-call disable+flush-FIFO+
+	//	clear-status-flags+re-enable dance -- measured at ~40us of fixed
+	//	overhead per call on real hardware, versus ~2us of actual bit-
+	//	clocking at 4MHz. That overhead is negligible for the occasional
+	//	bulk transfer (e.g. this project's own LCD writePixels() bursts),
+	//	but dominates when a caller moves data one byte at a time in a
+	//	tight loop -- as the standard Arduino SD library's spiRec()/
+	//	spiSend() do (measured as the actual cause of "very slow" SD-backed
+	//	rendering, once the interleaved-reinit issue #2 was independently
+	//	fixed and made no difference).
+	//
+	//	TCR's dynamic per-transfer bits (PCS/CONT/CONTC/RXMSK/TXMSK) are
+	//	rewritten to a fixed one-shot/non-continuous/TX+RX-both-active
+	//	state on every call -- cheap (no FIFO-empty wait needed, since the
+	//	peripheral is always left idle between calls here, unlike write()'s
+	//	multi-byte bursts) -- then the byte is pushed/popped directly via
+	//	TDR/RDR, polling the same TDF/RDF flags the SDK's own blocking
+	//	transfer waits on internally. CPOL/CPHA/PRESCALE/LSBF/FRAMESZ are
+	//	untouched here -- they're the sticky fields frequency()/mode()/
+	//	bit_order() already maintain.
+	uint32_t	whichPcs	= (master_pcs_4_xfer & LPSPI_MASTER_PCS_MASK) >> LPSPI_MASTER_PCS_SHIFT;
+
+	unit_base->TCR	= (unit_base->TCR & ~(LPSPI_TCR_CONT_MASK | LPSPI_TCR_CONTC_MASK | LPSPI_TCR_RXMSK_MASK |
+	                                      LPSPI_TCR_TXMSK_MASK | LPSPI_TCR_PCS_MASK))
+	                | LPSPI_TCR_PCS( whichPcs );
+
+	while ( 0U == ( LPSPI_GetStatusFlags( unit_base ) & (uint32_t)kLPSPI_TxDataRequestFlag ) )
+		;
+	LPSPI_WriteData( unit_base, out );
+
+	while ( 0U == ( LPSPI_GetStatusFlags( unit_base ) & (uint32_t)kLPSPI_RxDataReadyFlag ) )
+		;
+
+	return (uint8_t)LPSPI_ReadData( unit_base );
 }
 
 DigitalOut* SPI::cs_manual_control( bool flag )

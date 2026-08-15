@@ -59,8 +59,7 @@ void SPIClass::endTransaction( void )
 
 uint8_t SPIClass::transfer( uint8_t data )
 {
-	txrx( &data, 1 );
-	return data;
+	return spi->transfer_byte( data );
 }
 
 uint16_t SPIClass::transfer16( uint16_t data )

@@ -81,6 +81,19 @@ public:
 	 */	
 	virtual status_t		write( uint8_t *wp, uint8_t *rp, int length );
 
+	/** Fast scalar single-byte transfer.
+	 *
+	 *  Bypasses write()'s generic blocking-transfer per-call overhead
+	 *  (disable/flush-FIFO/clear-status-flags/re-enable), which dominates
+	 *  cost for a single 8-bit frame -- this exists for callers that move
+	 *  data one byte at a time in a tight loop (e.g. the standard Arduino
+	 *  SD library's spiRec()/spiSend()).
+	 *
+	 * @param out byte to transmit
+	 * @return byte received
+	 */
+	virtual uint8_t			transfer_byte( uint8_t out );
+
 	/** variable for reporting last state */
 	status_t				last_status;
 
