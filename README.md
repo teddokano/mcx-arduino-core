@@ -7,6 +7,8 @@ See [API_COMPATIBILITY.md](API_COMPATIBILITY.md) for the full Arduino API suppor
 [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) / [PIN_MAPPING_N947.md](PIN_MAPPING_N947.md)
 for each board's pin assignments, and [CHANGELOG.md](CHANGELOG.md) for release history.
 
+[![youtube](img/youtube.png) Setup guide video](https://youtu.be/g_rDAxnVnro) is available. 
+
 ## Supported Boards
 
 | Board | MCU | Core |
