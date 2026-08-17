@@ -72,14 +72,14 @@ mcx-arduino-core/
 │   ├── tools/
 │   │   └── upload.sh         # Upload script (auto-detects LinkServer)
 │   └── variants/
-│       └── frdm_mcxa153/
+│       └── frdm_mcxa153/     # one such directory per supported board
 │           ├── include/      # Board-specific headers
 │           ├── linker/       # Linker scripts
 │           └── lib/          # Prebuilt .a library
 └── package_nxp_mcx_index.json
 ```
 
-The prebuilt library (`lib_r01lib_frdm_mcxa153.a`) contains:
+Each board's prebuilt library (e.g. `lib_r01lib_frdm_mcxa153.a`) contains:
 - NXP MCX SDK drivers (fsl_gpio, fsl_lpuart, fsl_lpi2c, fsl_lpspi, ...)
 - r01lib core (Serial, I2C, SPI, GPIO, InterruptIn, Ticker, ...)
 - Arduino layer (digitalWrite, Wire, SPI, Serial.print, ...)
@@ -87,12 +87,12 @@ The prebuilt library (`lib_r01lib_frdm_mcxa153.a`) contains:
 
 ## Example Sketch
 ```cpp
-#include "arduino.h"
+#include <Arduino.h>
 
 void setup() {
     Serial.begin(115200);
     Serial.println("Hello from FRDM-MCXA153!");
-    pin_mode(RED, OUTPUT);
+    pinMode(RED, OUTPUT);
 }
 
 void loop() {
