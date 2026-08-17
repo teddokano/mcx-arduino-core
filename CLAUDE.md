@@ -675,6 +675,27 @@ SD読み取りが全体の85.9%を占め、96バイトのチャンク読み取�
 
 ---
 
+## v0.3.1 で作業中の内容（未リリース）
+
+### MCUXpresso SDK APIを直接呼ぶサンプルの追加: `test_GPIO_toggle_speed_SDK_API`
+v0.3.0リリース後、`platform.txt`を`0.3.1`に更新しローカル開発用symlinkも`0.3.1-dev`に改名して次の開発サイクルを開始（ユーザー指示）。最初の作業として、ユーザーから「MCUXpresso SDKのAPIをスケッチから呼んで使う例を作って。GPIO出力のHIGHとLOWを交互に繰り返すIO速度計測のためのテストで、GPIOの設定までをArduino SDKで、HIGH/LOW出力をMCUXpresso SDKのAPIでやる」という依頼。
+
+- **構成**: `pinMode()`（Arduino API）でGPIOの方向・PORT muxを設定した後、`digitalPinToPort()`/`digitalPinToBitMask()`（この プロジェクト独自のarduino_layer——fast-GPIO/ビットバンギング用に元々用意されていたヘルパー）で生の`GPIO_Type*`とビットマスクを取得し、それをMCUXpresso SDK純正の`GPIO_PortSet()`/`GPIO_PortClear()`（`fsl_gpio.h`）に直接渡してHIGH/LOW出力を行う、という3層（arduino_layer→r01lib→SDK）を跨ぐ構成。`digitalWrite()`ベースのループと速度比較する形にした
+- **実装時のミス**: Doxygen風コメント内で`GPIO_Type*/bitmask`と書いたところ、`*/`がブロックコメントの終端として解釈されコンパイルエラーになった——コメント内で`*/`という文字列を書く際の典型的な罠。「GPIO_Type pointer and bitmask」と書き換えて解消
+- **ループアンロールの追加**: ユーザーから「ループのオーバーヘッドが大きくなるので、アンロールしてその影響を軽減」との指摘。特にSDK直接呼び出し側は1回のトグルがインライン展開されたレジスタ書き込み2命令程度で終わるため、ループのcompare/increment/branchオーバーヘッドが相対的に無視できなくなる。`DW_TOGGLE`/`SDK_TOGGLE`マクロを定義し、ループ本体に10個ずつ並べる形（UNROLL=10）で対応
+- **実機検証済み（A153・N947両方）**:
+
+| | A153 (96MHz) | N947 (150MHz) | 比率 |
+|---|---|---|---|
+| `digitalWrite()` | 784.7ns/toggle (1.274MHz) | 488.8ns/toggle (2.045MHz) | 1.61x |
+| SDK直接 (`GPIO_PortSet`/`Clear`) | 22.9ns/toggle (43.620MHz) | 14.67ns/toggle (68.166MHz) | 1.56x |
+| Speedup | 34.23x | 33.32x | — |
+
+  両ボードの速度差比率（1.56〜1.61x）が、クロック周波数比（150MHz/96MHz = 1.5625x）にほぼ一致——両パスとも実行サイクル数自体はボード間でほぼ同じで、実測時間の差は純粋にクロック周波数の違いで説明できることが確認でき、ベンチマークとして筋が通っている結果と判断
+- サンプルは`examples/Arduino_compatible_API/test_GPIO_toggle_speed_SDK_API/`としてコミット・push済み
+
+---
+
 ## 動作確認済み
 
 | API | 状態 | 備考 |
