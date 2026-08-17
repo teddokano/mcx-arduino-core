@@ -1,5 +1,9 @@
 # mcx-arduino-core
 
+<img src="img/FRDM-MCXA153.jpg" alt="FRDM-MCXA153 running an mcx-arduino-core sketch" width="400">    
+*FRDM-MCXA153*
+
+
 Arduino board support package for NXP FRDM MCX Series boards.
 
 New here? Start with the [tutorial](TUTORIAL.md) ([日本語版](TUTORIAL.ja.md)).
@@ -17,9 +21,6 @@ for each board's pin assignments, and [CHANGELOG.md](CHANGELOG.md) for release h
 | FRDM-MCXA156 | MCXA156 (Cortex-M33) | 🔜 |
 | FRDM-MCXN947 | MCXN947 (Cortex-M33) | ✅ |
 | FRDM-MCXN236 | MCXN236 (Cortex-M33) | 🔜 |
-
-<img src="img/FRDM-MCXA153.jpg" alt="FRDM-MCXA153 running an mcx-arduino-core sketch" width="400">  
-*FRDM-MCXA153*
 
 > **Note**: mcx-arduino-core is an independent, community project and is not
 > part of or affiliated with Arduino's official
