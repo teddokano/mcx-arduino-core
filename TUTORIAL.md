@@ -393,13 +393,17 @@ for a full melody example.
 The board has an on-board P3T1755 temperature sensor wired to the MCU's I3C
 peripheral — but `Wire1` drives it in **I2C-compatibility mode**, so it's a
 normal `TwoWire` object talking plain I2C (no I3C-specific features like
-dynamic addressing or IBI are used). No wiring needed for this one:
+dynamic addressing or IBI are used). No wiring or extra library needed for
+this one — talk to its register interface directly with the standard
+`beginTransmission()` / `write()` / `endTransmission()` / `requestFrom()` /
+`read()` calls, exactly as you would with any I2C device that doesn't have
+a driver library:
 
 ```cpp
-#include <Wire.h>
-#include <P3T1755.h>   // install via Library Manager, or see the example below
+#include <Arduino.h>
 
-P3T1755 sensor(Wire1, 0x48);
+const uint8_t SENSOR_ADDR = 0x48;
+const uint8_t TEMP_REG = 0x00;
 
 void setup() {
   Serial.begin(115200);
@@ -410,18 +414,36 @@ void setup() {
 }
 
 void loop() {
-  Serial.println(sensor.temp(), 4);
+  Wire1.beginTransmission(SENSOR_ADDR);
+  Wire1.write(TEMP_REG);
+  Wire1.endTransmission(false);  // repeated start, keep the bus held
+
+  Wire1.requestFrom(SENSOR_ADDR, (size_t)2);
+  uint8_t msb = Wire1.read();
+  uint8_t lsb = Wire1.read();
+
+  // P3T1755's temperature register: 2 bytes, MSB first, 11-bit two's
+  // complement value left-justified in the 16-bit word (bits 15:5),
+  // 0.125 degC per LSB at bit 5.
+  int16_t raw = (int16_t)((msb << 8) | lsb) >> 5;
+  Serial.println(raw * 0.125f, 4);
+
   delay(1000);
 }
 ```
 
 Full sketch:
-[`examples/Arduino_compatible_API/onboard_temperature_sensor`](examples/Arduino_compatible_API/onboard_temperature_sensor).
+[`examples/Arduino_compatible_API/test_Wire1_onboard_sensor_raw`](examples/Arduino_compatible_API/test_Wire1_onboard_sensor_raw).
+(If you'd rather use a driver library instead of talking to the registers
+directly, see
+[`examples/Arduino_compatible_API/onboard_temperature_sensor`](examples/Arduino_compatible_API/onboard_temperature_sensor).)
 
 For an *external* I2C device instead, use the regular `Wire` object
-(`SDA`/`SCL` on `D18`/`D19`) with the standard
-`Wire.begin()` / `beginTransmission()` / `write()` / `endTransmission()` /
-`requestFrom()` / `read()` calls, exactly as on a classic Arduino.
+(`SDA`/`SCL` on `D18`/`D19`) the same way — exactly as on a classic
+Arduino. See
+[`examples/Arduino_compatible_API/test_Wire_LM75B`](examples/Arduino_compatible_API/test_Wire_LM75B)
+for the same register-access technique against an external LM75-family
+sensor.
 
 ### 2.10. SPI
 
@@ -504,5 +526,5 @@ extra `#include`s needed: `PI`, `HALF_PI`, `TWO_PI`, `DEG_TO_RAD`,
 
 - [README.md](README.md) — full API support table and pin mapping
 - [`examples/Arduino_compatible_API/`](examples/Arduino_compatible_API) — one focused sketch per feature
-- [`examples/Arduino_compatible_API/test_combined_peripherals`](examples/Arduino_compatible_API/test_combined_peripherals) — everything running at once
+- [`examples/Arduino_compatible_API/test_combined_peripherals_A153`](examples/Arduino_compatible_API/test_combined_peripherals_A153) — everything running at once
 - [CHANGELOG.md](CHANGELOG.md) — what changed between versions

@@ -331,13 +331,13 @@ void loop() {
 
 ### 2.9. I2C: `Wire`とオンボードセンサー（`Wire1`）
 
-ボードにはオンボードのP3T1755温度センサーがMCUのI3Cペリフェラルに接続されていますが、`Wire1`はこれを**I2C互換モード**で駆動するため、通常の`TwoWire`オブジェクトとして普通のI2C通信ができます（動的アドレッシングやIBIなどI3C固有の機能は一切使用しません）。この例には配線不要です:
+ボードにはオンボードのP3T1755温度センサーがMCUのI3Cペリフェラルに接続されていますが、`Wire1`はこれを**I2C互換モード**で駆動するため、通常の`TwoWire`オブジェクトとして普通のI2C通信ができます（動的アドレッシングやIBIなどI3C固有の機能は一切使用しません）。この例には配線もライブラリも不要です——ドライバライブラリを持たないI2Cデバイスと同じように、標準の`beginTransmission()` / `write()` / `endTransmission()` / `requestFrom()` / `read()`でレジスタに直接アクセスします:
 
 ```cpp
-#include <Wire.h>
-#include <P3T1755.h>   // Library Managerからインストール、または下記の例を参照
+#include <Arduino.h>
 
-P3T1755 sensor(Wire1, 0x48);
+const uint8_t SENSOR_ADDR = 0x48;
+const uint8_t TEMP_REG = 0x00;
 
 void setup() {
   Serial.begin(115200);
@@ -348,15 +348,31 @@ void setup() {
 }
 
 void loop() {
-  Serial.println(sensor.temp(), 4);
+  Wire1.beginTransmission(SENSOR_ADDR);
+  Wire1.write(TEMP_REG);
+  Wire1.endTransmission(false);  // リピートスタート、バスを保持したまま
+
+  Wire1.requestFrom(SENSOR_ADDR, (size_t)2);
+  uint8_t msb = Wire1.read();
+  uint8_t lsb = Wire1.read();
+
+  // P3T1755の温度レジスタ: 2バイト、MSBファースト、16bit中の上位11bit
+  // （bit15:5）に二の補数値が左詰めされており、bit5が0.125℃刻み
+  int16_t raw = (int16_t)((msb << 8) | lsb) >> 5;
+  Serial.println(raw * 0.125f, 4);
+
   delay(1000);
 }
 ```
 
 完全なスケッチ:
-[`examples/Arduino_compatible_API/onboard_temperature_sensor`](examples/Arduino_compatible_API/onboard_temperature_sensor)
+[`examples/Arduino_compatible_API/test_Wire1_onboard_sensor_raw`](examples/Arduino_compatible_API/test_Wire1_onboard_sensor_raw)
+（レジスタに直接アクセスするのではなくドライバライブラリを使いたい場合は
+[`examples/Arduino_compatible_API/onboard_temperature_sensor`](examples/Arduino_compatible_API/onboard_temperature_sensor)を参照してください）
 
-**外部**のI2Cデバイスを使う場合は、通常の`Wire`オブジェクト（`SDA`/`SCL`は`D18`/`D19`）を使い、従来のArduinoと全く同じ`Wire.begin()` / `beginTransmission()` / `write()` / `endTransmission()` / `requestFrom()` / `read()`を呼び出してください。
+**外部**のI2Cデバイスを使う場合も、通常の`Wire`オブジェクト（`SDA`/`SCL`は`D18`/`D19`）で同じようにアクセスできます——従来のArduinoと全く同じです。外部のLM75系センサーに対する同じレジスタアクセス手法は
+[`examples/Arduino_compatible_API/test_Wire_LM75B`](examples/Arduino_compatible_API/test_Wire_LM75B)
+を参照してください。
 
 ### 2.10. SPI
 
@@ -428,5 +444,5 @@ Arduino UNO向けに書かれたスケッチが、追加の`#include`なしで�
 
 - [README.md](README.md) — API対応表・ピン配置の全体像
 - [`examples/Arduino_compatible_API/`](examples/Arduino_compatible_API) — 機能ごとの単体サンプル
-- [`examples/Arduino_compatible_API/test_combined_peripherals`](examples/Arduino_compatible_API/test_combined_peripherals) — 全機能同時動作の例
+- [`examples/Arduino_compatible_API/test_combined_peripherals_A153`](examples/Arduino_compatible_API/test_combined_peripherals_A153) — 全機能同時動作の例
 - [CHANGELOG.md](CHANGELOG.md) — バージョン間の変更点
