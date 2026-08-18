@@ -85,6 +85,13 @@ Each board's prebuilt library (e.g. `lib_r01lib_frdm_mcxa153.a`) contains:
 - Arduino layer (digitalWrite, Wire, SPI, Serial.print, ...)
 - Board files (pin_mux, clock_config, board, ...)
 
+One side effect: since only the compiled `.a` ships, Arduino IDE's "Go to
+Definition" can't jump into functions like `pinMode()` or `Serial` — only
+their header declaration, not the `.cpp` implementing them. The
+implementation itself lives right here in this repo, under
+`MCUXpresso_project/*/arduino_layer/` and `.../source/r01lib/` for
+whichever board you're looking at, if you want to browse it.
+
 ## Example Sketch
 ```cpp
 #include <Arduino.h>
@@ -106,10 +113,6 @@ void loop() {
 ## Building the Prebuilt Library
 
 The prebuilt `.a` library is built with MCUXpresso IDE from the `_r01lib_frdm_mcxa153` project in the [r01lib repository](https://github.com/teddokano/r01lib).
-
-## Known Issues
-
-- **Arduino IDE 2.x's "Go to Definition" doesn't work for functions/classes implemented in this core** (`pinMode`, `Serial`, `Wire`, etc.) — it reports "No definition found". This follows directly from the prebuilt-library architecture above: only header declarations and the compiled `.a` are installed, not the `.cpp` source implementing them, so there's nothing on disk for the IDE's language server to jump to. For comparison, official cores like `arduino:renesas_uno` ship their Arduino-layer as real source (`cores/arduino/*.cpp`) and only keep the vendor SDK itself precompiled, which is why "Go to Definition" works there. Matching that here would mean shipping the Arduino-layer source instead of (or alongside) the prebuilt library — a real architecture change, not currently planned. "Go to Declaration" (the header) works normally.
 
 ## License
 
