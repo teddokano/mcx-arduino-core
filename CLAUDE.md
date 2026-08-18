@@ -702,7 +702,10 @@ v0.3.0リリース後、`platform.txt`を`0.3.1`に更新しローカル開発�
 - **根本原因の特定**: このプロジェクトは「プリビルド`.a`配布方式」を採用しており、配布物（`hardware/nxp/mcx/variants/*/include/`）に含まれるのはヘッダ（宣言）のみ。`pinMode()`等の実装本体（`arduino_layer/*.cpp`）はエンドユーザーの手元に一切配布されておらず、コンパイル済み`.a`（デバッグシンボルもstrip済み）に固められているだけ。ジャンプ先のソース自体が存在しないため、これは実装バグではなく配布方式そのものに起因する構造的な制約
 - **比較検証**: ユーザーの依頼で、ローカルにインストール済みの純正`arduino:renesas_uno`コア（`~/Library/Arduino15/packages/arduino/hardware/renesas_uno/`）の実際のディレクトリ構成を調査。`cores/arduino/`配下に`digital.cpp`等114個の`.h`・31個の`.c`・30個の`.cpp`という**実装ソースそのもの**が配置されており、プリビルドの`.a`は各variant配下の`libfsp.a`（Renesas純正SDK＝FSPのみ）だけだと確認。つまり純正コアは「Arduino層はソース配布、下位のベンダーSDKだけプリビルド」という構成で、これがGo to Definitionが機能する理由だと確定
 - **対処方針の検討**: 理屈上は`arduino_layer/*.cpp`を`cores/arduino/`配下にソースのまま配置し、`platform.txt`のビルドレシピを標準的な逐次コンパイル方式に変更すれば（NXP SDKドライバ部分はrenesas_unoの`libfsp.a`同様プリビルドのまま残す想定）、同様にGo to Definitionが機能するようになるはずと判明。ただしこれはビルドレシピの構造自体の変更・ボード共通/固有コードの再整理・ビルド時間への影響・パイプライン変更に伴う実機再検証の必要性を伴う、v0.3.1のパッチ規模を明らかに超える独立したアーキテクチャ変更と判断し、**今回は対処を見送り**
-- ユーザー指示で、CLAUDE.md（このセクション）とREADME.mdの両方に既知の問題として記録。README.mdには新規「## Known Issues」セクションを新設（`## Building the Prebuilt Library`の直後）し、原因・renesas_unoとの比較・対処に必要な変更の規模を明記
+- ユーザー指示で、CLAUDE.md（このセクション）とREADME.mdの両方に既知の問題として記録。当初README.mdに独立した「## Known Issues」セクションを新設したが、ユーザーから「それほど大きな問題ではないのでもう少し柔らかい注意点として書いておけないか、編集前に案を出して」と指摘。案A（見出しをやわらかく変更）・案B（独立見出しを作らず`## Architecture`セクションの説明に溶け込ませる）・案C（最小限の1〜2文）の3案を提示し、ユーザーが案Bを選択。独立見出しを削除し、`## Architecture`のプリビルドライブラリ説明の直後に「副作用として...」という一文＋実装ソースの参照先（`MCUXpresso_project/*/arduino_layer/`等）を追記する形に変更
+
+### SDライブラリの`-Waddress-of-packed-member`警告を抑制（v0.3.1）
+前セッションで「次のリリースで解決する」と約束していた件に対応。`platform.txt`の`compiler.cpp.flags`に`-Wno-address-of-packed-member`を追加。この変更は純粋な診断（警告）抑制フラグで、コード生成には一切影響しないこと（`-W`系フラグは`-O`/`-f`系と違いコードを変えない）、かつ`SD`ライブラリはスケッチビルド時にのみコンパイルされ、プリビルド`.a`（r01lib/arduino_layer/drivers）には一切関与しないことを確認済みだったため、対応前にユーザーへ「全機能の実機確認は不要なレベル」と説明し合意を得た上で着手。両ボードで`hello_world`のコンパイル確認と、`SD`ライブラリを使う`SDBitmapViewer`のコンパイルで警告が完全に消えたことを確認（修正前は複数の`-Waddress-of-packed-member`警告が出ていた）
 
 ---
 
@@ -770,4 +773,4 @@ v0.3.0リリース後、`platform.txt`を`0.3.1`に更新しローカル開発�
 2. マルチボード対応（MCXN947, MCXA156, MCXN236）— **N947は`prepare0.3.0`ブランチで完了**。GPIO/Serial/Wire/Wire1/SPI/analogRead/analogWrite/tone・noTone・MikroBusの`SPI1`/`Wire2`/`Serial1`まで実機検証済み、`README.md`の対応ボード表もA153と同じ✅に変更済み（ユーザー判断、2026-08-16）。残るはバージョン番号の更新とリリース手順（下記5）のみ。A156/N236は未着手
 3. ~~`examples/tests/GPIO_NXP_Arduino`の不要なgitlinkエントリの整理~~ **解消済み**: `git ls-files --stage`で`160000`（gitlink）エントリが残っているのに`.gitmodules`が存在しないと判明（外部クローンの誤`git add`の名残）。`git rm --cached`でインデックスから除去し、他4つの外部ライブラリクローンと同様`.gitignore`に追加
 4. ~~v0.3.0リリース~~ **完了**: 2026-08-16リリース。詳細は「リリース前最終チェックとv0.3.0リリース完了」セクション参照
-5. **SDライブラリビルド時の`-Waddress-of-packed-member`警告**: `SD`ライブラリ（`SdFile.cpp`）が自身の`packed`構造体`directoryEntry`のメンバに対して`&p->creationDate`等と直接アドレスを取っており、GCCが「unaligned pointer value」警告を出す。Issue #1/#3対応時に発覚済みで、当時は「無関係・無害、無視してよい」と判断し見送っていたが、ユーザーから「次のリリースで解決する」と方針変更の指示あり。原因はSDライブラリ自身のコード（こちら側では変更不可）のため、こちら側で対応するなら`platform.txt`の`compiler.cpp.flags`に`-Wno-address-of-packed-member`を追加してこのクラスの警告自体を抑制する方向になると想定——次回リリース作業時に着手
+5. ~~SDライブラリビルド時の`-Waddress-of-packed-member`警告~~ **解消済み（v0.3.1で対応）**: `platform.txt`の`compiler.cpp.flags`に`-Wno-address-of-packed-member`を追加して警告クラス自体を抑制。純粋な診断抑制フラグ（`-W`系）でコード生成には一切影響しないため、プリビルド`.a`の再ビルドや実機再検証は不要と判断——両ボードで`SDBitmapViewer`（`SD`ライブラリ使用）をコンパイルし、警告が完全に消えたことを確認

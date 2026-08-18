@@ -5,6 +5,18 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- `examples/Arduino_compatible_API/test_GPIO_toggle_speed_SDK_API`: an example of calling the MCUXpresso SDK's GPIO driver (`GPIO_PortSet`/`GPIO_PortClear`) directly from a sketch, bypassing `digitalWrite()`'s overhead. Measured on real hardware: 34.23x faster on FRDM-MCXA153 (784.7ns vs. 22.9ns per toggle), 33.32x on FRDM-MCXN947 (488.8ns vs. 14.67ns) — both boards' speed difference between the two paths tracks their clock ratio almost exactly, as expected
+- `examples/Arduino_compatible_API/test_Wire1_onboard_sensor_raw`: reads the on-board P3T1755 temperature sensor via `Wire1` using plain register access (`beginTransmission`/`write`/`endTransmission`/`requestFrom`/`read`), no external driver library required
+
+### Changed
+- TUTORIAL.md/.ja.md's I2C/`Wire1` section now uses the library-free register-access example above instead of the external `P3T1755` library, so the section is runnable without any extra installs (the library-based example is kept and cross-referenced as an alternative)
+
+### Fixed
+- Building a sketch that uses the official `SD` library no longer prints `-Waddress-of-packed-member` warnings (harmless — the warning is about `SD`'s own packed-struct code, not anything in this core — but distracting). Suppressed via `-Wno-address-of-packed-member` in `platform.txt`
+
 ## [0.3.0] - 2026-08-16
 
 ### Added
