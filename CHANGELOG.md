@@ -5,7 +5,7 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.3.1] - 2026-08-19
 
 ### Added
 - `examples/Arduino_compatible_API/test_GPIO_toggle_speed_SDK_API`: an example of calling the MCUXpresso SDK's GPIO driver (`GPIO_PortSet`/`GPIO_PortClear`) directly from a sketch, bypassing `digitalWrite()`'s overhead. Measured on real hardware: 34.23x faster on FRDM-MCXA153 (784.7ns vs. 22.9ns per toggle), 33.32x on FRDM-MCXN947 (488.8ns vs. 14.67ns) — both boards' speed difference between the two paths tracks their clock ratio almost exactly, as expected
