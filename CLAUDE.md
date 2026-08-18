@@ -694,6 +694,16 @@ v0.3.0リリース後、`platform.txt`を`0.3.1`に更新しローカル開発�
   両ボードの速度差比率（1.56〜1.61x）が、クロック周波数比（150MHz/96MHz = 1.5625x）にほぼ一致——両パスとも実行サイクル数自体はボード間でほぼ同じで、実測時間の差は純粋にクロック周波数の違いで説明できることが確認でき、ベンチマークとして筋が通っている結果と判断
 - サンプルは`examples/Arduino_compatible_API/test_GPIO_toggle_speed_SDK_API/`としてコミット・push済み
 
+### 調査: Arduino IDEの「Go to Definition」が効かない問題（対処は見送り、既知の問題として記録）
+ユーザーからv0.3.1に入れたい機能としてもう1件、「Arduino IDEでマクロ文字列をハイライトしてGo to Definitionを選んでも定義元ファイルにジャンプできない」という報告。
+
+- **切り分け1（マクロの種類）**: AskUserQuestionで具体的にどのシンボルで試したか確認。「D2/A0等のピン名（`#define`→`#undef`→`enum`の2段階リナンバリング）」「`LED_BUILTIN`等の単純な1回きりの`#define`」「`DEC`/`HEX`/`BIN`等Print.h内の定数マクロ」の3つすべてで発生、との回答——2段階リナンバリング特有の問題ではなく、マクロというシンボル種別全般の問題らしいと推測
+- **切り分け2（決定的な手がかり）**: ユーザーが実際にArduino IDEで`pinMode`（マクロではなく実在する関数）にGo to Definitionを試したスクリーンショットを提供。**"No definition found for 'pinMode'"** — マクロだけでなく関数もダメだと判明し、仮説が根本から変わった
+- **根本原因の特定**: このプロジェクトは「プリビルド`.a`配布方式」を採用しており、配布物（`hardware/nxp/mcx/variants/*/include/`）に含まれるのはヘッダ（宣言）のみ。`pinMode()`等の実装本体（`arduino_layer/*.cpp`）はエンドユーザーの手元に一切配布されておらず、コンパイル済み`.a`（デバッグシンボルもstrip済み）に固められているだけ。ジャンプ先のソース自体が存在しないため、これは実装バグではなく配布方式そのものに起因する構造的な制約
+- **比較検証**: ユーザーの依頼で、ローカルにインストール済みの純正`arduino:renesas_uno`コア（`~/Library/Arduino15/packages/arduino/hardware/renesas_uno/`）の実際のディレクトリ構成を調査。`cores/arduino/`配下に`digital.cpp`等114個の`.h`・31個の`.c`・30個の`.cpp`という**実装ソースそのもの**が配置されており、プリビルドの`.a`は各variant配下の`libfsp.a`（Renesas純正SDK＝FSPのみ）だけだと確認。つまり純正コアは「Arduino層はソース配布、下位のベンダーSDKだけプリビルド」という構成で、これがGo to Definitionが機能する理由だと確定
+- **対処方針の検討**: 理屈上は`arduino_layer/*.cpp`を`cores/arduino/`配下にソースのまま配置し、`platform.txt`のビルドレシピを標準的な逐次コンパイル方式に変更すれば（NXP SDKドライバ部分はrenesas_unoの`libfsp.a`同様プリビルドのまま残す想定）、同様にGo to Definitionが機能するようになるはずと判明。ただしこれはビルドレシピの構造自体の変更・ボード共通/固有コードの再整理・ビルド時間への影響・パイプライン変更に伴う実機再検証の必要性を伴う、v0.3.1のパッチ規模を明らかに超える独立したアーキテクチャ変更と判断し、**今回は対処を見送り**
+- ユーザー指示で、CLAUDE.md（このセクション）とREADME.mdの両方に既知の問題として記録。README.mdには新規「## Known Issues」セクションを新設（`## Building the Prebuilt Library`の直後）し、原因・renesas_unoとの比較・対処に必要な変更の規模を明記
+
 ---
 
 ## 動作確認済み

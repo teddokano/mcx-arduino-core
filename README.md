@@ -107,6 +107,10 @@ void loop() {
 
 The prebuilt `.a` library is built with MCUXpresso IDE from the `_r01lib_frdm_mcxa153` project in the [r01lib repository](https://github.com/teddokano/r01lib).
 
+## Known Issues
+
+- **Arduino IDE 2.x's "Go to Definition" doesn't work for functions/classes implemented in this core** (`pinMode`, `Serial`, `Wire`, etc.) — it reports "No definition found". This follows directly from the prebuilt-library architecture above: only header declarations and the compiled `.a` are installed, not the `.cpp` source implementing them, so there's nothing on disk for the IDE's language server to jump to. For comparison, official cores like `arduino:renesas_uno` ship their Arduino-layer as real source (`cores/arduino/*.cpp`) and only keep the vendor SDK itself precompiled, which is why "Go to Definition" works there. Matching that here would mean shipping the Arduino-layer source instead of (or alongside) the prebuilt library — a real architecture change, not currently planned. "Go to Declaration" (the header) works normally.
+
 ## License
 
 MIT License — see [LICENSE](LICENSE)
