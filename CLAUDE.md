@@ -2,8 +2,8 @@
 
 ## プロジェクト概要
 - **リポジトリ**: https://github.com/teddokano/mcx-arduino-core
-- **現在のバージョン**: v0.3.0（`package_nxp_mcx_index.json` 上の最新リリース。FRDM-MCXN947ボード対応の追加が主目的。`prepare0.3.0`ブランチを`main`へfast-forwardマージ・GitHub Release作成済み、`de9c8bd`でchecksum自動更新も確定。2026-08-16リリース。詳細は後述の「v0.3.0 で作業中の内容」セクション参照。Issue #1/#2/#3はこのリリースで解消——`main`マージ時にコミットメッセージの`fixes #N`でGitHubが自動close済み。**Boards Manager経由インストール〜ビルド〜アップロード〜実機動作をmacOS・Windows・Linuxの3プラットフォームすべてでN947実機検証済み**）
-- **旧バージョン**: v0.2.2（2026-08-13リリース。Linux実機での`#include <Arduino.h>`/`<SPI.h>`のファイル名大文字小文字ミスマッチによるビルド失敗を修正するパッチリリース）
+- **現在のバージョン**: v0.3.1（`package_nxp_mcx_index.json` 上の最新リリース。SDライブラリの`-Waddress-of-packed-member`警告抑制、MCUXpresso SDK直呼びサンプル、ライブラリ不要のI3C/Wire1生レジスタアクセス例が主な内容。GitHub Release作成・タグpush、`e74604c`でchecksum自動更新も確定。2026-08-20リリース。**このリリースから「ステージングブランチ方式」を採用**——`gh release create`でzipを先に確定させ、`main`とは別の`staging-0.3.1`ブランチに検証済みchecksumだけを一時的にpushしてmacOS/Windows/Linuxの3プラットフォームでBoards Manager経由インストールを検証してから`main`のchecksumを確定、というリリース前検証の順序に変更（詳細は「GitHub Actions」節の「リリース前クロスプラットフォーム検証」参照）。詳細は後述の「v0.3.1 で作業中の内容」セクション参照）
+- **旧バージョン**: v0.3.0（2026-08-16リリース。FRDM-MCXN947ボード対応の追加が主目的。Issue #1/#2/#3はこのリリースで解消）、v0.2.2（2026-08-13リリース。Linux実機での`#include <Arduino.h>`/`<SPI.h>`のファイル名大文字小文字ミスマッチによるビルド失敗を修正するパッチリリース）
 - **完了**: `prepare0.3.0`ブランチでのFRDM-MCXN947ボード対応は完了し、v0.3.0としてリリース済み。GPIO/Serial(USB)/Wire1(オンボードI3Cセンサー)/Wire(プレーンI2C、外部LM75系センサーとの実通信も確認済み)/SPI/analogRead/analogWrite(全6チャンネル・独立性込み)/tone・noTone(圧電サウンダで実音確認)は実機検証済み、String/UNO互換マクロはコンパイル確認済み。これでN947の主要機能は一通り実機検証済み（任意項目のanalogRead精度確認も定電圧源で完了、D0-D19/A2-A5/MikroBusヘッダの全GPIO出力も実機確認済み）。**MikroBusヘッダにSPI/I2C/UARTの追加インスタンス`SPI1`/`Wire2`/`Serial1`を新規実装・実機確認済み**（`MB_RX`/`MB_TX`は`Wire1`(I3C)・GPIO・`Serial1`(UART)の3モードを排他切り替え可能）。D0/D1自体は引き続きSerial1に意図的に未対応（FlexComm2資源競合のため、`Wire`と同時に使えない）。**重要な実機バグ4件を修正済み**: (1) `analogWrite`の物理ピンが当初A153流用のP3_6-P3_11（実際は未配線のテストポイント）のままだった → 回路図でP2_2-P2_7/FlexPWM1が正しいピンと判明・修正、(2) その修正時のALT値導出（pin_mux.cのコメント内位置カウント方式）がP2_2/P2_3の2ピンだけ誤っていた → Zephyrのpinctrlヘッダ（シリコン正確）で全ピンAlt5と確定・修正、(3) `pinMode()`がPORT MUXを一切変更しない実装だったため、起動時にI3C用ALT10へ固定されている`MB_RX`/`MB_TX`だけ`digitalWrite`が効かなかった → `pinMode()`で常にALT0(GPIO)へ明示的に再設定するよう修正、(4) MikroBus向け`Serial1`追加時、`arduino_serial.cpp`が`arduino_io.h`をincludeしていたため`MB_TX`/`MB_RX`がArduinoリナンバリング後の値にすり替わりSOSパニックが発生 → include前に生の値を退避するよう修正、(5) A153にもMikroBus対応（`SPI1`のみ、`Wire2`/新規`Serial1`はチップの物理制約——I2Cペリフェラルが1系統のみ・既存Serial1とMikroBus UARTが同じLPUART2——により不可能と判明し見送り）を追加した際、新規使用の`LPSPI0`にクロックが供給されておらずCS以外無反応だった → `mcu.cpp`にクロック設定を追加。方針: 未実装が残っていてもN947が一通り完成した段階でリリースする。詳細は「v0.3.0 で作業中の内容」セクション参照
 - **v0.2.1**（前バージョン）: `prepare0.2.1`→`main`fast-forwardマージ・GitHub Release作成済み、2026-08-12リリース
 - **重要な学び（リリースzipの構造要件）**: v0.2.1の初回リリース作業で`git archive --format=zip -o ... HEAD:hardware/nxp/mcx`を使ってzipを作成したところ、Arduino IDE経由の実インストールで`Failed to install platform: ... no unique root dir in archive, found '.../cores' and '.../tools'`エラーで失敗。Arduino Boards Managerのインストーラーは**zip直下に単一のラッパーディレクトリが1つだけ**存在することを要求する（インストーラーがそのディレクトリを剥がして`packages/<vendor>/hardware/<arch>/<version>/`に配置する仕組み）。`git archive HEAD:hardware/nxp/mcx`はサブディレクトリの中身を直接展開するため、`boards.txt`/`cores/`/`tools/`/`variants/`等がzip直下に並ぶ「フラットな」構造になってしまい、この要件を満たしていなかった。実際に公開済みのv0.2.0のzipを確認したところ、そちらは`mcx/`という単一のラッパーディレクトリを持つ正しい構造になっており問題なし（0.2.1作成時のみのミス）。**今後リリースzipを作る際は、必ず単一のトップレベルディレクトリ（名前は任意、例: `mcx-arduino-core-<version>/`）でラップすること** — `git archive`で作る場合は一旦別ディレクトリに展開してからラッパーディレクトリごと`zip -r`するか、`--prefix=<name>/`オプションを使う
@@ -707,6 +707,17 @@ v0.3.0リリース後、`platform.txt`を`0.3.1`に更新しローカル開発�
 ### SDライブラリの`-Waddress-of-packed-member`警告を抑制（v0.3.1）
 前セッションで「次のリリースで解決する」と約束していた件に対応。`platform.txt`の`compiler.cpp.flags`に`-Wno-address-of-packed-member`を追加。この変更は純粋な診断（警告）抑制フラグで、コード生成には一切影響しないこと（`-W`系フラグは`-O`/`-f`系と違いコードを変えない）、かつ`SD`ライブラリはスケッチビルド時にのみコンパイルされ、プリビルド`.a`（r01lib/arduino_layer/drivers）には一切関与しないことを確認済みだったため、対応前にユーザーへ「全機能の実機確認は不要なレベル」と説明し合意を得た上で着手。両ボードで`hello_world`のコンパイル確認と、`SD`ライブラリを使う`SDBitmapViewer`のコンパイルで警告が完全に消えたことを確認（修正前は複数の`-Waddress-of-packed-member`警告が出ていた）
 
+### `Arduino_incompatible_API`カテゴリのI3Cサンプルで発覚したSOSパニックを修正
+`examples/Arduino_incompatible_API/r01lib_I3C/`（未コミットのローカルファイル、以前から存在）を実行するとSOSパニックになるとユーザーから報告。原因はMikroBus向け`Serial1`実装時に確立済みの「Arduinoリナンバリングと生のr01lib値の食い違い」バグと全く同じパターン——`I3C i3c(I3C_SDA, I3C_SCL)`は`<Arduino.h>`をincludeしているため`I3C_SDA`/`I3C_SCL`がArduinoリナンバリング後の小さい整数に解決される一方、`I3C`クラスのコンストラクタ内部（`i3c.cpp`、生のr01lib値の世界）のピン検証`panic()`ガードはそれと一致せず落ちていた。既存の姉妹サンプル`r01lib_API.ino`が確立している「シンボル名ではなく生の物理ピン名（`P3_13`等）を使う」という規約に倣い、`I3C_SDA`/`I3C_SCL`をA153での生のr01lib値`P0_16`/`P0_17`に置き換えて解消。`arduino-cli compile`で確認済み（このサンプル自体は元々gitで未追跡のローカルファイルのため、コミットは未実施）
+
+### v0.3.1リリース完了
+- **リリースzip作成**: `git archive --format=zip --prefix=mcx/ HEAD:hardware/nxp/mcx`で単一トップレベル構造を確保した上で、A153の`.a`（`.gitignore`対象のため`git archive`に含まれない）を正しい相対パス（`mcx/variants/frdm_mcxa153/lib/`）に手動追加——一度`zip -j0`で誤ってトップレベル直下に追加してしまうミスをした後、展開→ファイル追加→再zipという安全な手順に切り替えて修正。最終zip: SHA-256 `909cfa2c29be58bad21465caf5773d113bf545d716849adef8ea507a78066e69`、1519992 bytes
+- **GitHub Release作成**: `gh release create 0.3.1`でzip添付・CHANGELOG該当セクションをリリースノートとして使用。ダウンロード後のchecksum再計算でも同じ値と一致することを確認
+- **ステージングブランチ方式を初適用**: `staging-0.3.1`ブランチを作成し、`package_nxp_mcx_index.json`の0.3.1エントリだけを検証済みchecksumで上書きしてpush。ユーザーがこのブランチのraw URLをArduino IDEのAdditional Boards Manager URLsに一時設定し、開発用symlink（`0.3.1-dev`）を`packages/`外へ完全退避・ローカルインデックスキャッシュ削除の上でBoards Manager経由インストールを実施
+- **macOS・Windows・Linuxの3プラットフォームすべてでインストール〜動作確認完了**とユーザー報告
+- 検証完了後、`main`に対して`update_package_index.yml`を`gh workflow run --ref main`で手動実行しchecksum確定（`e74604c`、ステージングブランチで検証済みの値と完全一致）。ステージングブランチは役目を終えたためリモート・ローカルとも削除（ローカル削除は`git branch -D`——ステージング用コミット自体は`main`にマージされておらず、内容はworkflow生成のコミットで実質的に置き換えられているため強制削除で問題ない）
+- 開発用symlinkは検証後に復元（このセッションの一時ディレクトリがターン間でクリアされ、退避先のsymlinkファイル自体は失われたが、シンボリックリンク自体は`ln -s`で再作成するだけで実害なし）
+
 ---
 
 ## 動作確認済み
@@ -774,7 +785,7 @@ v0.3.0リリース後、`platform.txt`を`0.3.1`に更新しローカル開発�
 3. 各OS（macOS/Windows/Linux）で、Arduino IDEの**Additional Boards Manager URLsを一時的にこのステージングブランチのraw URL**に切り替えてインストール検証
 4. 全OSで問題なければ、いつも通り`main`に対して`update_package_index.yml`を手動実行してchecksum確定
 
-**利点**: 従来の手順だと、`main`にプレースホルダーchecksum付きの新バージョンエントリを一旦pushしてから確定させるまでの間、誰かが`main`経由でインストールを試みると失敗する可能性があった（短時間ではあるが）。ステージングブランチ方式なら、`main`のインデックスには常に検証済みの内容だけが載る状態を保てる。v0.3.1のリリース作業から採用する方針で合意——リリース自体はまだ保留中（macOS/Windows/Linuxが揃った環境で作業予定）
+**利点**: 従来の手順だと、`main`にプレースホルダーchecksum付きの新バージョンエントリを一旦pushしてから確定させるまでの間、誰かが`main`経由でインストールを試みると失敗する可能性があった（短時間ではあるが）。ステージングブランチ方式なら、`main`のインデックスには常に検証済みの内容だけが載る状態を保てる。**v0.3.1で初適用・完了**——macOS/Windows/Linux全てでBoards Manager経由インストール〜動作確認まで成功、`main`のchecksumも確定済み。詳細は「v0.3.1リリース完了」セクション参照
 
 ---
 
