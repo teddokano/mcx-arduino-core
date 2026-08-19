@@ -1,7 +1,7 @@
 /*
  *  @author Tedd OKANO
  *
- *  Released under the MIT license License
+ *  Released under the MIT license
  */
 
 extern "C" {
@@ -53,7 +53,8 @@ SPI::SPI( int mosi, int miso, int sclk, int cs ) : Obj( true ), chip_select( cs 
 	_miso.pin_mux( mux_setting );
 //	_cs.pin_mux(   mux_setting );
 
-	chip_select	= true;
+	chip_select			= true;
+	manual_cs_control	= false;
 }
 
 SPI::~SPI()
@@ -87,9 +88,13 @@ status_t SPI::write( uint8_t *wp, uint8_t *rp, int length )
 	masterXfer.rxData		= rp;
 	masterXfer.dataSize		= length;
 
-	chip_select	= false;
+	if ( !manual_cs_control )
+		chip_select	= false;
+	
 	status	= SPI_MasterTransferBlocking( unit_base, &masterXfer );
-	chip_select	= true;
+
+	if ( !manual_cs_control )
+		chip_select	= true;
 
 	return status;
 }
@@ -103,6 +108,12 @@ uint8_t SPI::transfer_byte( uint8_t out )
 	return in;
 }
 
+DigitalOut* SPI::cs_manual_control( bool flag )
+{
+	chip_select	= true;
+
+	return &chip_select;
+}
 
 #else	//	CPU_MCXC444VLH
 
@@ -114,6 +125,14 @@ uint8_t SPI::transfer_byte( uint8_t out )
 	#define EXAMPLE_LPSPI_MASTER_PCS_FOR_INIT     (kLPSPI_Pcs0)
 	#define EXAMPLE_LPSPI_MASTER_PCS_FOR_TRANSFER (kLPSPI_MasterPcs0)
 	#define LPSPI_MASTER_CLK_FREQ CLOCK_GetLPFlexCommClkFreq(1u)
+
+	// MikroBus header (MB_MOSI/MB_MISO/MB_SCK/MB_CS, P3_20/22/21/23) ->
+	// FlexComm6 -> LPSPI6, Alt3 (confirmed against Zephyr's silicon-accurate
+	// pinctrl header, uniform across all 4 pins).
+	#define EXAMPLE_LPSPI_MB_BASEADDR (LPSPI6)
+	#define EXAMPLE_LPSPI_MB_PCS_FOR_INIT     (kLPSPI_Pcs0)
+	#define EXAMPLE_LPSPI_MB_PCS_FOR_TRANSFER (kLPSPI_MasterPcs0)
+	#define LPSPI_MB_CLK_FREQ CLOCK_GetLPFlexCommClkFreq(6u)
 #elif	CPU_MCXN236VDF
 	#define EXAMPLE_LPSPI_MASTER_BASEADDR (LPSPI3)
 	#define EXAMPLE_LPSPI_MASTER_PCS_FOR_INIT     (kLPSPI_Pcs0)
@@ -157,8 +176,10 @@ uint8_t SPI::transfer_byte( uint8_t out )
 	#error Not supported CPU
 #endif
 
-SPI::SPI( int mosi, int miso, int sclk, int cs ) : Obj( true )
+SPI::SPI( int mosi, int miso, int sclk, int cs ) : Obj( true ), chip_select( cs, 1 )
 {
+	uint8_t	mux_setting	= 2;   // overridden below for pin-sets needing a different ALT (e.g. N947's MikroBus header)
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"	// for master_pcs_for_init
 	lpspi_which_pcs_t	master_pcs_for_init;
@@ -181,6 +202,27 @@ SPI::SPI( int mosi, int miso, int sclk, int cs ) : Obj( true )
 	else
 	{
 		panic( "FRDM-MCXA156 SPI on Arduino pin and MikroBus are supported. To use Arduino pins, change jumper setting (short 2-3 pins on R59 and R60) and use \"ARD_MOSI\" and \"ARD_CS\" keywords instead of D10 and D11." );
+	}
+#elif	CPU_MCXN947VDF
+	if ( (mosi == MB_MOSI) && (miso == MB_MISO) && (sclk == MB_SCK) && (cs == MB_CS) )
+	{
+		unit_base			= EXAMPLE_LPSPI_MB_BASEADDR;
+		master_clk_freq		= LPSPI_MB_CLK_FREQ;
+		master_pcs_for_init	= EXAMPLE_LPSPI_MB_PCS_FOR_INIT;
+		master_pcs_4_xfer	= EXAMPLE_LPSPI_MB_PCS_FOR_TRANSFER;
+		mux_setting			= 3;
+		RESET_ReleasePeripheralReset( kFC6_RST_SHIFT_RSTn );
+	}
+	else if ( (mosi == ARD_MOSI) && (miso == ARD_MISO) && (sclk == ARD_SCK) && (cs == ARD_CS) )
+	{
+		unit_base			= EXAMPLE_LPSPI_MASTER_BASEADDR;
+		master_clk_freq		= LPSPI_MASTER_CLK_FREQ;
+		master_pcs_for_init	= EXAMPLE_LPSPI_MASTER_PCS_FOR_INIT;
+		master_pcs_4_xfer	= EXAMPLE_LPSPI_MASTER_PCS_FOR_TRANSFER;
+	}
+	else
+	{
+		panic( "FRDM-MCXN947 supports SPI on Arduino pins (D10-D13) or MikroBus (MB_MOSI/MB_MISO/MB_SCK/MB_CS)" );
 	}
 #elif	CPU_MCXA153VLH
 	if ( (mosi == MB_MOSI) && (miso == MB_MISO) && (sclk == MB_SCK) && (cs == MB_CS) )
@@ -228,21 +270,20 @@ SPI::SPI( int mosi, int miso, int sclk, int cs ) : Obj( true )
 	DigitalInOut	_miso( miso );
 	DigitalInOut	_sclk( sclk );
 
-	constexpr uint8_t	mux_setting	= 2;
-
 	_mosi.pin_mux( mux_setting );
 	_sclk.pin_mux( mux_setting );
 	_miso.pin_mux( mux_setting );
 
-	//	cs is intentionally left untouched (never muxed to the LPSPI hardware
-	//	PCS function): one physical SPI bus is routinely shared by several
+	//	cs defaults to manual/GPIO control, never the LPSPI hardware PCS
+	//	function: one physical SPI bus is routinely shared by several
 	//	devices (e.g. an LCD + SD card), each with its own independently
 	//	sketch-managed CS pin via pinMode()/digitalWrite(). If this pin were
 	//	hardware-PCS-driven instead, LPSPI would auto-pulse it on *every*
 	//	SPI.transfer() call for *any* device sharing the bus -- not just
 	//	transfers meant for the device on this pin -- corrupting whichever
-	//	device thinks it's currently deselected. CS must stay 100%
-	//	GPIO/user-controlled, matching real Arduino SPI semantics.
+	//	device thinks it's currently deselected.
+	cs_manual_control( true );
+	manual_cs_control	= true;
 
 #pragma GCC diagnostic pop
 }
@@ -314,10 +355,6 @@ status_t SPI::write( uint8_t *wp, uint8_t *rp, int length )
 	masterXfer.txData		= wp;
 	masterXfer.rxData		= rp;
 	masterXfer.dataSize		= length;
-	//	master_pcs_4_xfer/PcsContinuous here only affect LPSPI's *internal*
-	//	PCS register bit -- harmless, since the constructor no longer routes
-	//	any physical pin to the hardware PCS function (see the SPI::SPI()
-	//	comment above CS is 100% GPIO/user-controlled regardless of this flag)
 	masterXfer.configFlags	= master_pcs_4_xfer | kLPSPI_MasterPcsContinuous | kLPSPI_MasterByteSwap;
 
 	return LPSPI_MasterTransferBlocking( unit_base, &masterXfer );
@@ -362,4 +399,14 @@ uint8_t SPI::transfer_byte( uint8_t out )
 	return (uint8_t)LPSPI_ReadData( unit_base );
 }
 
+DigitalOut* SPI::cs_manual_control( bool flag )
+{
+	chip_select.pin_mux( flag ? 0 : 2 );
+	chip_select	= true;
+	
+	return &chip_select;
+}
+
+
 #endif // CPU_MCXC444VLH
+

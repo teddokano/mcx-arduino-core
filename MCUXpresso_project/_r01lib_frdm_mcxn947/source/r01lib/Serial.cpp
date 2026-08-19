@@ -66,7 +66,7 @@ struct lpuart_pin_map_t {
     int               tx_pin, rx_pin;
     LPUART_Type      *base;
     uint32_t          instance;
-    port_mux_t        mux;
+    port_mux_t        tx_mux, rx_mux;	// TX and RX aren't always the same ALT
     reset_ip_name_t   rst;
     IRQn_Type         irqn;
     clock_attach_id_t clk_attach;
@@ -74,10 +74,15 @@ struct lpuart_pin_map_t {
 };
 
 static const lpuart_pin_map_t s_pinMap[] = {
-    //  TX       RX       base     inst  mux             rst                       irqn           clk_attach              clk_div
-    { P0_3,  P0_2,  LPUART0, 0U, kPORT_MuxAlt2, kLPUART0_RST_SHIFT_RSTn, LPUART0_IRQn, kFRO12M_to_LPUART0, kCLOCK_DivLPUART0 }, // USBTX/USBRX
-    { MB_TX, MB_RX, LPUART2, 2U, kPORT_MuxAlt2, kLPUART2_RST_SHIFT_RSTn, LPUART2_IRQn, kFRO12M_to_LPUART2, kCLOCK_DivLPUART2 }, // MikroBus
-    { D1,    D0,    LPUART2, 2U, kPORT_MuxAlt3, kLPUART2_RST_SHIFT_RSTn, LPUART2_IRQn, kFRO12M_to_LPUART2, kCLOCK_DivLPUART2 }, // Arduino D0/D1
+    //  TX       RX       base     inst  tx_mux         rx_mux         rst                       irqn           clk_attach              clk_div
+    { P0_3,  P0_2,  LPUART0, 0U, kPORT_MuxAlt2, kPORT_MuxAlt2, kLPUART0_RST_SHIFT_RSTn, LPUART0_IRQn, kFRO12M_to_LPUART0, kCLOCK_DivLPUART0 }, // USBTX/USBRX
+    { MB_TX, MB_RX, LPUART2, 2U, kPORT_MuxAlt2, kPORT_MuxAlt2, kLPUART2_RST_SHIFT_RSTn, LPUART2_IRQn, kFRO12M_to_LPUART2, kCLOCK_DivLPUART2 }, // MikroBus
+    // Arduino D0/D1: both P1_5(D1)/LPUART2_TXD and P1_4(D0)/LPUART2_RXD are
+    // Alt3 (confirmed against Zephyr's silicon-verified pinctrl tables,
+    // MCXA344VLH-pinctrl.h: LPUART2_RXD_P1_4/LPUART2_TXD_P1_5 both mux=3).
+    // The pin_mux.c pin_signal comment's function ORDER does not encode the
+    // ALT number -- that assumption was wrong, don't rely on it again.
+    { D1,    D0,    LPUART2, 2U, kPORT_MuxAlt3, kPORT_MuxAlt3, kLPUART2_RST_SHIFT_RSTn, LPUART2_IRQn, kFRO12M_to_LPUART2, kCLOCK_DivLPUART2 }, // Arduino D0/D1
 };
 
 void Serial::resolve_pins( int tx, int rx )
@@ -89,7 +94,8 @@ void Serial::resolve_pins( int tx, int rx )
         {
             _base       = s_pinMap[i].base;
             _instance   = s_pinMap[i].instance;
-            _mux        = s_pinMap[i].mux;
+            _tx_mux     = s_pinMap[i].tx_mux;
+            _rx_mux     = s_pinMap[i].rx_mux;
             _irqn       = s_pinMap[i].irqn;
             _rst        = s_pinMap[i].rst;
             _clk_attach = s_pinMap[i].clk_attach;
@@ -122,7 +128,7 @@ struct lpuart_pin_map_t {
     int               tx_pin, rx_pin;
     LPUART_Type      *base;
     uint32_t          instance;
-    port_mux_t        mux;
+    port_mux_t        tx_mux, rx_mux;
     reset_ip_name_t   rst;
     IRQn_Type         irqn;
     clock_attach_id_t clk_attach;
@@ -130,8 +136,8 @@ struct lpuart_pin_map_t {
 };
 
 static const lpuart_pin_map_t s_pinMap[] = {
-    //  TX      RX      base     inst  mux             rst                        irqn          clk_attach           clk_div
-    { USBTX, USBRX, LPUART0, 0U, kPORT_MuxAlt2, kLPUART0_RST_SHIFT_RSTn, LPUART0_IRQn, kFRO12M_to_LPUART0, kCLOCK_DivLPUART0 }, // P0_3/P0_2
+    //  TX      RX      base     inst  tx_mux         rx_mux         rst                        irqn          clk_attach           clk_div
+    { USBTX, USBRX, LPUART0, 0U, kPORT_MuxAlt2, kPORT_MuxAlt2, kLPUART0_RST_SHIFT_RSTn, LPUART0_IRQn, kFRO12M_to_LPUART0, kCLOCK_DivLPUART0 }, // P0_3/P0_2
 };
 
 void Serial::resolve_pins( int tx, int rx )
@@ -143,7 +149,8 @@ void Serial::resolve_pins( int tx, int rx )
         {
             _base       = s_pinMap[i].base;
             _instance   = s_pinMap[i].instance;
-            _mux        = s_pinMap[i].mux;
+            _tx_mux     = s_pinMap[i].tx_mux;
+            _rx_mux     = s_pinMap[i].rx_mux;
             _irqn       = s_pinMap[i].irqn;
             _rst        = s_pinMap[i].rst;
             _clk_attach = s_pinMap[i].clk_attach;
@@ -175,7 +182,7 @@ struct lpuart_pin_map_t {
     int               tx_pin, rx_pin;
     LPUART_Type      *base;
     uint32_t          instance;
-    port_mux_t        mux;
+    port_mux_t        tx_mux, rx_mux;
     reset_ip_name_t   rst;
     IRQn_Type         irqn;
     clock_attach_id_t clk_attach;
@@ -183,7 +190,7 @@ struct lpuart_pin_map_t {
 
 static const lpuart_pin_map_t s_pinMap[] = {
     //  USBTX=P1_9(TX) / USBRX=P1_8(RX) -> FC4 LPUART4, Alt2
-    { USBTX, USBRX, LPUART4, 4U, kPORT_MuxAlt2, kFC4_RST_SHIFT_RSTn, LP_FLEXCOMM4_IRQn, kFRO12M_to_FLEXCOMM4 },
+    { USBTX, USBRX, LPUART4, 4U, kPORT_MuxAlt2, kPORT_MuxAlt2, kFC4_RST_SHIFT_RSTn, LP_FLEXCOMM4_IRQn, kFRO12M_to_FLEXCOMM4 },
 };
 
 void Serial::resolve_pins( int tx, int rx )
@@ -195,7 +202,8 @@ void Serial::resolve_pins( int tx, int rx )
         {
             _base       = s_pinMap[i].base;
             _instance   = s_pinMap[i].instance;
-            _mux        = s_pinMap[i].mux;
+            _tx_mux     = s_pinMap[i].tx_mux;
+            _rx_mux     = s_pinMap[i].rx_mux;
             _irqn       = s_pinMap[i].irqn;
             _rst        = s_pinMap[i].rst;
             _clk_attach = s_pinMap[i].clk_attach;
@@ -228,7 +236,7 @@ struct lpuart_pin_map_t {
     int               tx_pin, rx_pin;
     LPUART_Type      *base;
     uint32_t          instance;
-    port_mux_t        mux;
+    port_mux_t        tx_mux, rx_mux;
     reset_ip_name_t   rst;
     IRQn_Type         irqn;
     clock_attach_id_t clk_attach;
@@ -236,9 +244,9 @@ struct lpuart_pin_map_t {
 
 static const lpuart_pin_map_t s_pinMap[] = {
     //  USBTX=P1_9(TX) / USBRX=P1_8(RX) -> FC4 LPUART4, Alt2
-    { USBTX, USBRX, LPUART4, 4U, kPORT_MuxAlt2, kFC4_RST_SHIFT_RSTn, LP_FLEXCOMM4_IRQn, kFRO12M_to_FLEXCOMM4 },
+    { USBTX, USBRX, LPUART4, 4U, kPORT_MuxAlt2, kPORT_MuxAlt2, kFC4_RST_SHIFT_RSTn, LP_FLEXCOMM4_IRQn, kFRO12M_to_FLEXCOMM4 },
     //  MB_TX=P1_17(TX) / MB_RX=P1_16(RX) -> FC5 LPUART5, Alt2 (MikroBus, Serial1)
-    { MB_TX, MB_RX, LPUART5, 5U, kPORT_MuxAlt2, kFC5_RST_SHIFT_RSTn, LP_FLEXCOMM5_IRQn, kFRO12M_to_FLEXCOMM5 },
+    { MB_TX, MB_RX, LPUART5, 5U, kPORT_MuxAlt2, kPORT_MuxAlt2, kFC5_RST_SHIFT_RSTn, LP_FLEXCOMM5_IRQn, kFRO12M_to_FLEXCOMM5 },
 };
 
 void Serial::resolve_pins( int tx, int rx )
@@ -250,7 +258,8 @@ void Serial::resolve_pins( int tx, int rx )
         {
             _base       = s_pinMap[i].base;
             _instance   = s_pinMap[i].instance;
-            _mux        = s_pinMap[i].mux;
+            _tx_mux     = s_pinMap[i].tx_mux;
+            _rx_mux     = s_pinMap[i].rx_mux;
             _irqn       = s_pinMap[i].irqn;
             _rst        = s_pinMap[i].rst;
             _clk_attach = s_pinMap[i].clk_attach;
@@ -283,7 +292,7 @@ struct lpuart_pin_map_t {
     int             tx_pin, rx_pin;
     LPUART_Type    *base;
     uint32_t        instance;
-    port_mux_t      mux;
+    port_mux_t      tx_mux, rx_mux;
     IRQn_Type       irqn;
     clock_ip_name_t clk_gate;
 };
@@ -294,8 +303,8 @@ struct lpuart_pin_map_t {
 //   MB_TX = PTE0       -> LPUART1_TX  Alt3
 //   MB_RX = PTE1       -> LPUART1_RX  Alt3
 static const lpuart_pin_map_t s_pinMap[] = {
-    { D1,    D0,    LPUART0, 0U, kPORT_MuxAlt2, LPUART0_IRQn, kCLOCK_Lpuart0 }, // PTA2/PTA1 (= USBTX/USBRX)
-    { MB_TX, MB_RX, LPUART1, 1U, kPORT_MuxAlt3, LPUART1_IRQn, kCLOCK_Lpuart1 }, // PTE0/PTE1
+    { D1,    D0,    LPUART0, 0U, kPORT_MuxAlt2, kPORT_MuxAlt2, LPUART0_IRQn, kCLOCK_Lpuart0 }, // PTA2/PTA1 (= USBTX/USBRX)
+    { MB_TX, MB_RX, LPUART1, 1U, kPORT_MuxAlt3, kPORT_MuxAlt3, LPUART1_IRQn, kCLOCK_Lpuart1 }, // PTE0/PTE1
 };
 
 void Serial::resolve_pins( int tx, int rx )
@@ -307,7 +316,8 @@ void Serial::resolve_pins( int tx, int rx )
         {
             _base      = s_pinMap[i].base;
             _instance  = s_pinMap[i].instance;
-            _mux       = s_pinMap[i].mux;
+            _tx_mux    = s_pinMap[i].tx_mux;
+            _rx_mux    = s_pinMap[i].rx_mux;
             _irqn      = s_pinMap[i].irqn;
             _clk_gate  = s_pinMap[i].clk_gate;
             return;
@@ -341,7 +351,7 @@ void     Serial::_unregister_instance( void ) { s_instances[ _instance ] = nullp
 Serial::Serial( int tx, int rx, int baud )
     : Obj( true ),
       _base( nullptr ), _config{}, _clk_freq( 0U ),
-      _instance( 0U ), _mux( kPORT_MuxAlt2 ), _irqn( NotAvail_IRQn ),
+      _instance( 0U ), _tx_mux( kPORT_MuxAlt2 ), _rx_mux( kPORT_MuxAlt2 ), _irqn( NotAvail_IRQn ),
       _tx_pin( tx ), _rx_pin( rx ),
       _rx_head( 0 ), _rx_tail( 0 ),
       _tx_head( 0 ), _tx_tail( 0 ),
@@ -361,8 +371,13 @@ Serial::Serial( int tx, int rx, int baud )
     {
         DigitalInOut tx_io( (uint8_t)tx );
         DigitalInOut rx_io( (uint8_t)rx );
-        tx_io.pin_mux( (int)_mux );
-        rx_io.pin_mux( (int)_mux );
+        tx_io.pin_mux( (int)_tx_mux );
+        rx_io.pin_mux( (int)_rx_mux );
+
+        // RX pins not otherwise pre-configured at boot (pin_mux.c) reset
+        // with the digital input buffer disabled -- MUX alone isn't enough,
+        // the peripheral never sees the incoming signal without this.
+        rx_io.input_buffer( true );
     }
 
     // Clock must be set up before reset release and LPUART_Init
@@ -525,6 +540,19 @@ int Serial::getc( void )
     }
 }
 
+int Serial::peek( void )
+{
+    if ( _rx_callback )
+    {
+        if ( _rx_head == _rx_tail )
+            return -1;
+
+        return (int)_rx_buf[ _rx_tail ];
+    }
+
+    return -1;
+}
+
 int Serial::printf( const char *fmt, ... )
 {
     char    buf[ 256 ];
@@ -537,19 +565,6 @@ int Serial::printf( const char *fmt, ... )
         tx_enqueue( (uint8_t)buf[ i ] );
 
     return n;
-}
-
-int Serial::peek( void )
-{
-    if ( _rx_callback )
-    {
-        if ( _rx_head == _rx_tail )
-            return -1;
-
-        return (int)_rx_buf[ _rx_tail ];
-    }
-
-    return -1;
 }
 
 bool Serial::readable( void )

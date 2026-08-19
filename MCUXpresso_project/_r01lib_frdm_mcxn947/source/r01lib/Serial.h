@@ -139,18 +139,6 @@ public:
     int      getc( void );
 
     /**
-     * @brief  Formatted print to the serial port.
-     *
-     * Formats into a 256-byte stack buffer then enqueues each byte into the
-     * TX ring buffer.
-     *
-     * @param fmt  `printf`-style format string.
-     * @param ...  Variadic arguments matching @p fmt.
-     * @return     Number of characters written (same semantics as `vsnprintf`).
-     */
-    int      printf( const char *fmt, ... );
-
-    /**
      * @brief  Look at the next received byte without consuming it.
      *
      * Only meaningful in interrupt-driven mode (after `attach(callback,
@@ -161,6 +149,18 @@ public:
      * @return  Next byte as `int` (0-255), or -1 if none available.
      */
     int      peek( void );
+
+    /**
+     * @brief  Formatted print to the serial port.
+     *
+     * Formats into a 256-byte stack buffer then enqueues each byte into the
+     * TX ring buffer.
+     *
+     * @param fmt  `printf`-style format string.
+     * @param ...  Variadic arguments matching @p fmt.
+     * @return     Number of characters written (same semantics as `vsnprintf`).
+     */
+    int      printf( const char *fmt, ... );
 
     /**
      * @brief  Query whether at least one byte is available to read.
@@ -264,7 +264,9 @@ private:
     lpuart_config_t _config;
     uint32_t        _clk_freq;
     uint32_t        _instance;
-    port_mux_t      _mux;
+    port_mux_t      _tx_mux;
+    port_mux_t      _rx_mux;	// TX/RX of the same UART don't always share the
+    				// same ALT function number (e.g. MCXA153 D0/D1)
     IRQn_Type       _irqn;
     int             _tx_pin;
     int             _rx_pin;

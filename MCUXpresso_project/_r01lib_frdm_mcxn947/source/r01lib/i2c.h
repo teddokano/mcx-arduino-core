@@ -1,7 +1,7 @@
 /*
  *  @author Tedd OKANO
  *
- *  Released under the MIT license
+ *  Released under the MIT license License
  */
 
 #ifndef R01LIB_I2C_H
@@ -19,10 +19,10 @@
 #include	"io.h"
 
 /** I2C class
- *
+ *	
  *  @class I2C
  *
- *	A class for I2C bus operations
+ *	A class for demonstrating I2C bus
  */
 
 #define	REG_RW_BUFFER_SIZE	10
@@ -49,13 +49,13 @@ public:
 		
 	/** Create an I2C instance with specified pins
 	 *
-	 * @param sda   pin number to connect SDA
-	 * @param scl   pin number to connect SCL
-	 * @param no_hw (optional) flag for I3C: I3C constructor sets this to avoid initialising hardware twice
+	 * @param sda pin number to connect SDA
+	 * @param scl pin number to connect SCL
+	 * @param no_hw (option) flag for I3C. I3C constructor will set this flag to avoid set hardware for both I3C and I2C
 	 */
 	I2C( int sda, int scl, bool no_hw = false );
 
-	/** Destructor to free I2C resource
+	/** Destractor to freeing I3C resource
 	 */
 	virtual ~I2C();
 	
@@ -72,7 +72,7 @@ public:
 	virtual void		pullup( bool enable );
 
 	/** Register write (multiple byte data)
-	 *	provides interface for register write
+	 *	provideds interface for register write
 	 *	
 	 * @param targ target address
 	 * @param reg register address
@@ -83,7 +83,7 @@ public:
 	virtual status_t	reg_write( uint8_t targ, uint8_t reg, const uint8_t *dp, int length );
 
 	/** Register write (single byte data)
-	 *	provides interface for register write
+	 *	provideds interface for register write
 	 *	
 	 * @param targ target address
 	 * @param reg register address
@@ -93,7 +93,7 @@ public:
 	virtual status_t	reg_write( uint8_t targ, uint8_t reg, uint8_t data );
 	
 	/** Register read (multiple byte data)
-	 *	provides interface for register read
+	 *	provideds interface for register read
 	 *	
 	 * @param targ target address
 	 * @param reg register address
@@ -104,7 +104,7 @@ public:
 	virtual status_t	reg_read( uint8_t targ, uint8_t reg, uint8_t *dp, int length );
 
 	/** Register read (single byte data)
-	 *	provides interface for register read
+	 *	provideds interface for register read
 	 *	returns a single byte data
 	 *	status can be checked by last_status variable
 	 *	
@@ -114,7 +114,7 @@ public:
 	 */
 	virtual uint8_t		reg_read( uint8_t targ, uint8_t reg );
 	
-	/** write transaction (multiple byte data)
+	/** write transactiond (multiple byte data)
 	 *
 	 * @param targ target address
 	 * @param dp data to write
@@ -124,7 +124,7 @@ public:
 	 */
 	virtual status_t	write( uint8_t address, const uint8_t *dp, int length, bool stop = STOP );
 
-	/** write transaction (single byte data)
+	/** write transactiond (single byte data)
 	 *
 	 * @param targ target address
 	 * @param data data to write
@@ -133,10 +133,10 @@ public:
 	 */
 	virtual status_t	write( uint8_t targ, uint8_t data, bool stop = STOP );
 	
-	/** read transaction (multiple byte data)
+	/** read transactiond (multiple byte data)
 	 *
 	 * @param targ target address
-	 * @param dp data buffer for read
+	 * @param dp data to write
 	 * @param length data length
 	 * @param stop (option) generate STOP condition: "false" to make repeated-start in next transaction
 	 * @return status_t
@@ -144,7 +144,7 @@ public:
 	virtual status_t	read( uint8_t address, uint8_t *dp, int length, bool stop = STOP );
 
 	/** read transaction (single byte data)
-	 *	provides interface for register read
+	 *	provideds interface for register read
 	 *	returns a single byte data
 	 *	status can be checked by last_status variable
 	 *
@@ -196,14 +196,14 @@ public:
 
 	/** device scan
 	 * 		device scan result will be shown on the screen
-	 * 		scan range can be specified by start and last parameters
+	 * 		scan range can be specified and last parameter
 	 *
 	 * @param last	scan last address
 	 */
 	virtual void		scan( uint8_t last = 124 );
 
 	/** method for I3C class compatibility (dummy method)
-	 * Does nothing but return kStatus_Success
+	 * Does notheing but return kStatus_Success
 	 * This method is for just make easy device class using I3C
 	 * 
 	 * @param ccc CCC command
@@ -213,7 +213,7 @@ public:
 	virtual status_t	ccc_set( uint8_t ccc, uint8_t addr, uint8_t data );
 
 	/** method for I3C class compatibility (dummy method)
-	 * Does nothing but clearing data buffer and return kStatus_Success
+	 * Does notheing but clearing data buffer and return kStatus_Success
 	 * This method is for just make easy device class using I3C
 	 * 
 	 * @param ccc CCC command
@@ -242,6 +242,7 @@ private:
 	DigitalInOut			_sda;
 	DigitalInOut			_scl;
 	err_cb_ptr				err_cb;
+	bool					_no_hw;
 };
 
 #endif // R01LIB_I2C_H

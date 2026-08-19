@@ -47,7 +47,7 @@ extern "C" {
 #endif
 
 
-I2C::I2C( int sda, int scl, bool no_hw ) : Obj( true ), _sda( sda ), _scl( scl ), err_cb( nullptr )
+I2C::I2C( int sda, int scl, bool no_hw ) : Obj( true ), _sda( sda ), _scl( scl ), err_cb( nullptr ), _no_hw( no_hw )
 {
 	if ( no_hw )
 		return;
@@ -172,6 +172,16 @@ I2C::I2C( int sda, int scl, bool no_hw ) : Obj( true ), _sda( sda ), _scl( scl )
 
 I2C::~I2C()
 {
+	/*
+	 *  no_hw=true (the I3C constructor's delegation path) skips hardware
+	 *  init entirely, leaving unit_base uninitialized -- deinit-ing it here
+	 *  would dereference garbage. I3C::~I3C() already deinits its own
+	 *  peripheral (I3C_MasterDeinit), so there's nothing for this base
+	 *  destructor to clean up in that case.
+	 */
+	if ( _no_hw )
+		return;
+
 #if	CPU_MCXC444VLH
 	I2C_MasterDeinit( unit_base );
 #else

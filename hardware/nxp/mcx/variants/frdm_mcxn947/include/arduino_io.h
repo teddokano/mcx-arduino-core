@@ -106,19 +106,6 @@ const int	arduino_pin_by_number[]	=
 	GREEN,
 	BLUE,
 
-	I3C_SDA,
-	I3C_SCL,
-	I2C_SDA,
-	I2C_SCL,
-	SPI_CS,
-	SPI_MOSI,
-	SPI_MISO,
-	SPI_SCLK,
-	ARD_CS,
-	ARD_MOSI,
-	ARD_MISO,
-	ARD_SCK,
-
 	PWM0,
 	PWM1,
 	PWM2,
@@ -167,18 +154,18 @@ const int	arduino_pin_by_number[]	=
 #undef	GREEN
 #undef	BLUE
 
-#undef	I3C_SDA
-#undef	I3C_SCL
-#undef	I2C_SDA
-#undef	I2C_SCL
-#undef	SPI_CS
-#undef	SPI_MOSI
-#undef	SPI_MISO
-#undef	SPI_SCLK
-#undef	ARD_CS
-#undef	ARD_MOSI
-#undef	ARD_MISO
-#undef	ARD_SCK
+// I3C_SDA/I3C_SCL/I2C_SDA/I2C_SCL/SPI_CS/SPI_MOSI/SPI_MISO/SPI_SCLK/ARD_CS/
+// ARD_MOSI/ARD_MISO/ARD_SCK are deliberately NOT renumbered (unlike
+// USBTX/USBRX, which never were either). These names are only ever used as
+// raw r01lib pin values -- constructor arguments to I2C/I3C/SPI, internal
+// arduino_i2c.cpp/arduino_spi.cpp plumbing, or "Arduino_incompatible_API"
+// examples constructing r01lib objects directly -- never as a bare
+// pinMode()/digitalWrite() pin (a sketch that wants plain GPIO on this
+// physical pin uses its D-number/MB_* alias instead, e.g. D18 rather than
+// I2C_SDA). Leaving them un-renumbered means the same name always means the
+// same value everywhere, whether or not <Arduino.h> has been included --
+// closing off the "renumbered here, raw there" mismatch that caused two
+// real SOS-panic bugs (Serial1 on MikroBus, and the r01lib_I3C example).
 
 #undef	PWM0
 #undef	PWM1
@@ -227,19 +214,6 @@ enum ArduinoPinNum {
 	RED,
 	GREEN,
 	BLUE,
-
-	I3C_SDA,
-	I3C_SCL,
-	I2C_SDA,
-	I2C_SCL,
-	SPI_CS,
-	SPI_MOSI,
-	SPI_MISO,
-	SPI_SCLK,
-	ARD_CS,
-	ARD_MOSI,
-	ARD_MISO,
-	ARD_SCK,
 
 	PWM0,
 	PWM1,

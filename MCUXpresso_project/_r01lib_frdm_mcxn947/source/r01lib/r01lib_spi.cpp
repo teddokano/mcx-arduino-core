@@ -162,6 +162,16 @@ DigitalOut* SPI::cs_manual_control( bool flag )
 	#define EXAMPLE_LPSPI_MASTER_PCS_FOR_INIT     (kLPSPI_Pcs1)
 	#define EXAMPLE_LPSPI_MASTER_PCS_FOR_TRANSFER (kLPSPI_MasterPcs1)
 	#define EXAMPLE_LPSPI_MASTER_IRQHandler       (LPSPI1_IRQHandler)
+
+	// MikroBus header (MB_MOSI/MB_MISO/MB_SCK/MB_CS, P1_0/P1_2/P1_1/P1_3) ->
+	// LPSPI0, Alt2 (confirmed against Zephyr's silicon-accurate pinctrl
+	// header; same Alt2 as the Arduino-header SPI pins above, on the
+	// unrelated LPSPI1 instance -- this chip only has these two LPSPI
+	// peripherals total).
+	#define EXAMPLE_LPSPI_MB_BASEADDR         (LPSPI0)
+	#define EXAMPLE_LPSPI_MB_PCS_FOR_INIT     (kLPSPI_Pcs0)
+	#define EXAMPLE_LPSPI_MB_PCS_FOR_TRANSFER (kLPSPI_MasterPcs0)
+	#define LPSPI_MB_CLK_FREQ                 (CLOCK_GetLpspiClkFreq(0))
 #else
 	#error Not supported CPU
 #endif
@@ -169,14 +179,6 @@ DigitalOut* SPI::cs_manual_control( bool flag )
 SPI::SPI( int mosi, int miso, int sclk, int cs ) : Obj( true ), chip_select( cs, 1 )
 {
 	uint8_t	mux_setting	= 2;   // overridden below for pin-sets needing a different ALT (e.g. N947's MikroBus header)
-
-#ifdef	CPU_MCXN947VDF
-#elif	CPU_MCXN236VDF
-#elif	CPU_MCXA156VLL
-#elif	CPU_MCXA153VLH
-	RESET_ReleasePeripheralReset( kLPSPI1_RST_SHIFT_RSTn );
-#else
-#endif
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"	// for master_pcs_for_init
@@ -221,6 +223,27 @@ SPI::SPI( int mosi, int miso, int sclk, int cs ) : Obj( true ), chip_select( cs,
 	else
 	{
 		panic( "FRDM-MCXN947 supports SPI on Arduino pins (D10-D13) or MikroBus (MB_MOSI/MB_MISO/MB_SCK/MB_CS)" );
+	}
+#elif	CPU_MCXA153VLH
+	if ( (mosi == MB_MOSI) && (miso == MB_MISO) && (sclk == MB_SCK) && (cs == MB_CS) )
+	{
+		unit_base			= EXAMPLE_LPSPI_MB_BASEADDR;
+		master_clk_freq		= LPSPI_MB_CLK_FREQ;
+		master_pcs_for_init	= EXAMPLE_LPSPI_MB_PCS_FOR_INIT;
+		master_pcs_4_xfer	= EXAMPLE_LPSPI_MB_PCS_FOR_TRANSFER;
+		RESET_ReleasePeripheralReset( kLPSPI0_RST_SHIFT_RSTn );
+	}
+	else if ( (mosi == ARD_MOSI) && (miso == ARD_MISO) && (sclk == ARD_SCK) && (cs == ARD_CS) )
+	{
+		unit_base			= EXAMPLE_LPSPI_MASTER_BASEADDR;
+		master_clk_freq		= LPSPI_MASTER_CLK_FREQ;
+		master_pcs_for_init	= EXAMPLE_LPSPI_MASTER_PCS_FOR_INIT;
+		master_pcs_4_xfer	= EXAMPLE_LPSPI_MASTER_PCS_FOR_TRANSFER;
+		RESET_ReleasePeripheralReset( kLPSPI1_RST_SHIFT_RSTn );
+	}
+	else
+	{
+		panic( "FRDM-MCXA153 supports SPI on Arduino pins (D10-D13) or MikroBus (MB_MOSI/MB_MISO/MB_SCK/MB_CS)" );
 	}
 #else
 	unit_base			= EXAMPLE_LPSPI_MASTER_BASEADDR;
