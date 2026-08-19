@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
-- Arduino IDE 2 debugger support (both boards): breakpoints, stepping, and variable/register inspection now work from the IDE's built-in debug UI. Under the hood this uses NXP LinkServer's own gdbserver — not OpenOCD, which has no MCX chip support — via a small relay (`tools/gdb-bridge`) that presents itself to `arduino-cli` as `openocd` (the only debug server backend it knows how to drive) but actually launches and bridges to LinkServer. Verified end-to-end on real FRDM-MCXN947 hardware: flashing, breakpoints, and source-level (`.ino` file/line) stops all confirmed working
+- Arduino IDE 2 debugger support (both boards): breakpoints, stepping, and variable/register inspection now work from the IDE's built-in debug UI. Under the hood this uses NXP LinkServer's own gdbserver — not OpenOCD, which has no MCX chip support — via a small relay (`tools/gdb-bridge`) that presents itself as `openocd` (the only debug server backend `arduino-cli`/the IDE's bundled cortex-debug extension know how to drive) but actually launches and bridges to LinkServer. Verified on real hardware, both through the IDE's own "Start Debugging" flow and directly via `arduino-cli debug`, on both FRDM-MCXA153 and FRDM-MCXN947
 
 ### Changed
 - Full source distribution: the prebuilt r01lib/arduino_layer `.a` libraries are gone, replaced by plain source under `cores/arduino/` (shared) and `variants/<board>/src/` (board-specific), built the same way as other Arduino cores (AVR, SAMD, renesas_uno, ...). Arduino IDE's "Go to Definition" now works — jumping into `pinMode()`, `Serial`, or any other core function lands in the actual implementing `.cpp`, not just its header declaration

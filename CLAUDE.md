@@ -858,7 +858,7 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
   - **書き直し中に発見した実機バグ**: サーバーモード実装の初期案では、LinkServerのgdbserverの起動確認を「一度TCP接続してすぐ切断する」プローブ方式で行っていたが、これを実機で試したところ**LinkServerのgdbserverは最初のTCPクライアントが切断した時点で（プローブによる切断であっても）デバッグセッション全体を終了してしまう**ことが判明（実機ログで`Wc: GDB stub ... terminating - GDB protocol problem: Pipe has been closed by GDB.` / `Gdbserver on port ... has closed`を確認）——その後IDE役の本物のgdbが接続しようとした時にはLinkServerは既に終了しており失敗する、という形で発覚。起動確認の方式をTCPプローブから「LinkServer自身の標準出力を監視し`GDB server listening on port`という行を検出する」方式に変更して解消（`cmd.StdoutPipe()`＋`bufio.Scanner`で行ごとに監視、検出後もログ行は継続して自分の標準エラーへ転送）
   - 修正後、`arm-none-eabi-gdb`から`target extended-remote localhost:<port>`でTCP接続する実機テスト（cortex-debugが実際に行うのと同じ接続方式）を実施——`load`（フラッシュ書き込み）→リセットベクタ着地→`break loop`→`continue`→実際にブレークポイントヒットまで完全動作を確認
   - 両起動経路（`arduino-cli debug`のパイプ方式、Arduino IDE 2 / cortex-debugのTCPサーバー方式）とも同一の`gdb-bridge`バイナリが自動判別（`-c "gdb_port N"`の有無で分岐）して両対応することを実機で確認済み
-- まだ未実施: 実際にArduino IDE 2の「デバッグ」ボタンを最後まで押し切っての動作確認（ブレークポイント設定・ステップ実行・変数閲覧等、UIを通した一連の操作）——上記2件のエラーはいずれもユーザーからのスクリーンショット報告を受けて解消したもので、エラーが解消した後の実際のフルセッションはこれから確認予定
+- **実機確認完了**: 上記2件のエラー解消後、ユーザーがArduino IDE 2の「デバッグ」ボタンから実際にフルセッション（ビルド→書き込み→ブレークポイント→ステップ実行等、UIを通した一連の操作）を試し、**A153・N947両方で動作することを確認**。これでArduino IDE内蔵デバッガ対応は完了
 
 ---
 
