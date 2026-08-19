@@ -89,12 +89,12 @@ typedef	uint8_t	BitOrder;
 // Clock-cycle conversion macros (matches UNO R3/R4's Arduino.h). Each board
 // in this core always runs its core clock at a fixed frequency (no
 // user-selectable F_CPU like AVR), supplied on the command line via
-// platform.txt's compiler.defines (-DF_CPU={build.f_cpu}, from boards.txt).
-// This board's actual value is 150MHz (see board/clock_config.c's
-// BOARD_InitBootClocks() -> BOARD_BootClockPLL150M()). Falls back to that
-// same value here if not supplied.
+// platform.txt's compiler.defines (-DF_CPU={build.f_cpu}, from boards.txt)
+// since it differs per board (e.g. 96MHz on FRDM-MCXA153, 150MHz on
+// FRDM-MCXN947). The fallback below is never actually reached in a normal
+// build (boards.txt always supplies -DF_CPU) -- picked arbitrarily.
 #ifndef F_CPU
-#define	F_CPU	150000000UL
+#define	F_CPU	96000000UL
 #endif
 #define	clockCyclesPerMicrosecond()		( F_CPU / 1000000UL )
 #define	clockCyclesToMicroseconds( a )	( (a) / clockCyclesPerMicrosecond() )

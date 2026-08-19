@@ -91,7 +91,8 @@ typedef	uint8_t	BitOrder;
 // user-selectable F_CPU like AVR), supplied on the command line via
 // platform.txt's compiler.defines (-DF_CPU={build.f_cpu}, from boards.txt)
 // since it differs per board (e.g. 96MHz on FRDM-MCXA153, 150MHz on
-// FRDM-MCXN947). Falls back to the FRDM-MCXA153 value if not supplied.
+// FRDM-MCXN947). The fallback below is never actually reached in a normal
+// build (boards.txt always supplies -DF_CPU) -- picked arbitrarily.
 #ifndef F_CPU
 #define	F_CPU	96000000UL
 #endif

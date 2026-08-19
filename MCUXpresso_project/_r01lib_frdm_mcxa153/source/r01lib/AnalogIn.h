@@ -104,6 +104,71 @@ private:
     int     _pin;
 };
 
-#endif // defined( CPU_MCXA153VLH )
+#elif defined( CPU_MCXN947VDF )
+
+/**
+ * FRDM-MCXN947 AnalogIn.
+ *
+ * | ANA()  | Logical pin | Physical pin | ADC0 channel | side |
+ * |--------|-------------|--------------|--------------|------|
+ * | A0     | -           | -            | (DISABLED_PIN, not wired) |
+ * | A1     | -           | -            | (DISABLED_PIN, not wired) |
+ * | ANA(1) | A2          | P0_14        | 14           | B    |
+ * | ANA(2) | A3          | P0_22        | 14           | A    |
+ * | ANA(3) | A4          | P0_15        | 15           | B    |
+ * | ANA(4) | A5          | P0_23        | 15           | A    |
+ *
+ * Unlike A153, N947's A-pins share ADC channel *numbers* in pairs (14/15),
+ * differentiated only by side (A153's A0-A3 all happen to be distinct
+ * channel numbers, so it never needed to care about side). Verified
+ * against NXP's own FRDM-MCXN947 SDK LPADC polling example
+ * (boards/frdmmcxn947/driver_examples/lpadc/polling) before writing this:
+ *  - N947 additionally requires SPC_EnableActiveModeAnalogModules() +
+ *    VREF_Init() before LPADC_Init() -- the VREF block supplies LPADC's
+ *    bias current here, unlike A153 where it wasn't needed.
+ *  - referenceVoltageSource is the same kLPADC_ReferenceVoltageAlt3 (VDDA).
+ *  - FSL_FEATURE_LPADC_FIFO_COUNT is 2 here (vs 1 on A153), so
+ *    LPADC_GetConvResult()/LPADC_DoResetFIFO() take an explicit FIFO index
+ *    (LPADC_DoResetFIFO0(), LPADC_GetConvResult(base, &result, 0U)).
+ */
+
+extern "C" {
+#include "fsl_lpadc.h"
+#include "fsl_clock.h"
+#include "fsl_port.h"
+#include "fsl_reset.h"
+#include "fsl_vref.h"
+#include "fsl_spc.h"
+}
+
+#include "obj.h"
+#include "io.h"
+
+class AnalogIn : public Obj
+{
+public:
+    explicit AnalogIn( int pin );
+    virtual ~AnalogIn();
+
+    float read( void );
+    uint16_t read_u16( void );
+    operator float();
+
+private:
+    void     resolve_pin( int pin );
+    uint16_t sample_raw( void );
+
+    static void _acquire_peripheral( void );
+    static void _release_peripheral( void );
+    static uint8_t _instance_count;
+    static bool    _calibrated;
+
+    uint8_t _channel_id;      // LPADC command/slot index
+    uint8_t _channel_number;  // hardware ADC0 channel number (shared A/B pair)
+    lpadc_sample_channel_mode_t _side;  // which side of the pair this pin is
+    int     _pin;
+};
+
+#endif // defined( CPU_MCXA153VLH ) / defined( CPU_MCXN947VDF )
 
 #endif // R01LIB_ANALOGIN_H

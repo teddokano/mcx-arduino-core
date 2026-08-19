@@ -1,7 +1,7 @@
 /*
  *  @author Tedd OKANO
  *
- *  Released under the MIT license License
+ *  Released under the MIT license
  */
 
 #ifndef R01LIB_TICKER_H
@@ -20,10 +20,10 @@ extern "C" {
 using	ticker_callback_fp_t	= std::function<void(void)>;
 
 /** Ticker class
- *	
+ *
  *  @class Ticker
  *
- *	A class for demonstrating SPI bus
+ *	A class for periodic timer callbacks
  *
  * @note only 1 ticker can be used in this version
  */
@@ -37,7 +37,7 @@ public:
 	/** Create a Ticker instance */
 	Ticker();
 	
-	/** Destractor to freeing SPI resource */
+	/** Destructor to free Ticker resource */
 	virtual ~Ticker();
 	
 	/** Register callback function

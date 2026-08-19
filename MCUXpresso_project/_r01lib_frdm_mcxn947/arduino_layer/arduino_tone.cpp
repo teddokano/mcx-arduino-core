@@ -45,7 +45,11 @@ void ctimer_init( void )
 	 *  chip's SDK).
 	 */
 	CLOCK_AttachClk( kFRO12M_to_CTIMER0 );
+#if defined( CPU_MCXN947VDF )
 	CLOCK_SetClkDiv( kCLOCK_DivCtimer0Clk, 1u );
+#else
+	CLOCK_SetClockDiv( kCLOCK_DivCTIMER0, 1u );
+#endif
 
 	ctimer_config_t	cfg;
 

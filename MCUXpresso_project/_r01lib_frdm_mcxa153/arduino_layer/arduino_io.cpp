@@ -48,7 +48,7 @@ void pinMode( int pin_num, int mode )
 				if ( digital_pins[ pin_num ] == nullptr )
 						panic( "error @ new, in pinMode()" );
 
-				digital_pins[ pin_num ]->pin_mux( 0 );   // some pins boot muxed to a non-GPIO peripheral function instead of the usual ALT0 default
+				digital_pins[ pin_num ]->pin_mux( 0 );   // some pins (e.g. MB_RX/MB_TX = I3C_SDA/I3C_SCL) boot up muxed to a non-GPIO peripheral function instead of the usual ALT0 default
 		}
 }
 

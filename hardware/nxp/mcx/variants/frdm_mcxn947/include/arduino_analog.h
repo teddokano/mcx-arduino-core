@@ -28,7 +28,7 @@ void	analogWrite( int pin_num, int value );
  *  Caveat: PWM0-5 pair up two-to-a-FlexPWM-submodule (PWM0/PWM1,
  *  PWM2/PWM3, PWM4/PWM5), and a submodule's period register is shared by
  *  both channels -- changing one pin's frequency changes its paired
- *  pin's frequency too. See PIN_MAPPING_N947.md.
+ *  pin's frequency too. See this board's PIN_MAPPING_*.md.
  */
 void	analogWriteFrequency( int pin_num, uint32_t frequency );
 

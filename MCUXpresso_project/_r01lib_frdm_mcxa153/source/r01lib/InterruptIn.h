@@ -1,14 +1,14 @@
 /*
  *  @author Tedd OKANO
  *
- *  Released under the MIT license License
+ *  Released under the MIT license
  */
 
 /** InterruptIn class
- *	
+ *
  *  @class InterruptIn
  *
- *	A class for demonstrating GPIO pin interrupt
+ *	A class for GPIO pin interrupt handling
  */
 
 #ifndef R01LIB_INTERRUPTIN_H
@@ -34,19 +34,19 @@ public:
 	 */
 	InterruptIn( uint8_t pin_num );
 
-	/** Destractor for InterruptIn
+	/** Destructor for InterruptIn
 	 */
 	virtual ~InterruptIn();
 	
 	/** Register callback function which is called by rising edge
 	 *
-	 * @param callback pointer to callback fuction
+	 * @param callback pointer to callback function
 	 */
 	virtual void	rise( func_ptr callback );
 
 	/** Register callback function which is called by falling edge
 	 *
-	 * @param callback pointer to callback fuction
+	 * @param callback pointer to callback function
 	 */
 	virtual void	fall( func_ptr callback );
 
@@ -54,7 +54,7 @@ public:
 	 *  pin reads logic low (level-triggered, matches classic Arduino's
 	 *  attachInterrupt(pin, isr, LOW))
 	 *
-	 * @param callback pointer to callback fuction
+	 * @param callback pointer to callback function
 	 */
 	virtual void	low( func_ptr callback );
 

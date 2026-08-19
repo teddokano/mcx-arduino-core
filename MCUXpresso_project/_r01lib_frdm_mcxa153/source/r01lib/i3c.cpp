@@ -96,9 +96,28 @@ I3C::I3C( int sda, int scl, uint32_t i2c_freq, uint32_t i3c_od_freq, uint32_t i3
 	
 	DigitalInOut	_scl( sda );
 	DigitalInOut	_sda( scl );
-	
+
 	_scl.pin_mux( kPORT_MuxAlt10 );
 	_sda.pin_mux( kPORT_MuxAlt10 );
+
+	/*
+	 *  On FRDM-MCXN947, the pin_mux.c code that sets PORT1_16/PORT1_17's
+	 *  input buffer enable (IBE) bit for I3C1_SDA/I3C1_SCL only exists
+	 *  inside BOARD_InitDEBUG_UARTPins() -- a generated function that is
+	 *  never actually called anywhere (init_mcu() only calls
+	 *  BOARD_InitBootPins()/BOARD_InitBootClocks()/BOARD_InitBootPeripherals(),
+	 *  none of which touch these pins). PORT_SetPinMux() above only writes
+	 *  the MUX field, not IBE, so without this the pins reset-default to
+	 *  IBE disabled -- the I3C peripheral can drive them but can't sense
+	 *  the target's response. This is the same bug class as the Serial1
+	 *  D0/D1 input-buffer bug found on A153 (see arduino_serial.cpp
+	 *  history). Confirmed as the cause via GDB: with IBE left disabled,
+	 *  I3C_MasterTransferBlocking() succeeded (status 0) for writes but
+	 *  returned kStatus_I3C_Nak on every read's address phase, regardless
+	 *  of pull-up, repeated-start vs stop, or SCL frequency.
+	 */
+	_scl.input_buffer( true );
+	_sda.input_buffer( true );
 }
 
 I3C::~I3C(){

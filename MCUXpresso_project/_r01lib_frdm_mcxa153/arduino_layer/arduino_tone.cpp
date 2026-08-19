@@ -36,9 +36,20 @@ void ctimer_init( void )
 	 *  returns 0 until a source is attached), so CTIMER_Init() alone (clock
 	 *  gate + reset only) leaves the peripheral clockless — match never fires.
 	 *  Attach FRO12M, same fixed/always-available source AnalogIn.cpp uses.
+	 *
+	 *  N947 note: the divider symbol is named differently here
+	 *  (`kCLOCK_DivCtimer0Clk`, mixed case + "Clk" suffix) than on A153
+	 *  (`kCLOCK_DivCTIMER0`, all-caps) -- confirmed via NXP's own
+	 *  FRDM-MCXN947 CTIMER driver example, which also uses CLOCK_SetClkDiv
+	 *  (not CLOCK_SetClockDiv -- also a different function name on this
+	 *  chip's SDK).
 	 */
 	CLOCK_AttachClk( kFRO12M_to_CTIMER0 );
+#if defined( CPU_MCXN947VDF )
+	CLOCK_SetClkDiv( kCLOCK_DivCtimer0Clk, 1u );
+#else
 	CLOCK_SetClockDiv( kCLOCK_DivCTIMER0, 1u );
+#endif
 
 	ctimer_config_t	cfg;
 

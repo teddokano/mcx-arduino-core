@@ -61,6 +61,19 @@ void init_mcu( void )
 	CLOCK_SetClkDiv(kCLOCK_DivFlexcom1Clk, 1u);
 	CLOCK_AttachClk(kFRO12M_to_FLEXCOMM1);
 
+	/* I2C on MikroBus (MB_SDA/MB_SCL -> LPI2C3) */
+	CLOCK_SetClkDiv(kCLOCK_DivFlexcom3Clk, 1u);
+	CLOCK_AttachClk(kFRO12M_to_FLEXCOMM3);
+
+	/* SPI on MikroBus (MB_MOSI/MB_MISO/MB_SCK/MB_CS -> LPSPI6) */
+	CLOCK_SetClkDiv(kCLOCK_DivFlexcom6Clk, 1u);
+	CLOCK_AttachClk(kFRO12M_to_FLEXCOMM6);
+
+	/* Serial1 on MikroBus (MB_TX/MB_RX -> LPUART5); the attach itself is
+	   also done lazily by Serial::_setup_clock() when the instance begin()s,
+	   but the divider needs a known value up front like every other FlexComm here. */
+	CLOCK_SetClkDiv(kCLOCK_DivFlexcom5Clk, 1u);
+
 	SYSCON->CLOCK_CTRL |= SYSCON_CLOCK_CTRL_FRO1MHZ_ENA_MASK;	//	UTICK
 
 	CLOCK_EnableClock( kCLOCK_Gpio0 );
@@ -169,10 +182,6 @@ void init_mcu( void )
 	/* SPI */
 	CLOCK_SetClockDiv(kCLOCK_DivLPSPI1, 1u);
 	CLOCK_AttachClk(kFRO12M_to_LPSPI1);
-
-	/* SPI on MikroBus (MB_MOSI/MB_MISO/MB_SCK/MB_CS -> LPSPI0) */
-	CLOCK_SetClockDiv(kCLOCK_DivLPSPI0, 1u);
-	CLOCK_AttachClk(kFRO12M_to_LPSPI0);
 
 	CLOCK_EnableClock( kCLOCK_GateGPIO0 );
 	CLOCK_EnableClock( kCLOCK_GateGPIO1 );

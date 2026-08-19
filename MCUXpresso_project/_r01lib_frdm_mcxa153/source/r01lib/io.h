@@ -1,7 +1,7 @@
 /*
  *  @author Tedd OKANO
  *
- *  Released under the MIT license License
+ *  Released under the MIT license
  */
 
 #ifndef R01LIB_IO_H
@@ -184,6 +184,34 @@ enum {
 	#define	RED		D9
 	#define	GREEN	D10
 	#define	BLUE	D6
+
+	// NOTE (corrected after initial real-hardware bring-up): an earlier
+	// version of this file reused A153's physical pin numbers (P3_6..P3_11)
+	// verbatim. On N947 those pins are bare test points (TP8/TP12-18/TP31 in
+	// pin_mux.c's schematic labels), not routed to any populated header --
+	// so analogWrite() compiled and ran but drove pins nobody could reach.
+	// The real PWM-capable, header-accessible pins are P2_2..P2_7 (Arduino
+	// Shield Compatible Headers sheet, FRDM-MCXN947SH.pdf page 12), on
+	// FlexPWM1 (not FlexPWM0 -- see PwmOut.cpp for that instance-name
+	// collision too). This chip's SDK also defines bare `PWM0`/`PWM1` macros
+	// for the FlexPWM peripheral instances themselves ((PWM_Type*)PWM0_BASE /
+	// PWM1_BASE), so those two names have to be explicitly reclaimed here
+	// (#undef, matching the same technique already used in
+	// source/r01device/led/LEDDriver.h for the same collision) before they
+	// can be redefined as logical pin names -- PwmOut.cpp captures the SDK's
+	// original PWM1 meaning into its own alias before including this header,
+	// so its driver calls keep working once this redefinition is in effect.
+	// The PWM0..PWM5 -> physical pin assignment below matches the
+	// "PWM0".."PWM5" silkscreen labels printed directly on that schematic
+	// sheet's header, not physical pin order.
+	#undef	PWM0
+	#undef	PWM1
+	#define	PWM0	P2_3	/* PWM1 sm2 chB */
+	#define	PWM1	P2_2	/* PWM1 sm2 chA */
+	#define	PWM2	P2_5	/* PWM1 sm1 chB */
+	#define	PWM3	P2_4	/* PWM1 sm1 chA */
+	#define	PWM4	P2_7	/* PWM1 sm0 chB */
+	#define	PWM5	P2_6	/* PWM1 sm0 chA */
 
 	#define	I3C_SDA		MB_RX
 	#define	I3C_SCL		MB_TX
@@ -790,10 +818,10 @@ enum {
 #define	ARD_A5	A5
 
 /** DigitalInOut class
- *	
+ *
  *  @class DigitalInOut
  *
- *	A class for operating GPIO easy
+ *	A class for easy GPIO pin operations
  */
 
 class DigitalInOut: public Obj
@@ -813,20 +841,20 @@ public:
 
 	/** Create a DigitalInOut instance with specified pins
 	 *
-	 * @param pin_num pin number
-	 * @param direction (option) direction setting
-	 * @param value (option) default value for output
-	 * @param pin_mode (option) PullUp, PullDown, PullNone, OpenDrain
+	 * @param pin_num  pin number
+	 * @param direction (optional) direction setting
+	 * @param value    (optional) default value for output
+	 * @param pin_mode (optional) PullUp, PullDown, PullNone, OpenDrain
 	 */
 	DigitalInOut( uint8_t pin_num, bool direction = kGPIO_DigitalInput, bool value = 0, int pin_mode = PullNone );
 
-	/** Destractor
+	/** Destructor
 	 */
 	virtual ~DigitalInOut();
 	
-	/** Pin output seting
+	/** Pin output setting
 	 *
-	 * @param value setting output
+	 * @param value value to output
 	 */
 	void	value( bool value );
 
@@ -840,7 +868,7 @@ public:
 	 */
 	void	output( void );
 
-	/** Pin direction to set as in
+	/** Pin direction to set as input
 	 */
 	void	input( void );
 
@@ -861,7 +889,7 @@ public:
 	 *  @param enable true to enable the digital input buffer
 	 */
 	void	input_buffer( bool enable );
-		
+
 	/** Pin mode setting
 	 * @param pin_mode PullUp, PullDown, PullNone, OpenDrain
 	 */
@@ -902,10 +930,10 @@ private:
 };
 
 /** DigitalOut class
- *	
+ *
  *  @class DigitalOut
  *
- *	A class for operating GPIO easy
+ *	A class for easy GPIO output pin operations
  */
 
 class DigitalOut : public DigitalInOut
@@ -915,19 +943,19 @@ public:
 
 	/** Create a DigitalOut instance with specified pins
 	 *
-	 * @param pin_num pin number
-	 * @param value (option) default value for output
-	 * @param pin_mode (option) PullUp, PullDown, PullNone, OpenDrain
+	 * @param pin_num  pin number
+	 * @param value    (optional) default value for output
+	 * @param pin_mode (optional) PullUp, PullDown, PullNone, OpenDrain
 	 */
 	DigitalOut( uint8_t pin_num, bool value = 0, int pin_mode = PullNone );
 	virtual ~DigitalOut();
 };
 
 /** DigitalIn class
- *	
+ *
  *  @class DigitalIn
  *
- *	A class for operating GPIO easy
+ *	A class for easy GPIO input pin operations
  */
 
 class DigitalIn : public DigitalInOut
@@ -937,8 +965,8 @@ public:
 
 	/** Create a DigitalIn instance with specified pins
 	 *
-	 * @param pin_num pin number
-	 * @param pin_mode (option) PullUp, PullDown, PullNone, OpenDrain
+	 * @param pin_num  pin number
+	 * @param pin_mode (optional) PullUp, PullDown, PullNone, OpenDrain
 	 */
 	DigitalIn( uint8_t pin_num, int pin_mode = PullNone );
 	virtual ~DigitalIn();

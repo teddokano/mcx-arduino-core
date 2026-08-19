@@ -1,14 +1,14 @@
 /*
  *  @author Tedd OKANO
  *
- *  Released under the MIT license License
+ *  Released under the MIT license
  */
 
 /** I3C class
- *	
+ *
  *  @class I3C
  *
- *	A class for demonstrating I3C bus
+ *	A class for I3C bus operations
  */
 
 #ifndef R01LIB_I3C_H
@@ -70,23 +70,23 @@ public:
 
 	/** Create an I3C instance with specified pins
 	 *
-	 * @param sda pin number to connect SDA
-	 * @param scl pin number to connect SCL
-	 * @param i2c_freq (option) define default scl frequency while I2C operation
-	 * @param i3c_od_freq (option) define default scl frequency while I3C open-drain operation
-	 * @param i3c_pp_freq (option) define default scl frequency while I3C push-pull operation
+	 * @param sda         pin number to connect SDA
+	 * @param scl         pin number to connect SCL
+	 * @param i2c_freq    (optional) SCL frequency in Hz for I2C operation
+	 * @param i3c_od_freq (optional) SCL frequency in Hz for I3C open-drain operation
+	 * @param i3c_pp_freq (optional) SCL frequency in Hz for I3C push-pull operation
 	 */
 	I3C( int sda, int scl, uint32_t i2c_freq = I2C::FREQ, uint32_t i3c_od_freq = OD_FREQ, uint32_t i3c_pp_freq = PP_FREQ );
 
-	/** Destractor to freeing I3C resource
+	/** Destructor to free I3C resource
 	 */
 	virtual ~I3C();
 	
 	/** Frequency settings
-	 * 
-	 * @param i2c_freq (option) define default scl frequency while I2C operation
-	 * @param i3c_od_freq (option) define default scl frequency while I3C open-drain operation
-	 * @param i3c_pp_freq (option) define default scl frequency while I3C push-pull operation
+	 *
+	 * @param i2c_freq    (optional) SCL frequency in Hz for I2C operation
+	 * @param i3c_od_freq (optional) SCL frequency in Hz for I3C open-drain operation
+	 * @param i3c_pp_freq (optional) SCL frequency in Hz for I3C push-pull operation
 	 * 
 	 *  @note use zero or I3C_DEFAULT_FREQ to set default frequency
 	 */
@@ -116,7 +116,7 @@ public:
 	/** read transaction
 	 *
 	 * @param targ target address
-	 * @param dp data to write
+	 * @param dp data buffer for read
 	 * @param length data length
 	 * @param stop (option) generate STOP condition: "false" to make repeated-start in next transaction
 	 * @return status_t
@@ -189,7 +189,7 @@ public:
 	 *  
 	 * @param address_list new address list to be assigned
 	 * @param list_length address list length
-	 * @param device_list pointer to i3c_device_info_t array which is dealeared as static array in I3C driver
+	 * @param device_list pointer to i3c_device_info_t array which is declared as static array in I3C driver
 	 * @return int for number of devices which has newly assigned addresses (max 10)
 	 */
 	virtual int			DAA( const uint8_t *address_list, uint8_t list_length, i3c_device_info_t** device_list );

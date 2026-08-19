@@ -1,7 +1,7 @@
 /*
  *  @author Tedd OKANO
  *
- *  Released under the MIT license License
+ *  Released under the MIT license
  */
 
 #ifndef ARDUINO_BUSINOUT_H
@@ -45,12 +45,12 @@ public:
 				uint8_t bit7 = nc
 			 );
 
-	/** Destractor */
+	/** Destructor */
 	virtual ~BusInOut();
 
 	/** Configure BusInOut IO direction
 	 *
-	 * @param conf INPUT or OUTPUT (defined in Arduino.h)
+	 * @param conf INPUT or OUTPUT (DigitalInOut::INPUT or DigitalInOut::OUTPUT)
 	 */
 	virtual void		config( int conf );
 
@@ -114,12 +114,12 @@ public:
 class BusOut : public BusInOut {
 public:
 	using BusInOut::operator=;
-	
+
 	/** Create a BusOut instance with specified pins
 	 *
 	 * @param bit<n> pin number to connect bus bit<n> (0-13, nc)
 	 *
-	 * @note define pins from lower to upper. No need to define upper bits if those are not be used 
+	 * @note define pins from lower to upper. No need to define upper bits if those are not be used
 	 */
 	BusOut(	uint8_t bit0 = nc,
 				uint8_t bit1 = nc,
@@ -132,9 +132,9 @@ public:
 			 );
 	virtual ~BusOut();
 
-	/** Configure BusIn IO direction
+	/** Configure BusOut IO direction
 	 *
-	 * @note call of this method will be error when compiling since this class only support INPUT
+	 * @note call of this method will be error when compiling since this class only supports OUTPUT
 	 */
 	virtual void		config( int conf );
 };
