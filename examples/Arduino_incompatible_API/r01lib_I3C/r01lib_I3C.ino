@@ -15,9 +15,9 @@
 
 #include <Arduino.h>
 
-#if defined(CPU_MCXN947VDF)
+#if defined(FRDM_MCXN947)
 I3C i3c(P1_16, P1_17);  //	SDA, SCL (== I3C_SDA/I3C_SCL's raw r01lib pins on N947)
-#elif defined(CPU_MCXA153VLH)
+#elif defined(FRDM_MCXA153)
 I3C i3c(P0_16, P0_17);  //	SDA, SCL (== I3C_SDA/I3C_SCL's raw r01lib pins on A153)
 #else
 #error This example I3C pins have only been worked out for FRDM-MCXA153 and FRDM-MCXN947 so far
