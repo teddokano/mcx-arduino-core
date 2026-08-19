@@ -2,6 +2,7 @@
 
 ## プロジェクト概要
 - **リポジトリ**: https://github.com/teddokano/mcx-arduino-core
+- **開発中バージョン**: v0.3.2（`0.3.2-dev`ブランチで開発中、未リリース。このバージョンから「開発用ブランチ＋mainへは最後にマージ、ドキュメント更新はmain直接」という運用に変更——詳細は「開発ブランチ運用方針（v0.3.2から採用）」セクション参照）
 - **現在のバージョン**: v0.3.1（`package_nxp_mcx_index.json` 上の最新リリース。SDライブラリの`-Waddress-of-packed-member`警告抑制、MCUXpresso SDK直呼びサンプル、ライブラリ不要のI3C/Wire1生レジスタアクセス例が主な内容。GitHub Release作成・タグpush、`e74604c`でchecksum自動更新も確定。2026-08-20リリース。**このリリースから「ステージングブランチ方式」を採用**——`gh release create`でzipを先に確定させ、`main`とは別の`staging-0.3.1`ブランチに検証済みchecksumだけを一時的にpushしてmacOS/Windows/Linuxの3プラットフォームでBoards Manager経由インストールを検証してから`main`のchecksumを確定、というリリース前検証の順序に変更（詳細は「GitHub Actions」節の「リリース前クロスプラットフォーム検証」参照）。詳細は後述の「v0.3.1 で作業中の内容」セクション参照）
 - **旧バージョン**: v0.3.0（2026-08-16リリース。FRDM-MCXN947ボード対応の追加が主目的。Issue #1/#2/#3はこのリリースで解消）、v0.2.2（2026-08-13リリース。Linux実機での`#include <Arduino.h>`/`<SPI.h>`のファイル名大文字小文字ミスマッチによるビルド失敗を修正するパッチリリース）
 - **完了**: `prepare0.3.0`ブランチでのFRDM-MCXN947ボード対応は完了し、v0.3.0としてリリース済み。GPIO/Serial(USB)/Wire1(オンボードI3Cセンサー)/Wire(プレーンI2C、外部LM75系センサーとの実通信も確認済み)/SPI/analogRead/analogWrite(全6チャンネル・独立性込み)/tone・noTone(圧電サウンダで実音確認)は実機検証済み、String/UNO互換マクロはコンパイル確認済み。これでN947の主要機能は一通り実機検証済み（任意項目のanalogRead精度確認も定電圧源で完了、D0-D19/A2-A5/MikroBusヘッダの全GPIO出力も実機確認済み）。**MikroBusヘッダにSPI/I2C/UARTの追加インスタンス`SPI1`/`Wire2`/`Serial1`を新規実装・実機確認済み**（`MB_RX`/`MB_TX`は`Wire1`(I3C)・GPIO・`Serial1`(UART)の3モードを排他切り替え可能）。D0/D1自体は引き続きSerial1に意図的に未対応（FlexComm2資源競合のため、`Wire`と同時に使えない）。**重要な実機バグ4件を修正済み**: (1) `analogWrite`の物理ピンが当初A153流用のP3_6-P3_11（実際は未配線のテストポイント）のままだった → 回路図でP2_2-P2_7/FlexPWM1が正しいピンと判明・修正、(2) その修正時のALT値導出（pin_mux.cのコメント内位置カウント方式）がP2_2/P2_3の2ピンだけ誤っていた → Zephyrのpinctrlヘッダ（シリコン正確）で全ピンAlt5と確定・修正、(3) `pinMode()`がPORT MUXを一切変更しない実装だったため、起動時にI3C用ALT10へ固定されている`MB_RX`/`MB_TX`だけ`digitalWrite`が効かなかった → `pinMode()`で常にALT0(GPIO)へ明示的に再設定するよう修正、(4) MikroBus向け`Serial1`追加時、`arduino_serial.cpp`が`arduino_io.h`をincludeしていたため`MB_TX`/`MB_RX`がArduinoリナンバリング後の値にすり替わりSOSパニックが発生 → include前に生の値を退避するよう修正、(5) A153にもMikroBus対応（`SPI1`のみ、`Wire2`/新規`Serial1`はチップの物理制約——I2Cペリフェラルが1系統のみ・既存Serial1とMikroBus UARTが同じLPUART2——により不可能と判明し見送り）を追加した際、新規使用の`LPSPI0`にクロックが供給されておらずCS以外無反応だった → `mcu.cpp`にクロック設定を追加。方針: 未実装が残っていてもN947が一通り完成した段階でリリースする。詳細は「v0.3.0 で作業中の内容」セクション参照
@@ -785,7 +786,18 @@ v0.3.0リリース後、`platform.txt`を`0.3.1`に更新しローカル開発�
 3. 各OS（macOS/Windows/Linux）で、Arduino IDEの**Additional Boards Manager URLsを一時的にこのステージングブランチのraw URL**に切り替えてインストール検証
 4. 全OSで問題なければ、いつも通り`main`に対して`update_package_index.yml`を手動実行してchecksum確定
 
-**利点**: 従来の手順だと、`main`にプレースホルダーchecksum付きの新バージョンエントリを一旦pushしてから確定させるまでの間、誰かが`main`経由でインストールを試みると失敗する可能性があった（短時間ではあるが）。ステージングブランチ方式なら、`main`のインデックスには常に検証済みの内容だけが載る状態を保てる。**v0.3.1で初適用・完了**——macOS/Windows/Linux全てでBoards Manager経由インストール〜動作確認まで成功、`main`のchecksumも確定済み。詳細は「v0.3.1リリース完了」セクション参照
+**利点**: 従来の手順だと、`main`にプレースホルダーchecksum付きの新バージョンエントリを一旦pushしてから確定させるまでの間、誰かが`main`経由でインストールを試みると失敗する可能性があった（短時間ではあるが）。ステージングブランチ方式なら、`main`のインデックスには常に検証済みの内容だけが載る状態を保てる。**v0.3.1で初適用・完了**——macOS/Windows/Linux全てでBoards Manager経由インストール〜動作確認まで成功、`main`のchecksumも確定済み。詳細は「v0.3.1リリース完了」セクション参照。念のため、`main`のchecksum確定後にmacOSで改めて本番URL（`.../main/package_nxp_mcx_index.json`）経由のインストールも再検証し、問題ないことを確認済み
+
+---
+
+## 開発ブランチ運用方針（v0.3.2から採用）
+ユーザー指示: 「0.3.2の開発版をスタート。このバージョンから開発用ブランチを切って進める。ドキュメント関連の更新はmainブランチで。開発用ブランチは0.3.2-devにする」
+
+- 各バージョンの開発作業（ソースコード変更、r01lib/arduino_layerの修正、サンプル追加等）は**`<version>-dev`という名前の専用ブランチ**（例: `0.3.2-dev`）上で行う。これは`prepare0.3.0`ブランチでのN947対応と同じ「開発用ブランチを切ってから最後に`main`へマージ」というパターンだが、ブランチ命名規則を`prepare<version>`から`<version>-dev`に変更し、以後この命名で統一する
+- **ドキュメントのみの更新（CLAUDE.md、README.md、CHANGELOG.md、TUTORIAL.md等）は`main`ブランチに直接コミットする**——開発ブランチにマージされるのを待たない。これにより、開発ブランチが長期化してもドキュメントは常に最新の状態を保てる
+- ローカル開発用symlink（`~/Library/Arduino15/packages/nxp/hardware/mcx/<version>-dev`）も、ブランチ名と同じ`<version>-dev`という命名になるため、今後はgitブランチ名とsymlink名が常に一致する（偶然ではなく意図した対応）
+
+---
 
 ---
 
