@@ -62,8 +62,10 @@ public:
 
 extern SerialClass	Serial;
 
-// Serial1 is on the MikroBus header (MB_TX/MB_RX), not D0/D1 -- see
-// arduino_serial.cpp for why D0/D1 can't support it on this board.
+// Serial1: hardware UART, separate from the USB-bridged Serial. On D0(RX)/
+// D1(TX) on most boards; on FRDM-MCXN947 it's on the MikroBus header
+// (MB_TX/MB_RX) instead -- see arduino_serial.cpp for why D0/D1 can't
+// support it on that board.
 extern SerialClass	Serial1;
 
 #endif // !R01LIB_ARDUINO_SERIAL_H

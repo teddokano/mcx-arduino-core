@@ -36,6 +36,13 @@ private:
 
 extern TwoWire	Wire;
 extern TwoWire	Wire1;
+
+#ifdef	CPU_MCXN947VDF
+// Independent I2C instance on the MikroBus header (MB_SDA/MB_SCL), its own
+// physical peripheral (LPI2C3/FlexComm3) -- only possible on N947, which
+// has more than one physical I2C peripheral. A153 has only one (LPI2C0),
+// already used by Wire, so no independent Wire2 exists there.
 extern TwoWire	Wire2;
+#endif
 
 #endif // !R01LIB_ARDUINO_I2C_H

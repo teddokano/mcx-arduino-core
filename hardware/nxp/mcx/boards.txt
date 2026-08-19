@@ -30,10 +30,6 @@ frdm_mcxa153.upload.maximum_data_size=24576
 # Linker script filename (inside variants/frdm_mcxa153/linker/)
 frdm_mcxa153.build.ldscript=MCXA153.ld
 
-# Prebuilt library name  →  lib/lib_r01lib_frdm_mcxa153.a
-#   linker flag: -l_r01lib_frdm_mcxa153
-frdm_mcxa153.build.variant_lib=_r01lib_frdm_mcxa153
-
 # Upload
 # build.pyocd_target is currently unused -- no recipe in platform.txt
 # references it (only the LinkServer upload path is implemented).
@@ -78,10 +74,6 @@ frdm_mcxn947.upload.maximum_data_size=393216
 
 # Linker script filename (inside variants/frdm_mcxn947/linker/)
 frdm_mcxn947.build.ldscript=MCXN947.ld
-
-# Prebuilt library name  →  lib/lib_r01lib_frdm_mcxn947.a
-#   linker flag: -l_r01lib_frdm_mcxn947
-frdm_mcxn947.build.variant_lib=_r01lib_frdm_mcxn947
 
 # Upload
 # build.pyocd_target is currently unused (see the same note on A153's entry
