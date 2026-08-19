@@ -824,6 +824,25 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 - **`MCUXpresso_project/`ディレクトリの扱い**: ユーザーに確認したところ「必要ないなら消す」と回答。`git rm -r`でリポジトリから削除（`_r01lib_frdm_mcxa153`/`_r01lib_frdm_mcxn947`の他、未着手ボード用の`_r01lib_frdm_mcxa156`/`_r01lib_frdm_mcxn236`、各種テスト/トライアルプロジェクトも含め約632MB分）。さらにgit未追跡だったMCUXpresso IDEのワークスペースメタデータ（`.metadata/`等）もディスクから削除。README.mdの「Architecture」節（プリビルドライブラリ前提の説明、Go to Definitionが効かないという注記——今回のソース化で解消済みのため）と「Building the Prebuilt Library」節（丸ごと削除）を、新しいソース配布構成に合わせて更新
 - まだ未実施: 実機での書き込み・動作確認（今回はコンパイルレベルの検証のみ）、Arduino IDEでの実際のGo to Definition動作確認
 
+### 実機検証: A153でLPSPI0クロック未供給の実バグを発見・修正、N947は問題なし
+上記のコンパイルレベル検証（114サンプル×2ボード）を経て、ユーザーが実際に`test_combined_peripherals_A153`/`_N947`を実機フラッシュ。**`hello_world`は両ボードとも正常動作**を確認した一方、`test_combined_peripherals_A153`は`setup()`終了時のバナー行を1行出力した直後に停止（`loop()`内のどこかでハング）、`test_combined_peripherals_N947`はSOSパニックという、コンパイル検証だけでは検出できない実行時のみのリグレッションが発覚——ソースコード配布方式への移行という大規模なビルドシステム変更が、実機での動作を保証しないことを示す教訓となった。
+
+- **切り分け**: `loop()`内の各ステップ直後に`Serial.println()`+`Serial.flush()`のチェックポイントを挿入して再フラッシュ・再確認する方式で二分探索。当初「I3C(`sensor.temp()`)が怪しい」という仮説を立てコメントアウトを依頼したが、ユーザーが「1行だけで止まる」と報告し否定——的外れな仮説だったと判明。改めて全ステップにチェックポイントを入れ直したところ、**`cp4`（`analogWrite`後）は出力されるが`cp5`（`SPI1.transfer16()`後）が出ない**ことが判明——`SPI1`（MikroBusのSPI、A153では`LPSPI0`）のブロッキング転送内で無限待ちしていると特定
+- **根本原因**: `cores/arduino/mcu.cpp`の`init_mcu()`内、実際にA153でビルドされる`#elif CPU_MCXA153VLH`分岐に、`LPSPI0`（MikroBus SPI1用）のクロックアタッチ（`CLOCK_SetClockDiv(kCLOCK_DivLPSPI0,1u); CLOCK_AttachClk(kFRO12M_to_LPSPI0);`）が存在しなかった——このコードはA153のMikroBus SPI1対応作業時に実機バグとして発見・追加されたはずのものだが（このドキュメントの「A153のMikroBus対応: `SPI1`とGPIO」セクション参照）、r01libソース統合作業中に、なぜかA153の実ビルドには使われない`#elif CPU_MCXA156VLL`分岐（未リリースの別チップ向け）の方にだけこのクロック設定が残り、A153自身の分岐からは消えてしまっていた。クロック未供給のペリフェラルに対して`LPSPI_MasterTransferBlocking()`（SDK関数、内部でTX/RXステータスフラグをポーリング）を呼ぶと、そのフラグが永久に立たないため無限ループ＝ハングする、という典型的な症状と完全に一致
+- **修正**: `CPU_MCXA153VLH`分岐に`LPSPI0`のクロックアタッチを追加し直した（[mcu.cpp](hardware/nxp/mcx/cores/arduino/mcu.cpp)）。ソース配布方式になったため、`.a`の再ビルド・再配置は不要——ソースを直すだけで次回ビルドに反映される
+- ユーザーが再フラッシュし、**A153で正常動作を確認**（`test_combined_peripherals_A153`が全ステップ完走）。チェックポイント計装は削除しスケッチを元の内容に復元
+- N947についても同様にチェックポイント計装を入れて確認を依頼したところ、ユーザーから「A153のスケッチを動かしていた」という誤操作の訂正があり、**改めてN947でも問題なく動作することを確認**——N947側には実機バグは無かった（チェックポイント計装も削除・復元済み）
+
+### Go to Definitionの実機（IDE）検証: ローカル開発環境固有の症状と判明、原因究明・解消
+実機検証完了を受けてもう一つの検証項目に着手。ユーザーがArduino IDE再起動後・実際にVerifyも実行した上で`Serial.println`/`analogWrite`にGo to Definitionを試したが、**"No definition found"** のまま——ソース化そのものは成功しているはずなのに、当初の目的（Go to Definitionを効かせる）が達成できていない状態だった。
+
+- **調査**: `ps aux`でArduino IDEが実際に起動しているclangdプロセスの引数を確認したところ、`-query-driver=/Users/tedd/Library/Arduino15/packages/**` というフラグが付いていた——clangdはクロスコンパイラ（`arm-none-eabi-c++`）の実体を問い合わせてターゲット情報（system include path等）を取得する際、このglobに一致するパスのドライバしか信頼しない仕組み。Arduino IDEのバックグラウンドclangdバイナリを直接`--check`モードで実行し、実際に使われている`compile_commands.json`（`/var/folders/.../arduino-language-server*/build/compile_commands.json`）を読ませたところ、`the clang compiler does not support '-mcpu=cortex-m33'` → `CreateTargetInfo() return null` → プリアンブル（AST）構築が完全に失敗、という状態を直接再現
+- **原因特定**: `compile_commands.json`内のコンパイラパスが `/Users/tedd/.xpacktools/xpack-arm-none-eabi-gcc-14.2.1-1.1/...` という**シンボリックリンクの解決後の実体パス**になっており、これは`-query-driver`のglob（`.../Library/Arduino15/packages/**`）に一致しないため「信頼できないドライバ」としてクロスターゲット情報の取得が拒否され、clangdはmacOSネイティブ（arm64-apple-macosx）としてこのファイルをパースしようとして`-mcpu=cortex-m33`を理解できず失敗していた。このシンボリックリンクは、このプロジェクトのローカル開発環境で「ツールチェーンを二重に持たずに済ませる」ために`~/Library/Arduino15/packages/nxp/tools/arm-none-eabi-gcc/14.2.1-1.1`から`~/.xpacktools/xpack-arm-none-eabi-gcc-14.2.1-1.1`へ張っていたもの（本プロジェクトのCLAUDE.mdの「ローカル開発環境」セクションに記載の運用）
+- **ビルド用と言語サーバ用で挙動が異なっていた理由**: 実際に「検証(Verify)」を実行した際に生成される`compile_commands.json`（`.../fullbuild/`）はシンボリックリンクのパスをそのまま保持しておりglobに一致していたため、ビルド自体は問題なく成功していた。一方、Go to Definition等の対話的機能が参照する常駐clangdプロセス用の`compile_commands.json`（`.../build/`）は同じツールチェーンパスをシンボリックリンクの実体まで解決した状態で書き込まれており、この2つの生成経路の違いが「ビルドは通るのにGo to Definitionだけ動かない」という一見矛盾した症状を生んでいた
+- **重要な判断**: これは`mcx-arduino-core`パッケージ自体のバグではなく、**このユーザーのローカル開発環境固有のシンボリックリンク運用に起因する症状**と判断——実際にBoards Manager経由でインストールするエンドユーザーの環境ではツールチェーンはシンボリックリンクではなく実ファイルとして配置されるため、この問題自体が発生しない
+- **検証**: ユーザーの了承を得て、ローカルの`~/Library/Arduino15/packages/nxp/tools/arm-none-eabi-gcc/14.2.1-1.1`シンボリックリンクを`~/.xpacktools/xpack-arm-none-eabi-gcc-14.2.1-1.1`の実体コピー（`cp -R`、約1GB）に置き換え。Arduino IDEのバックグラウンドプロセスを再起動させて`compile_commands.json`を再生成させたところ、`build`用・`fullbuild`用の両方が同一の（実ファイルの）パスを指すようになり、clangdの`--check`モードでプリアンブル構築が成功することを確認。その後ユーザー自身がArduino IDEで実際にGo to Definitionを試し、**「動作に問題ないことが確認できた」**と報告——ソース化によるGo to Definition対応が設計通り機能することが実証された
+- これでv0.4.0のソース化移行に関する実機検証（両ボードのコンパイル・実行・Go to Definition）がすべて完了
+
 ---
 
 ## 動作確認済み

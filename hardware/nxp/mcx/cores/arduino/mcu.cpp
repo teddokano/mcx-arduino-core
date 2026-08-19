@@ -183,13 +183,17 @@ void init_mcu( void )
 	CLOCK_SetClockDiv(kCLOCK_DivLPSPI1, 1u);
 	CLOCK_AttachClk(kFRO12M_to_LPSPI1);
 
+	/* SPI1 on MikroBus (MB_MOSI/MB_MISO/MB_SCK/MB_CS -> LPSPI0) */
+	CLOCK_SetClockDiv(kCLOCK_DivLPSPI0, 1u);
+	CLOCK_AttachClk(kFRO12M_to_LPSPI0);
+
 	CLOCK_EnableClock( kCLOCK_GateGPIO0 );
 	CLOCK_EnableClock( kCLOCK_GateGPIO1 );
 	CLOCK_EnableClock( kCLOCK_GateGPIO2 );
 	CLOCK_EnableClock( kCLOCK_GateGPIO3 );
 
 	RESET_PeripheralReset( kUTICK0_RST_SHIFT_RSTn );
-	
+
 	BOARD_InitPins();
 	BOARD_InitBootClocks();
 	BOARD_InitDebugConsole();
