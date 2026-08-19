@@ -31,10 +31,13 @@ for each board's pin assignments, and [CHANGELOG.md](CHANGELOG.md) for release h
 
 ## Requirements
 
-### NXP LinkServer (Required for uploading)
+### NXP LinkServer (Required for uploading and debugging)
 
-This package uses **NXP LinkServer** for uploading sketches to the board.  
-Please install it before using the Upload button in Arduino IDE.
+This package uses **NXP LinkServer** for uploading sketches to the board,
+and also as the backend for Arduino IDE 2's built-in debugger (breakpoints,
+stepping, variable inspection) — LinkServer's own gdbserver is used under
+the hood, since upstream OpenOCD has no support for the MCX chip family yet.
+Please install it before using the Upload or Debug buttons in Arduino IDE.
 
 👉 Download: https://www.nxp.com/linkserver
 
