@@ -64,6 +64,28 @@ unsigned long	pulseInLong( int pin_num, bool state, unsigned long timeout = 1000
 
 #ifdef	ARDUINO_PIN_RENUMBERING
 
+/*
+ *  I3C_SDA/I3C_SCL/I2C_SDA/I2C_SCL are aliases of other names in this same
+ *  table (e.g. I2C_SDA is literally "#define I2C_SDA D18" in r01lib's own
+ *  io.h) -- a plain textual substitution, re-expanded wherever it's used,
+ *  not an independent value. Simply leaving I2C_SDA out of this table's
+ *  #undef/enum step (as tried initially) does NOT decouple it: it still
+ *  expands to D18, and D18 itself gets renumbered below, so I2C_SDA would
+ *  silently inherit D18's *new* small-int value regardless. Captured here,
+ *  before anything below is #undef'd, so these constexprs freeze today's
+ *  raw r01lib value -- then further down they're #undef'd and redefined to
+ *  literally *be* these frozen constants, breaking the alias chain for
+ *  good. (Found via real-hardware testing: this exact bug reappeared as an
+ *  SOS panic on FRDM-MCXN947's r01lib_I3C example after the first attempt,
+ *  since N947's I3C_SDA aliases MB_RX -- a renumbered name -- while A153's
+ *  happens to alias a raw physical pin macro (P0_16) that was never
+ *  renumbered, masking the same underlying bug there.)
+ */
+constexpr int	_raw_I3C_SDA	= I3C_SDA;
+constexpr int	_raw_I3C_SCL	= I3C_SCL;
+constexpr int	_raw_I2C_SDA	= I2C_SDA;
+constexpr int	_raw_I2C_SCL	= I2C_SCL;
+
 const int	arduino_pin_by_number[]	=
 {
 	D0,
@@ -105,6 +127,15 @@ const int	arduino_pin_by_number[]	=
 	RED,
 	GREEN,
 	BLUE,
+
+	SPI_CS,
+	SPI_MOSI,
+	SPI_MISO,
+	SPI_SCLK,
+	ARD_CS,
+	ARD_MOSI,
+	ARD_MISO,
+	ARD_SCK,
 
 	PWM0,
 	PWM1,
@@ -154,18 +185,38 @@ const int	arduino_pin_by_number[]	=
 #undef	GREEN
 #undef	BLUE
 
-// I3C_SDA/I3C_SCL/I2C_SDA/I2C_SCL/SPI_CS/SPI_MOSI/SPI_MISO/SPI_SCLK/ARD_CS/
-// ARD_MOSI/ARD_MISO/ARD_SCK are deliberately NOT renumbered (unlike
-// USBTX/USBRX, which never were either). These names are only ever used as
-// raw r01lib pin values -- constructor arguments to I2C/I3C/SPI, internal
-// arduino_i2c.cpp/arduino_spi.cpp plumbing, or "Arduino_incompatible_API"
-// examples constructing r01lib objects directly -- never as a bare
-// pinMode()/digitalWrite() pin (a sketch that wants plain GPIO on this
-// physical pin uses its D-number/MB_* alias instead, e.g. D18 rather than
-// I2C_SDA). Leaving them un-renumbered means the same name always means the
-// same value everywhere, whether or not <Arduino.h> has been included --
-// closing off the "renumbered here, raw there" mismatch that caused two
-// real SOS-panic bugs (Serial1 on MikroBus, and the r01lib_I3C example).
+#undef	SPI_CS
+#undef	SPI_MOSI
+#undef	SPI_MISO
+#undef	SPI_SCLK
+#undef	ARD_CS
+#undef	ARD_MOSI
+#undef	ARD_MISO
+#undef	ARD_SCK
+
+/*
+ *  I3C_SDA/I3C_SCL/I2C_SDA/I2C_SCL are redefined here to the raw values
+ *  frozen above, NOT given a fresh sequential enum slot like the names
+ *  above -- unlike D0-D19, MB_*, SPI_*, ARD_* (all genuinely usable as
+ *  ordinary pinMode()/digitalWrite() pins, or required for third-party
+ *  compatibility like MOSI/MISO/SCK below), these four are only ever used
+ *  as raw r01lib pin values: constructor arguments to I2C/I3C (internal
+ *  arduino_i2c.cpp plumbing, unaffected either way since it never includes
+ *  this header, or "Arduino_incompatible_API" examples constructing r01lib
+ *  objects directly). Fixing them to their raw value means the same name
+ *  means the same value everywhere, whether or not <Arduino.h> has been
+ *  included -- closing off the "renumbered here, raw there" mismatch that
+ *  caused two real SOS-panic bugs (Serial1 on MikroBus, and the
+ *  r01lib_I3C example).
+ */
+#undef	I3C_SDA
+#undef	I3C_SCL
+#undef	I2C_SDA
+#undef	I2C_SCL
+#define	I3C_SDA	_raw_I3C_SDA
+#define	I3C_SCL	_raw_I3C_SCL
+#define	I2C_SDA	_raw_I2C_SDA
+#define	I2C_SCL	_raw_I2C_SCL
 
 #undef	PWM0
 #undef	PWM1
@@ -214,6 +265,15 @@ enum ArduinoPinNum {
 	RED,
 	GREEN,
 	BLUE,
+
+	SPI_CS,
+	SPI_MOSI,
+	SPI_MISO,
+	SPI_SCLK,
+	ARD_CS,
+	ARD_MOSI,
+	ARD_MISO,
+	ARD_SCK,
 
 	PWM0,
 	PWM1,
