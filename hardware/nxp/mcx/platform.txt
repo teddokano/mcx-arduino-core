@@ -63,3 +63,8 @@ debug.toolchain=gcc
 debug.toolchain.path={runtime.tools.arm-none-eabi-gcc.path}/bin/
 debug.toolchain.prefix=arm-none-eabi-
 debug.server=openocd
+# Arduino IDE 2's debug UI won't start a session without at least one
+# "OpenOCD configuration file" configured, even though gdb-bridge doesn't
+# actually run OpenOCD and never reads this file -- see dummy-openocd.cfg.
+debug.server.openocd.scripts_dir={runtime.platform.path}/tools/gdb-bridge/
+debug.server.openocd.script=dummy-openocd.cfg
