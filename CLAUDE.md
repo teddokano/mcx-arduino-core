@@ -811,6 +811,19 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 
 これでr01libソース統合・ピンリナンバリング修正に関する実機確認チェックリスト（5項目）が全て完了
 
+### `cores/arduino/`一本化・`platform.txt`書き換え完了（プリビルド`.a`配布方式の廃止）
+実機確認完了を受けてソース化の本題に復帰。事前の統合作業（`Serial.cpp`/`i2c.cpp`/`r01lib_spi.cpp`統合、ピンリナンバリング修正）で両ボードのファイルはほぼ全て一致していたので、残りの「確認済み・コピー待ち」ファイル（`AnalogIn`/`PwmOut`/`i3c`/`io.h`/`mcu`/`Ticker`/`InterruptIn`/`BusInOut`/`irq`/`r01lib.h`）を実際にN947側からA153へコピーし、`arduino_tone.cpp`（CLOCK_SetClockDiv/CLOCK_SetClkDivのシンボル名差異、どちらのコピーも分岐すらしていなかった）・`arduino_analog.h`/`Arduino.h`（ボード名を直書きしたコメント）を`#if defined`ガード付きで統合。`component/*`・`utilities/*`・`drivers/`の7ペア（fsl_common/fsl_common_arm/fsl_gpio/fsl_i3c/fsl_pwm/fsl_spc/fsl_utick）が両ボードで完全に同一内容であることも確認。これで`arduino_layer`/`r01lib`配下の全20ファイルが両ボードでbyte-for-byte同一に。
+
+- **構成**: `cores/arduino/`（両ボード共有、フラット構成——`variants/*/include/`が元々`#include`をサブディレクトリ修飾なしのフラット参照前提で書かれているため、同じ慣習を踏襲）に、統合済みの`arduino_layer`/`r01lib`ソース＋`component`/`utilities`＋共有driver 9ペア（上記7つ＋`fsl_ctimer.h`/`fsl_inputmux.c/h`、後から見落としに気づき追加）を配置。`variants/<board>/src/`（新設）にボード固有ソース（`board/`・`device/`・`startup/`・チップごとに実際に内容が異なるdriver、`fsl_clock`/`fsl_ctimer.c`/`fsl_lpadc`/`fsl_lpi2c`/`fsl_lpspi`/`fsl_lpuart`/`fsl_reset`＋N947固有の`fsl_lpflexcomm`/`fsl_vref`）を配置
+- **`cores/arduino/irq.c`の重複削除**: 従来この場所には「`--whole-archive`でcore.aに強制リンクさせ、startup fileの弱いシンボルを確実に上書きするため」という理由で作られた**独自の重複ファイル**が置かれていた（本物は`source/r01lib/irq.c`としてプリビルド`.a`側にあった）。今回の移行で本物の`irq.c`自体が`cores/arduino/`（＝常に`--whole-archive`の対象）に入るため、この重複ワークアラウンドは不要になり削除
+- **`platform.txt`の変更は最小限で済んだ**: Arduinoの標準ビルド機構は`cores/arduino/`配下を最初から自動検出・コンパイルしてcore.aへアーカイブする仕組み（`recipe.ar.pattern`）が既に有効になっていた（従来は`arduino_main.cpp`等ごく少数のファイルしか対象がなかっただけ）ため、ファイルをそこに置くだけで自動的にビルド対象になった。実際に変更したのは`recipe.c.combine.pattern`から`-L{build.variant.path}/lib`と`-l{build.variant_lib}`（プリビルド`.a`のリンク）を削除しただけ。`-Wl,--whole-archive "{archive_file_path}" -Wl,--no-whole-archive`（core.a全体を強制リンク）はそのまま維持——弱いシンボルの上書きが引き続き機能する
+- **`boards.txt`**: 両ボードの`build.variant_lib=...`プロパティを削除（もう参照されない）
+- **`variants/*/lib/`ディレクトリごと削除**: N947の`.a`は`git rm`、A153の`.a`（gitignore対象）はディスクから削除、`.gitignore`の該当行も削除
+- **移行中に発見した実機コンパイルエラー**: `cores/arduino/`へのフラット化作業中、統合済みのつもりだった`arduino_i2c.cpp/h`・`arduino_serial.cpp/h`（Arduino層の`Wire`/`Serial`グローバル宣言）が、実は一度も統合されていなかったことが判明——以前統合したのは同名だが別物の`r01lib`側`i2c.cpp`/`Serial.cpp`だけだった。回帰スイープで`test_Wire2_MikroBus_N947`がN947自身でも失敗するという形で発覚（`Wire2`が存在しないというエラー——A153のコピーがそのまま両ボードに使われていたため）。`Wire2`宣言・定義とN947のRSTDAA priming処理を`#ifdef CPU_MCXN947VDF`で正しく統合、`Serial1`のD0/D1 vs MikroBusルーティングの差異も同様に統合して解消
+- **検証**: `hello_world`が両ボードとも一発でコンパイル成功（A153: 43636 bytes、プリビルド`.a`時代の45816 bytesより小さい——プリビルド`.a`のアーカイブメンバ単位のリンクよりも、フルソースの関数単位リンク(`-ffunction-sections`+`--gc-sections`)の方が不要コードをより細かく削れるため）。全114サンプルの回帰スイープも両ボードでクリーン（既知の13件のみ）
+- **今後に残る検討事項**: `MCUXpresso_project/`ディレクトリ（従来プリビルド`.a`をビルドするための環境、README.mdでは「[r01libリポジトリ](https://github.com/teddokano/r01lib)のプロジェクトをMCUXpresso IDEでビルド」と説明されている）は、もはや実際のリリースビルドには使われなくなった。今後の開発では`hardware/nxp/mcx/cores/arduino/`＋`variants/<board>/src/`が正のソースとなるため、`MCUXpresso_project/`をどう扱うか（削除する／upstream参照用に残す／等）は別途方針を決める必要がある——ユーザーに確認予定
+- まだ未実施: 実機での書き込み・動作確認（今回はコンパイルレベルの検証のみ）、Arduino IDEでの実際のGo to Definition動作確認
+
 ---
 
 ## 動作確認済み
