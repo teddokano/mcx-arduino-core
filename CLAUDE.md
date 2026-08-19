@@ -821,7 +821,7 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 - **`variants/*/lib/`ディレクトリごと削除**: N947の`.a`は`git rm`、A153の`.a`（gitignore対象）はディスクから削除、`.gitignore`の該当行も削除
 - **移行中に発見した実機コンパイルエラー**: `cores/arduino/`へのフラット化作業中、統合済みのつもりだった`arduino_i2c.cpp/h`・`arduino_serial.cpp/h`（Arduino層の`Wire`/`Serial`グローバル宣言）が、実は一度も統合されていなかったことが判明——以前統合したのは同名だが別物の`r01lib`側`i2c.cpp`/`Serial.cpp`だけだった。回帰スイープで`test_Wire2_MikroBus_N947`がN947自身でも失敗するという形で発覚（`Wire2`が存在しないというエラー——A153のコピーがそのまま両ボードに使われていたため）。`Wire2`宣言・定義とN947のRSTDAA priming処理を`#ifdef CPU_MCXN947VDF`で正しく統合、`Serial1`のD0/D1 vs MikroBusルーティングの差異も同様に統合して解消
 - **検証**: `hello_world`が両ボードとも一発でコンパイル成功（A153: 43636 bytes、プリビルド`.a`時代の45816 bytesより小さい——プリビルド`.a`のアーカイブメンバ単位のリンクよりも、フルソースの関数単位リンク(`-ffunction-sections`+`--gc-sections`)の方が不要コードをより細かく削れるため）。全114サンプルの回帰スイープも両ボードでクリーン（既知の13件のみ）
-- **今後に残る検討事項**: `MCUXpresso_project/`ディレクトリ（従来プリビルド`.a`をビルドするための環境、README.mdでは「[r01libリポジトリ](https://github.com/teddokano/r01lib)のプロジェクトをMCUXpresso IDEでビルド」と説明されている）は、もはや実際のリリースビルドには使われなくなった。今後の開発では`hardware/nxp/mcx/cores/arduino/`＋`variants/<board>/src/`が正のソースとなるため、`MCUXpresso_project/`をどう扱うか（削除する／upstream参照用に残す／等）は別途方針を決める必要がある——ユーザーに確認予定
+- **`MCUXpresso_project/`ディレクトリの扱い**: ユーザーに確認したところ「必要ないなら消す」と回答。`git rm -r`でリポジトリから削除（`_r01lib_frdm_mcxa153`/`_r01lib_frdm_mcxn947`の他、未着手ボード用の`_r01lib_frdm_mcxa156`/`_r01lib_frdm_mcxn236`、各種テスト/トライアルプロジェクトも含め約632MB分）。さらにgit未追跡だったMCUXpresso IDEのワークスペースメタデータ（`.metadata/`等）もディスクから削除。README.mdの「Architecture」節（プリビルドライブラリ前提の説明、Go to Definitionが効かないという注記——今回のソース化で解消済みのため）と「Building the Prebuilt Library」節（丸ごと削除）を、新しいソース配布構成に合わせて更新
 - まだ未実施: 実機での書き込み・動作確認（今回はコンパイルレベルの検証のみ）、Arduino IDEでの実際のGo to Definition動作確認
 
 ---
@@ -872,8 +872,7 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 ## ローカル開発環境
 - **OS**: macOS（Saitama, Japan）
 - **リポジトリパス**: `~/dev/mcx-arduino-core`
-- **MCUXpressoプロジェクト**: `~/dev/mcx-arduino-core/MCUXpresso_project/_r01lib_frdm_mcxa153/`
-- **ビルド済み.a**: `~/dev/mcx-arduino-core/MCUXpresso_project/_r01lib_frdm_mcxa153/Debug/lib_r01lib_frdm_mcxa153.a`
+- **v0.4.0以降のソース構成**: `MCUXpresso_project/`ディレクトリは廃止（削除済み）。ソースの唯一の実体は`hardware/nxp/mcx/cores/arduino/`（両ボード共有）＋`hardware/nxp/mcx/variants/<board>/src/`（ボード固有）で、プリビルド`.a`のビルド・配置手順も不要になった——編集したソースはそのままarduino-cli/Arduino IDEのビルドに反映される（詳細は「`cores/arduino/`一本化・`platform.txt`書き換え完了」セクション参照）
 - **xPackツールチェーン**: `~/.xpacktools/xpack-arm-none-eabi-gcc-14.2.1-1.1/`（`package_nxp_mcx_index.json`記載のものと同一バイナリ、チェックサム確認済み）
 - **ローカルArduino IDE連携**: `~/Library/Arduino15/packages/nxp/hardware/mcx/0.2.0-dev`（v0.2.0リリース後に`0.1.9-dev`から改名）をこのリポジトリの`hardware/nxp/mcx/`へのシンボリックリンクとして設定済み（編集が即座に反映される）。ツールチェーンも`~/.xpacktools/`への symlink。`-dev`サフィックスにより、Boards Manager経由でインストールする実リリース版（`0.2.0`）とはディレクトリ名が衝突せず共存可能
 - **注意（Boards Manager経由の実インストール検証時のハマりどころ）**: 上記symlink環境を無効化する際、`~/Library/Arduino15/packages/nxp`を同じ`packages/`直下で別名（例: `nxp.dev-backup`）にリネームしただけでは不十分 — arduino-cliは`packages/*`配下の全ディレクトリ名をpackager IDとして解釈するため、リネーム後も`nxp.dev-backup:mcx`という別パッケージとして「0.1.9-dev installed」表示が残ってしまう（`arduino-cli core list --all`で再現・特定）。無効化する際は`packages/`の外（例: スクラッチパッド等）に完全に退避すること。v0.2.0リリース後、この手順でBoards Manager経由のGitHubからの実インストールを検証済み

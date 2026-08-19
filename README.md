@@ -62,35 +62,31 @@ https://raw.githubusercontent.com/teddokano/mcx-arduino-core/main/package_nxp_mc
 
 ## Architecture
 
-This package uses a prebuilt library approach:
+This package ships full source, built the same way as any other Arduino
+core (AVR, SAMD, renesas_uno, ...) — no prebuilt library:
 ```
 mcx-arduino-core/
 ├── hardware/nxp/mcx/
 │   ├── platform.txt          # Compiler/linker settings
 │   ├── boards.txt            # Board definitions
-│   ├── cores/arduino/        # Arduino API headers
+│   ├── cores/arduino/        # Shared source, built into core.a for every board:
+│   │                         #   Arduino layer (digitalWrite, Wire, SPI, Serial.print, ...),
+│   │                         #   r01lib core (Serial, I2C, SPI, GPIO, InterruptIn, Ticker, ...),
+│   │                         #   and the NXP MCX SDK driver files common to all supported chips
 │   ├── tools/
 │   │   └── upload.sh         # Upload script (auto-detects LinkServer)
 │   └── variants/
 │       └── frdm_mcxa153/     # one such directory per supported board
 │           ├── include/      # Board-specific headers
 │           ├── linker/       # Linker scripts
-│           └── lib/          # Prebuilt .a library
+│           └── src/          # Board-specific source: pin_mux, clock_config, board,
+│                              #   device startup, and the SDK drivers that differ per chip
 └── package_nxp_mcx_index.json
 ```
 
-Each board's prebuilt library (e.g. `lib_r01lib_frdm_mcxa153.a`) contains:
-- NXP MCX SDK drivers (fsl_gpio, fsl_lpuart, fsl_lpi2c, fsl_lpspi, ...)
-- r01lib core (Serial, I2C, SPI, GPIO, InterruptIn, Ticker, ...)
-- Arduino layer (digitalWrite, Wire, SPI, Serial.print, ...)
-- Board files (pin_mux, clock_config, board, ...)
-
-One side effect: since only the compiled `.a` ships, Arduino IDE's "Go to
-Definition" can't jump into functions like `pinMode()` or `Serial` — only
-their header declaration, not the `.cpp` implementing them. The
-implementation itself lives right here in this repo, under
-`MCUXpresso_project/*/arduino_layer/` and `.../source/r01lib/` for
-whichever board you're looking at, if you want to browse it.
+Since it's all source, Arduino IDE's "Go to Definition" works normally —
+jumping into `pinMode()`, `Serial`, or any other function lands you in the
+actual implementing `.cpp`, not just its header declaration.
 
 ## Example Sketch
 ```cpp
@@ -109,10 +105,6 @@ void loop() {
     delay(500);
 }
 ```
-
-## Building the Prebuilt Library
-
-The prebuilt `.a` library is built with MCUXpresso IDE from the `_r01lib_frdm_mcxa153` project in the [r01lib repository](https://github.com/teddokano/r01lib).
 
 ## License
 
@@ -143,6 +135,6 @@ Arduino's own [ArduinoCore-zephyr](https://github.com/arduino/ArduinoCore-zephyr
 
 ArduinoCore-zephyr flashes a Zephyr-based "loader" once, then loads each sketch on top of it at runtime as a Zephyr **LLEXT** (Loadable Extension), rather than building one self-contained binary. That architecture keeps a Zephyr kernel, an LLEXT runtime, and symbol tables resident in RAM, plus a buffer to hold the incoming sketch during upload — the loader's source defines that buffer as `SKETCH_RAM_BUFFER_LEN 131072` (128KB). FRDM-MCXA153 has only **24KB of total RAM**, so that single buffer alone is over 5x the chip's entire RAM. FRDM-MCXN947, with far more RAM to spare, fits this architecture comfortably.
 
-mcx-arduino-core takes the opposite approach: each sketch is statically linked into one monolithic binary against a prebuilt r01lib library — no loader, no dynamic linking, nothing LLEXT-shaped resident in RAM. That's what lets it fit inside FRDM-MCXA153's actual 24KB RAM / 128KB flash budget (the same figures reported by this board's own build output).
+mcx-arduino-core takes the opposite approach: each sketch is compiled and statically linked into one monolithic binary together with the r01lib core — no loader, no dynamic linking, nothing LLEXT-shaped resident in RAM. That's what lets it fit inside FRDM-MCXA153's actual 24KB RAM / 128KB flash budget (the same figures reported by this board's own build output).
 
 (Zephyr RTOS itself runs fine on FRDM-MCXA153 — LinkServer is even its default flash runner in mainline Zephyr. It's specifically the LLEXT-based Arduino layer that doesn't fit, not Zephyr as a whole.)
