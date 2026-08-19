@@ -29,14 +29,17 @@ int main(void) {
 
   Serial.printf("P3T1755 basic operation sample\r\n");
 
-  i3c.ccc_broadcast(CCC::BROADCAST_RSTDAA, NULL, 0);                       // Reset DAA
-  i3c.ccc_set(CCC::DIRECT_SETDASA, static_address, dynamic_address << 1);  // Set Dynamic Address from Static Address
+  status_t r1 = i3c.ccc_broadcast(CCC::BROADCAST_RSTDAA, NULL, 0);                       // Reset DAA
+  status_t r2 = i3c.ccc_set(CCC::DIRECT_SETDASA, static_address, dynamic_address << 1);  // Set Dynamic Address from Static Address
+  Serial.printf("RSTDAA status=%ld, SETDASA status=%ld\r\n", (long)r1, (long)r2);
 
   while (true) {
-    i3c.write(dynamic_address, w_data, sizeof(w_data), I3C::NO_STOP);
-    i3c.read(dynamic_address, r_data, sizeof(r_data));
+    status_t rw = i3c.write(dynamic_address, w_data, sizeof(w_data), I3C::NO_STOP);
+    status_t rr = i3c.read(dynamic_address, r_data, sizeof(r_data));
 
-    Serial.printf("%f\r\n", (((int)r_data[0]) << 8 | r_data[1]) / 256.0);
+    Serial.printf("write status=%ld, read status=%ld, raw=0x%02X%02X, temp=%f\r\n",
+                  (long)rw, (long)rr, r_data[0], r_data[1],
+                  (((int)r_data[0]) << 8 | r_data[1]) / 256.0);
     wait(1);
   }
 }
