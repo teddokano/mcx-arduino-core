@@ -2,7 +2,7 @@
 
 ## プロジェクト概要
 - **リポジトリ**: https://github.com/teddokano/mcx-arduino-core
-- **開発中バージョン**: v0.3.2（`0.3.2-dev`ブランチで開発中、未リリース。このバージョンから「開発用ブランチ＋mainへは最後にマージ、ドキュメント更新はmain直接」という運用に変更——詳細は「開発ブランチ運用方針（v0.3.2から採用）」セクション参照）
+- **開発中バージョン**: v0.3.2（`0.3.2-dev`ブランチで開発中、未リリース。このバージョンから「開発用ブランチを切り、ドキュメント含め全ての変更をそのブランチ上で進め、リリース時に`main`へまとめてマージする」という運用に変更——詳細は「開発ブランチ運用方針（v0.3.2から採用）」セクション参照）
 - **現在のバージョン**: v0.3.1（`package_nxp_mcx_index.json` 上の最新リリース。SDライブラリの`-Waddress-of-packed-member`警告抑制、MCUXpresso SDK直呼びサンプル、ライブラリ不要のI3C/Wire1生レジスタアクセス例が主な内容。GitHub Release作成・タグpush、`e74604c`でchecksum自動更新も確定。2026-08-20リリース。**このリリースから「ステージングブランチ方式」を採用**——`gh release create`でzipを先に確定させ、`main`とは別の`staging-0.3.1`ブランチに検証済みchecksumだけを一時的にpushしてmacOS/Windows/Linuxの3プラットフォームでBoards Manager経由インストールを検証してから`main`のchecksumを確定、というリリース前検証の順序に変更（詳細は「GitHub Actions」節の「リリース前クロスプラットフォーム検証」参照）。詳細は後述の「v0.3.1 で作業中の内容」セクション参照）
 - **旧バージョン**: v0.3.0（2026-08-16リリース。FRDM-MCXN947ボード対応の追加が主目的。Issue #1/#2/#3はこのリリースで解消）、v0.2.2（2026-08-13リリース。Linux実機での`#include <Arduino.h>`/`<SPI.h>`のファイル名大文字小文字ミスマッチによるビルド失敗を修正するパッチリリース）
 - **完了**: `prepare0.3.0`ブランチでのFRDM-MCXN947ボード対応は完了し、v0.3.0としてリリース済み。GPIO/Serial(USB)/Wire1(オンボードI3Cセンサー)/Wire(プレーンI2C、外部LM75系センサーとの実通信も確認済み)/SPI/analogRead/analogWrite(全6チャンネル・独立性込み)/tone・noTone(圧電サウンダで実音確認)は実機検証済み、String/UNO互換マクロはコンパイル確認済み。これでN947の主要機能は一通り実機検証済み（任意項目のanalogRead精度確認も定電圧源で完了、D0-D19/A2-A5/MikroBusヘッダの全GPIO出力も実機確認済み）。**MikroBusヘッダにSPI/I2C/UARTの追加インスタンス`SPI1`/`Wire2`/`Serial1`を新規実装・実機確認済み**（`MB_RX`/`MB_TX`は`Wire1`(I3C)・GPIO・`Serial1`(UART)の3モードを排他切り替え可能）。D0/D1自体は引き続きSerial1に意図的に未対応（FlexComm2資源競合のため、`Wire`と同時に使えない）。**重要な実機バグ4件を修正済み**: (1) `analogWrite`の物理ピンが当初A153流用のP3_6-P3_11（実際は未配線のテストポイント）のままだった → 回路図でP2_2-P2_7/FlexPWM1が正しいピンと判明・修正、(2) その修正時のALT値導出（pin_mux.cのコメント内位置カウント方式）がP2_2/P2_3の2ピンだけ誤っていた → Zephyrのpinctrlヘッダ（シリコン正確）で全ピンAlt5と確定・修正、(3) `pinMode()`がPORT MUXを一切変更しない実装だったため、起動時にI3C用ALT10へ固定されている`MB_RX`/`MB_TX`だけ`digitalWrite`が効かなかった → `pinMode()`で常にALT0(GPIO)へ明示的に再設定するよう修正、(4) MikroBus向け`Serial1`追加時、`arduino_serial.cpp`が`arduino_io.h`をincludeしていたため`MB_TX`/`MB_RX`がArduinoリナンバリング後の値にすり替わりSOSパニックが発生 → include前に生の値を退避するよう修正、(5) A153にもMikroBus対応（`SPI1`のみ、`Wire2`/新規`Serial1`はチップの物理制約——I2Cペリフェラルが1系統のみ・既存Serial1とMikroBus UARTが同じLPUART2——により不可能と判明し見送り）を追加した際、新規使用の`LPSPI0`にクロックが供給されておらずCS以外無反応だった → `mcu.cpp`にクロック設定を追加。方針: 未実装が残っていてもN947が一通り完成した段階でリリースする。詳細は「v0.3.0 で作業中の内容」セクション参照
@@ -721,6 +721,30 @@ v0.3.0リリース後、`platform.txt`を`0.3.1`に更新しローカル開発�
 
 ---
 
+## v0.3.2 で作業中の内容（`0.3.2-dev` ブランチ・未リリース）
+
+v0.3.1リリース完了後、次バージョンから「`<version>-dev`ブランチで開発、リリース時に`main`へマージ」という運用に変更（詳細は「開発ブランチ運用方針（v0.3.2から採用）」セクション参照）。`platform.txt`のバージョンを`0.3.2`に、ローカル開発用symlinkも`0.3.2-dev`に更新して開発サイクル開始。
+
+### `r01lib_I3C`サンプルのSOSパニック修正をコミット、N947対応も追加
+v0.3.1セッション末で修正済みだった（未コミットのまま残っていた）`examples/Arduino_incompatible_API/r01lib_I3C/r01lib_I3C.ino`のSOSパニック修正を`0.3.2-dev`にコミット。続けてユーザーから「A153とN947ではピン指定を変えないといけない」との指摘を受け、N947向けの生のr01lib I3Cピン値（`I3C_SDA`/`I3C_SCL` → `MB_RX`/`MB_TX` → `P1_16`/`P1_17`、A153の`P0_16`/`P0_17`と同じ導出パターン）を調べ、`#if defined(...)`でボードごとに分岐するよう拡張。両ボードでコンパイル確認済み
+
+### `FRDM_MCXA153`/`FRDM_MCXN947`ボード識別マクロを新設
+ユーザーから「ターゲットの種別を検出するマクロに`CPU_MCXN947VDF`と`CPU_MCXA153VLH`を使うようになってる。これを`FRDM_MCXN947`と`FRDM_MCXA153`でも使えるようにして、I3Cのサンプルにも反映させる」と依頼。`boards.txt`の`build.board_defines`に`-DFRDM_MCXA153`/`-DFRDM_MCXN947`を追加（既存の`ARDUINO_FRDM_MCXA153`/`ARDUINO_FRDM_MCXN947`——`platform.txt`の`-DARDUINO_{build.board}`由来——とは別に、`ARDUINO_`プレフィックスなしのボード名マクロとして新設）。`r01lib_I3C`サンプルの`CPU_MCXxxx`分岐を`FRDM_MCXxxx`に置き換え。`boards.txt`は共有ファイルのため全examplesの回帰コンパイル（両ボード、計112ケース）を実施——失敗13件は全て既知の想定内失敗（外部ライブラリ`P3T1755.h`未インストール、または`_A153`/`_N947`専用サンプルを別ボードでコンパイルした際の想定内エラー）で新規リグレッションなしと確認
+
+### `analogWriteFrequency(pin, hz)`を追加（実機検証済み）
+残作業候補として提示していた「`analogWrite`のPWM周期を可変にする」に対応。
+
+- **設計方針の検討**: 公式Arduino APIには存在しない拡張機能（AVR系ボードのタイマー制約により、公式は周波数設定APIを標準化していない）と説明した上で、TeensyのAPI（`analogWriteFrequency(pin, frequency)`、ピン単位）とRaspberry Pi Pico/arduino-picoのAPI（`analogWriteFreq(freq)`、グローバル）のどちらに寄せるか相談。Teensy方式を推奨——このプロジェクトの`analogWrite(pin, value)`と一貫性がある、かつFlexPWMは全ピン共有ではなくサブモジュール単位（`PWM0`/`PWM1`, `PWM2`/`PWM3`, `PWM4`/`PWM5`が各ペアで周期共有）という中間的な構造のため、むしろTeensy方式の方が実態に近いと判断。ペア共有の制約はドキュメントに明記する方針で合意
+- **実現可能な周波数範囲の検討**: 既存の`PwmOut::apply()`（プリスケーラ0-7自動選択＋16bitカウンタ）がそのまま使える設計だったため新規ロジックは不要と判明。下限はプリスケーラ÷128・カウンタ最大65535の組み合わせで決まるハード上の下限（A153で約11.4Hz、N947で約17.9Hz）、上限は明確なハード上限はなくduty分解能とのトレードオフ（8bit相当の分解能なら A153で約375kHz、N947で約586kHz程度が目安）
+- **実装**: `arduino_analog.h`/`.cpp`（両ボード）に`analogWriteFrequency(pin_num, frequency)`を追加。`analogWrite()`と同じ遅延生成パターン（`pwm_out_pins[]`に無ければ`new PwmOut`）で、既存の`PwmOut::period_us()`を呼ぶだけ。duty比ではなく絶対パルス幅が周期変更をまたいで保持される既存の`PwmOut::period()`の仕様をそのまま踏襲するため、「`analogWriteFrequency()`を先に呼んでから`analogWrite()`でdutyを設定する」が正しい呼び出し順であることをコメント・ドキュメントに明記
+- 両ボードのプリビルド`.a`を再ビルド・strip・再配置。確認用サンプル`test_analogWriteFrequency`（`PWM0`を1kHz/50Hz/20Hz/5kHzで巡回、都度Serialへ周期を出力）を新規作成、両ボードでコンパイル確認、PWM関連サンプルの回帰コンパイルも問題なし
+- **実機検証完了**: ユーザーがロジックアナライザで確認し、**A153・N947の両方で指定通りの周波数となることを確認**したと報告
+
+### ドキュメント運用方針の訂正（同セッション内）
+上記`analogWriteFrequency()`関連のドキュメント更新（`PIN_MAPPING_A153.md`/`PIN_MAPPING_N947.md`/`API_COMPATIBILITY.md`/`CHANGELOG.md`）を、当初の方針どおり`main`に直接コミット・pushしたが、ユーザーから訂正: 「今後は作業中のブランチでやる。そうでないとリリース版との整合が取れないから」。`main`にコミット済みだった該当ドキュメント更新は`git revert`で取り消し（`9c0f9ad`）、同じ内容を`0.3.2-dev`へ`git cherry-pick`で移設（`7e20c89`）。詳細・訂正後の方針は「開発ブランチ運用方針（v0.3.2から採用）」セクション参照
+
+---
+
 ## 動作確認済み
 
 | API | 状態 | 備考 |
@@ -794,8 +818,11 @@ v0.3.0リリース後、`platform.txt`を`0.3.1`に更新しローカル開発�
 ユーザー指示: 「0.3.2の開発版をスタート。このバージョンから開発用ブランチを切って進める。ドキュメント関連の更新はmainブランチで。開発用ブランチは0.3.2-devにする」
 
 - 各バージョンの開発作業（ソースコード変更、r01lib/arduino_layerの修正、サンプル追加等）は**`<version>-dev`という名前の専用ブランチ**（例: `0.3.2-dev`）上で行う。これは`prepare0.3.0`ブランチでのN947対応と同じ「開発用ブランチを切ってから最後に`main`へマージ」というパターンだが、ブランチ命名規則を`prepare<version>`から`<version>-dev`に変更し、以後この命名で統一する
-- **ドキュメントのみの更新（CLAUDE.md、README.md、CHANGELOG.md、TUTORIAL.md等）は`main`ブランチに直接コミットする**——開発ブランチにマージされるのを待たない。これにより、開発ブランチが長期化してもドキュメントは常に最新の状態を保てる
 - ローカル開発用symlink（`~/Library/Arduino15/packages/nxp/hardware/mcx/<version>-dev`）も、ブランチ名と同じ`<version>-dev`という命名になるため、今後はgitブランチ名とsymlink名が常に一致する（偶然ではなく意図した対応）
+
+**訂正（同セッション内）**: 当初「ドキュメントのみの更新は`main`に直接コミットする」という方針で着手し、実際に`analogWriteFrequency()`関連のドキュメント更新（`PIN_MAPPING_*.md`/`API_COMPATIBILITY.md`/`CHANGELOG.md`）を`main`にコミット・pushしたが、ユーザーから指摘で撤回: 「今後は作業中のブランチでやる。そうでないとリリース版との整合が取れないから」。`main`はいつでもBoards Manager経由でユーザーが参照しうる「現在のリリース版」の実体であり、未リリースの`0.3.2-dev`の機能を説明するドキュメントを`main`に置くと、その機能がまだ存在しない状態のユーザーに向けて存在するかのような記述を見せてしまう——上記の「利点」は誤りだった。
+- **現在の方針: ドキュメント（CLAUDE.mdも含む）も含めて、そのバージョンの開発作業はすべて`<version>-dev`ブランチ上で行い、リリース時に`main`へまとめてマージする**
+- `main`にコミット済みだった該当ドキュメント更新（`833f949`）は`git revert`で取り消し（`9c0f9ad`）、同じ内容を`0.3.2-dev`へ`git cherry-pick`で移設（`7e20c89`）
 
 ---
 

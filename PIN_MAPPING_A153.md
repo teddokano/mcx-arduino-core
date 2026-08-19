@@ -33,6 +33,13 @@ physical MCU port pin.
 | `A4`, `A5` | `P3_31`, `P3_30` | digital I/O only, not ADC-capable |
 | `PWM0`-`PWM5` | `P3_11`...`P3_6` | `analogWrite` (FlexPWM0), see [`test_PWM_pin_identify`](examples/Arduino_compatible_API/test_PWM_pin_identify) |
 
+> **PWM frequency**: `analogWriteFrequency(pin, hz)` sets a pin's PWM
+> frequency (non-standard extension, not part of the official Arduino API —
+> modeled on Teensy's function of the same name). `PWM0`/`PWM1`,
+> `PWM2`/`PWM3`, and `PWM4`/`PWM5` each pair up on one FlexPWM0 submodule and
+> share its period register, so changing one pin's frequency changes its
+> paired pin's frequency too.
+
 Other named pins/peripherals:
 
 | Name | MCU pin(s) | Used by |

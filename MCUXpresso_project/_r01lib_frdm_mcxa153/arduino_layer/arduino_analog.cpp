@@ -68,6 +68,29 @@ void analogWrite( int pin_num, int value )
 	pwm_out_pins[ pin_num ]->write( (float)value / (float)max_value );
 }
 
+void analogWriteFrequency( int pin_num, uint32_t frequency )
+{
+#ifdef	ARDUINO_PIN_RENUMBERING
+	pin_num	= arduino_pin_by_number[ pin_num ];
+#endif
+
+	if ( pin_num < 0 || pin_num >= MAX_ANALOG_PINS )
+		return;
+
+	if ( frequency < 1 )
+		frequency	= 1;
+
+	if ( pwm_out_pins[ pin_num ] == nullptr )
+	{
+		pwm_out_pins[ pin_num ]	= new PwmOut( pin_num );
+
+		if ( pwm_out_pins[ pin_num ] == nullptr )
+			panic( "error @ new, in analogWriteFrequency()" );
+	}
+
+	pwm_out_pins[ pin_num ]->period_us( (int)( 1000000UL / frequency ) );
+}
+
 void analogReference( uint8_t mode )
 {
 	(void)mode;	// no-op: this board's ADC reference voltage is fixed in hardware
