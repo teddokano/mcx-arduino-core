@@ -66,7 +66,8 @@ surface except where a row below notes a difference. See the main
 | API | Status | Notes |
 |-----|--------|-------|
 | `analogRead` | ✅ | LPADC. `A0`-`A3` on A153; `A2`-`A5` on N947 (`A0`/`A1` aren't wired to an ADC channel on that board). 10bit (0-1023) default |
-| `analogWrite` (PWM) | ✅ | FlexPWM0 on A153 / FlexPWM1 on N947, fixed 1kHz period (not configurable). Dedicated pins named `PWM0`-`PWM5` on both boards -- on N947, `PWM0`/`PWM1` also collide with the chip's own SDK macros for the FlexPWM peripheral instances themselves, so `io.h` explicitly reclaims those two names (`#undef`) before redefining them as pin numbers |
+| `analogWrite` (PWM) | ✅ | FlexPWM0 on A153 / FlexPWM1 on N947, 1kHz period by default (see `analogWriteFrequency` below to change it). Dedicated pins named `PWM0`-`PWM5` on both boards -- on N947, `PWM0`/`PWM1` also collide with the chip's own SDK macros for the FlexPWM peripheral instances themselves, so `io.h` explicitly reclaims those two names (`#undef`) before redefining them as pin numbers |
+| `analogWriteFrequency(pin, hz)` | ✅ | Non-standard extension, not part of the official Arduino API — modeled on Teensy's function of the same name (official Arduino never standardized PWM frequency control). Sets a pin's PWM period; the pin's duty is preserved as an absolute pulse width across the change, not as a ratio, so call this *before* `analogWrite()` to set duty at the new rate. `PWM0`-`PWM5` pair up two-to-a-submodule and share the period register within each pair — see `PIN_MAPPING_A153.md`/`PIN_MAPPING_N947.md` |
 | `analogReference` | ✅ | No-op — this board's ADC reference voltage is fixed in hardware |
 | `analogReadResolution` / `analogWriteResolution` | ✅ | 1-16 bit; defaults match classic Arduino (10bit read / 8bit write) |
 

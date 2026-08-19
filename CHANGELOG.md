@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- `analogWriteFrequency(pin, hz)` (both boards): sets a PWM pin's frequency, independent of `analogWriteResolution()`'s bit depth. Non-standard extension, not part of the official Arduino API — modeled on Teensy's function of the same name. Duty is preserved as an absolute pulse width across a frequency change, not as a ratio, so call this before `analogWrite()` to set duty at the new rate. `PWM0`-`PWM5` pair up two-to-a-FlexPWM-submodule and share the period register within each pair (`PWM0`/`PWM1`, `PWM2`/`PWM3`, `PWM4`/`PWM5`) — changing one pin's frequency changes its paired pin's frequency too
+- `FRDM_MCXA153`/`FRDM_MCXN947` preprocessor defines (both boards): board-identifier macros sketches can branch on directly, alongside the existing chip-part-number macros (`CPU_MCXA153VLH`, `CPU_MCXN947VDF`)
+
 ## [0.3.1] - 2026-08-19
 
 ### Added

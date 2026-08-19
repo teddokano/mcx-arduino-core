@@ -50,6 +50,13 @@ for the full verification status and per-feature notes this table summarizes.
 > bare `PWM0`/`PWM1` identifiers for the FlexPWM peripheral instances
 > themselves, so `io.h` explicitly reclaims those two names (`#undef`)
 > before redefining them as pin numbers.
+>
+> **PWM frequency**: `analogWriteFrequency(pin, hz)` sets a pin's PWM
+> frequency (non-standard extension, not part of the official Arduino API —
+> modeled on Teensy's function of the same name). Because two channels
+> share one submodule's period register (see the Submodule column above —
+> `PWM0`/`PWM1`, `PWM2`/`PWM3`, `PWM4`/`PWM5` are each a pair), changing one
+> pin's frequency changes its paired pin's frequency too.
 
 Other named pins/peripherals:
 
