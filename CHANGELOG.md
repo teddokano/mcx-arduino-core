@@ -5,6 +5,15 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+- Full source distribution: the prebuilt r01lib/arduino_layer `.a` libraries are gone, replaced by plain source under `cores/arduino/` (shared) and `variants/<board>/src/` (board-specific), built the same way as other Arduino cores (AVR, SAMD, renesas_uno, ...). Arduino IDE's "Go to Definition" now works — jumping into `pinMode()`, `Serial`, or any other core function lands in the actual implementing `.cpp`, not just its header declaration
+- `MCUXpresso_project/` removed — it only ever existed to build the now-gone prebuilt library
+
+### Fixed
+- FRDM-MCXA153: `SPI1` (MikroBus SPI, `LPSPI0`) could hang forever on `transfer()`/`transfer16()`. `LPSPI0`'s clock was never attached in this build's `init_mcu()` — a fix from the earlier prebuilt-library era that was dropped during the source-reconciliation work for this release. Found via on-hardware bisection, fixed, and re-verified on real hardware
+
 ## [0.3.2] - 2026-08-20
 
 ### Added
