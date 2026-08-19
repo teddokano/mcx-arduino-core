@@ -9,13 +9,19 @@
  * under <Arduino.h> they resolve to small Arduino pin numbers, not the raw
  * r01lib pin values I3C's constructor checks against internally -- passing
  * them here would panic() at construction. Use the raw physical pin names
- * instead (P0_16/P0_17 on FRDM-MCXA153, matching I3C_SDA/I3C_SCL's r01lib
- * definition for this board).
+ * instead (I3C_SDA/I3C_SCL's r01lib definition for each board: P0_16/P0_17
+ * on FRDM-MCXA153, P1_16/P1_17 on FRDM-MCXN947).
  */
 
 #include <Arduino.h>
 
-I3C i3c(P0_16, P0_17);  //	SDA, SCL (== I3C_SDA/I3C_SCL's raw r01lib pins)
+#if defined(CPU_MCXN947VDF)
+I3C i3c(P1_16, P1_17);  //	SDA, SCL (== I3C_SDA/I3C_SCL's raw r01lib pins on N947)
+#elif defined(CPU_MCXA153VLH)
+I3C i3c(P0_16, P0_17);  //	SDA, SCL (== I3C_SDA/I3C_SCL's raw r01lib pins on A153)
+#else
+#error This example I3C pins have only been worked out for FRDM-MCXA153 and FRDM-MCXN947 so far
+#endif
 
 constexpr uint8_t static_address = 0x48;
 constexpr uint8_t dynamic_address = 0x08;
