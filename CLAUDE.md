@@ -721,6 +721,30 @@ v0.3.0リリース後、`platform.txt`を`0.3.1`に更新しローカル開発�
 
 ---
 
+## v0.3.2 で作業中の内容（`0.3.2-dev` ブランチ・未リリース）
+
+v0.3.1リリース完了後、次バージョンから「`<version>-dev`ブランチで開発、リリース時に`main`へマージ」という運用に変更（詳細は「開発ブランチ運用方針（v0.3.2から採用）」セクション参照）。`platform.txt`のバージョンを`0.3.2`に、ローカル開発用symlinkも`0.3.2-dev`に更新して開発サイクル開始。
+
+### `r01lib_I3C`サンプルのSOSパニック修正をコミット、N947対応も追加
+v0.3.1セッション末で修正済みだった（未コミットのまま残っていた）`examples/Arduino_incompatible_API/r01lib_I3C/r01lib_I3C.ino`のSOSパニック修正を`0.3.2-dev`にコミット。続けてユーザーから「A153とN947ではピン指定を変えないといけない」との指摘を受け、N947向けの生のr01lib I3Cピン値（`I3C_SDA`/`I3C_SCL` → `MB_RX`/`MB_TX` → `P1_16`/`P1_17`、A153の`P0_16`/`P0_17`と同じ導出パターン）を調べ、`#if defined(...)`でボードごとに分岐するよう拡張。両ボードでコンパイル確認済み
+
+### `FRDM_MCXA153`/`FRDM_MCXN947`ボード識別マクロを新設
+ユーザーから「ターゲットの種別を検出するマクロに`CPU_MCXN947VDF`と`CPU_MCXA153VLH`を使うようになってる。これを`FRDM_MCXN947`と`FRDM_MCXA153`でも使えるようにして、I3Cのサンプルにも反映させる」と依頼。`boards.txt`の`build.board_defines`に`-DFRDM_MCXA153`/`-DFRDM_MCXN947`を追加（既存の`ARDUINO_FRDM_MCXA153`/`ARDUINO_FRDM_MCXN947`——`platform.txt`の`-DARDUINO_{build.board}`由来——とは別に、`ARDUINO_`プレフィックスなしのボード名マクロとして新設）。`r01lib_I3C`サンプルの`CPU_MCXxxx`分岐を`FRDM_MCXxxx`に置き換え。`boards.txt`は共有ファイルのため全examplesの回帰コンパイル（両ボード、計112ケース）を実施——失敗13件は全て既知の想定内失敗（外部ライブラリ`P3T1755.h`未インストール、または`_A153`/`_N947`専用サンプルを別ボードでコンパイルした際の想定内エラー）で新規リグレッションなしと確認
+
+### `analogWriteFrequency(pin, hz)`を追加（実機検証済み）
+残作業候補として提示していた「`analogWrite`のPWM周期を可変にする」に対応。
+
+- **設計方針の検討**: 公式Arduino APIには存在しない拡張機能（AVR系ボードのタイマー制約により、公式は周波数設定APIを標準化していない）と説明した上で、TeensyのAPI（`analogWriteFrequency(pin, frequency)`、ピン単位）とRaspberry Pi Pico/arduino-picoのAPI（`analogWriteFreq(freq)`、グローバル）のどちらに寄せるか相談。Teensy方式を推奨——このプロジェクトの`analogWrite(pin, value)`と一貫性がある、かつFlexPWMは全ピン共有ではなくサブモジュール単位（`PWM0`/`PWM1`, `PWM2`/`PWM3`, `PWM4`/`PWM5`が各ペアで周期共有）という中間的な構造のため、むしろTeensy方式の方が実態に近いと判断。ペア共有の制約はドキュメントに明記する方針で合意
+- **実現可能な周波数範囲の検討**: 既存の`PwmOut::apply()`（プリスケーラ0-7自動選択＋16bitカウンタ）がそのまま使える設計だったため新規ロジックは不要と判明。下限はプリスケーラ÷128・カウンタ最大65535の組み合わせで決まるハード上の下限（A153で約11.4Hz、N947で約17.9Hz）、上限は明確なハード上限はなくduty分解能とのトレードオフ（8bit相当の分解能なら A153で約375kHz、N947で約586kHz程度が目安）
+- **実装**: `arduino_analog.h`/`.cpp`（両ボード）に`analogWriteFrequency(pin_num, frequency)`を追加。`analogWrite()`と同じ遅延生成パターン（`pwm_out_pins[]`に無ければ`new PwmOut`）で、既存の`PwmOut::period_us()`を呼ぶだけ。duty比ではなく絶対パルス幅が周期変更をまたいで保持される既存の`PwmOut::period()`の仕様をそのまま踏襲するため、「`analogWriteFrequency()`を先に呼んでから`analogWrite()`でdutyを設定する」が正しい呼び出し順であることをコメント・ドキュメントに明記
+- 両ボードのプリビルド`.a`を再ビルド・strip・再配置。確認用サンプル`test_analogWriteFrequency`（`PWM0`を1kHz/50Hz/20Hz/5kHzで巡回、都度Serialへ周期を出力）を新規作成、両ボードでコンパイル確認、PWM関連サンプルの回帰コンパイルも問題なし
+- **実機検証完了**: ユーザーがロジックアナライザで確認し、**A153・N947の両方で指定通りの周波数となることを確認**したと報告
+
+### ドキュメント運用方針の訂正（同セッション内）
+上記`analogWriteFrequency()`関連のドキュメント更新（`PIN_MAPPING_A153.md`/`PIN_MAPPING_N947.md`/`API_COMPATIBILITY.md`/`CHANGELOG.md`）を、当初の方針どおり`main`に直接コミット・pushしたが、ユーザーから訂正: 「今後は作業中のブランチでやる。そうでないとリリース版との整合が取れないから」。`main`にコミット済みだった該当ドキュメント更新は`git revert`で取り消し（`9c0f9ad`）、同じ内容を`0.3.2-dev`へ`git cherry-pick`で移設（`7e20c89`）。詳細・訂正後の方針は「開発ブランチ運用方針（v0.3.2から採用）」セクション参照
+
+---
+
 ## 動作確認済み
 
 | API | 状態 | 備考 |
