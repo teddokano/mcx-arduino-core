@@ -45,6 +45,10 @@ frdm_mcxa153.pid.0=0x0143
 frdm_mcxa153.upload_port.0.vid=0x1FC9
 frdm_mcxa153.upload_port.0.pid=0x0143
 
+# Debug (see platform.txt's debug.* section and tools/gdb-bridge/src/main.go)
+frdm_mcxa153.debug.server.openocd.path={runtime.platform.path}/tools/gdb-bridge/launch-a153.sh
+frdm_mcxa153.debug.server.openocd.path.windows={runtime.platform.path}/tools/gdb-bridge/launch-a153.bat
+
 
 ##############################################################
 # FRDM-MCXN947
@@ -91,6 +95,10 @@ frdm_mcxn947.vid.0=0x1FC9
 frdm_mcxn947.pid.0=0x0143
 frdm_mcxn947.upload_port.0.vid=0x1FC9
 frdm_mcxn947.upload_port.0.pid=0x0143
+
+# Debug (see platform.txt's debug.* section and tools/gdb-bridge/src/main.go)
+frdm_mcxn947.debug.server.openocd.path={runtime.platform.path}/tools/gdb-bridge/launch-n947.sh
+frdm_mcxn947.debug.server.openocd.path.windows={runtime.platform.path}/tools/gdb-bridge/launch-n947.bat
 
 
 ##############################################################

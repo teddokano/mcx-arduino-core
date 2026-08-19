@@ -49,3 +49,17 @@ tools.linkserver.upload.pattern.windows={runtime.platform.path}/tools/upload.bat
 
 upload.tool=linkserver
 upload.tool.default=linkserver
+
+# Debug
+# arduino-cli's debug support only knows how to drive something it calls
+# "openocd" -- the path to that executable is configurable per board
+# (boards.txt sets debug.server.openocd.path), but the string "openocd" in
+# debug.server itself is not. The path actually points at tools/gdb-bridge,
+# which relays gdb to NXP LinkServer's own gdbserver instead of running real
+# OpenOCD (which has no MCX chip support). See
+# tools/gdb-bridge/src/main.go for the full explanation.
+debug.executable={build.path}/{build.project_name}.elf
+debug.toolchain=gcc
+debug.toolchain.path={runtime.tools.arm-none-eabi-gcc.path}/bin/
+debug.toolchain.prefix=arm-none-eabi-
+debug.server=openocd
