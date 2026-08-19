@@ -2,9 +2,8 @@
 
 ## プロジェクト概要
 - **リポジトリ**: https://github.com/teddokano/mcx-arduino-core
-- **開発中バージョン**: v0.3.2（`0.3.2-dev`ブランチで開発中、未リリース。このバージョンから「開発用ブランチを切り、ドキュメント含め全ての変更をそのブランチ上で進め、リリース時に`main`へまとめてマージする」という運用に変更——詳細は「開発ブランチ運用方針（v0.3.2から採用）」セクション参照）
-- **現在のバージョン**: v0.3.1（`package_nxp_mcx_index.json` 上の最新リリース。SDライブラリの`-Waddress-of-packed-member`警告抑制、MCUXpresso SDK直呼びサンプル、ライブラリ不要のI3C/Wire1生レジスタアクセス例が主な内容。GitHub Release作成・タグpush、`e74604c`でchecksum自動更新も確定。2026-08-20リリース。**このリリースから「ステージングブランチ方式」を採用**——`gh release create`でzipを先に確定させ、`main`とは別の`staging-0.3.1`ブランチに検証済みchecksumだけを一時的にpushしてmacOS/Windows/Linuxの3プラットフォームでBoards Manager経由インストールを検証してから`main`のchecksumを確定、というリリース前検証の順序に変更（詳細は「GitHub Actions」節の「リリース前クロスプラットフォーム検証」参照）。詳細は後述の「v0.3.1 で作業中の内容」セクション参照）
-- **旧バージョン**: v0.3.0（2026-08-16リリース。FRDM-MCXN947ボード対応の追加が主目的。Issue #1/#2/#3はこのリリースで解消）、v0.2.2（2026-08-13リリース。Linux実機での`#include <Arduino.h>`/`<SPI.h>`のファイル名大文字小文字ミスマッチによるビルド失敗を修正するパッチリリース）
+- **現在のバージョン**: v0.3.2（`package_nxp_mcx_index.json` 上の最新リリース。`analogWriteFrequency(pin, hz)`（Teensy互換の非標準拡張、両ボードで実機ロジアナ検証済み）、`FRDM_MCXA153`/`FRDM_MCXN947`ボード識別マクロ新設、`r01lib_I3C`サンプルのSOSパニック修正が主な内容。**このバージョンから「`<version>-dev`ブランチで開発、ドキュメント含め全ての変更をそのブランチ上で進め、リリース時に`main`へまとめてマージする」運用を採用**（詳細は「開発ブランチ運用方針（v0.3.2から採用）」セクション参照）。`0.3.2-dev`→`main`マージ・GitHub Release作成、ステージングブランチ方式でmacOS/Windows/Linux全て検証後`main`のchecksum確定（`bb34ab0`）。2026-08-20リリース。詳細は後述の「v0.3.2 で作業中の内容」セクション参照
+- **旧バージョン**: v0.3.1（2026-08-19リリース。SDライブラリの`-Waddress-of-packed-member`警告抑制、MCUXpresso SDK直呼びサンプル、ライブラリ不要のI3C/Wire1生レジスタアクセス例。このリリースから「ステージングブランチ方式」を採用）、v0.3.0（2026-08-16リリース。FRDM-MCXN947ボード対応の追加が主目的。Issue #1/#2/#3はこのリリースで解消）、v0.2.2（2026-08-13リリース。Linux実機での`#include <Arduino.h>`/`<SPI.h>`のファイル名大文字小文字ミスマッチによるビルド失敗を修正するパッチリリース）
 - **完了**: `prepare0.3.0`ブランチでのFRDM-MCXN947ボード対応は完了し、v0.3.0としてリリース済み。GPIO/Serial(USB)/Wire1(オンボードI3Cセンサー)/Wire(プレーンI2C、外部LM75系センサーとの実通信も確認済み)/SPI/analogRead/analogWrite(全6チャンネル・独立性込み)/tone・noTone(圧電サウンダで実音確認)は実機検証済み、String/UNO互換マクロはコンパイル確認済み。これでN947の主要機能は一通り実機検証済み（任意項目のanalogRead精度確認も定電圧源で完了、D0-D19/A2-A5/MikroBusヘッダの全GPIO出力も実機確認済み）。**MikroBusヘッダにSPI/I2C/UARTの追加インスタンス`SPI1`/`Wire2`/`Serial1`を新規実装・実機確認済み**（`MB_RX`/`MB_TX`は`Wire1`(I3C)・GPIO・`Serial1`(UART)の3モードを排他切り替え可能）。D0/D1自体は引き続きSerial1に意図的に未対応（FlexComm2資源競合のため、`Wire`と同時に使えない）。**重要な実機バグ4件を修正済み**: (1) `analogWrite`の物理ピンが当初A153流用のP3_6-P3_11（実際は未配線のテストポイント）のままだった → 回路図でP2_2-P2_7/FlexPWM1が正しいピンと判明・修正、(2) その修正時のALT値導出（pin_mux.cのコメント内位置カウント方式）がP2_2/P2_3の2ピンだけ誤っていた → Zephyrのpinctrlヘッダ（シリコン正確）で全ピンAlt5と確定・修正、(3) `pinMode()`がPORT MUXを一切変更しない実装だったため、起動時にI3C用ALT10へ固定されている`MB_RX`/`MB_TX`だけ`digitalWrite`が効かなかった → `pinMode()`で常にALT0(GPIO)へ明示的に再設定するよう修正、(4) MikroBus向け`Serial1`追加時、`arduino_serial.cpp`が`arduino_io.h`をincludeしていたため`MB_TX`/`MB_RX`がArduinoリナンバリング後の値にすり替わりSOSパニックが発生 → include前に生の値を退避するよう修正、(5) A153にもMikroBus対応（`SPI1`のみ、`Wire2`/新規`Serial1`はチップの物理制約——I2Cペリフェラルが1系統のみ・既存Serial1とMikroBus UARTが同じLPUART2——により不可能と判明し見送り）を追加した際、新規使用の`LPSPI0`にクロックが供給されておらずCS以外無反応だった → `mcu.cpp`にクロック設定を追加。方針: 未実装が残っていてもN947が一通り完成した段階でリリースする。詳細は「v0.3.0 で作業中の内容」セクション参照
 - **v0.2.1**（前バージョン）: `prepare0.2.1`→`main`fast-forwardマージ・GitHub Release作成済み、2026-08-12リリース
 - **重要な学び（リリースzipの構造要件）**: v0.2.1の初回リリース作業で`git archive --format=zip -o ... HEAD:hardware/nxp/mcx`を使ってzipを作成したところ、Arduino IDE経由の実インストールで`Failed to install platform: ... no unique root dir in archive, found '.../cores' and '.../tools'`エラーで失敗。Arduino Boards Managerのインストーラーは**zip直下に単一のラッパーディレクトリが1つだけ**存在することを要求する（インストーラーがそのディレクトリを剥がして`packages/<vendor>/hardware/<arch>/<version>/`に配置する仕組み）。`git archive HEAD:hardware/nxp/mcx`はサブディレクトリの中身を直接展開するため、`boards.txt`/`cores/`/`tools/`/`variants/`等がzip直下に並ぶ「フラットな」構造になってしまい、この要件を満たしていなかった。実際に公開済みのv0.2.0のzipを確認したところ、そちらは`mcx/`という単一のラッパーディレクトリを持つ正しい構造になっており問題なし（0.2.1作成時のみのミス）。**今後リリースzipを作る際は、必ず単一のトップレベルディレクトリ（名前は任意、例: `mcx-arduino-core-<version>/`）でラップすること** — `git archive`で作る場合は一旦別ディレクトリに展開してからラッパーディレクトリごと`zip -r`するか、`--prefix=<name>/`オプションを使う
@@ -742,6 +741,14 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 
 ### ドキュメント運用方針の訂正（同セッション内）
 上記`analogWriteFrequency()`関連のドキュメント更新（`PIN_MAPPING_A153.md`/`PIN_MAPPING_N947.md`/`API_COMPATIBILITY.md`/`CHANGELOG.md`）を、当初の方針どおり`main`に直接コミット・pushしたが、ユーザーから訂正: 「今後は作業中のブランチでやる。そうでないとリリース版との整合が取れないから」。`main`にコミット済みだった該当ドキュメント更新は`git revert`で取り消し（`9c0f9ad`）、同じ内容を`0.3.2-dev`へ`git cherry-pick`で移設（`7e20c89`）。詳細・訂正後の方針は「開発ブランチ運用方針（v0.3.2から採用）」セクション参照
+
+### v0.3.2リリース完了
+- `0.3.2-dev`（`b504ae4`）→`main`へ通常マージ（`main`が分岐点の祖先ではなくなっていたため`--ff-only`不可、`git merge`でマージコミット`56c83f9`を作成。ドキュメントのrevert/cherry-pick分は内容的に打ち消し合っていたため無衝突）
+- `CHANGELOG.md`の`[Unreleased]`を`[0.3.2] - 2026-08-20`に確定、`package_nxp_mcx_index.json`に新規0.3.2エントリを追加してコミット（`609e984`、「リリース作業」コミット）
+- リリースzip作成: `git archive --format=zip --prefix=mcx/ HEAD:hardware/nxp/mcx`＋A153の`.a`（gitignore対象）を正しい相対パスへ手動追加。SHA-256 `b9b63d87a199bcf47b116fde60aebfbd4956ffaaf15e09c43a8ddedad23feaad`、1521162 bytes。ダウンロード後の再計算でも一致確認済み
+- `gh release create 0.3.2`でGitHub Release作成
+- **ステージングブランチ方式を継続適用**: `staging-0.3.2`ブランチで検証済みchecksumを一時push→macOS/Windows/Linuxの3プラットフォームすべてでBoards Manager経由インストール〜動作確認完了とユーザー報告→`main`に対し`update_package_index.yml`を手動実行してchecksum確定（`bb34ab0`、ステージングブランチの値と完全一致）
+- ステージングブランチ・`0.3.2-dev`ブランチともマージ済み・役目終了のためリモート・ローカルとも削除
 
 ---
 
