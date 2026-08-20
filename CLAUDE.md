@@ -895,6 +895,19 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 - 生成結果を確認: `I2C`/`I3C`/`AnalogIn`/`PwmOut`/`BusInOut`系3クラス/`InterruptIn`/`Obj`/`Print`/`Printable`/`Stream`/`Ticker`/`Serial`系2クラス/`SPI`系3クラス/`String`/`TwoWire`の計22クラス全てが正しくドキュメント化されていることを確認（268ファイル、6.7MB）
 - Doxyfileはr01lib同様リポジトリ直下に配置。リリース前に`doxygen Doxyfile`を実行して`docs/api/`を最新化しておく、という運用（バージョン番号`PROJECT_NUMBER`も他のバージョン番号更新箇所と合わせて手動更新が必要）
 
+### リリース前チェック中に発見・修正した積み残し2件、およびCMSIS-SVDファイルの追加
+ユーザーから「他に用意しておくべきものは？」と聞かれ、リリース前監査を実施。作業ツリー・`.DS_Store`混入・オープンIssue・全57サンプル回帰は問題なしだったが、2件の実際のドキュメント不整合を発見・修正:
+
+- **`variants/frdm_mcxa153/README.md`・`variants/frdm_mcxn947/README.md`が、v0.4.0で廃止したはずのプリビルド`.a`セットアップ手順（「生成された`.a`ファイルをここにコピー」等）をそのまま残していた**。冒頭のセットアップ手順部分だけを現在の構成（`include/`/`linker/`/`src/`）を説明する短い記述に差し替え、その下に続く実機検証・実機バグ修正の記録（MikroBus対応、Wire/SPI/analogRead/analogWrite/tone検証等、いずれも今も正確な内容）はそのまま維持
+- **`LICENSE`のThird-Party Noticesが`MCUXpresso_project/_r01lib_*/drivers/`という、同じくv0.4.0で削除済みの古いパスを参照していた**。現在の実際の配置（`cores/arduino/sdk/`＋各ボードの`variants/<board>/src/`）に更新
+
+続けてユーザーから、実機デバッグ中のArduino IDE 2画面で「CORTEX PERIPHERALS」パネルが「SVD: No active debug sessions or no SVD files specified」と表示される件について、SDKから持ってくる必要があるか質問。調査の結果:
+- ローカルにMCUXpresso IDEやNXP Config Toolsが生成した各種`.xml`（`.nxp/mcu_data_*/processors/MCXA153/...`等）は存在するが、いずれもNXP独自の`swtools.freescale.net/XSD/registers/6.0`スキーマであり、cortex-debugが要求する標準CMSIS-SVDスキーマ（`<device schemaVersion="..." xs:noNamespaceSchemaLocation="CMSIS-SVD.xsd">`）とは別物で使えないと判明
+- ローカルに保存済みのMCUXpresso SDK配布zip（`SDK_26_06_00_FRDM-MCXA153.zip`／`SDK_2_16_000_FRDM-MCXN947.zip`）を`unzip -l`で調査したところ、`devices/<チップ>/`配下に**本物のCMSIS-SVDファイル**（`MCXA153.xml`＝4.0MB・55ペリフェラル、`MCXN947_cm33_core0.xml`＝14MB・176ペリフェラル、いずれも`SPDX-License-Identifier: BSD-3-Clause`のNXP著作権ヘッダ付き）を発見・抽出
+- `hardware/nxp/mcx/variants/<board>/svd/`（新設）に配置（`.xml`から拡張子だけ`.svd`に変更、既存の`include/`/`linker/`/`src/`と並ぶカテゴリディレクトリとして）、`boards.txt`に`debug.svd_file={runtime.platform.path}/variants/<board>/svd/<ファイル名>`をボードごとに追加。`arduino-cli debug --info`で両ボードとも正しく解決すること、Python `xml.etree`でwell-formed XMLとしてパースできることを確認。実ビルドサイズは変化なし（デバッグ設定のみで実際のビルドには一切関与しないファイルのため）
+- `LICENSE`のThird-Party Noticesにこの新規SVDファイルの言及も追加（既存のNXP MCUXpresso SDK BSD-3-Clause表記の対象範囲に含める形）
+- まだ未実施: Arduino IDE 2の実際のデバッグセッションでCORTEX PERIPHERALSパネルが実際にレジスタ値を表示するかの実機確認
+
 ---
 
 ## 動作確認済み

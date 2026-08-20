@@ -41,11 +41,14 @@ ArduinoCore-zephyr's `tools/upload_pyocd_or_linkserver.sh`.
 
 - ArduinoCore-zephyr — https://github.com/arduino/ArduinoCore-zephyr (Apache License 2.0)
 
-The low-level peripheral driver files under each board's
-`MCUXpresso_project/_r01lib_*/drivers/` and `device/` directories (files
-prefixed `fsl_*`, plus the CMSIS device headers) are sourced from the NXP
-MCUXpresso SDK for the corresponding chip, unmodified aside from being
-extracted from the SDK package. Each file retains its own original
-copyright header.
+The low-level peripheral driver files under
+`hardware/nxp/mcx/cores/arduino/sdk/` (shared across chips) and each
+board's `hardware/nxp/mcx/variants/<board>/src/` (chip-specific drivers,
+device startup, CMSIS device headers), plus each board's CMSIS-SVD
+peripheral-register descriptor under
+`hardware/nxp/mcx/variants/<board>/svd/` (used for Arduino IDE's debugger
+peripheral register view), are sourced from the NXP MCUXpresso SDK for the
+corresponding chip, unmodified aside from being extracted from the SDK
+package. Each file retains its own original copyright header.
 
 - NXP MCUXpresso SDK — https://github.com/nxp-mcuxpresso/mcux-sdk (BSD-3-Clause)
