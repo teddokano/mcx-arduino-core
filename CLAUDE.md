@@ -966,6 +966,14 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 - **`TUTORIAL.md`/`TUTORIAL.ja.md`の目次アンカーリンク切れ**: 監査で指摘されていたが、全TOCリンク・見出しを機械的に突き合わせて確認したところ実際には壊れていなかった（v0.2.1時点で既に整合性確認済みだったものと判断）。修正不要と判定、変更なし
 - **新たに発見、ユーザー指示で削除完了**: `variants/<board>/include/`配下に、`cores/arduino/{r01lib,arduino_api}/`の一部ファイル（`PwmOut.h`/`io.h`/`SPI.h`/`Arduino.h`等）の**古い重複コピー**が残っていることが判明。`platform.txt`の`compiler.includes`で`-I{build.core.path}/r01lib`等が`-I{build.variant.path}/include`より先に並んでいるため、実際のビルドはcores/arduino側の最新版を常に解決し、この重複コピーは事実上デッドコード（到達しない）と判断。ユーザーに提示したところ「削除する」と即断——`cores/arduino/{sdk,r01lib,arduino_api}/`のいずれかと同名のファイルだけを対象に機械的に洗い出し（両ボード計87ファイル）、`git rm`で削除。CMSIS device header・`pin_mux.h`/`board.h`/`clock_config.h`・チップごとに内容が異なるSDKドライバヘッダ等、`cores/arduino/`側に同名ファイルが存在しないボード固有ファイル（A153=23個、N947=24個）はそのまま残置（これらは今も`-I{build.variant.path}/include`経由で実際に使われている）。全55サンプル×両ボード回帰スイープで新規失敗なし（既知の11件のみ）を確認してコミット
 
+### examples/内に残っていた`_N947`サフィックス付きサンプルの整理
+ユーザーから「examples/Arduino_compatible_API/の下にまだ`*_N947.ino`の名前のテストコードが残っている．本当にN947だけでしか動かないもの以外は，「_N947」は削除．さらにその.inoファイルを含むフォルダ名との整合も確認し，問題があればfix」と依頼（examples/の条件コンパイル統合作業とは別件、`_A153`/`_N947`の両方が揃うペアはその時点で統合済みだったが、N947専用として残っていた単独サンプル10本が未整理のまま残っていた）。7本を洗い出し、各々のコードが実際にA153の`io.h`定義（両ボードのピンマクロを直接突き合わせ）でも問題なく動くかを個別に検証:
+
+- **サフィックス削除（4本）**: `test_analogWrite_all_channels`・`test_analogWrite_duty`（`PWM0`-`PWM5`のみ使用、両ボードでサブモジュール共有ペアの構造も同一と確認済み）・`test_digitalWrite_analog_pins`・`test_digitalWrite_all_pins`（`D0`-`D19`は両ボードで同一のピン名セット）。ヘッダコメントに埋め込まれていたN947固有の物理ピン番号（`P2_2..P2_7`、`FlexPWM1`、`P2_3`）や、**A153では誤りになる情報**（`D9/D10=RED/GREEN LED`——A153のLED実ピンは`D5/D6/D3`で全く別、`io.h`を実際に突き合わせて発覚）をボード非依存の表現に修正
+- **`test_digitalWrite_analog_pins`は単なるリネームで済まず、実際にA153で機能が欠けることが判明**: `io.h`を確認したところ、N947は`A0`/`A1`が`DISABLED_PIN`（未配線）のため元のコードは`A2`-`A5`のみ歩かせる作りだったが、A153は`A0`-`A5`全6本が実配線されている（`DISABLED_PIN`ではない）。そのままリネームするとA153で本来テストできる`A0`/`A1`が抜け落ちたテストになってしまうため、`#if defined(FRDM_MCXA153)`で`A0`/`A1`を追加する分岐を新設——examples/統合作業（`test_digitalWrite_mikrobus_pins`の`MB_AN`）で確立した同じパターンを踏襲
+- **サフィックスを残した3本（実機構成が真にN947固有）**: `test_analogRead_precision_N947`（N947のADC対応チャンネルは`A2`-`A5`固定で、A153のADC対応チャンネル`A0`-`A3`とは別の集合——そのままA153で動かすと`A4`/`A5`で`panic()`する）、`test_Wire2_MikroBus_N947`（`Wire2`はA153に物理的に存在しない、I2Cペリフェラルが1系統のみのため）、`test_Serial1_MikroBus_N947`（MikroBus経由の`Serial1`はA153では別のFlexComm配線のため未実装）
+- 全55サンプル×両ボード回帰スイープで新規失敗なし（既知の11件のみ）、リネームした4本は個別にも両ボードでコンパイル確認（従来N947でしかコンパイルできなかったものがA153でも通るようになったことを確認）
+
 ---
 
 ## 動作確認済み
