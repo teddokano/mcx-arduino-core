@@ -133,12 +133,25 @@ void SPIClass::setClockDivider( uint8_t divider )
 
 void SPIClass::txrx( uint8_t *data, size_t size )
 {
-	static constexpr int	READ_BUFFER_SIZE	= 128;
+	// Chunked through a fixed-size stack buffer rather than a single
+	// size-sized one -- a caller-supplied count has no compile-time bound,
+	// and CS stays under the sketch's own digitalWrite() control across
+	// this whole call (see SPIClass's header comment), so splitting into
+	// multiple back-to-back r01lib write() calls is transparent to the bus.
+	static constexpr size_t	READ_BUFFER_SIZE	= 128;
 
 	uint8_t	r_data[ READ_BUFFER_SIZE ];
 
-	spi->write( data, r_data, (int)size );
-	memcpy( data, r_data, size );
+	while ( size > 0 )
+	{
+		size_t	chunk	= size < READ_BUFFER_SIZE ? size : READ_BUFFER_SIZE;
+
+		spi->write( data, r_data, (int)chunk );
+		memcpy( data, r_data, chunk );
+
+		data	+= chunk;
+		size	-= chunk;
+	}
 }
 
 SPIClass	SPI;
