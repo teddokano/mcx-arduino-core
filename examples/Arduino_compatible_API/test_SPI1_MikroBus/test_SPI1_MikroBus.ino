@@ -1,12 +1,17 @@
-/** SPI1 (MikroBus SPI) loopback test for FRDM-MCXN947
+/** SPI1 (MikroBus SPI) loopback test -- FRDM-MCXA153 / FRDM-MCXN947
  *
  *  SPI1 is a plain SPI instance on the MikroBus header's MOSI/MISO/SCK/CS
- *  pins (P3_20/22/21/23), independent of SPI (D10-D13). Backed by its own
- *  peripheral (LPSPI6/FlexComm6), so both can be used in the same sketch.
+ *  pins, independent of SPI (D10-D13) -- backed by its own peripheral on
+ *  each board (A153: LPSPI0, vs. SPI's LPSPI1; N947: LPSPI6/FlexComm6), so
+ *  both SPI and SPI1 can be used in the same sketch. See each board's
+ *  PIN_MAPPING_*.md for the exact physical pins.
  *
  *  Needs a MOSI-MISO loopback wire on the MikroBus header. Runs all
  *  transfers back-to-back before printing results, so a logic analyzer
  *  capture isn't interrupted by Serial calls.
+ *
+ *  This sketch needs no per-board #if branching -- SPI1/MB_CS already
+ *  resolve to the right pins/peripheral on either board.
  */
 
 #include <Arduino.h>
