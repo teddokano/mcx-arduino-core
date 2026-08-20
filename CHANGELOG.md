@@ -12,10 +12,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 - Full source distribution: the prebuilt r01lib/arduino_layer `.a` libraries are gone, replaced by plain source under `cores/arduino/` (shared) and `variants/<board>/src/` (board-specific), built the same way as other Arduino cores (AVR, SAMD, renesas_uno, ...). Arduino IDE's "Go to Definition" now works — jumping into `pinMode()`, `Serial`, or any other core function lands in the actual implementing `.cpp`, not just its header declaration
+- `cores/arduino/` is now split into three subdirectories by origin — `sdk/` (NXP MCX SDK driver files), `r01lib/` (the hardware driver core), `arduino_api/` (the Arduino-compatible API layer) — instead of one flat pile of 84 files
 - `MCUXpresso_project/` removed — it only ever existed to build the now-gone prebuilt library
+- Added Doxygen documentation throughout `cores/arduino/`'s r01lib and Arduino-compatible-API source, and fixed several inaccuracies found in existing r01lib doc comments along the way (mismatched parameter names, read buffers documented as write buffers, missing parameters, one doc that had been copy-pasted from an unrelated method)
 
 ### Fixed
 - FRDM-MCXA153: `SPI1` (MikroBus SPI, `LPSPI0`) could hang forever on `transfer()`/`transfer16()`. `LPSPI0`'s clock was never attached in this build's `init_mcu()` — a fix from the earlier prebuilt-library era that was dropped during the source-reconciliation work for this release. Found via on-hardware bisection, fixed, and re-verified on real hardware
+- `Wire.h` reused `Arduino.h`'s own include guard, so `#include <Wire.h>` on its own (without `<Arduino.h>` already included in the same translation unit — a common pattern in third-party I2C libraries) failed to compile. Given its own guard and turned into a proper thin wrapper, matching the existing `SPI.h`/`arduino_spi.h` pattern; `arduino_i2c.h`/`arduino_spi.h` were also made self-contained (missing standard-library includes) so both now work when included standalone
 
 ## [0.3.2] - 2026-08-20
 

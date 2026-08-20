@@ -72,10 +72,12 @@ mcx-arduino-core/
 ├── hardware/nxp/mcx/
 │   ├── platform.txt          # Compiler/linker settings
 │   ├── boards.txt            # Board definitions
-│   ├── cores/arduino/        # Shared source, built into core.a for every board:
-│   │                         #   Arduino layer (digitalWrite, Wire, SPI, Serial.print, ...),
-│   │                         #   r01lib core (Serial, I2C, SPI, GPIO, InterruptIn, Ticker, ...),
-│   │                         #   and the NXP MCX SDK driver files common to all supported chips
+│   ├── cores/arduino/        # Shared source, built into core.a for every board, split by origin:
+│   │   ├── arduino_api/      #   Arduino-compatible API layer (digitalWrite, Wire, SPI,
+│   │   │                     #   Serial.print, String, Print/Stream, ...)
+│   │   ├── r01lib/           #   r01lib hardware driver core (Serial, I2C/I3C, SPI, GPIO,
+│   │   │                     #   AnalogIn, PwmOut, InterruptIn, Ticker, ...)
+│   │   └── sdk/               #   NXP MCX SDK driver files common to all supported chips
 │   ├── tools/
 │   │   └── upload.sh         # Upload script (auto-detects LinkServer)
 │   └── variants/

@@ -860,6 +860,30 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
   - 両起動経路（`arduino-cli debug`のパイプ方式、Arduino IDE 2 / cortex-debugのTCPサーバー方式）とも同一の`gdb-bridge`バイナリが自動判別（`-c "gdb_port N"`の有無で分岐）して両対応することを実機で確認済み
 - **実機確認完了**: 上記2件のエラー解消後、ユーザーがArduino IDE 2の「デバッグ」ボタンから実際にフルセッション（ビルド→書き込み→ブレークポイント→ステップ実行等、UIを通した一連の操作）を試し、**A153・N947両方で動作することを確認**。これでArduino IDE内蔵デバッガ対応は完了
 
+### Doxygenドキュメント整備（r01lib・Arduino互換APIレイヤー、23ファイル）
+ユーザーから「mcx-arduino-coreで作成したコードにDoxygenドキュメントは入ってる？」と質問。r01lib由来のクラス（`I2C`/`I3C`等）には部分的にDoxygenが入っているが、新しく書いたArduino互換APIレイヤー（`arduino_*.h`等）にはほぼ無いと調査結果を報告したところ、「r01libと新しく書いたArduino互換API部分にDoxygenコメントをつける．r01libで元からあるものは，内容を確認し，必要なら追加・修正する」と依頼された。
+
+- r01lib側（`i2c.h`/`i3c.h`/`io.h`/`AnalogIn.h`/`PwmOut.h`/`BusInOut.h`/`InterruptIn.h`/`Ticker.h`/`r01lib_spi.h`/`Serial.h`/`obj.h`/`mcu.h`/`irq.h`/`r01lib.h`）は既存コメントを`.cpp`の実装と突き合わせて逐一検証し、複数の実際の誤りを発見・修正した——`@param`名が実引数名と不一致（`I2C::write`/`read`）、読み取り用バッファの説明が「書き込むデータ」になっていた（`I2C::reg_read`/`read`、`I3C::ccc_get`）、`I2C::scan`の`result`引数や`I3C::ccc_broadcast`の`first_time`等の未記載、`I3C::set_IBI_callback`のドキュメントが`check_IBI()`の説明をコピペしたままだった（voidを返す関数なのに`@return`が書いてある）、`I3C::reg_write`/`reg_read`の`stop`引数が実装上無視されるという未記載の癖、など。`AnalogIn.h`/`PwmOut.h`はA153側だけ既存ドキュメントがありN947側の分岐が無かったので追加
+- Arduino互換APIレイヤー（`arduino_io`/`arduino_serial`/`arduino_i2c`/`arduino_spi`/`arduino_analog`/`arduino_string`/`arduino_tone`、`Print`/`Stream`/`Printable`、`Arduino.h`）はほぼゼロから追加。既存のWHY中心のプレーンコメント（経緯説明）は活かしたまま、Doxygenタグを併記する形で追加
+- **`dummy.cpp`のヘッダーコメントが「実コードはプリビルドライブラリ側」という、v0.4.0のソース化移行で嘘になっていた記述だったため修正**
+- **自分自身の`*/`コメント早期終了バグを発見・即修正**: `io.h`冒頭に新設した説明コメント内で「ARD_D*/ARD_A*」という表記が`*/`として誤ってブロックコメントを終了させてしまい、実機ビルドで`P3_6`/`P2_6`が未宣言というエラーが発生。このプロジェクトの過去のセッションで同じパターンのバグが複数回発生していたのと全く同じ種類のミスを今回も踏んでしまった形——ビルド確認で即座に検出・修正。以後、編集した全ファイルを`*/`の誤爆パターンで機械的に再チェックしてから最終確認ビルドを実施
+- 57サンプル×2ボードの全回帰コンパイルで新規リグレッションなし（既知の13件のみ）を確認
+
+### `Wire.h`のインクルードガード衝突バグを発見・修正
+ドキュメント整備の副産物として、ユーザーから「`Wire.h`は削除するとどうなる？」と質問。調査の結果、`Wire.h`が`Arduino.h`と全く同じインクルードガード（`R01LIB_ARDUINO_H`）を再利用しており、`setup()`/`loop()`/`delay()`宣言や古いinclude群を含む、`Arduino.h`の古い断片のような内容を持っていたと判明。全ての`.ino`は`arduino-cli`が自動的に`#include <Arduino.h>`を先頭に挿入するため実害なく動いていた（`Wire.h`の中身は常にスキップされるだけ）が、これはこのリポジトリ自身が使っている`#include <Wire.h>`（8ファイル）が、`Arduino.h`を経由せず単独でインクルードされた場合には`"Wire.h: No such file or directory"`で確実に壊れる、というサードパーティI2Cライブラリでよくあるパターンに対する落とし穴だった。ユーザーに削除の影響を説明したところ「削除するとどうなる？」→「修正する」と依頼され対応。
+
+- `Wire.h`を独自のインクルードガード（`R01LIB_WIRE_WRAPPER_H`）を持つ、`arduino_i2c.h`一行だけの薄いラッパーに変更——既存の`SPI.h`/`arduino_spi.h`と全く同じパターン
+- この過程で`arduino_i2c.h`自体が`uint32_t`/`size_t`や`I2C`型を自己完結して宣言していない（`<cstdint>`/`<cstddef>`のincludeも`class I2C;`前方宣言も無い）ことが判明——単体で`#include`すると実際にはコンパイルが通らないことを発見。`arduino_spi.h`にも全く同じ問題があり、さらに`ARD_MOSI`等のピンマクロ（`io.h`側）にも依存していたため、両方に`#include <cstdint>`/`<cstddef>`（と`arduino_spi.h`には`#include "io.h"`）を追加して真に自己完結させた
+- `arm-none-eabi-g++ -fsyntax-only`で`#include "Wire.h"`/`#include "SPI.h"`だけの単独ファイルを両CPU向けに直接コンパイルし、エラーゼロで通ることを実証。57サンプル×2ボードの全回帰コンパイルも実施、新規リグレッションなし
+
+### `cores/arduino/`を3つのサブディレクトリに分割（`sdk/`・`r01lib/`・`arduino_api/`）
+ユーザーから「`cores/arduino/`の中身が全てフラットに収められていて分かりにくい。MCUXpresso-SDK由来のもの・r01lib由来のもの・arduino-APIを作るためのものの3つのフォルダに分ける」と依頼。
+
+- 84ファイル全てを出自ごとに分類——`sdk/`（`fsl_*.c/.h`全32ファイル＋NXP製`semihost_hardfault.c`、計33）、`r01lib/`（`i2c`/`i3c`/`io`/`AnalogIn`/`PwmOut`/`BusInOut`/`InterruptIn`/`Ticker`/`r01lib_spi`/`Serial`/`obj`/`mcu`/`irq`/`r01lib.h`、計27）、`arduino_api/`（`Arduino.h`/`Print`/`Stream`/`Printable`/`SPI.h`/`Wire.h`/`arduino_*`各種/`dummy.cpp`、計24）。`git mv`で移動し履歴を保持
+- 個々のファイル内の`#include "foo.h"`は一切書き換えなかった（サブディレクトリ修飾なしのフラット参照という、`variants/*/include/`から続くこのプロジェクト全体の慣習をそのまま踏襲——書き換えるとなると全ファイルの大量のinclude文に手を入れることになり、リスクとメリットが見合わないと判断）。代わりに`platform.txt`の`compiler.includes`に新設した3ディレクトリを追加（`-I{build.core.path}/sdk -I{build.core.path}/r01lib -I{build.core.path}/arduino_api`）——ソースの発見自体はArduinoの標準ビルド機構が`{build.core.path}`配下を最初から再帰的に走査する仕組みのため、サブディレクトリに置くだけで自動的にビルド対象になる（今回変更が必要だったのはinclude検索パスだけ）
+- 実機ビルドサイズがA153・N947とも+16バイトとわずかに増加（`43652`→`43668`、`46600`→`46616`）——両ボードで全く同じ増分だったため、`__FILE__`等に埋め込まれるパス文字列がサブディレクトリ分だけ長くなったことによる無害な副作用と判断（機能的な変化ではない）
+- 57サンプル×2ボードの全回帰コンパイルで新規リグレッションなし（既知の13件のみ）を確認。README.mdの「Architecture」節のディレクトリツリーも新しい3分割構成に更新
+
 ---
 
 ## 動作確認済み

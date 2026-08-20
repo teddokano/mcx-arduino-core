@@ -9,7 +9,7 @@ compiler.warning_flags.none=
 compiler.warning_flags.default=-Wall
 compiler.warning_flags.more=-Wall
 compiler.warning_flags.all=-Wall -Wextra
-compiler.includes=-I{build.core.path} -I{build.variant.path}/include
+compiler.includes=-I{build.core.path} -I{build.core.path}/sdk -I{build.core.path}/r01lib -I{build.core.path}/arduino_api -I{build.variant.path}/include
 
 compiler.c.cmd=arm-none-eabi-gcc
 compiler.c.flags={compiler.cpu_flags} {compiler.defines} {compiler.opt_flags} {compiler.warning_flags} -c -D__NEWLIB__ -fstack-usage
