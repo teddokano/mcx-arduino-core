@@ -1,14 +1,17 @@
-/** digitalWrite() output test across every supported GPIO pin, FRDM-MCXN947
+/** digitalWrite() output test across every D-numbered GPIO pin
  *
- *  Walks a single HIGH pulse through D0..D13, D18, D19 (16 pins -- A0/A1
- *  are DISABLED_PIN on this board, not real pins, so excluded) one at a
- *  time, so a 16-channel logic analyzer captures the whole set in a
- *  single pass and every pin's pulse is individually distinguishable.
+ *  Walks a single HIGH pulse through D0..D13, D18, D19 (16 pins -- same
+ *  set on both supported boards) one at a time, so a 16-channel logic
+ *  analyzer captures the whole set in a single pass and every pin's pulse
+ *  is individually distinguishable. The analog pins (A0-A5) are covered
+ *  separately by test_digitalWrite_analog_pins.
  *
  *  Note: several of these pins double as SPI/Wire/LED pins elsewhere in
- *  this core (D9/D10=RED/GREEN LED, D10-D13=SPI, D18/D19=Wire), but none
- *  of those peripherals are begin()'d here, so this exercises plain
- *  digitalWrite()/pinMode(OUTPUT) on the pin directly.
+ *  this core (D10-D13=SPI and D18/D19=Wire on both boards; which D-pins
+ *  double as the on-board LEDs differs per board -- see each board's
+ *  PIN_MAPPING_*.md), but none of those peripherals are begin()'d here,
+ *  so this exercises plain digitalWrite()/pinMode(OUTPUT) on the pin
+ *  directly.
  */
 
 #include <Arduino.h>

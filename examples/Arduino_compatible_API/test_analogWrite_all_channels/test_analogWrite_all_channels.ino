@@ -1,7 +1,8 @@
-/** analogWrite() all-channel + independence test for FRDM-MCXN947
+/** analogWrite() all-channel + independence test
  *
- *  Drives all six PWM0..PWM5 pins (P2_2..P2_7, FlexPWM1) and checks two
- *  things a logic analyzer probed on all six lines at once can verify:
+ *  Drives all six PWM0..PWM5 pins (see each board's PIN_MAPPING_*.md for
+ *  their physical location) and checks two things a logic analyzer probed
+ *  on all six lines at once can verify:
  *
  *  Phase A: all six channels set to distinct, fixed duty cycles
  *  simultaneously -- confirms every channel actually outputs (not just

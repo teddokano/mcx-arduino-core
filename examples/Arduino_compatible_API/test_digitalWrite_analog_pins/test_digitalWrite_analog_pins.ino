@@ -1,9 +1,11 @@
-/** digitalWrite() output test on A2-A5, FRDM-MCXN947
+/** digitalWrite() output test on the analog pins
  *
- *  A2-A5 double as plain digital I/O (same DigitalInOut mechanism as
- *  D0-D19), independent of their analogRead() capability. Walks a single
- *  HIGH pulse through each one. A0/A1 are DISABLED_PIN on this board, not
- *  real pins, so excluded.
+ *  The analog pins double as plain digital I/O (same DigitalInOut
+ *  mechanism as D0-D19), independent of their analogRead() capability.
+ *  Walks a single HIGH pulse through each one.
+ *
+ *  A0/A1 are DISABLED_PIN (not real, wired pins) on FRDM-MCXN947, so only
+ *  A2-A5 are walked there; FRDM-MCXA153 has all six wired.
  */
 
 #include <Arduino.h>
@@ -14,6 +16,9 @@ struct PinInfo {
 };
 
 PinInfo pins[] = {
+#if defined(FRDM_MCXA153)
+  { A0, "A0" }, { A1, "A1" },
+#endif
   { A2, "A2" }, { A3, "A3" }, { A4, "A4" }, { A5, "A5" },
 };
 
@@ -24,7 +29,7 @@ void setup() {
   while (!Serial)
     ;
 
-  Serial.println("digitalWrite A2-A5 walking-bit test");
+  Serial.println("digitalWrite analog-pin walking-bit test");
 
   for (int i = 0; i < numPins; i++) {
     pinMode(pins[i].pin, OUTPUT);
