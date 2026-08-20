@@ -956,6 +956,16 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 - **`I3C`コンストラクタの`_scl`/`_sda`ローカル変数名入れ替わり**（`i3c.cpp`）: `DigitalInOut _scl(sda); DigitalInOut _sda(scl);`と、変数名と実際に渡しているピン引数が逆になっていた。直後の`pin_mux()`/`input_buffer()`はどちらの変数にも同じ処理をしているため機能的な実害はなかったが、可読性上の罠だったため名前を実際のピンに合わせて入れ替え
 - 両ボードで`hello_world`のコンパイル確認、全55サンプル×両ボード回帰スイープも実施——新規失敗なし（既知の11件のみ）
 
+### ドキュメント陳腐化5件の修正
+ユーザーから「続ける」と依頼、監査で見つかったドキュメント陳腐化に着手。
+
+- **`LICENSE`**: Third-Party Noticesが`cores/arduino/Arduino.h`を参照していたが、3分割（sdk/r01lib/arduino_api）後の実際のパスは`cores/arduino/arduino_api/Arduino.h`——別バージョンの修正時（`cores/arduino/sdk/`パス）に見落としていたもう1箇所
+- **`CLAUDE.md`自身**: `mcu.cpp`へのリンクが`cores/arduino/mcu.cpp`のままだったのを`cores/arduino/r01lib/mcu.cpp`に修正
+- **`README.md`のArchitectureツリー図**: gdb-bridgeデバッガ対応・CMSIS-SVD追加より前に書かれたままで、`tools/gdb-bridge/`・`upload.bat`・`variants/<board>/svd/`が反映されていなかった。ツリー図と説明コメントを更新
+- **`PwmOut.h`/`io.h`（r01lib）・`SPI.h`（arduino_api）・`variants/frdm_mcxn947/README.md`のコメント**: 削除済みの`MCUXpresso_project/`ツリー時代のパス（`source/r01device/led/LEDDriver.h`、`source/r01lib/r01lib_spi.h`）を参照していた。`r01lib_spi.h`は現在の実パス（`cores/arduino/r01lib/r01lib_spi.h`）に修正、`LEDDriver.h`は別プロジェクト`LEDDriver_NXP_Arduino`（このリポジトリの管理外、ディレクトリ構成を保証できない）のファイルなので、具体的な内部パスを決め打ちせず「別プロジェクトのLEDDriver.h」という参照に変更（実際に確認したところ、その外部リポジトリの実パスも`source/r01device/led/`ではなく`src/`だった——どのみち誤りだった）
+- **`TUTORIAL.md`/`TUTORIAL.ja.md`の目次アンカーリンク切れ**: 監査で指摘されていたが、全TOCリンク・見出しを機械的に突き合わせて確認したところ実際には壊れていなかった（v0.2.1時点で既に整合性確認済みだったものと判断）。修正不要と判定、変更なし
+- **新たに発見（未対応・別課題として保留）**: `variants/<board>/include/`配下に、`cores/arduino/{r01lib,arduino_api}/`の一部ファイル（`PwmOut.h`/`io.h`/`SPI.h`/`Arduino.h`等）の**古い重複コピー**が残っていることが判明。`platform.txt`の`compiler.includes`で`-I{build.core.path}/r01lib`等が`-I{build.variant.path}/include`より先に並んでいるため、実際のビルドはcores/arduino側の最新版を常に解決し、この重複コピーは事実上デッドコード（到達しない）と判断。ただし今回のドキュメント修正のスコープを超える規模（ボードごと数十ファイル）のため、対応はユーザー判断を仰いでから
+
 ---
 
 ## 動作確認済み
