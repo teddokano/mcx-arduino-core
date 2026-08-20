@@ -224,8 +224,8 @@ enum {
 	// collision too). This chip's SDK also defines bare `PWM0`/`PWM1` macros
 	// for the FlexPWM peripheral instances themselves ((PWM_Type*)PWM0_BASE /
 	// PWM1_BASE), so those two names have to be explicitly reclaimed here
-	// (#undef, matching the same technique already used in
-	// source/r01device/led/LEDDriver.h for the same collision) before they
+	// (#undef, matching the same technique the separate LEDDriver_NXP_Arduino
+	// project's LEDDriver.h already uses for the same collision) before they
 	// can be redefined as logical pin names -- PwmOut.cpp captures the SDK's
 	// original PWM1 meaning into its own alias before including this header,
 	// so its driver calls keep working once this redefinition is in effect.

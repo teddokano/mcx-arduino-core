@@ -137,8 +137,8 @@ MOSI(D11)-MISO(D12)ジャンパーによるループバックで`transfer()`/`tr
   していたが、後日「マクロは共通で`PWM0`が使えるようにしたい」という
   方針でA153と同じ素の`PWM0`-`PWM5`に統一した。`io.h`側でSDKの`PWM0`/
   `PWM1`マクロを`#undef`してからArduinoピン名として再定義（この
-  パターン自体は`source/r01device/led/LEDDriver.h`の同種の衝突回避で
-  既に前例あり）。`PwmOut.cpp`側は、この`#undef`が効く前（`io.h`を
+  パターン自体は別プロジェクト`LEDDriver_NXP_Arduino`の`LEDDriver.h`
+  における同種の衝突回避で既に前例あり）。`PwmOut.cpp`側は、この`#undef`が効く前（`io.h`を
   includeする前）にSDKの`PWM1`（`FlexPWM1`インスタンスへのポインタ）の
   値を`FLEXPWM1`という別名に退避してから使うことで、ドライバ呼び出し
   自体は引き続き正しいペリフェラルを参照するようにした。A153はSDKの

@@ -25,7 +25,7 @@ SOFTWARE.
 ## Third-Party Notices
 
 The Arduino compatibility constants, macros, and templates in
-`hardware/nxp/mcx/cores/arduino/Arduino.h` (math constants, `min()`/`max()`,
+`hardware/nxp/mcx/cores/arduino/arduino_api/Arduino.h` (math constants, `min()`/`max()`,
 bit-manipulation macros, `map()`, `random()`/`randomSeed()`, and related
 definitions) are original reimplementations written to match the interface
 and naming of the following reference projects, for sketch compatibility.

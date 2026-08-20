@@ -174,8 +174,9 @@ private:
  * peripheral instances themselves ((PWM_Type*)PWM0_BASE / PWM1_BASE) --
  * A153 doesn't hit this (its SDK instance macro is "FLEXPWM0", not
  * "PWM0"/"PWM1"), but here io.h has to explicitly reclaim both names
- * (#undef, same technique as source/r01device/led/LEDDriver.h's identical
- * collision) before redefining them as logical pin names. PwmOut.cpp
+ * (#undef, same technique the separate LEDDriver_NXP_Arduino project's
+ * LEDDriver.h uses for its identical name collision) before redefining
+ * them as logical pin names. PwmOut.cpp
  * captures the SDK's original PWM1 meaning into its own alias before
  * including this header, so its own `PWM_Init(...)` calls etc. keep
  * referring to the actual peripheral rather than a pin number.

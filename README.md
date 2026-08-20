@@ -72,7 +72,7 @@ core (AVR, SAMD, renesas_uno, ...) — no prebuilt library:
 ```
 mcx-arduino-core/
 ├── hardware/nxp/mcx/
-│   ├── platform.txt          # Compiler/linker settings
+│   ├── platform.txt          # Compiler/linker/debugger settings
 │   ├── boards.txt            # Board definitions
 │   ├── cores/arduino/        # Shared source, built into core.a for every board, split by origin:
 │   │   ├── arduino_api/      #   Arduino-compatible API layer (digitalWrite, Wire, SPI,
@@ -81,11 +81,15 @@ mcx-arduino-core/
 │   │   │                     #   AnalogIn, PwmOut, InterruptIn, Ticker, ...)
 │   │   └── sdk/               #   NXP MCX SDK driver files common to all supported chips
 │   ├── tools/
-│   │   └── upload.sh         # Upload script (auto-detects LinkServer)
+│   │   ├── upload.sh         # Upload script (auto-detects LinkServer), upload.bat for Windows
+│   │   └── gdb-bridge/       # Bridges Arduino IDE 2's cortex-debug (expects OpenOCD) to
+│   │                         #   LinkServer's own gdbserver, for in-IDE debugging
 │   └── variants/
 │       └── frdm_mcxa153/     # one such directory per supported board
 │           ├── include/      # Board-specific headers
 │           ├── linker/       # Linker scripts
+│           ├── svd/          # CMSIS-SVD peripheral-register descriptor, for the IDE
+│           │                 #   debugger's Cortex Peripherals register view
 │           └── src/          # Board-specific source: pin_mux, clock_config, board,
 │                              #   device startup, and the SDK drivers that differ per chip
 └── package_nxp_mcx_index.json
