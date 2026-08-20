@@ -884,6 +884,17 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 - 実機ビルドサイズがA153・N947とも+16バイトとわずかに増加（`43652`→`43668`、`46600`→`46616`）——両ボードで全く同じ増分だったため、`__FILE__`等に埋め込まれるパス文字列がサブディレクトリ分だけ長くなったことによる無害な副作用と判断（機能的な変化ではない）
 - 57サンプル×2ボードの全回帰コンパイルで新規リグレッションなし（既知の13件のみ）を確認。README.mdの「Architecture」節のディレクトリツリーも新しい3分割構成に更新
 
+### Doxygen HTML出力を`docs/api/`に整備（設定はr01lib本家に倣う）
+ユーザーから「リリース前にはmcx-arduino-core/docs/api/にDoxygenの結果を置いておくようにする．フォーマットはHTML．Doxygenの設定はr01libに倣う」と依頼。
+
+- ローカルにクローン済みの本家r01libリポジトリ（`/Users/tedd/dev/mcuxpresso/r01lib/`、`github.com/teddokano/r01lib`）の`Doxyfile`（Doxygen 1.10.0生成、2854行）を精査し、デフォルト値から実際に変更されている設定だけを抽出——`EXTRACT_ALL`/`EXTRACT_PRIVATE`/`EXTRACT_PRIV_VIRTUAL`/`EXTRACT_PACKAGE`/`EXTRACT_STATIC`/`EXTRACT_LOCAL_CLASSES`/`RESOLVE_UNNAMED_PARAMS`/`HIDE_UNDOC_MEMBERS=NO`/`SHOW_HEADERFILE`/`SHOW_INCLUDE_FILES`/`SOURCE_BROWSER`/`QUIET=YES`/`WARNINGS=NO`/`RECURSIVE`/`GENERATE_HTML`/`HTML_COLORSTYLE=AUTO_LIGHT`/`GENERATE_LATEX=NO`/`HAVE_DOT=NO`等
+- 2854行を手で書き写すのではなく、ローカルにインストール済みのDoxygen 1.17.0（`brew`で導入済み）で`doxygen -g`により最新版の完全なデフォルトDoxyfileを新規生成し、その上に上記の差分だけをPythonスクリプトで機械的に適用する方式を採用（バージョン差によるタグの過不足を避けるため）
+- **作業中に踏んだ正規表現バグ**: 値の置換に`\s*`（空白類、改行も含む）を使ったところ、`PROJECT_NUMBER`等の空欄デフォルト値の行で`=`の後の改行を飛び越えて次のタグのコメントブロックまで巻き込んでしまい、値が見えない場所に迷子になる事故が発生。`[ \t]*`（同一行内の空白のみ）に変更して解消——正規表現で「行内だけの空白」のつもりで`\s`を使うと改行も巻き込むという典型的な罠
+- このプロジェクト独自の設定: `PROJECT_NAME="mcx-arduino-core"`、`OUTPUT_DIRECTORY=docs`、`HTML_OUTPUT=api`（合わせて`docs/api/`に出力）、`INPUT`は`cores/arduino/r01lib`と`cores/arduino/arduino_api`の2つのみ（`sdk/`＝NXPベンダーコードは対象外——今回Doxygen整備を依頼された「r01libと新しく書いたArduino互換API部分」と厳密に一致させた）
+- **実際に生成して判明した問題**: 初回生成時、`AnalogIn`/`PwmOut`クラスが丸ごと出力から欠落。原因は`AnalogIn.h`/`PwmOut.h`がボードごとに完全に別のクラス定義を`#if defined(CPU_MCXA153VLH) ... #elif defined(CPU_MCXN947VDF) ... #endif`で丸ごと分岐している構造で、Doxygenの`PREDEFINED`にどちらのマクロも定義していなかったため、どちらの分岐も「未定義」と評価され両方スキップされていた（`I2C`/`I3C`等、関数の中身だけが分岐する他のファイルはクラス宣言自体は分岐外にあるため無事だった）。`PREDEFINED = CPU_MCXA153VLH CPU_MCXN947VDF`を追加して解消（`#elif`なので実際にはA153側の定義が採用される——N947側の同名クラスの重複ドキュメント化はDoxygenの静的単一パス処理の性質上、今回は割り切って対応せず）
+- 生成結果を確認: `I2C`/`I3C`/`AnalogIn`/`PwmOut`/`BusInOut`系3クラス/`InterruptIn`/`Obj`/`Print`/`Printable`/`Stream`/`Ticker`/`Serial`系2クラス/`SPI`系3クラス/`String`/`TwoWire`の計22クラス全てが正しくドキュメント化されていることを確認（268ファイル、6.7MB）
+- Doxyfileはr01lib同様リポジトリ直下に配置。リリース前に`doxygen Doxyfile`を実行して`docs/api/`を最新化しておく、という運用（バージョン番号`PROJECT_NUMBER`も他のバージョン番号更新箇所と合わせて手動更新が必要）
+
 ---
 
 ## 動作確認済み

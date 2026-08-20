@@ -10,7 +10,9 @@ Arduino board support package for NXP FRDM MCX Series boards.
 New here? Start with the [tutorial](TUTORIAL.md) ([日本語版](TUTORIAL.ja.md)).
 See [API_COMPATIBILITY.md](API_COMPATIBILITY.md) for the full Arduino API support status,
 [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) / [PIN_MAPPING_N947.md](PIN_MAPPING_N947.md)
-for each board's pin assignments, and [CHANGELOG.md](CHANGELOG.md) for release history.
+for each board's pin assignments, [CHANGELOG.md](CHANGELOG.md) for release history, and
+[docs/api/](docs/api/index.html) for generated Doxygen class reference (the r01lib driver
+core and the Arduino-compatible API layer).
 
 [![youtube](img/youtube.png) Setup guide video](https://youtu.be/g_rDAxnVnro) is available. 
 
