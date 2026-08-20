@@ -121,7 +121,7 @@ public:
 	
 	/** Configure BusIn IO direction
 	 *
-	 * @note call of this method will be error when compiling since this class only support INPUT
+	 * @note this class only supports INPUT -- calling this panics at runtime
 	 */
 	virtual void		config( int conf );
 };
@@ -158,7 +158,7 @@ public:
 
 	/** Configure BusOut IO direction
 	 *
-	 * @note call of this method will be error when compiling since this class only supports OUTPUT
+	 * @note this class only supports OUTPUT -- calling this panics at runtime
 	 */
 	virtual void		config( int conf );
 };

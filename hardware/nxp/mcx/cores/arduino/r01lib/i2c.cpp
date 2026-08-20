@@ -424,8 +424,12 @@ bool I2C::ping( uint8_t addr )
 
 void I2C::scan( uint8_t start, uint8_t last, bool *result )
 {
+	// result[] is always indexed by the full address (0..last), even
+	// though only [start, last] is actually pinged -- addresses below
+	// start are marked "not found" rather than left uninitialized, so
+	// scan(start, last)'s display loop below can print the whole table.
 	for ( uint8_t i = 0; i <= last; i++ )
-		result[i]	= ping( i );
+		result[i]	= ( i >= start ) ? ping( i ) : false;
 }
 
 void I2C::scan( uint8_t start, uint8_t last )
@@ -434,11 +438,14 @@ void I2C::scan( uint8_t start, uint8_t last )
 
 	scan( start, last, result );
 
-	printf( "\r\nI2C scan result (in range of 0x00 ~ 0x%02X)\r\n   ", last );
+	printf( "\r\nI2C scan result (in range of 0x%02X ~ 0x%02X)\r\n   ", start, last );
 	for ( uint8_t x = 0; x < 16; x++ )
 		printf( " x%01X", x );
-	
-	for ( uint8_t i = 0; i < last; i++ )
+
+	// <= last, not < last -- last is the last address to include (see the
+	// scan(uint8_t last) overload's doc comment), so excluding it here
+	// silently dropped the requested upper-bound address from the table.
+	for ( uint8_t i = 0; i <= last; i++ )
 	{
 		if ( !( i % 16) )
 			printf( "\r\n%01Xx:", i / 16 );
@@ -448,7 +455,7 @@ void I2C::scan( uint8_t start, uint8_t last )
 		else
 			printf( " --" );
 	}
-	printf( "\r\n\r\n" );			
+	printf( "\r\n\r\n" );
 }
 
 void I2C::scan( uint8_t last )

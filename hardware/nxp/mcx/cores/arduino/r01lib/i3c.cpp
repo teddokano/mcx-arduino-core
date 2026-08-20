@@ -94,8 +94,8 @@ I3C::I3C( int sda, int scl, uint32_t i2c_freq, uint32_t i3c_od_freq, uint32_t i3
 
 	first_broadcast	= true;
 	
-	DigitalInOut	_scl( sda );
-	DigitalInOut	_sda( scl );
+	DigitalInOut	_sda( sda );
+	DigitalInOut	_scl( scl );
 
 	_scl.pin_mux( kPORT_MuxAlt10 );
 	_sda.pin_mux( kPORT_MuxAlt10 );

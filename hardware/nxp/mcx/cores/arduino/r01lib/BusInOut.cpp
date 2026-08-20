@@ -115,7 +115,14 @@ BusIn::~BusIn(){}
 
 void BusIn::config( int conf )
 {
-	static_assert( true, "BusIn class doesn't support config() method call");
+	// static_assert(true, ...) here was a no-op (the condition never
+	// fails), and a non-template member function's body is compiled
+	// unconditionally regardless of whether it's ever called, so
+	// static_assert(false, ...) isn't an option either -- that would fail
+	// every build, not just calls to this method. panic() is this
+	// codebase's existing convention for "invalid at runtime" (see
+	// AnalogIn/PwmOut/Serial/I2C/I3C's pin-validation panics).
+	panic( "BusIn class doesn't support config() method call" );
 }
 
 BusOut::BusOut(
@@ -137,7 +144,8 @@ BusOut::~BusOut(){}
 
 void BusOut::config( int conf )
 {
-	static_assert( true, "BusOut class doesn't support config() method call");
+	// See BusIn::config() above for why this is panic(), not static_assert.
+	panic( "BusOut class doesn't support config() method call" );
 }
 
 
