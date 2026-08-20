@@ -19,12 +19,18 @@
 #include	"io.h"
 
 /** I2C class
- *	
+ *
  *  @class I2C
  *
- *	A class for demonstrating I2C bus
+ *	A master-mode I2C driver (register read/write helpers, raw
+ *	transactions, and a bus scan). I3C derives from this class to reuse
+ *	the same API surface while running the physical bus in I3C mode.
  */
 
+/** size (in bytes) of the internal scratch buffer reg_write() uses to
+ *  prepend a register address to the data being written. Limits the
+ *  maximum single reg_write() payload to REG_RW_BUFFER_SIZE - 1 bytes.
+ */
 #define	REG_RW_BUFFER_SIZE	10
 
 class I2C: public Obj
@@ -34,7 +40,7 @@ public:
 	/** defining pointer to NAK callback	*/
 	typedef void (*err_cb_ptr)( status_t status, uint8_t address );
 
-	/** constants for STOP-cindition setting  */
+	/** constants for STOP-condition setting  */
 	enum STOP_CONDITION
 	{
 		STOP	= true,
@@ -93,11 +99,11 @@ public:
 	virtual status_t	reg_write( uint8_t targ, uint8_t reg, uint8_t data );
 	
 	/** Register read (multiple byte data)
-	 *	provideds interface for register read
-	 *	
+	 *	provides interface for register read
+	 *
 	 * @param targ target address
 	 * @param reg register address
-	 * @param dp data to write
+	 * @param dp buffer to receive the read data
 	 * @param length data length
 	 * @return status_t
 	 */
@@ -114,9 +120,9 @@ public:
 	 */
 	virtual uint8_t		reg_read( uint8_t targ, uint8_t reg );
 	
-	/** write transactiond (multiple byte data)
+	/** write transaction (multiple byte data)
 	 *
-	 * @param targ target address
+	 * @param address target address
 	 * @param dp data to write
 	 * @param length data length
 	 * @param stop (option) generate STOP condition: "false" to make repeated-start in next transaction
@@ -124,7 +130,7 @@ public:
 	 */
 	virtual status_t	write( uint8_t address, const uint8_t *dp, int length, bool stop = STOP );
 
-	/** write transactiond (single byte data)
+	/** write transaction (single byte data)
 	 *
 	 * @param targ target address
 	 * @param data data to write
@@ -132,11 +138,11 @@ public:
 	 * @return status_t
 	 */
 	virtual status_t	write( uint8_t targ, uint8_t data, bool stop = STOP );
-	
-	/** read transactiond (multiple byte data)
+
+	/** read transaction (multiple byte data)
 	 *
-	 * @param targ target address
-	 * @param dp data to write
+	 * @param address target address
+	 * @param dp buffer to receive the read data
 	 * @param length data length
 	 * @param stop (option) generate STOP condition: "false" to make repeated-start in next transaction
 	 * @return status_t
@@ -156,9 +162,10 @@ public:
 
 	/** registering error handling method
 	 *
-	 * @param err_cb_ptr pointer to error handling method. use "nullptr" to suppress any actions
+	 * @param callback pointer to error handling method. use "nullptr" to suppress any actions
+	 * @return the previously-registered callback
 	 */
-	virtual err_cb_ptr	err_callback( err_cb_ptr );
+	virtual err_cb_ptr	err_callback( err_cb_ptr callback );
 
 	/** default error handling callback method
 	 * 		this method will be called when I2C process got an error
@@ -179,9 +186,10 @@ public:
 
 	/** device scan
 	 *		device scan result will be stored in *bool
-	 *		
+	 *
 	 * @param start	scan start address
 	 * @param last	scan last address
+	 * @param result buffer (indexed by address, 0..last) to receive true/false per address
 	 */
 	virtual void		scan( uint8_t start, uint8_t last, bool *result );
 
@@ -202,22 +210,28 @@ public:
 	 */
 	virtual void		scan( uint8_t last = 124 );
 
-	/** method for I3C class compatibility (dummy method)
-	 * Does notheing but return kStatus_Success
-	 * This method is for just make easy device class using I3C
-	 * 
+	/** method for I3C class compatibility (no-op stub on the plain-I2C base class)
+	 * Does nothing but return kStatus_Success. This lets device driver code
+	 * written against CCC commands run unmodified on plain I2C -- I3C
+	 * overrides this method to actually perform the CCC broadcast/direct
+	 * write.
+	 *
 	 * @param ccc CCC command
+	 * @param addr target address
 	 * @param data single byte data
 	 * @return kStatus_Success
 	 */
 	virtual status_t	ccc_set( uint8_t ccc, uint8_t addr, uint8_t data );
 
-	/** method for I3C class compatibility (dummy method)
-	 * Does notheing but clearing data buffer and return kStatus_Success
-	 * This method is for just make easy device class using I3C
-	 * 
+	/** method for I3C class compatibility (no-op stub on the plain-I2C base class)
+	 * Does nothing but zero-fill the receive buffer and return kStatus_Success.
+	 * This lets device driver code written against CCC commands run
+	 * unmodified on plain I2C -- I3C overrides this method to actually
+	 * perform the CCC broadcast/direct read.
+	 *
 	 * @param ccc CCC command
-	 * @param dp data to send
+	 * @param addr target address
+	 * @param dp buffer to receive data
 	 * @param length data length
 	 * @return status_t
 	 */
@@ -227,9 +241,28 @@ public:
 	status_t				last_status;
 
 protected:
+	/** low-level write transaction, without err_callback dispatch on failure.
+	 *  write()'s implementation, and I3C's I2C_MODE override point.
+	 *
+	 * @param address target address
+	 * @param dp data to write
+	 * @param length data length
+	 * @param stop (option) generate STOP condition: "false" to make repeated-start in next transaction
+	 * @return status_t
+	 */
 	virtual status_t	write_core( uint8_t address, const uint8_t *dp, int length, bool stop = STOP );
+
+	/** low-level read transaction, without err_callback dispatch on failure.
+	 *  read()'s implementation, and I3C's I2C_MODE override point.
+	 *
+	 * @param address target address
+	 * @param dp buffer to receive the read data
+	 * @param length data length
+	 * @param stop (option) generate STOP condition: "false" to make repeated-start in next transaction
+	 * @return status_t
+	 */
 	virtual status_t	read_core( uint8_t address, uint8_t *dp, int length, bool stop = STOP );
-	
+
 private:
 #if	CPU_MCXC444VLH
 	i2c_master_config_t		masterConfig;

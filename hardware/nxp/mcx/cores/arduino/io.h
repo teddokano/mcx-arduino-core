@@ -15,10 +15,38 @@ extern "C" {
 #include	"obj.h"
 }
 
+/** GPIO direction value for DigitalInOut's direction parameter: output */
 #define	PIN_OUTPUT			kGPIO_DigitalOutput
+/** GPIO direction value for DigitalInOut's direction parameter: input */
 #define	PIN_INPUT			kGPIO_DigitalInput
 
-/** pin names  */
+/** Physical pin table and logical pin-name macros, one block per supported
+ *  CPU (selected by the same CPU_* macro each board's boards.txt defines).
+ *  The enum gives every pinctrl-capable pin on the chip a raw r01lib pin
+ *  value (matching pin_mux.c's physical pin naming, e.g. P0_16); the
+ *  #defines below it are the logical names actual application/driver code
+ *  is written against, aliased onto whichever physical pin that role maps
+ *  to on this particular board:
+ *   - D0..D19, A0..A5     : Arduino-numbered digital/analog pins (see also
+ *                           the ARD_D0..ARD_A5 aliases below, and
+ *                           arduino_io.h's D0..A5 enum, which further
+ *                           renumbers these into small consecutive Arduino
+ *                           pin indices for pinMode()/digitalWrite())
+ *   - PWM0..PWM5           : the analogWrite()-capable pins (only defined
+ *                           on boards with dedicated PWM pins; comments by
+ *                           each note the backing FlexPWM submodule/channel)
+ *   - RED/GREEN/BLUE       : on-board RGB LED (active-low; see
+ *                           PIN_LED_ON/PIN_LED_OFF), SW2/SW3 : on-board buttons
+ *   - MB_*                 : MikroBus header pins (SPI/I2C/UART/AN/RST/PWM/INT)
+ *   - I2C_SDA/I2C_SCL, I3C_SDA/I3C_SCL, SPI_CS/SPI_MOSI/SPI_MISO/SPI_SCLK
+ *                           : this board's default Wire/Wire1/SPI pins
+ *   - ARD_CS/ARD_MOSI/ARD_MISO/ARD_SCK : aliases of the SPI_* pins above,
+ *                           for sketches/libraries that reference the
+ *                           Arduino-shield SPI header pins by that name
+ *   - USBTX/USBRX           : the USB-CDC-bridged UART pins backing the
+ *                           global Serial instance
+ *   - PIN_LED_ON/PIN_LED_OFF : logic level that turns the on-board LEDs on/off
+ */
 #ifdef	CPU_MCXN947VDF
 enum { 	
 	DISABLED_PIN, 
@@ -872,8 +900,11 @@ public:
 	 */
 	void	input( void );
 
-	/** Pin mux setting
+	/** Pin mux (ALT function) setting
 	 * This interface is provided to other class drivers to change pin config dynamically
+	 *
+	 * @param mux ALT index (e.g. kPORT_MuxAlt0..kPORT_MuxAlt10, chip-dependent);
+	 *            ALT0 is always GPIO
 	 */
 	void	pin_mux( int mux );
 
@@ -895,6 +926,9 @@ public:
 	 */
 	void	mode( int pin_mode );
 
+	/** Read back this pin's current PORT PCR (Pin Control Register) value
+	 * @return the raw PCR register contents
+	 */
 	uint32_t mode( void );
 
 	/** Raw GPIO peripheral base and bit number backing this pin.
@@ -973,12 +1007,29 @@ public:
 };
 
 
+/** Set a pin's pull resistor configuration directly on its PORT PCR
+ *  register. Used by DigitalInOut::mode() to implement PullUp/PullDown/
+ *  PullNone.
+ *
+ * @param base PORT peripheral base
+ * @param pin pin number within that PORT
+ * @param enable pull enable (PORT_PCR_PE): 0 = no pull, 1 = pull enabled
+ * @param logic pull select (PORT_PCR_PS): 0 = pull-down, 1 = pull-up (only meaningful when enable is set)
+ */
 static inline void PORT_SetPinPullUpDown( PORT_Type *base, uint32_t pin, int enable, int logic )
 {
 	base->PCR[pin] = (base->PCR[pin] & ~PORT_PCR_PS_MASK) | PORT_PCR_PS( enable );
 	base->PCR[pin] = (base->PCR[pin] & ~PORT_PCR_PE_MASK) | PORT_PCR_PE( logic );
 }
 
+/** Set a pin's open-drain configuration directly on its PORT PCR register.
+ *  Used by DigitalInOut::mode() to implement OpenDrain. No-op on chips
+ *  whose PCR has no ODE (Open Drain Enable) field.
+ *
+ * @param base PORT peripheral base
+ * @param pin pin number within that PORT
+ * @param enable 1 to enable open-drain output, 0 for push-pull
+ */
 static inline void PORT_SetPinOpenDrain( PORT_Type *base, uint32_t pin, int enable )
 {
 #ifndef	CPU_MCXC444VLH
@@ -986,6 +1037,12 @@ static inline void PORT_SetPinOpenDrain( PORT_Type *base, uint32_t pin, int enab
 #endif
 }
 
+/** Read a pin's raw PORT PCR register value. Used by DigitalInOut::mode().
+ *
+ * @param base PORT peripheral base
+ * @param pin pin number within that PORT
+ * @return the raw PCR register contents
+ */
 static inline uint32_t PORT_GetPinMode( PORT_Type *base, uint32_t pin )
 {
 	return base->PCR[pin];

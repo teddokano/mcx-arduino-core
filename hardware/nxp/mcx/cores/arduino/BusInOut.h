@@ -31,9 +31,17 @@ public:
 
 	/** Create a BusInOut instance with specified pins
 	 *
-	 * @param bit<n> pin number to connect bus bit<n> (0-13, nc)
+	 * @param bit0 pin number to connect bus bit0, or BusInOut::nc if unused
+	 * @param bit1 pin number to connect bus bit1, or BusInOut::nc if unused
+	 * @param bit2 pin number to connect bus bit2, or BusInOut::nc if unused
+	 * @param bit3 pin number to connect bus bit3, or BusInOut::nc if unused
+	 * @param bit4 pin number to connect bus bit4, or BusInOut::nc if unused
+	 * @param bit5 pin number to connect bus bit5, or BusInOut::nc if unused
+	 * @param bit6 pin number to connect bus bit6, or BusInOut::nc if unused
+	 * @param bit7 pin number to connect bus bit7, or BusInOut::nc if unused
 	 *
-	 * @note define pins from lower to upper. No need to define upper bits if those are not be used 
+	 * @note define pins from lower to upper. No need to define upper bits if those are not be used.
+	 *       The bus's width is set to (highest connected bit + 1); trailing nc bits are ignored.
 	 */
 	BusInOut(	uint8_t bit0 = nc,
 				uint8_t bit1 = nc,
@@ -88,9 +96,17 @@ public:
 	
 	/** Create a BusIn instance with specified pins
 	 *
-	 * @param bit<n> pin number to connect bus bit<n> (0-13, nc)
+	 * @param bit0 pin number to connect bus bit0, or BusInOut::nc if unused
+	 * @param bit1 pin number to connect bus bit1, or BusInOut::nc if unused
+	 * @param bit2 pin number to connect bus bit2, or BusInOut::nc if unused
+	 * @param bit3 pin number to connect bus bit3, or BusInOut::nc if unused
+	 * @param bit4 pin number to connect bus bit4, or BusInOut::nc if unused
+	 * @param bit5 pin number to connect bus bit5, or BusInOut::nc if unused
+	 * @param bit6 pin number to connect bus bit6, or BusInOut::nc if unused
+	 * @param bit7 pin number to connect bus bit7, or BusInOut::nc if unused
 	 *
-	 * @note define pins from lower to upper. No need to define upper bits if those are not be used 
+	 * @note define pins from lower to upper. No need to define upper bits if those are not be used.
+	 *       Pins are configured as inputs.
 	 */
 	BusIn(	uint8_t bit0 = nc,
 				uint8_t bit1 = nc,
@@ -117,9 +133,17 @@ public:
 
 	/** Create a BusOut instance with specified pins
 	 *
-	 * @param bit<n> pin number to connect bus bit<n> (0-13, nc)
+	 * @param bit0 pin number to connect bus bit0, or BusInOut::nc if unused
+	 * @param bit1 pin number to connect bus bit1, or BusInOut::nc if unused
+	 * @param bit2 pin number to connect bus bit2, or BusInOut::nc if unused
+	 * @param bit3 pin number to connect bus bit3, or BusInOut::nc if unused
+	 * @param bit4 pin number to connect bus bit4, or BusInOut::nc if unused
+	 * @param bit5 pin number to connect bus bit5, or BusInOut::nc if unused
+	 * @param bit6 pin number to connect bus bit6, or BusInOut::nc if unused
+	 * @param bit7 pin number to connect bus bit7, or BusInOut::nc if unused
 	 *
-	 * @note define pins from lower to upper. No need to define upper bits if those are not be used
+	 * @note define pins from lower to upper. No need to define upper bits if those are not be used.
+	 *       Pins are configured as outputs.
 	 */
 	BusOut(	uint8_t bit0 = nc,
 				uint8_t bit1 = nc,

@@ -25,43 +25,84 @@
 #include	"arduino_string.h"
 #include	"Printable.h"
 
-// Number base definitions, shared by print()/println() and String's
-// numeric constructors/concat.
+/** @name Number base constants for print()/println()'s base parameter and String's numeric constructors */
+///@{
 #define DEC 10
 #define HEX 16
 #define OCT 8
 #define BIN 2
+///@}
 
 class Print
 {
 public:
 	virtual ~Print() {}
 
+	/** Write one byte. The only method a derived class must implement --
+	 *  every print()/println() overload below is built on this (and the
+	 *  optional bulk override just below it, for efficiency).
+	 * @param c byte to write
+	 * @return 1 on success, 0 on failure
+	 */
 	virtual size_t	write( uint8_t c ) = 0;
+
+	/** Write a buffer. Default implementation just calls write(uint8_t) in
+	 *  a loop; override for a more efficient bulk path.
+	 * @param buffer bytes to write
+	 * @param size number of bytes
+	 * @return number of bytes actually written
+	 */
 	virtual size_t	write( const uint8_t *buffer, size_t size );
+
+	/** @param buffer bytes to write @param size number of bytes @return number of bytes actually written */
 	size_t	write( const char *buffer, size_t size );
+	/** @param str NUL-terminated string to write @return number of bytes actually written */
 	size_t	write( const char *str );
 
+	/** @return free space in the underlying write buffer, in bytes (0 = no headroom / not applicable) */
 	virtual int		availableForWrite( void ) { return 0; }
 
+	/** @return the error code last passed to setWriteError() (protected, called by derived classes), or 0 if none */
 	int		getWriteError( void ) { return _write_error; }
+	/** Reset the write-error state to 0. */
 	void	clearWriteError( void ) { setWriteError( 0 ); }
 
+	/** @name print() family
+	 *  Format and write, without a trailing newline.
+	 *  @return number of bytes written
+	 */
+	///@{
 	size_t	print( const char *s );
 	size_t	print( char c );
 	size_t	print( const std::string &s );
 	size_t	print( std::string_view s );
 	size_t	print( const String &s );
+	/** @param pstr an F()-wrapped flash-string literal */
 	size_t	print( const __FlashStringHelper *pstr );
+	/** @param p any Printable-derived object; calls p.printTo(*this) */
 	size_t	print( const Printable &p );
+	/** @param n value to format @param base DEC/HEX/OCT/BIN or any radix 2..36 */
 	size_t	print( int n, int base = DEC );
+	/** @param n value to format @param base DEC/HEX/OCT/BIN or any radix 2..36 */
 	size_t	print( unsigned int n, int base = DEC );
+	/** @param n value to format @param base DEC/HEX/OCT/BIN or any radix 2..36 */
 	size_t	print( long n, int base = DEC );
+	/** @param n value to format @param base DEC/HEX/OCT/BIN or any radix 2..36 */
 	size_t	print( unsigned long n, int base = DEC );
+	/** @param n value to format @param base DEC/HEX/OCT/BIN or any radix 2..36 */
 	size_t	print( long long n, int base = DEC );
+	/** @param n value to format @param base DEC/HEX/OCT/BIN or any radix 2..36 */
 	size_t	print( unsigned long long n, int base = DEC );
+	/** @param n value to format @param digits digits after the decimal point */
 	size_t	print( double n, int digits = 2 );
+	///@}
 
+	/** @name println() family
+	 *  Same as the corresponding print() overload, followed by "\\r\\n".
+	 *  @return number of bytes written, including the trailing "\\r\\n"
+	 */
+	///@{
+	/** Write just "\\r\\n". */
 	size_t	println( void );
 	size_t	println( const char *s );
 	size_t	println( char c );
@@ -77,8 +118,13 @@ public:
 	size_t	println( long long n, int base = DEC );
 	size_t	println( unsigned long long n, int base = DEC );
 	size_t	println( double n, int digits = 2 );
+	///@}
 
 protected:
+	/** Record a write-error code, for derived classes that track write
+	 *  failures (e.g. libraries implementing SD's File/SdFile).
+	 * @param err error code to record (default 1); 0 clears it
+	 */
 	void	setWriteError( int err = 1 ) { _write_error = err; }
 
 private:

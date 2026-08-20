@@ -17,6 +17,7 @@ extern "C" {
 
 #include	"io.h"
 
+/** default SCLK frequency (Hz) used by frequency() when no argument is given */
 #define	SPI_FREQ		1'000'000UL
 
 
@@ -96,8 +97,13 @@ public:
 
 	/** Manual CS control setting
 	 *
-	 * @param flag manual setting = true, auto control = false
-	 */	
+	 *  Switches the CS pin's mux between plain GPIO (so the sketch can
+	 *  drive it directly via the returned DigitalOut*) and the LPSPI
+	 *  peripheral's own hardware PCS function.
+	 *
+	 * @param flag manual setting = true, auto (hardware PCS) control = false
+	 * @return pointer to the CS pin's DigitalOut, for manual drive when flag is true
+	 */
 	virtual DigitalOut* cs_manual_control( bool flag );
 
 	/** variable for reporting last state */

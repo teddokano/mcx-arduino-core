@@ -22,15 +22,25 @@
 class SerialClass : public Serial, public Stream
 {
 public:
+	/** Construct on the given TX/RX pin pair. Hardware isn't touched until
+	 *  begin(); see Serial's constructor (which this delegates straight to)
+	 *  for the actual pin-resolution/panic() behavior.
+	 * @param tx_pin transmit pin
+	 * @param rx_pin receive pin
+	 */
 	SerialClass( int tx_pin, int rx_pin ) : Serial( tx_pin, rx_pin ) {}
 
-	/*
+	/** Start the port at the given baud rate and switch it into
+	 *  interrupt-driven RX mode.
+	 *
 	 *  attach() registers a (no-op) RX callback purely to switch getc()/
 	 *  readable() from raw single-byte hardware-register polling over to
 	 *  the interrupt-driven ring buffer (see Serial::_irq_handler()) --
 	 *  without it the RX interrupt is never enabled at all, and bytes
 	 *  arriving faster than the sketch calls read() get silently
 	 *  overwritten in the 1-deep hardware receive register.
+	 *
+	 * @param baud baud rate in bps
 	 */
 	void	begin( int baud ) { this->baud( baud ); attach( []{}, RxIrq ); }
 
@@ -48,24 +58,35 @@ public:
 	 *  Serial's own write()), so `using Print::write;` brings those back.
 	 */
 	using	Print::write;
+
+	/** Print::write() override: send one byte. @param c byte to send @return 1 */
 	size_t	write( uint8_t c ) override                         { putc( c ); return 1; }
+	/** Print::write() override: send a buffer. @param buffer bytes to send @param size buffer length @return size */
 	size_t	write( const uint8_t *buffer, size_t size ) override{ Serial::write( buffer, size ); return size; }
 
+	/** Stream::available() override. @return number of bytes waiting to be read */
 	int		available( void ) override { return (int)Serial::available(); }
+	/** Stream::read() override. @return next byte, or -1 if none available */
 	int		read( void ) override      { return getc(); }
+	/** Stream::peek() override. @return next byte without consuming it, or -1 if none available */
 	int		peek( void ) override      { return Serial::peek(); }
+	/** Block until all outgoing data has actually finished transmitting. */
 	void	flush( void )              { Serial::flush(); }
+	/** Stream::availableForWrite() override. @return free space in the TX buffer, in bytes */
 	int		availableForWrite( void ) override { return (int)Serial::availableForWrite(); }
 
+	/** Always true -- provided for `while (!Serial)`-style sketch compatibility. */
 	inline operator bool( void ) { return true; }
 };
 
+/** Global Serial instance, USB-CDC-bridged (USBTX/USBRX). */
 extern SerialClass	Serial;
 
 // Serial1: hardware UART, separate from the USB-bridged Serial. On D0(RX)/
 // D1(TX) on most boards; on FRDM-MCXN947 it's on the MikroBus header
 // (MB_TX/MB_RX) instead -- see arduino_serial.cpp for why D0/D1 can't
 // support it on that board.
+/** Global Serial1 instance -- hardware UART pin pair, board-dependent (see above). */
 extern SerialClass	Serial1;
 
 #endif // !R01LIB_ARDUINO_SERIAL_H

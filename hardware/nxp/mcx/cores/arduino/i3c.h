@@ -8,7 +8,10 @@
  *
  *  @class I3C
  *
- *	A class for I3C bus operations
+ *	A master-mode I3C driver, derived from I2C. Supports native I3C-SDR
+ *	transactions (dynamic addressing via DAA, CCC broadcast/direct
+ *	commands, IBI) as well as running the same physical bus in legacy
+ *	I2C mode (see mode()) for targets that don't speak I3C.
  */
 
 #ifndef R01LIB_I3C_H
@@ -21,9 +24,17 @@
 #include	"i2c.h"
 #include	"fsl_i3c.h"
 
+/** when defined, reg_write()/reg_read() use their own direct
+ *  register-addressed transfer path (reg_xfer()) instead of composing a
+ *  register-address byte into a plain write()/read() the way I2C's base
+ *  implementation does.
+ */
 #define	CUSTOM_REGISTAR_XFER
 
-/** constants: CCC  */
+/** constants for the I3C Common Command Codes (CCC) used by ccc_broadcast()/
+ *  ccc_set()/ccc_get(); see the MIPI I3C specification for the full set and
+ *  their semantics.
+ */
 enum CCC
 {
 	BROADCAST_ENEC		= 0x00,
@@ -87,19 +98,19 @@ public:
 	 * @param i2c_freq    (optional) SCL frequency in Hz for I2C operation
 	 * @param i3c_od_freq (optional) SCL frequency in Hz for I3C open-drain operation
 	 * @param i3c_pp_freq (optional) SCL frequency in Hz for I3C push-pull operation
-	 * 
-	 *  @note use zero or I3C_DEFAULT_FREQ to set default frequency
+	 *
+	 *  @note use zero or DEFAULT_FREQ_SETTING to leave a given rate at its default
 	 */
 	virtual void	frequency( uint32_t i2c_freq, uint32_t i3c_od_freq, uint32_t i3c_pp_freq );
 
-	/** All frequency settings reverted to default
+	/** All frequency settings (I2C, I3C open-drain, I3C push-pull) reverted to default
 	 */
 	virtual void	frequency( void );
 
 	/** mode setting
 	 *	I3C bus is configured to I3C-SDR, I3C-DDR or I2C
-	 *  
-	 * @param mode kI3C_TypeI3CSdr, kI3C_TypeI2C or kI3C_TypeI3CDdr
+	 *
+	 * @param mode I3C_MODE, I2C_MODE or I3CDDR_MODE
 	 */
 	virtual void 	mode( MODE mode );
 
@@ -125,83 +136,113 @@ public:
 	
 #ifdef	CUSTOM_REGISTAR_XFER
 	/** Register write (multiple byte data)
-	 *	provideds interface for register write
-	 *	
+	 *	provides interface for register write
+	 *
 	 * @param targ target address
 	 * @param reg register address
 	 * @param dp data to write
 	 * @param length data length
+	 * @param stop currently ignored -- reg_xfer() always uses its own default (STOP); kept for API-shape parity with I2C::reg_write()
 	 * @return status_t
 	 */
 	virtual status_t	reg_write( uint8_t targ, uint8_t reg, const uint8_t *dp, int length, bool stop = STOP );
 
 	/** Register read (multiple byte data)
-	 *	provideds interface for register read
-	 *	
+	 *	provides interface for register read
+	 *
 	 * @param targ target address
 	 * @param reg register address
-	 * @param dp data to write
+	 * @param dp buffer to receive the read data
 	 * @param length data length
+	 * @param stop currently ignored -- reg_xfer() always uses its own default (STOP); kept for API-shape parity with I2C::reg_read()
 	 * @return status_t
 	 */
 	virtual status_t	reg_read( uint8_t targ, uint8_t reg, uint8_t *dp, int length, bool stop = STOP );
 #endif	// CUSTOM_REGISTAR_XFER
 	
 	/** check IBI status
-	 *  
+	 *  	Non-blocking poll of whether an In-Band Interrupt has occurred
+	 *  	since the last call. Clears the pending flag on read.
+	 *
 	 * @return target address of IBI initiated device or zero if no event happened
 	 */
 	virtual uint8_t		check_IBI( void );
-	
+
 	/** set IBI callback function
-	 *  
-	 * @return target address of IBI initiated device or zero if no event happened
+	 *  	Registered function is invoked from master_ibi_callback() (the
+	 *  	SDK-facing IBI handler) whenever an IBI is serviced.
+	 *
+	 * @param fp pointer to the function to call, or nullptr to disable
 	 */
 	virtual void		set_IBI_callback( i3c_func_ptr fp );
 
 	/** CCC broadcast
-	 *  
+	 *  	Sends a Common Command Code to the broadcast address (0x7E),
+	 *  	optionally followed by data bytes.
+	 *
 	 * @param ccc CCC command
-	 * @param dp data to send
+	 * @param dp data to send along with the command (may be nullptr if length is 0)
 	 * @param length data length
+	 * @param first_time (option) force the one-time open-drain-frequency priming step ccc_broadcast() otherwise only does automatically on this instance's first broadcast
 	 * @return status_t
 	 */
 	virtual status_t	ccc_broadcast( uint8_t ccc, const uint8_t *dp, uint8_t length, bool first_time = false );
 
-	/** CCC set
-	 *  
+	/** CCC direct set
+	 *  	Broadcasts the CCC command, then writes a single data byte
+	 *  	directly to addr.
+	 *
 	 * @param ccc CCC command
-	 * @param data single byte data
+	 * @param addr target address
+	 * @param data single byte data to write
 	 * @return status_t
 	 */
 	virtual status_t	ccc_set( uint8_t ccc, uint8_t addr, uint8_t data );
 
-	/** CCC get
-	 *  
+	/** CCC direct get
+	 *  	Broadcasts the CCC command, then reads data directly from addr.
+	 *
 	 * @param ccc CCC command
-	 * @param dp data to send
+	 * @param addr target address
+	 * @param dp buffer to receive data
 	 * @param length data length
 	 * @return status_t
 	 */
 	virtual status_t	ccc_get( uint8_t ccc, uint8_t addr, uint8_t *dp, uint8_t length );
 
 	/** perform DAA procedure
-	 *  
-	 * @param address_list new address list to be assigned
+	 *  	Runs Dynamic Address Assignment, handing out addresses from
+	 *  	address_list to any devices on the bus that don't have one yet.
+	 *
+	 * @param address_list candidate address list to assign from
 	 * @param list_length address list length
-	 * @param device_list pointer to i3c_device_info_t array which is declared as static array in I3C driver
+	 * @param device_list out-parameter: set to the SDK's own static array of assigned-device info
 	 * @return int for number of devices which has newly assigned addresses (max 10)
 	 */
 	virtual int			DAA( const uint8_t *address_list, uint8_t list_length, i3c_device_info_t** device_list );
-	
-	/** master_ibi_callback
-	 *  interface function for SDK
-	 */	
+
+	/** SDK IBI (In-Band Interrupt) event callback, registered with the
+	 *  MCUXpresso SDK I3C driver at construction time. Records the
+	 *  interrupting device's address for check_IBI(), buffers any IBI
+	 *  payload data, and invokes the user callback set via
+	 *  set_IBI_callback(), if any. Not intended to be called directly.
+	 *
+	 * @param base I3C peripheral base address (SDK callback signature)
+	 * @param handle SDK master transfer handle
+	 * @param ibiType kind of IBI event
+	 * @param ibiState IBI handler state (e.g. whether a data buffer is needed)
+	 */
 	static void		master_ibi_callback( I3C_Type *base, i3c_master_handle_t *handle, i3c_ibi_type_t ibiType, i3c_ibi_state_t ibiState );
 
-	/** master_ibi_callback
-	 *  interface function for SDK
-	 */	
+	/** SDK transfer-complete callback, registered with the MCUXpresso SDK
+	 *  I3C driver at construction time. Records the outcome of an
+	 *  asynchronous transfer. Not intended to be called directly.
+	 *
+	 * @param base I3C peripheral base address (SDK callback signature)
+	 * @param handle SDK master transfer handle
+	 * @param status transfer completion status
+	 * @param userData user data pointer (unused)
+	 */
 	static void		master_callback( I3C_Type *base, i3c_master_handle_t *handle, status_t status, void *userData );
 
 protected:

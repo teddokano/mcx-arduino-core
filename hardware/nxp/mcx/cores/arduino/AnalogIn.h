@@ -144,25 +144,56 @@ extern "C" {
 #include "obj.h"
 #include "io.h"
 
+/**
+ * @brief Single-shot ADC input class (FRDM-MCXN947).
+ */
 class AnalogIn : public Obj
 {
 public:
+    /**
+     * @brief  Construct and configure an analog input on the given pin.
+     *
+     * Resolves @p pin to an ADC0 channel_number/side pair, performs
+     * peripheral init (first instance only, including the VREF/SPC setup
+     * this chip needs) and per-channel `LPADC_SetConvCommandConfig`. Calls
+     * `panic()` if @p pin is not a supported analog pin (A2..A5 -- A0/A1
+     * aren't wired on this board).
+     *
+     * @param pin  Logical analog pin (e.g. `A2`..`A5`).
+     */
     explicit AnalogIn( int pin );
+
+    /**
+     * @brief  Destroy the AnalogIn. Does not stop ADC0 (may be shared).
+     */
     virtual ~AnalogIn();
 
+    /**
+     * @brief  Perform a single-shot conversion and return normalized value.
+     * @return Value in range 0.0 (0V) - 1.0 (VDDA).
+     */
     float read( void );
+
+    /**
+     * @brief  Perform a single-shot conversion and return 16-bit value.
+     * @return Value in range 0 - 0xFFFF (12-bit ADC result left-scaled).
+     */
     uint16_t read_u16( void );
+
+    /** @brief  Implicit conversion, equivalent to read(). */
     operator float();
 
 private:
     void     resolve_pin( int pin );
-    uint16_t sample_raw( void );
+    uint16_t sample_raw( void );   // single-shot conversion, 12-bit raw
 
+    // ---- shared peripheral state (reference-counted) ----
     static void _acquire_peripheral( void );
     static void _release_peripheral( void );
     static uint8_t _instance_count;
     static bool    _calibrated;
 
+    // ---- per-instance channel mapping ----
     uint8_t _channel_id;      // LPADC command/slot index
     uint8_t _channel_number;  // hardware ADC0 channel number (shared A/B pair)
     lpadc_sample_channel_mode_t _side;  // which side of the pair this pin is

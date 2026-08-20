@@ -190,34 +190,63 @@ extern "C" {
 #include "obj.h"
 #include "io.h"
 
+/**
+ * @brief PWM output class (FRDM-MCXN947, FlexPWM1-backed).
+ */
 class PwmOut : public Obj
 {
 public:
+    /**
+     * @brief  Construct and configure a PWM output on the given pin.
+     *
+     * Resolves @p pin to a FlexPWM1 submodule/channel pair, performs
+     * module-level init (first instance only: clock, fault-disable),
+     * and sets up the submodule/channel with a default 20ms period,
+     * 0% duty. Calls `panic()` if @p pin is not a supported PWM pin.
+     *
+     * @param pin  Logical PWM-capable pin (`PWM0`..`PWM5`).
+     */
     explicit PwmOut( int pin );
+
+    /**
+     * @brief  Destroy the PwmOut. Sets duty to 0 (does not free the pin).
+     */
     virtual ~PwmOut();
 
+    /** @brief  Set period in seconds. Shared with the paired channel. */
     void  period( float seconds );
+    /** @brief  Set period in milliseconds. */
     void  period_ms( int ms );
+    /** @brief  Set period in microseconds. */
     void  period_us( int us );
 
+    /** @brief  Set pulse width in seconds (clamped to period). */
     void  pulsewidth( float seconds );
+    /** @brief  Set pulse width in milliseconds. */
     void  pulsewidth_ms( int ms );
+    /** @brief  Set pulse width in microseconds. */
     void  pulsewidth_us( int us );
 
+    /** @brief  Set duty cycle, 0.0 - 1.0. */
     void  write( float duty );
+    /** @brief  Get current duty cycle, 0.0 - 1.0. */
     float read( void );
 
+    /** @brief  Shorthand assignment, equivalent to write(). */
     PwmOut &operator=( float duty );
+    /** @brief  Implicit conversion, equivalent to read(). */
     operator float();
 
 private:
     void resolve_pin( int pin );
-    void apply( void );
+    void apply( void );  // push _period_us / _pulse_us to hardware
 
+    // ---- shared module state (reference-counted) ----
     static void _acquire_module( void );
     static void _release_module( void );
     static uint8_t _instance_count;
 
+    // ---- per-instance submodule/channel mapping ----
     uint8_t  _submodule;   // 0=sm0, 1=sm1, 2=sm2
     uint8_t  _channel;     // 0=chA, 1=chB
     int      _pin;

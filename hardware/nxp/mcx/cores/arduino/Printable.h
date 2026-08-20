@@ -18,6 +18,12 @@ class Print;
 class Printable
 {
 public:
+	/** Write this object's textual representation to p, typically using
+	 *  p.print()/println() calls (whose size_t return values are meant to
+	 *  be summed and returned, per the Arduino Printable convention).
+	 * @param p the Print (e.g. Serial) to write to
+	 * @return number of bytes written
+	 */
 	virtual size_t	printTo( Print &p ) const = 0;
 };
 

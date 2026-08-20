@@ -1,5 +1,9 @@
-// Dummy source to satisfy Arduino IDE core.a requirement
-// All real code is in the prebuilt library
+// C-runtime plumbing this bare-metal target needs but the toolchain/newlib
+// don't provide on their own: minimal operator new/delete (heap-backed via
+// _sbrk below, no exceptions), and the newlib syscall stubs libc's I/O
+// functions ultimately call through to (most are no-ops/failure stubs --
+// there's no filesystem/process here -- except _sbrk, which is the real
+// heap allocator backing malloc()/operator new()).
 
 #include <stdlib.h>
 #include <stddef.h>
