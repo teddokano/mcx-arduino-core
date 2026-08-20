@@ -7,6 +7,10 @@
 #ifndef R01LIB_ARDUINO_SPI_H
 #define R01LIB_ARDUINO_SPI_H
 
+#include <cstdint>
+#include <cstddef>
+#include "io.h"	// ARD_MOSI/ARD_MISO/ARD_SCK/ARD_CS, used as default arguments below
+
 // Matches the LSBFIRST=0/MSBFIRST=1 values already #define'd in arduino.h
 // (standard Arduino convention). Kept as a local enum too since this header
 // doesn't include arduino.h (arduino.h includes this, not the other way

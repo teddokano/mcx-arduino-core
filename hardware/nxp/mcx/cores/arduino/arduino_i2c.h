@@ -7,6 +7,12 @@
 #ifndef R01LIB_ARDUINO_I2C_H
 #define R01LIB_ARDUINO_I2C_H
 
+#include <cstdint>
+#include <cstddef>
+
+class I2C;	// full definition: i2c.h (r01lib), pulled in by whichever
+			// translation unit actually implements TwoWire's methods
+
 /** Arduino-compatible I2C (Wire) class.
  *
  *  Wraps an r01lib I2C (or, when sda_pin/scl_pin are this board's I3C
