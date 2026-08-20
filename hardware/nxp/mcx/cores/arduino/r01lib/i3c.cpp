@@ -118,6 +118,30 @@ I3C::I3C( int sda, int scl, uint32_t i2c_freq, uint32_t i3c_od_freq, uint32_t i3
 	 */
 	_scl.input_buffer( true );
 	_sda.input_buffer( true );
+
+#ifdef	CPU_MCXN947VDF
+	/*
+	 *  Same never-called-function trap as the IBE bits above, one pin
+	 *  over: BOARD_InitDEBUG_UARTPins() is also the only place that muxes
+	 *  PORT1_11 to I3C1_PUR, so on this board the pull-up-enable signal
+	 *  never actually reaches the pin.
+	 *
+	 *  That matters here far more than on A153. FRDM-MCXN947's onboard
+	 *  I3C bus leaves its fixed pull-up resistors (R51/R52) DNP and
+	 *  depends entirely on this peripheral-driven dynamic pull-up, so
+	 *  with P1_11 left at its reset default there is effectively no
+	 *  pull-up on the bus at all. Push-pull phases still work (both
+	 *  levels are actively driven), but every open-drain phase -- which
+	 *  includes the 0x7E broadcast address header every CCC starts with
+	 *  -- cannot rise, so native I3C SDR NAKs on the very first address
+	 *  phase with no usable edges on the wire. A153 is unaffected: its
+	 *  I3C_SDA/I3C_SCL are the general-purpose Arduino I2C connector
+	 *  pins, which do have real populated pull-ups.
+	 */
+	DigitalInOut	_pur( P1_11 );
+
+	_pur.pin_mux( kPORT_MuxAlt10 );
+#endif	// CPU_MCXN947VDF
 }
 
 I3C::~I3C(){
