@@ -906,7 +906,7 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 - ローカルに保存済みのMCUXpresso SDK配布zip（`SDK_26_06_00_FRDM-MCXA153.zip`／`SDK_2_16_000_FRDM-MCXN947.zip`）を`unzip -l`で調査したところ、`devices/<チップ>/`配下に**本物のCMSIS-SVDファイル**（`MCXA153.xml`＝4.0MB・55ペリフェラル、`MCXN947_cm33_core0.xml`＝14MB・176ペリフェラル、いずれも`SPDX-License-Identifier: BSD-3-Clause`のNXP著作権ヘッダ付き）を発見・抽出
 - `hardware/nxp/mcx/variants/<board>/svd/`（新設）に配置（`.xml`から拡張子だけ`.svd`に変更、既存の`include/`/`linker/`/`src/`と並ぶカテゴリディレクトリとして）、`boards.txt`に`debug.svd_file={runtime.platform.path}/variants/<board>/svd/<ファイル名>`をボードごとに追加。`arduino-cli debug --info`で両ボードとも正しく解決すること、Python `xml.etree`でwell-formed XMLとしてパースできることを確認。実ビルドサイズは変化なし（デバッグ設定のみで実際のビルドには一切関与しないファイルのため）
 - `LICENSE`のThird-Party Noticesにこの新規SVDファイルの言及も追加（既存のNXP MCUXpresso SDK BSD-3-Clause表記の対象範囲に含める形）
-- まだ未実施: Arduino IDE 2の実際のデバッグセッションでCORTEX PERIPHERALSパネルが実際にレジスタ値を表示するかの実機確認
+- **実機確認完了**: ユーザーがArduino IDE 2のデバッグセッションでCORTEX PERIPHERALSパネルにレジスタ値が実際に表示されることを確認。これでSVD対応も完了
 
 **追記（ライセンス確認）**: ユーザーから「SVDファイルはライセンス的に問題ないか」と確認依頼。ファイル自体のヘッダーコメント（`SPDX-License-Identifier: BSD-3-Clause`）だけでなく、SDK配布zip自体に同梱されている公式マニフェスト`SW-Content-Register.txt`を両チップ分（A153: SDK 26.06.00、N947: SDK 2.16.000）確認したところ、いずれも`SDK_Device`カテゴリ（`Location: devices/<device>/`——今回抽出したSVDファイルの実際の格納パスと一致）が明示的に`Outgoing License: BSD-3-Clause`と記載されていることを確認。SDKパッケージ全体のデフォルトライセンスは制限の強い`LA_OPT_NXP_Software_License`だが、このカテゴリは明示的にBSD-3-Clauseとして切り出されており、このプロジェクトが既存のfsl_*ドライバファイル等（同じく`devices/<device>/`配下）に適用してきたのと全く同じカテゴリ・同じ扱いであることを、ヘッダーコメントの自己申告だけでなくNXP公式マニフェストで二重に確認済み。問題なしと判断。
 
