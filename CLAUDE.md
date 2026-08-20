@@ -933,7 +933,16 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 - **`arduino_spi.cpp`のスタックオーバーフロー**: `SPIClass::txrx()`が固定128バイトのスタック配列`r_data`へ、呼び出し側の`size`（上限なし）をそのまま`spi->write()`/`memcpy()`に渡しており、128バイトを超える転送でオーバーフローする実装だった。128バイトずつのチャンクに分割してループする実装に修正——v0.4.0でCS制御をスケッチ側の`digitalWrite()`責任に変更済み（r01lib側は自動でCSをトグルしない設計）のため、`SPI.transfer(buf, count)`一回の呼び出し中にCSがHIGHのまま保持されている前提で、内部で複数回の`spi->write()`（＝複数回の`LPSPI_MasterTransferBlocking()`）に分割してもバス上は連続した一続きの転送に見える——チャンク分割による副作用はない
 - **`TwoWire::requestFrom()`の`stop`引数無視**: `stop`引数を受け取りながら`i2c->read(address, data_buf, length)`へ渡しておらず常時無視されていた（`I2C::read()`自体は`stop`引数に対応済み、デフォルト`STOP`）。単純に`stop`を渡すよう修正
 - 両ボードで`hello_world`・`test_SPI1_MikroBus`のコンパイル確認、全54サンプル×両ボード回帰スイープも実施——新規失敗なし（既知の11件のみ、`test_combined_peripherals_A153`/`_N947`削除に伴い件数が13→11に減少しているのも想定通り）
-- **`test_Wire_LM75B`を拡張して`stop`修正の実機検証用に変更**: 従来は`requestFrom(addr, 2)`（`stop`省略＝デフォルトtrue）のみだったスケッチを、`stop=false`（バスを開放しない、次の転送へリピートスタートで直結するはず）と`stop=true`（通常、バスを閉じる）の2回のreadを毎ループ連続実行する構成に変更。ユーザーが実機（D18/D19に接続したP3T1035xUK-ARD）とロジックアナライザで、2回のread境界にSTOPコンディションが現れない（`stop=false`側）ことを確認する想定——**実機・ロジアナでの確認は次のステップとして依頼中**（SPI側の128バイト超チャンク分割も同様に未検証、こちらはMOSI-MISOループバックで256バイト程度の転送を行うテストスケッチが必要）
+- **`test_Wire_LM75B`を拡張して`stop`修正の実機検証用に変更**: 従来は`requestFrom(addr, 2)`（`stop`省略＝デフォルトtrue）のみだったスケッチを、`stop=false`（バスを開放しない、次の転送へリピートスタートで直結するはず）と`stop=true`（通常、バスを閉じる）の2回のreadを毎ループ連続実行する構成に変更。ユーザーが実機（D18/D19に接続したP3T1035xUK-ARD）とロジックアナライザで検証
+
+### 実機検証で発覚: `I2C::read_core()`自体が`stop`引数を無視する、より根深いr01libバグ
+上記`test_Wire_LM75B`をユーザーが実機・ロジアナで確認したところ、「STOPコンディションが出せてない」と報告——`stop=false`/`stop=true`どちらのreadの後も、NAKで終わる最後のバイトの直後に約50usのアイドルギャップ（両線High、クロックなし）が見え、2回のread境界で違いが全く出ていなかった。
+
+- **根本原因**: `TwoWire::requestFrom()`の修正で`stop`引数は`I2C::read()`まで正しく届くようになっていたが、その先の`I2C::read_core()`（`hardware/nxp/mcx/cores/arduino/r01lib/i2c.cpp`、LPI2Cを直接叩くA153/N947向け分岐）が、受け取った`stop`引数を一切見ずに、受信成功後は無条件で`LPI2C_MasterStop( unit_base )`を呼んでいた——すぐ上にある`write_core()`が同じパターンで`if ( stop ) { LPI2C_MasterStop(...); }`と正しくガードしているのと対照的な抜け。このバグは今回`TwoWire::requestFrom()`を直すまで一度も`stop=false`で`read()`/`read_core()`を呼ぶコードパスが存在しなかったため、これまで一切露見していなかった（`NO_STOP`を使う既存コードは全て`write()`側のみ）
+- `read_core()`の`LPI2C_MasterStop()`呼び出しを`write_core()`と同じ`if ( stop )`ガードで囲んで修正。I3C側（`i3c.cpp`の`xfer()`→`reg_xfer()`）はSDKのflags方式（`kI3C_TransferNoStopFlag`）で元から`stop`を正しく反映しており、この種のバグはなかったことも確認済み
+- 両ボードで`test_Wire_LM75B`・`test_SPI_large_transfer`のコンパイル確認、全55サンプル×両ボード回帰スイープも実施——新規失敗なし（既知の11件のみ）
+- **`test_SPI_large_transfer`を新規作成**: もう1件の監査バグ（`arduino_spi.cpp`の128バイトチャンク分割）の実機検証用。MOSI-MISOループバックで、128バイト境界を跨ぐ複数サイズ（1/127/128/129/255/256/257/383/384）を連続転送し、往復一致とバイト単位のずれ検出を行う
+- **実機・ロジアナでの再確認は次のステップとして依頼中**（`read_core()`修正後の`stop=false`/`stop=true`の違いが波形に出るか、および`test_SPI_large_transfer`のチャンク境界）
 
 ---
 
