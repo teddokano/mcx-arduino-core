@@ -908,6 +908,8 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 - `LICENSE`のThird-Party Noticesにこの新規SVDファイルの言及も追加（既存のNXP MCUXpresso SDK BSD-3-Clause表記の対象範囲に含める形）
 - まだ未実施: Arduino IDE 2の実際のデバッグセッションでCORTEX PERIPHERALSパネルが実際にレジスタ値を表示するかの実機確認
 
+**追記（ライセンス確認）**: ユーザーから「SVDファイルはライセンス的に問題ないか」と確認依頼。ファイル自体のヘッダーコメント（`SPDX-License-Identifier: BSD-3-Clause`）だけでなく、SDK配布zip自体に同梱されている公式マニフェスト`SW-Content-Register.txt`を両チップ分（A153: SDK 26.06.00、N947: SDK 2.16.000）確認したところ、いずれも`SDK_Device`カテゴリ（`Location: devices/<device>/`——今回抽出したSVDファイルの実際の格納パスと一致）が明示的に`Outgoing License: BSD-3-Clause`と記載されていることを確認。SDKパッケージ全体のデフォルトライセンスは制限の強い`LA_OPT_NXP_Software_License`だが、このカテゴリは明示的にBSD-3-Clauseとして切り出されており、このプロジェクトが既存のfsl_*ドライバファイル等（同じく`devices/<device>/`配下）に適用してきたのと全く同じカテゴリ・同じ扱いであることを、ヘッダーコメントの自己申告だけでなくNXP公式マニフェストで二重に確認済み。問題なしと判断。
+
 ---
 
 ## 動作確認済み
