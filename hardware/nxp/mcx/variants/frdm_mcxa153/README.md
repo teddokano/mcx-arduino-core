@@ -1,45 +1,19 @@
-# variants/frdm_mcxa153/ — セットアップ手順
+# variants/frdm_mcxa153/
 
-## 1. プリビルドライブラリの配置
-
-MCUXpressoで `_r01lib_frdm_mcxa153` プロジェクトをDebugビルドし、
-生成された `.a` ファイルをここにコピーしてください。
-
-```
-MCUXpresso の出力:
-  _r01lib_frdm_mcxa153/Debug/lib_r01lib_frdm_mcxa153.a
-
-コピー先:
-  variants/frdm_mcxa153/lib/lib_r01lib_frdm_mcxa153.a
-```
-
-## 2. リンカスクリプトの配置
-
-MCUXpressoのDebugフォルダにある `.ld` ファイルのうち、
-メモリマップを定義するものをコピーしてください。
-
-```
-MCUXpresso の出力 (例):
-  _r01lib_frdm_mcxa153/Debug/TEST_xxx_Debug.ld  ← メインLD
-  またはプロジェクト内の *.ld
-
-コピー先:
-  variants/frdm_mcxa153/linker/MCXA153.ld
-```
-
-> **ヒント**: MCUXpressoが生成する `.ld` は複数あります。
-> `MEMORY { }` セクションを含むメインのリンカスクリプトを使ってください。
-
-## 3. 確認
+`v0.4.0`より、このボードはプリビルド`.a`ライブラリ方式を廃止し、フルソース
+配布に移行済み（詳細はCHANGELOG.mdの`[0.4.0]`エントリ、CLAUDE.mdの
+「`cores/arduino/`一本化・`platform.txt`書き換え完了」セクション参照）。
 
 ```
 variants/frdm_mcxa153/
-├── include/          ← 自動配置済み（ヘッダ群）
-├── lib/
-│   └── lib_r01lib_frdm_mcxa153.a   ← ★手動配置
-└── linker/
-    └── MCXA153.ld                   ← ★手動配置
+├── include/   ← ボード固有ヘッダ群
+├── linker/
+│   └── MCXA153.ld    ← リンカスクリプト（メモリマップ定義）
+└── src/       ← ボード固有ソース（pin_mux, clock_config, board, デバイス
+                  スタートアップ, チップごとに内容が異なるSDKドライバ）
 ```
+
+このファイル以降は、このボード固有の実機検証・実機バグ修正の記録。
 
 ## MikroBusのGPIO/SPI: `SPI1`（実機検証済み）
 
@@ -78,17 +52,3 @@ I2CとUARTについては、このチップの物理制約によりMikroBus版�
   Serial出力（`transfer()`/`transfer16()`のループバック）とも実機確認済み
 - `pinMode()`もN947と同様、呼ばれるたびに明示的にALT0(GPIO)へ再設定する
   よう修正済み（`arduino_io.cpp`）
-
-## 含まれるオブジェクト (.a の内容)
-
-```
-fsl_assert, fsl_debug_console, fsl_str    ← utilities
-startup_mcxa153                            ← スタートアップ
-BusInOut, InterruptIn, Serial, Ticker     ← r01lib コア
-i2c, i3c, io, irq, mcu, obj, spi         ← r01lib コア
-arduino_i2c, arduino_io, arduino_main     ← arduino layer
-arduino_serial, arduino_spi               ← arduino layer
-fsl_clock, fsl_gpio, fsl_lpi2c, ...      ← NXP SDK drivers
-board, clock_config, pin_mux              ← board files
-TempSensor, LEDDriver, RTC_NXP, ...      ← r01device
-```

@@ -1,50 +1,21 @@
-# variants/frdm_mcxn947/ — セットアップ手順
+# variants/frdm_mcxn947/
 
-## 1. プリビルドライブラリの配置
-
-MCUXpressoで `_r01lib_frdm_mcxn947` プロジェクトをDebugビルドし、
-生成された `.a` ファイルをここにコピーしてください。
-
-```
-MCUXpresso の出力:
-  _r01lib_frdm_mcxn947/Debug/lib_r01lib_frdm_mcxn947.a
-
-コピー先:
-  variants/frdm_mcxn947/lib/lib_r01lib_frdm_mcxn947.a
-```
-
-## 2. リンカスクリプトの配置
-
-`variants/frdm_mcxn947/linker/MCXN947.ld` はA153の `MCXA153.ld` のセクション
-配置ロジックをベースに、MCXN947の実メモリマップ（MCUXpresso生成の
-`app_template_FRDM_MCXN947` プロジェクトの `.ld` から抽出）に合わせて手書き
-したもの。PROGRAM_FLASH0/1（各1M、連続）を単一のPROGRAM_FLASH(2M)に統合、
-SRAMX(96K)/SRAMH(32K)をA153のSRAMX0/SRAMX1相当として配置。
-
-## 3. 確認
+`v0.4.0`より、このボードはプリビルド`.a`ライブラリ方式を廃止し、フルソース
+配布に移行済み（詳細はCHANGELOG.mdの`[0.4.0]`エントリ、CLAUDE.mdの
+「`cores/arduino/`一本化・`platform.txt`書き換え完了」セクション参照）。
 
 ```
 variants/frdm_mcxn947/
-├── include/          ← 自動配置済み（ヘッダ群）
-├── lib/
-│   └── lib_r01lib_frdm_mcxn947.a   ← ★手動配置
-└── linker/
-    └── MCXN947.ld                   ← 済（手書き）
+├── include/   ← ボード固有ヘッダ群
+├── linker/
+│   └── MCXN947.ld    ← リンカスクリプト（メモリマップ定義。A153の
+│                        MCXA153.ldのセクション配置ロジックをベースに、
+│                        MCXN947の実メモリマップに合わせて手書きしたもの）
+└── src/       ← ボード固有ソース（pin_mux, clock_config, board, デバイス
+                  スタートアップ, チップごとに内容が異なるSDKドライバ）
 ```
 
-## 含まれるオブジェクト (.a の内容)
-
-```
-fsl_assert, fsl_debug_console, fsl_str    ← utilities
-startup_mcxn947                            ← スタートアップ
-BusInOut, InterruptIn, Serial, Ticker     ← r01lib コア
-i2c, i3c, io, irq, mcu, obj, r01lib_spi   ← r01lib コア
-arduino_i2c, arduino_io, arduino_main     ← arduino layer
-arduino_serial, arduino_spi, arduino_string ← arduino layer
-Print, Stream                              ← arduino layer
-fsl_clock, fsl_gpio, fsl_lpi2c, ...      ← NXP SDK drivers
-board, clock_config, pin_mux              ← board files
-```
+このファイル以降は、このボード固有の実機検証・実機バグ修正の記録。
 
 ## Wire / Wire1 の実機検証済み動作（既知の癖あり）
 
