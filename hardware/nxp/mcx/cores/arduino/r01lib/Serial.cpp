@@ -367,18 +367,27 @@ Serial::Serial( int tx, int rx, int baud )
 
     _register_instance();
 
-    // Set pin mux for TX and RX before LPUART_Init
-    {
-        DigitalInOut tx_io( (uint8_t)tx );
-        DigitalInOut rx_io( (uint8_t)rx );
-        tx_io.pin_mux( (int)_tx_mux );
-        rx_io.pin_mux( (int)_rx_mux );
-
-        // RX pins not otherwise pre-configured at boot (pin_mux.c) reset
-        // with the digital input buffer disabled -- MUX alone isn't enough,
-        // the peripheral never sees the incoming signal without this.
-        rx_io.input_buffer( true );
-    }
+    /*
+     *  Note what is deliberately NOT done here: claiming the TX/RX pins.
+     *  apply_pin_mux() does that, and begin() is what calls it.
+     *
+     *  The global Serial/Serial1 instances are constructed during static
+     *  initialization, before main(), whether or not the sketch ever
+     *  begin()s them. Muxing the pins here meant Serial1 seized its pins
+     *  unconditionally at that point -- and on FRDM-MCXN947 Serial1 sits
+     *  on MB_TX/MB_RX, the very same physical pins as I3C_SCL/I3C_SDA.
+     *  A sketch with its own global I3C object was therefore in an
+     *  unwinnable race: static init order across translation units is
+     *  unspecified, so whichever constructor ran last owned the pins. When
+     *  Serial1 lost that race nothing happened; when it won, the I3C
+     *  peripheral was left disconnected from the bus, SDA/SCL idled high
+     *  with no START ever generated, and every transfer returned
+     *  kStatus_I3C_Nak. Wire1 escaped this only because TwoWire::begin()
+     *  constructs its I3C lazily, long after static init.
+     *
+     *  Deferring to begin() also just matches how Arduino is supposed to
+     *  behave -- a port you never begin() has no business holding pins.
+     */
 
     // Clock must be set up before reset release and LPUART_Init
     _setup_clock();
@@ -391,6 +400,23 @@ Serial::Serial( int tx, int rx, int baud )
 
     _clk_freq = _get_clk_freq();
     LPUART_Init( _base, &_config, _clk_freq );
+}
+
+void Serial::apply_pin_mux( void )
+{
+    if ( !_base )
+        return;
+
+    DigitalInOut tx_io( (uint8_t)_tx_pin );
+    DigitalInOut rx_io( (uint8_t)_rx_pin );
+
+    tx_io.pin_mux( (int)_tx_mux );
+    rx_io.pin_mux( (int)_rx_mux );
+
+    // RX pins not otherwise pre-configured at boot (pin_mux.c) reset
+    // with the digital input buffer disabled -- MUX alone isn't enough,
+    // the peripheral never sees the incoming signal without this.
+    rx_io.input_buffer( true );
 }
 
 Serial::~Serial()

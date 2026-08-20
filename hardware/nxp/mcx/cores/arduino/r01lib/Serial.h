@@ -107,6 +107,22 @@ public:
     virtual ~Serial();
 
     /**
+     * @brief  Route this port's TX/RX pins to the UART peripheral.
+     *
+     * Deliberately NOT done by the constructor: the global Serial/Serial1
+     * instances are constructed during static initialization, and muxing
+     * there let a port the sketch never begin()s seize its pins anyway --
+     * which on FRDM-MCXN947 collides with I3C_SDA/I3C_SCL, since Serial1
+     * shares those physical pins (see the constructor for the full story).
+     *
+     * SerialClass::begin() calls this, so Arduino sketches get it for
+     * free. Call it directly only when driving this r01lib class straight,
+     * without the Arduino wrapper. Idempotent, and a no-op if pin
+     * resolution failed.
+     */
+    void     apply_pin_mux( void );
+
+    /**
      * @brief  Change the baud rate at runtime.
      *
      * Temporarily disables interrupts, re-initialises the peripheral, then

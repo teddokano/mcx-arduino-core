@@ -33,6 +33,12 @@ public:
 	/** Start the port at the given baud rate and switch it into
 	 *  interrupt-driven RX mode.
 	 *
+	 *  apply_pin_mux() is what actually routes the TX/RX pins to the UART.
+	 *  The constructor deliberately leaves them alone so that a port the
+	 *  sketch never begin()s doesn't hold pins another peripheral may want
+	 *  -- which matters on FRDM-MCXN947, where Serial1 shares its pins
+	 *  with I3C_SDA/I3C_SCL (see Serial's constructor for the full story).
+	 *
 	 *  attach() registers a (no-op) RX callback purely to switch getc()/
 	 *  readable() from raw single-byte hardware-register polling over to
 	 *  the interrupt-driven ring buffer (see Serial::_irq_handler()) --
@@ -42,7 +48,7 @@ public:
 	 *
 	 * @param baud baud rate in bps
 	 */
-	void	begin( int baud ) { this->baud( baud ); attach( []{}, RxIrq ); }
+	void	begin( int baud ) { apply_pin_mux(); this->baud( baud ); attach( []{}, RxIrq ); }
 
 	// ---- Print/Stream required overrides (hardware primitives only --
 	//      everything else (print/println/find/parseInt/...) is inherited
