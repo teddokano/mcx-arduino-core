@@ -57,9 +57,17 @@ void init_mcu( void )
 	CLOCK_SetClkDiv(kCLOCK_DivFlexcom2Clk, 1u);
 	CLOCK_AttachClk(kFRO12M_to_FLEXCOMM2);
 
-	/* SPI */
+	/* SPI -- FRO_HF_DIV (48MHz, see BOARD_BootClockPLL150M's
+	   CLOCK_SetupFROHFClocking() call), not FRO12M: this chip's LPSPI
+	   can't exceed roughly half its source clock's rate (basic SPI
+	   clock-division limit), so a 12MHz FRO12M source caps real
+	   throughput far below what SPISettings() requests -- confirmed on
+	   real hardware, a 24MHz SPISettings request measured as ~31kHz
+	   actual SCK on FRO12M (FRDM-MCXA153's equivalent default SPI
+	   already uses FRO_HF_DIV for exactly this reason, at the same
+	   48MHz, and measures the requested 24MHz correctly). */
 	CLOCK_SetClkDiv(kCLOCK_DivFlexcom1Clk, 1u);
-	CLOCK_AttachClk(kFRO12M_to_FLEXCOMM1);
+	CLOCK_AttachClk(kFRO_HF_DIV_to_FLEXCOMM1);
 
 	/* I2C on MikroBus (MB_SDA/MB_SCL -> LPI2C3) */
 	CLOCK_SetClkDiv(kCLOCK_DivFlexcom3Clk, 1u);
