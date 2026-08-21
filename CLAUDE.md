@@ -1069,7 +1069,7 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 - **実装中に既存の別バグを発見（今回は未修正）**: `PORT_SetPinPullUpDown()`のドキュメントコメント（`enable`→PE、`logic`→PS）と実装（`enable`→PS、`logic`→PE、逆）が食い違っている。呼び出し側の実際の引数の組み合わせから判断すると、`INPUT_PULLDOWN`指定時に実際にはプル自体が無効化される可能性がある（`enable=1,logic=0`→書き込まれるのは`PS=1,PE=0`→PE=0なのでプル無効）。今回作業中に偶然見つけたもので、今回のスコープ外として修正はせず、読み取り側のコード中にコメントで記録するに留めた
 - `mcxPinState`側`print()`を更新、`[ALTx IBE OD PD/PU]`の形でPCRの主要フラグを表示するように
 - 両ボードで`MultiPeripheralDump`/`ConflictDemo`/`BasicPinDump`のコンパイル確認、全55サンプル×両ボード回帰スイープも新規失敗なし（既知の11件のみ）。`mcx-arduino-core`側push済み（`9738871`）、`mcxPinState`側もコミット済み（ローカルrepoのみ）
-- **実機での検証完了、`PORT_SetPinPullUpDown()`の実バグを確認・即修正**: ユーザーの依頼で`PullModeCheck`（D4=`INPUT_PULLUP`、D5=`INPUT_PULLDOWN`）を新規作成し実機確認。結果、D4は正しく`PU`と表示された一方、**D5は`PD`も`PU`も付かず、プルが一切有効になっていないことが確定**——以前コードを読んで立てていた懸念が実機で裏付けられた。`PORT_SetPinPullUpDown()`の`enable`/`logic`引数とPE/PSフィールドの対応を、ドキュメントコメント通り（`enable`→PE、`logic`→PS）に修正。`PULLUP`は`enable=1,logic=1`という対称な組み合わせだったため偶然正しく動いていただけで、`PULLDOWN`（`enable=1,logic=0`）だけが実害を受けていた。両ボードでコンパイル確認、全55サンプル×両ボード回帰スイープも新規失敗なし（既知の11件のみ）。バイナリサイズは不変（フィールドの対応を入れ替えただけ）。push済み（`d099565`）
+- **実機での検証完了、`PORT_SetPinPullUpDown()`の実バグを確認・即修正**: ユーザーの依頼で`PullModeCheck`（D4=`INPUT_PULLUP`、D5=`INPUT_PULLDOWN`）を新規作成し実機確認。結果、D4は正しく`PU`と表示された一方、**D5は`PD`も`PU`も付かず、プルが一切有効になっていないことが確定**——以前コードを読んで立てていた懸念が実機で裏付けられた。`PORT_SetPinPullUpDown()`の`enable`/`logic`引数とPE/PSフィールドの対応を、ドキュメントコメント通り（`enable`→PE、`logic`→PS）に修正。`PULLUP`は`enable=1,logic=1`という対称な組み合わせだったため偶然正しく動いていただけで、`PULLDOWN`（`enable=1,logic=0`）だけが実害を受けていた。両ボードでコンパイル確認、全55サンプル×両ボード回帰スイープも新規失敗なし（既知の11件のみ）。バイナリサイズは不変（フィールドの対応を入れ替えただけ）。push済み（`d099565`）。**修正後、`PullModeCheck`を再度実機確認——D4=`PU`、D5=`PD`と両方とも正しく表示され、修正を実証**
 
 ---
 
