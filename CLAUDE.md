@@ -1163,6 +1163,14 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 - `README.ja.md`を新規作成（英語版と全10見出し1:1対応するよう翻訳、`TUTORIAL.ja.md`と同じ「English version → README.md」リンクを冒頭に配置）。`README.md`側にも「日本語版はこちら → README.ja.md」を追加し相互リンク
 - 参照リンク先（`docs/api/`・`API_COMPATIBILITY.md`・`PIN_MAPPING_*.md`・`CHANGELOG.md`・`docs/advanced_*.md`等）は方針通り英語版のまま、日本語版からもそのまま参照する形にした
 
+### 「他にリリース前に整備しておいた方がいいものは？」チェック → `docs/api/`再生成・Doxygenコメント2件の実修正
+ユーザーから改めてリリース前の点検依頼。`git status`（クリーン）・GitHub Issues（オープンなし）・`TODO`/`FIXME`/`XXX`（ベンダーSDK内のみ、自コードには無し）・`LICENSE`のパス参照（現行構成と一致）は問題なしと確認した一方、`docs/api/index.html`のタイムスタンプ（2026-08-20）がこのセッション中に追加した`pin_registry.h`/`mcx_arduino_core_version.h`・I2C/I3Cの`protected`メンバ化・新規マクロ群より古く、生成済みDoxygen出力が実ソースに対して陳腐化していると判明——確立済みの運用（「リリース前に`doxygen Doxyfile`を実行して`docs/api/`を最新化」）をここで実施
+
+- 再生成時に実際のDoxygenコメント不備2件を発見・修正（`WARNINGS=NO`設定下でも`WARN_IF_DOC_ERROR`系の警告は別枠で出ることを確認）:
+  - `mcx_arduino_core_version.h`自身のファイルコメント内にあるコード例（`#if MCX_ARDUINO_CORE_VERSION >= ...` / `#endif`）と`io.h`の地の文中の「`#defines`below it」という言及が、Doxygenのautolink機能に`#if`/`#endif`/`defines`という名前のシンボルへのリンク要求と誤解釈されていた。前者は`@code`/`@endcode`で囲み、後者は`\#defines`とバックスラッシュエスケープして解消
+  - `AnalogIn.cpp/h`・`PwmOut.cpp/h`・`Serial.h`（5周目のDoxygen整備セッション由来）が`@license MIT`という**実在しないDoxygenコマンド**を使っていた（正しくは`@copyright`）。全5箇所を`@copyright MIT License`に置換
+- `doxygen Doxyfile`が警告ゼロで完走することを確認してから最終生成。コメントのみの変更のため`hello_world`のサイズは無変化、全55サンプル×両ボード回帰スイープも新規失敗なし（既知の11件のみ）
+
 ---
 
 ## 動作確認済み
