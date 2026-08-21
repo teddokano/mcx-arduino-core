@@ -9,7 +9,7 @@ NXP FRDM MCXシリーズボード向けのArduinoボードサポートパッケ�
 
 English version → [README.md](README.md)
 
-初めての方は[チュートリアル](TUTORIAL.ja.md)（[English](TUTORIAL.md)）から始めてください。
+初めての方は[チュートリアル日本語版](TUTORIAL.ja.md)（[英語版もあります](TUTORIAL.md)）から始めてください。
 Arduino API対応状況の一覧は[API_COMPATIBILITY.md](API_COMPATIBILITY.md)、
 各ボードのピン配置は[PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) / [PIN_MAPPING_N947.md](PIN_MAPPING_N947.md)、
 バージョン間の変更点は[CHANGELOG.md](CHANGELOG.md)、
@@ -45,7 +45,7 @@ Arduino API対応状況の一覧は[API_COMPATIBILITY.md](API_COMPATIBILITY.md)�
 このパッケージはスケッチをボードへアップロードする際に**NXP LinkServer**を使用します。
 また、Arduino IDE 2の内蔵デバッガ（ブレークポイント、ステップ実行、変数参照）のバックエンドとしても
 LinkServer自身のgdbserverを使用します——本家OpenOCDはMCXチップファミリにまだ対応していないためです。
-Arduino IDEのUpload/Debugボタンを使う前にインストールしておいてください。
+**Arduino IDEのUpload/Debugボタンを使う前にインストールしておいて**ください。
 
 👉 ダウンロード: https://www.nxp.com/linkserver
 
@@ -101,7 +101,7 @@ mcx-arduino-core/
 └── package_nxp_mcx_index.json
 ```
 
-全てソースなので、Arduino IDEの「Go to Definition」も通常通り機能します——
+全てソース含まれているので、Arduino IDEの「Go to Definition」も通常通り機能します——
 `pinMode()`や`Serial`など任意の関数にジャンプすると、ヘッダの宣言だけでなく
 実装している実際の`.cpp`に飛びます。
 
@@ -147,27 +147,30 @@ API単位の対応状況・注意点の全表は[API_COMPATIBILITY.md](API_COMPA
 
 ## ArduinoCore-zephyrとの関係
 
-Arduino公式の[ArduinoCore-zephyr](https://github.com/arduino/ArduinoCore-zephyr)プロジェクトは、
-FRDM-MCXN947を含む一部のNXP MCXボードに既に公式Arduinoサポートをもたらしています——
-しかしFRDM-MCXA153には対応しておらず、これは見落としではありません。本プロジェクト
-（mcx-arduino-core）はArduinoとは独立・無関係のプロジェクトで、ArduinoCore-zephyrの
-アーキテクチャでは収まらないFRDM-MCXA153をカバーするために存在しています。
+Arduino公式の[ArduinoCore-zephyr](https://github.com/arduino/ArduinoCore-zephyr)は、
+FRDM-MCXN947を含む一部のNXP MCXボードに、すでに公式のArduino対応を提供しています。
+ただしFRDM-MCXA153だけは対象外で、これは見落としではなく意図的なものです。
+mcx-arduino-coreはArduinoとは無関係の独立プロジェクトで、ArduinoCore-zephyrの
+アーキテクチャではどうしても収まらないFRDM-MCXA153をカバーする目的で作られました。
 
-ArduinoCore-zephyrはZephyrベースの「ローダー」を一度書き込み、各スケッチはその上に
-Zephyrの**LLEXT**（Loadable Extension）として実行時にロードする方式です——1つの自己完結した
-バイナリをビルドするわけではありません。このアーキテクチャでは、Zephyrカーネル・LLEXT
-ランタイム・シンボルテーブルが常時RAMに常駐し、さらにアップロード中のスケッチを受け取る
-バッファも必要です——ローダーのソースはこのバッファを`SKETCH_RAM_BUFFER_LEN 131072`
-（128KB）と定義しています。FRDM-MCXA153は**RAMが合計24KB**しかないため、このバッファ
-1つだけでチップの全RAMの5倍以上になってしまいます。RAMに余裕のあるFRDM-MCXN947では、
-このアーキテクチャは問題なく収まります。
+ArduinoCore-zephyrは、Zephyrベースの「ローダー」をあらかじめ一度だけ書き込んでおき、
+各スケッチは実行時にその上へZephyrの**LLEXT**（Loadable Extension、動的にロードできる
+拡張モジュール）として読み込む方式を取っています。つまり、1つの自己完結したバイナリを
+ビルドしているわけではありません。このアーキテクチャでは、Zephyrカーネル・LLEXT
+ランタイム・シンボルテーブルが常にRAMに常駐し続けるうえ、アップロード中のスケッチを
+受け取るためのバッファも別途必要です。ローダーのソースコードを見ると、このバッファは
+`SKETCH_RAM_BUFFER_LEN 131072`（128KB）と定義されています。ところがFRDM-MCXA153の
+**RAMは合計でも24KB**しかなく、このバッファひとつだけでチップの全RAMの5倍以上を
+占めてしまう計算になります。RAMに余裕のあるFRDM-MCXN947であれば、このアーキテクチャでも
+問題なく収まります。
 
-mcx-arduino-coreは逆のアプローチを取ります: 各スケッチはr01libコアと一緒に1つの
-モノリシックなバイナリへコンパイル・静的リンクされます——ローダーなし、動的リンクなし、
-LLEXT的なものがRAMに常駐することもありません。これによってFRDM-MCXA153の実際の
-RAM 24KB / フラッシュ128KBという予算内に収まっています（この数値はこのボード自身の
-ビルド出力が報告する値と同じです）。
+mcx-arduino-coreはこれとは逆のアプローチを取っています。各スケッチをr01libコアと
+一緒に1つのモノリシックなバイナリへコンパイル・静的リンクする方式で、ローダーも
+動的リンクも存在せず、LLEXTに相当するものがRAMに常駐することもありません。この
+仕組みのおかげで、FRDM-MCXA153の実際のリソース（RAM 24KB／フラッシュ128KB）に
+無理なく収まっています（この数値は、このボード自身のビルド出力が実際に報告している
+値そのものです）。
 
-（Zephyr RTOS自体はFRDM-MCXA153上で問題なく動作します——LinkServerはmainline Zephyrでの
-デフォルトのフラッシュランナーでもあります。収まらないのはLLEXTベースのArduinoレイヤー
-特有の話であって、Zephyr全体の話ではありません。）
+（Zephyr RTOS自体はFRDM-MCXA153上でも問題なく動作します——LinkServerはmainline
+Zephyrのデフォルトのフラッシュランナーとしても使われています。収まらないのは
+LLEXTベースのArduinoレイヤーに固有の制約であって、Zephyr自体の限界ではありません。）
