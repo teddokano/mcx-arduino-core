@@ -859,6 +859,7 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
   - 修正後、`arm-none-eabi-gdb`から`target extended-remote localhost:<port>`でTCP接続する実機テスト（cortex-debugが実際に行うのと同じ接続方式）を実施——`load`（フラッシュ書き込み）→リセットベクタ着地→`break loop`→`continue`→実際にブレークポイントヒットまで完全動作を確認
   - 両起動経路（`arduino-cli debug`のパイプ方式、Arduino IDE 2 / cortex-debugのTCPサーバー方式）とも同一の`gdb-bridge`バイナリが自動判別（`-c "gdb_port N"`の有無で分岐）して両対応することを実機で確認済み
 - **実機確認完了**: 上記2件のエラー解消後、ユーザーがArduino IDE 2の「デバッグ」ボタンから実際にフルセッション（ビルド→書き込み→ブレークポイント→ステップ実行等、UIを通した一連の操作）を試し、**A153・N947両方で動作することを確認**。これでArduino IDE内蔵デバッガ対応は完了
+- **重要: この実機確認は全てmacOS上でのみ実施**。`gdb-bridge`はWindows/Linux向けにもクロスコンパイル済み（5構成: darwin-arm64/amd64, linux-amd64/arm64, windows-amd64）で、LinkServer探索ロジックも`upload.sh`/`upload.bat`と同じ検証済みパターンを踏襲しているが、`gdb-bridge`固有の挙動（標準出力監視によるLinkServer起動同期、TCPサーバーモード/パイプモードの自動判別）自体はWindows/Linuxで一度も実機テストしていない。**0.4.0のステージング検証（`staging-0.4.0`）では、従来の「インストール→ビルド→アップロード」確認に加えて、Windows/Linuxでもデバッガ（IDEの「デバッグ」ボタン→ブレークポイント→ステップ実行）を必ず試すこと**——デバッガはこのバージョンで新規追加した機能のため、過去のステージング検証チェックリストにはこの項目が無かった
 
 ### Doxygenドキュメント整備（r01lib・Arduino互換APIレイヤー、23ファイル）
 ユーザーから「mcx-arduino-coreで作成したコードにDoxygenドキュメントは入ってる？」と質問。r01lib由来のクラス（`I2C`/`I3C`等）には部分的にDoxygenが入っているが、新しく書いたArduino互換APIレイヤー（`arduino_*.h`等）にはほぼ無いと調査結果を報告したところ、「r01libと新しく書いたArduino互換API部分にDoxygenコメントをつける．r01libで元からあるものは，内容を確認し，必要なら追加・修正する」と依頼された。
