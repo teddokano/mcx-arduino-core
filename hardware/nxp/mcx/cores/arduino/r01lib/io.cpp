@@ -541,6 +541,17 @@ void DigitalInOut::direction( bool dir )
 void DigitalInOut::pin_mux( int mux )
 {
 	PORT_SetPinMux( port_n, gpio_pin, (port_mux_t)mux );
+
+	// Keep the pin registry's "wanted ALT" in sync. The constructor's own
+	// registration call (wanted_mux=0) only reflects reality for plain
+	// pinMode() GPIO pins that never get re-muxed afterward -- I2C/I3C's
+	// _sda/_scl and SPI's chip_select are also just DigitalInOut members,
+	// but their owning class immediately calls pin_mux() with the real
+	// peripheral ALT right after construction, which the constructor's
+	// snapshot can't see. pin_registry_note() reuses this object's
+	// existing slot (same `this`) rather than adding a second one, so
+	// this just updates the recorded expectation to match.
+	pin_registry_note( this, "GPIO", &_pn, 1, (uint8_t)mux );
 }
 
 void DigitalInOut::input_buffer( bool enable )
