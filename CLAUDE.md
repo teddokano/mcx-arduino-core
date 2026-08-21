@@ -1195,6 +1195,16 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 - 副次的に`delay()`も内部で同じ`wait()`を呼んでいるため、`delayMicroseconds()`よりもはるかに広く使われている`delay()`の精度も同時に改善されることを確認
 - **実機確認完了**: ユーザーが`test_delayMicroseconds`を再実行し、要求1000us→実測1013us（誤差1.3%）、要求10000us→実測10015us（誤差0.15%）と、修正前（26〜28%誤差）から劇的に改善したことを確認。小さい要求値（10us→23us）に残る誤差は関数呼び出し自体の固定オーバーヘッドで正常範囲
 
+### `test_PROGMEM_F_ARDUINO_macros`がN947で常にFAILしていた問題の修正
+ユーザーから「`test_PROGMEM_F_ARDUINO_macros`にN947の項がない」と指摘。ボード識別マクロのチェックが`ARDUINO_FRDM_MCXA153`のみを見ており、N947でビルドすると（実際には`ARDUINO_FRDM_MCXN947`が正しく定義されているにも関わらず）この項目が必ずFAILになる作りだった——これも古いA153限定サンプルが未更新のまま残っていたパターン。`#if defined(ARDUINO_FRDM_MCXA153) #elif defined(ARDUINO_FRDM_MCXN947)`でボード分岐するよう修正、両ボードでコンパイル確認・回帰スイープ新規失敗なし。同種の問題が他に残っていないか全examples横断で確認（`ARDUINO_FRDM_MCXA153`の無条件参照・`analogRead(A0/A1)`の直書きとも、他に該当なし）
+
+### 副産物: `test_Print_Stream_hierarchy`の一時的な実機FAILは配線ミスと判明
+ユーザーから`test_Print_Stream_hierarchy`実行結果で`Stream& polymorphism`・`Stream::parseInt()`の2項目がFAILしたと報告。両方とも`Serial1`ループバック（D0-D1ジャンパ必須、ヘッダコメントに明記済み）に依存する項目だったため配線を確認してもらったところ「ピンを間違っていた」と判明——`mcx-arduino-core`側のバグではなく、修正不要と確定
+
+### 実機検証まとめ: 19本のサンプルで動作確認完了
+上記の一連の修正（N947 SPIクロック、`delayMicroseconds`のDWT化、analogRead関連のSOSパニック2件、`ARDUINO_FRDM_MCXN947`マクロチェック）を踏まえ、ユーザーが以下19本のサンプルで実機動作に問題がないことを確認（`test_analogRead_precision_N947`はN947専用、他は両ボードまたは該当ボードで確認）:
+`~/dev/Arduino/libraries/Waveshare_TFT_Touch/examples/SDBitmapViewer/`、`hello_world`、`onboard_temperature_sensor`、`test_Interrupt_SW2`、`test_analogWrite_all_channels`、`test_Analog_read_write`、`test_analogRead_precision_N947`、`test_delayMicroseconds`、`test_combined_peripherals`、`test_detachInterrupt`、`test_digitalWrite_all_pins`、`test_digitalWrite_analog_pins`、`test_digitalWrite_mikrobus_pins`、`test_math_constants`、`test_millis_micros`、`test_Print_Stream_hierarchy`、`test_PROGMEM_F_ARDUINO_macros`、`test_String_64bit`、`test_tone`、`test_Wire_LM75B`
+
 ---
 
 ## 動作確認済み
