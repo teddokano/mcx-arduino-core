@@ -997,6 +997,23 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 - **PUR修正(`fde63fb`)は不要と確定・revert済み(`db1f4fa`)**: `#if 0`で無効化したビルドを実機で試したところ`r01lib_I3C.ino`は問題なく動作。ユーザーから理由の説明もあった——**I3Cはバスフリー状態からアドレスヘッダ送出までプルアップが接続されていることが保証される**ので、あのmuxが救済しようとしたオープンドレイン区間は最初からプルアップが効いており、問題になりようがなかった。`i3c.cpp`を`fde63fb`直前の状態にバイト単位で復元（`352f86c`の`_sda`/`_scl`命名修正は保持）
 - **この過程でやらかした作業ミス**: `#if 0`の挿入とブロック削除をPythonのテキストモード書き込みで行ったところ、**CRLFだった`i3c.cpp`全317行がLFに変換され、ファイル全体が差分になっていた**。`git diff --stat`が317 insertions/317 deletionsを示したことで気づき、`git checkout fde63fb^ -- <path>`で完全復元。**既存ファイルをPythonで書き換える際は行末コードを確認すること**（`open(p, newline='')`で読み書きするか、そもそもEditツールを使う）
 
+### ピン所有状況のデバッグユーティリティ: `mcxPinState`（独立ライブラリ、着手）
+ユーザーから「ペリフェラルやGPIOのインスタンスが存在しているかどうか、さらにそれらがどのピンを掴んでいるかをリストするデバッグ用のユーティリティはArduinoに用意されているか、無いなら作ると便利か」と質問。標準Arduino APIにも主要サードパーティコアにもこの種のツールは存在しないと回答した上で、このプロジェクトが今回のセッションで実際に複数回踏んだ「同じ物理ピンを複数ペリフェラルが取り合う」バグ（`Serial1`と`I3C`のピン競合、IBEバグ、PUR仮説の顛末）を踏まえると有用と判断、ユーザーも同意し設計・実装に着手。
+
+- **モックアップの反復**: まずArduino層の7つのグローバル（`Wire`/`Wire1`/`Wire2`/`SPI`/`SPI1`/`Serial`/`Serial1`）だけを対象にした「ピンMUX状態表」＋「ペリフェラルインスタンス表」の2枚構成を提示。ユーザーから複数回フィードバック:
+  - 列の冗長性指摘（`Raw pin`と`Port/Bit`が同じ情報）→ `Pin`1列に統合
+  - 「シンボル名→期待ALT」の静的対応表は手間がどれくらいか問われ、検討の結果**この設計自体を撤回**——`MB_RX`/`MB_TX`のような多目的ピンには「唯一の正解ALT」が静的には存在しない（今どのペリフェラルが`begin()`されているかで変わる）ため、静的テーブルは共有ピンほど誤検知する構造的な欠陥があると判明。代案として、**ペリフェラルインスタンス表自体を期待値の情報源にする**方式（各クラスが既に持っている「自分が要求するALT値」を覗き見るgetterを足すだけ、新規データ入力ゼロ）を提案し合意
+  - r01lib層の任意インスタンス（スケッチが直接`I2C`/`I3C`等をグローバル宣言するケース、まさに`r01lib_I3C.ino`のパターン）も含められないかと聞かれ、**自己登録レジストリ方式**（`Obj`派生クラスがコンストラクタ/デストラクタから共有レジストリに自分で登録/解除する）に設計を拡張。`DigitalInOut`が既に`I2C`/`I3C`の`_sda`/`_scl`、`SPI`の`chip_select`の**永続的な**メンバとして使われているため、`DigitalInOut`1箇所をフックするだけでGPIO・`InterruptIn`・I2C/I3Cのデータピン・SPIのCSまで「タダで」拾えると判明（`SPI`のMOSI/MISO/SCLKと`Serial`のTX/RXは、対応する`DigitalInOut`が**コンストラクタ内の一時変数**——I3Cの`_sda`/`_scl`/`_pur`と同じパターン——なので拾えず、明示的な登録呼び出しが別途必要と判明）
+- **メモリ増加見積もりを提示**: レジストリ配列（RAM、32エントリ×16 bytes≈512 bytes、A153のRAM総量の約2%）、登録/解除フック自体（flash、常時リンクされる、+400〜600 bytes見積もり）、一覧表示関数（flash、呼ばれなければ`--gc-sections`で落ちる、1〜2KB）の3つに分けて説明
+- **ユーザーからの決定的な指摘**: 「動的なピン切り替えなどはしない、出来上がったアプリケーションでもそのリソースを消費するのは理想的ではない。でも`#ifdef DEBUG`的なものは可読性を犠牲にする。代替案として、この機能を使う際には`PinState`クラスのインスタンスを作るというのはどうか——インスタンスがあれば登録を行う」——**weak/strongシンボルの仕組み**（このプロジェクト自身が`main()`で既に使っている`__attribute__((weak))`パターン）で実現できると回答し設計を確定:
+  - `cores/arduino/`側に空のweakデフォルト関数`pin_registry_note()`/`pin_registry_forget()`を置く（常時存在、ほぼゼロコスト）
+  - 本物のレジストリ・登録ロジック・一覧表示は`cores/arduino/`の**外**に置く——理由は`platform.txt`の`recipe.c.combine.pattern`が`-Wl,--whole-archive`で`core.a`（`cores/arduino/`全体）を強制リンクしているため（`main()`のweak/strong切り替えが機能する前提そのもの）、もし本体を`cores/arduino/`内に置くと**インスタンスの有無に関わらず常に強制リンクされてしまい**、狙った「使わなければゼロコスト」が成立しないと判明。この制約はモックアップ段階では気づいておらず、実装直前に`platform.txt`を確認して発覚
+- **独立ライブラリとして切り出し**: 既存の`_NXP_Arduino`系関連ライブラリ（`LEDDriver_NXP_Arduino`等、汎用・他コアでも動く）とは性質が違う（`mcx-arduino-core`のr01lib内部実装に直接依存、他コアでは動作しない）とユーザーから指摘があり、命名は`_NXP_Arduino`系の規則に倣わず`mcxPinState`に決定。`/Users/tedd/dev/Arduino/mcxPinState/`（既存の関連ライブラリ群と同じ階層）に新規`git init`、`library.properties`/`README.md`を作成しコミット
+- **フェーズ1実装（`DigitalInOut`のみ）**: `mcx-arduino-core`側に`pin_registry.h`/`.cpp`を新規作成（weakデフォルト2関数）、`DigitalInOut`のコンストラクタ末尾（`_pn`が有効なピンだった場合のみ、`DISABLED_PIN`の早期returnより後）で`pin_registry_note(this, "GPIO", &_pn, 1)`、デストラクタで`pin_registry_forget(this)`を呼ぶよう変更。`mcxPinState`側に`PinState`クラス（`print(Print &out = Serial)`のみ）＋固定長32エントリのレジストリ配列＋強い実装の`pin_registry_note`/`forget`を実装
+- **weak/strong切り替えの実機前（リンク時）検証**: `arm-none-eabi-nm`でビルド済み`.elf`のシンボル種別を直接確認——`PinState`を使わない`hello_world`では`pin_registry_note`/`forget`が`W`（weak）のまま、`mcxPinState`の`PinState pins;`をグローバル宣言した`examples/BasicPinDump`では同じシンボルが`T`（strong、`mcxPinState`側の実装で上書き）になっていることを両ボードで確認——設計通りの挙動が実証できた
+- **サイズ実測**: `DigitalInOut`のフック追加後、`hello_world`のサイズ増加は両ボードで+80〜88 bytesのみ（見積もりの「常時コスト」レンジと整合、`DigitalInOut`だけなので全クラス対応時よりまだ小さい）。全55サンプル×両ボード回帰スイープも新規失敗なし（既知の11件のみ）
+- **残作業（未着手）**: `Serial`のTX/RX、`SPI`のMOSI/MISO/SCLKへの明示的な登録呼び出し追加（`Serial::apply_pin_mux()`・`r01lib_spi.cpp`のコンストラクタに数行）、`AnalogIn`/`PwmOut`への明示的な登録呼び出し追加。`mcxPinState`側は「MUX期待値との突き合わせ」（各クラスが要求するALT値を覗き見るgetter）は未実装、現状は「同じ物理ピンを複数の生きているオブジェクトが主張していないか」の検出のみ。GitHubへのpushは未実施（ローカルrepoのみ）
+
 ---
 
 ## 動作確認済み
