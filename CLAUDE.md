@@ -1037,6 +1037,15 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 - `mcx-arduino-core`側push済み（`89212cb`）
 - **実機で再確認完了**: `MultiPeripheralDump`はCSピンが`GPIO`単独（`CONFLICT`消滅）になったことを確認。同時に`ConflictDemo`（D2への意図的な二重`DigitalInOut`）は引き続き`GPIO, GPIO *** CONFLICT ***`と正しく検出されることも確認——誤検出の修正と、本物の衝突検出能力の両方が実機で裏付けられた
 
+### `mcxPinState`: MUX期待値との突き合わせを実装（コンパイル確認のみ、実機未検証）
+ユーザーから「残っているのはmcxPinState側の『MUX期待値との突き合わせ』をやる」と依頼。設計当初から意図的に後回しにしていた最後の項目——「ピンの実際のPORT MUXレジスタと、そのピンの所有者が本来要求しているALT値を突き合わせる」機能に着手。
+
+- **設計**: `pin_registry_note()`に`wanted_mux`引数（呼び出し時点でそのピン群に設定した/されているはずのALT値、0-15）を追加。既存の8箇所の呼び出し元それぞれが**既に知っている実際の値**をそのまま渡すだけで済んだ（新規データ入力なし）——`DigitalInOut`/GPIO＝ALT0、`AnalogIn`＝ALT0（両ボードともADC機能は共通）、`PwmOut`＝ALT5（両ボードとも、実際のピンテーブルの値と突き合わせ済み）、`Serial`＝解決済みの`_tx_mux`、`SPI`＝ローカル変数`mux_setting`（実ビルド対象の非C444コンストラクタ・現在どちらのボードもビルドしないレガシーC444コンストラクタの両方に適用、構造上の対称性のため）
+- **`pin_registry_read_mux(raw_pin)`を新設**: 生ピン番号からそのピンの現在のPCRレジスタのMUXフィールドだけを読んで返す。`io.cpp`に定義（`pins[]`/`port_type[]`という、その実装に必要なボードごとのテーブルにアクセスできる唯一の場所のため）。weakフックの対とは違い、上書きの必要がない素の読み取り関数なのでweak化していない——これまでの他の追加関数と同様、呼ばれなければ`--gc-sections`で自動的に落ちるため、`PinState`を使わないビルドへのコスト増はゼロ
+- **`mcxPinState`側**: `Entry`に`wanted_mux`を追加、`print()`が`pin_registry_read_mux()`で実測ALTを読み、単独オーナーの場合はその要求値と比較して食い違えば`*** MISMATCH (wanted ALTn) ***`を表示。複数オーナー（`CONFLICT`）の場合はそちらを優先表示（個別のMISMATCH詳細より重大な異常のため）
+- 両ボードで`MultiPeripheralDump`/`ConflictDemo`/`BasicPinDump`のコンパイル確認、全55サンプル×両ボード回帰スイープも新規失敗なし（既知の11件のみ）。`mcx-arduino-core`側push済み（`50c614c`）、`mcxPinState`側もコミット済み（ローカルrepoのみ）
+- **実機での検証はまだ**（次のステップ）
+
 ---
 
 ## 動作確認済み
