@@ -54,8 +54,10 @@ void setup() {
 
 #if defined(ARDUINO_FRDM_MCXA153)
   check("ARDUINO_FRDM_MCXA153 defined", true);
+#elif defined(ARDUINO_FRDM_MCXN947)
+  check("ARDUINO_FRDM_MCXN947 defined", true);
 #else
-  check("ARDUINO_FRDM_MCXA153 defined", false);
+  check("ARDUINO_FRDM_<board> defined", false);
 #endif
 }
 
