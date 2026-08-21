@@ -93,10 +93,16 @@ I3C::I3C( int sda, int scl, uint32_t i2c_freq, uint32_t i3c_od_freq, uint32_t i3
 	I3C_MasterTransferCreateHandle( EXAMPLE_MASTER, &g_i3c_m_handle, &masterCallback, NULL );
 
 	first_broadcast	= true;
-	
-	DigitalInOut	_sda( sda );
-	DigitalInOut	_scl( scl );
 
+	/*
+	 *  _sda/_scl here are the persistent members inherited from I2C (kept
+	 *  protected for exactly this reason -- see i2c.h), not new objects.
+	 *  I2C::I2C() never mux'd them itself (it returns early for the
+	 *  no_hw=true delegation used above), so this is the only place they
+	 *  get configured -- which also means mcxPinState's registry now
+	 *  correctly tracks these two objects as I3C's real, live SDA/SCL
+	 *  owners instead of a pair of already-destroyed throwaway locals.
+	 */
 	_scl.pin_mux( kPORT_MuxAlt10 );
 	_sda.pin_mux( kPORT_MuxAlt10 );
 

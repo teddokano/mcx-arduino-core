@@ -263,6 +263,19 @@ protected:
 	 */
 	virtual status_t	read_core( uint8_t address, uint8_t *dp, int length, bool stop = STOP );
 
+	/** SDA/SCL pins, kept protected (not private) so I3C -- which delegates
+	 *  construction with no_hw=true and therefore skips this class's own
+	 *  pin_mux() call entirely -- can mux/configure these same persistent
+	 *  objects itself instead of having to construct and discard its own
+	 *  throwaway DigitalInOut locals of the same name. Those throwaway
+	 *  locals used to correctly mux the physical pin (PORT_PCR is per-pin,
+	 *  not per-object, so the hardware ended up configured either way) but
+	 *  left these members' own pin_mux()-driven bookkeeping (notably
+	 *  mcxPinState's pin-ownership registry) permanently stale.
+	 */
+	DigitalInOut			_sda;
+	DigitalInOut			_scl;
+
 private:
 #if	CPU_MCXC444VLH
 	i2c_master_config_t		masterConfig;
@@ -272,8 +285,6 @@ private:
 	lpi2c_master_config_t	masterConfig;
 	LPI2C_Type				*unit_base;
 #endif
-	DigitalInOut			_sda;
-	DigitalInOut			_scl;
 	err_cb_ptr				err_cb;
 	bool					_no_hw;
 };

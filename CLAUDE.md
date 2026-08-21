@@ -1080,6 +1080,16 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 - 実機環境にない外部ライブラリ`P3T1755.h`依存のため直接コンパイルできず、一時的なスタブライブラリ（`/tmp/stublib/P3T1755/`）を作って構文面のみ検証（他のP3T1755依存サンプルと同じ既知の制約）、両ボードで成功確認。全55サンプル×両ボード回帰スイープも新規失敗なし（既知の11件のみ、このサンプル自身のP3T1755.h欠落による失敗も含めて想定通り）。push済み（`5d2b6c3`）
 - **実機での最終確認完了**: ユーザーがD0-D1・D2-D3のジャンパを配線した実機で`test_Wire_end_find_availForWrite_pullmodes.ino`を実行。新設した2件（`INPUT_PULLDOWN pulls the line back low after an external HIGH drive releases`／`INPUT_PULLUP pulls the line back high after an external LOW drive releases`）を含む全16項目が`OK`。`PORT_SetPinPullUpDown()`修正・新テスト設計とも実機で実証完了
 
+### 「ピン競合チェックリスト」再開、mcxPinStateで発見: I3CのSDA/SCLが`I2C::_sda`/`_scl`をシャドウイングしていた設計上の欠陥（修正・実機検証済み）
+ユーザーから「ではピン競合のチェックリストの作業に戻る」と依頼、`AskUserQuestion`で「mcxPinStateを使って他の例もチェック」を選択。mcx-arduino-core自身の`test_combined_peripherals.ino`が使うペリフェラル一式（`Wire1`/`analogRead`/`analogWrite`/`tone`、A153のみ`Serial1`/`SPI1`も）を、外部ライブラリ`P3T1755.h`依存なしで再現する新規`mcxPinState`サンプル`examples/CombinedPeripheralsAudit/`を作成し、両ボードで実機確認を依頼したところ、両ボードともI3CのSDA/SCLピン（A153: Pin 6/7、N947: Pin 49/50）だけに`*** MISMATCH (wanted ALT0) ***`が新規発見された（実際のPCRレジスタは正しく`ALT10`——ハードウェア自体は正常、レジストリの期待値記録だけが食い違っていた）。
+
+- **原因調査**: `i3c.cpp`の`I3C::I3C(...)`コンストラクタを精読。`I2C`クラスは`_sda`/`_scl`という`DigitalInOut`メンバを持つが、これは`private`。`I3C`は`: I2C(sda, scl, true)`で`no_hw=true`委譲するため、`I2C::I2C()`は`if (no_hw) return;`で早期リターンし、自身の`_scl.pin_mux(mux_setting); _sda.pin_mux(mux_setting);`（実ハードウェア設定）を一切実行しない。`I3C`はこの継承メンバに`private`のためアクセスできず、代わりに**同名のローカル**`DigitalInOut _sda(sda); DigitalInOut _scl(scl);`を新規宣言し、それらに対して`.pin_mux(kPORT_MuxAlt10)`/`.input_buffer(true)`を呼んでいた——C++の名前シャドウイングそのもの
+- **なぜハードウェアは正常に動いていたか**: PORT_PCRは物理ピン単位のレジスタでC++オブジェクト単位ではないため、ローカルの使い捨てオブジェクトが実行した`.pin_mux()`/`.input_buffer()`は正しく実ピンに反映される。そのため今回の全セッションで実施したI3Cの広範な実機検証（A153でのSETDASA/RSTDAA、Serial1競合修正後のN947等）はすべて正しく動作していた——**電気的・機能的なバグではなかった**
+- **実害**: ローカルの使い捨てオブジェクトは`DigitalInOut`自身のフック（フェーズ1実装）により一瞬`pin_registry_note(..., wanted_mux=ALT10)`で登録されるが、コンストラクタ終了時に破棄され`pin_registry_forget()`される。一方、継承された**永続的な**`I2C::_sda`/`_scl`（コンストラクタの初期化子リストで構築済み、生きている間ずっと存在）は、構築時の`wanted_mux=0`のまま一度も更新されず、これが`mcxPinState`のレジストリに残り続けてMISMATCHとして検出されていた——設計上の欠陥（無駄な使い捨てオブジェクトの生成、継承メンバの空アクセス不能）が、たまたま新設したツールによって可視化された形
+- **修正**: `i2c.h`で`_sda`/`_scl`を`private`から`protected`に変更（`I3C`が本物の継承メンバへ直接アクセスできるように）。`i3c.cpp`のコンストラクタからローカル`DigitalInOut _sda(sda); DigitalInOut _scl(scl);`宣言を削除し、継承された`_sda`/`_scl`に直接`.pin_mux()`/`.input_buffer()`を呼ぶよう変更。副次的に、無駄な2つの使い捨てオブジェクトの構築・破棄も無くなった
+- 両ボードで`r01lib_I3C.ino`・`hello_world`・`CombinedPeripheralsAudit`のコンパイル確認、全55サンプル×両ボード回帰スイープも新規失敗なし（既知の11件のみ）
+- **実機確認完了**: ユーザーがA153・N947両方で`CombinedPeripheralsAudit`を再実行、両ボードとも`*** CONFLICT ***`/`*** MISMATCH ***`が完全に消えたことを確認（I3CのSDA/SCLは`[ALT10 IBE]: GPIO`のみと正しく表示）
+
 ---
 
 ## 動作確認済み
