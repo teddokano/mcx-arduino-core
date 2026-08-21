@@ -3,8 +3,8 @@
  *
  *  Wiring needed:
  *   - D0-D1 jumper (Serial1 TX/RX loopback, for find()/findUntil())
- *   - D2-D3 jumper (OUTPUT_OPENDRAIN drives D2, D3 observes it)
- *  D4 must be left unconnected (floating-pin pull test).
+ *   - D2-D3 jumper (used for both the INPUT_PULLDOWN/INPUT_PULLUP rigor
+ *     test and the OUTPUT_OPENDRAIN test, below)
  *  Uses the on-board P3T1755 over Wire1 for the Wire.end() test -- no
  *  extra wiring needed for that part.
  */
@@ -90,18 +90,41 @@ void setup() {
   check("findUntil() aborts on terminator (returns false)", !f3);
   check("findUntil() aborts quickly (not full timeout)", elapsed < 500);
 
-  // ---- INPUT_PULLDOWN / INPUT_PULLUP on a floating pin (D4) ----
-  pinMode(D4, INPUT_PULLDOWN);
+  // ---- INPUT_PULLDOWN / INPUT_PULLUP, rigorously (D2-D3 jumper) ----
+  // Just reading a pin claimed to have a pull enabled isn't a reliable
+  // test on its own: a genuinely floating pin can happen to read the same
+  // value a real pull would produce. That's exactly what let a real
+  // PORT_SetPinPullUpDown() bug hide here for several releases --
+  // INPUT_PULLDOWN silently left pins with no pull enabled at all (this
+  // chip's floating inputs read LOW anyway), while this test's previous
+  // form (`pinMode(D4, INPUT_PULLDOWN); check(digitalRead(D4) == LOW)`,
+  // no jumper, nothing forcing the pin either way) kept reporting "OK"
+  // regardless. Instead, force the shared node to the *opposite* level
+  // with D2 as a real push-pull output, release D2 to true Hi-Z, and
+  // check that D3's internal pull actually pulls the line back -- a
+  // floating pin can't do that.
+  pinMode(D3, INPUT_PULLDOWN);
+  pinMode(D2, OUTPUT);
+  digitalWrite(D2, HIGH);
+  delayMicroseconds(50);
+  pinMode(D2, INPUT);  // release D2 to true Hi-Z -- stop forcing the node
   delay(2);
-  bool pd = digitalRead(D4);
-  check("INPUT_PULLDOWN reads LOW when floating", pd == LOW);
+  bool pd = digitalRead(D3);
+  check("INPUT_PULLDOWN pulls the line back low after an external HIGH drive releases", pd == LOW);
 
-  pinMode(D4, INPUT_PULLUP);
+  pinMode(D3, INPUT_PULLUP);
+  pinMode(D2, OUTPUT);
+  digitalWrite(D2, LOW);
+  delayMicroseconds(50);
+  pinMode(D2, INPUT);  // release D2 to true Hi-Z
   delay(2);
-  bool pu = digitalRead(D4);
-  check("INPUT_PULLUP reads HIGH when floating", pu == HIGH);
+  bool pu = digitalRead(D3);
+  check("INPUT_PULLUP pulls the line back high after an external LOW drive releases", pu == HIGH);
 
   // ---- OUTPUT_OPENDRAIN (D2) jumpered to D3 ----
+  // D3's pull modes were just verified above to actually work, so they're
+  // now trustworthy as the observation side for open-drain's own
+  // "HIGH means released, not driven" behavior.
   pinMode(D2, OUTPUT_OPENDRAIN);
   pinMode(D3, INPUT_PULLDOWN);
   delay(2);
