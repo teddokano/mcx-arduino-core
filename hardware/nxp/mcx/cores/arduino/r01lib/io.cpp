@@ -10,6 +10,7 @@
 #include	"pin_mux.h"
 #include	"mcu.h"
 #include	"io.h"
+#include	"pin_registry.h"
 
 #define	DISABLED_GPIO		-1
 #define	DISABLED_PIN		0xFF
@@ -486,11 +487,16 @@ DigitalInOut::DigitalInOut( uint8_t pin_num, bool direction, bool v, int pin_mod
 	
 	GPIO_PinInit( gpio_n, gpio_pin, &led_config );
 	mode( pin_mode );
-	
+
 	value( (bool)_value );
+
+	pin_registry_note( this, "GPIO", &_pn, 1 );
 }
 
-DigitalInOut::~DigitalInOut(){}
+DigitalInOut::~DigitalInOut()
+{
+	pin_registry_forget( this );
+}
 
 void DigitalInOut::value( bool value )
 {
