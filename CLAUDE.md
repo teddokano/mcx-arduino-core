@@ -1052,7 +1052,15 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 - **修正**: `DigitalInOut::pin_mux()`自体が、`PORT_SetPinMux()`の直後に`pin_registry_note(this, "GPIO", &_pn, 1, (uint8_t)mux)`を呼ぶよう変更。`pin_registry_note()`は同一ownerの再登録を「既存スロットの更新」として扱う設計だったので、これだけで「直近に実際に設定されたALT」を正しく追跡するようになった（`pinMode()`のGPIO再取得パス`pin_mux(0)`にも同じ経路で正しく効く）
 - 両ボードで`hello_world`のコンパイル確認、全55サンプル×両ボード回帰スイープも新規失敗なし（既知の11件のみ）。`mcx-arduino-core`側push済み（`4af93b2`）
 - **`ConflictDemo`（D2への意図的な二重`DigitalInOut`）は複数オーナーの場合`CONFLICT`表示が優先され`MISMATCH`は出ない設計のため、今回のバグの影響を受けず正しく動作していた**——実機出力でも矛盾なし
-- **再度の実機確認は未実施**（次のステップ）
+- **再度の実機確認**: `Wire`のSDA/SCLの`MISMATCH`は解消を確認。しかし**CSピン（pin 31）に`*** CONFLICT ***`が再発**
+
+### 実機再検証で発覚: 直前の`pin_mux()`修正が`chip_select`除外を打ち消していた、修正
+上の`pin_mux()`修正を入れたことで、以前直したはずの`SPI::chip_select`の誤`CONFLICT`除外（`pin_registry_forget(&chip_select)`）が無効化されてしまっていた。
+
+- **原因**: `SPI`のコンストラクタは`chip_select`構築直後に`pin_registry_forget(&chip_select)`を呼んでいたが、その**後**に`cs_manual_control(true)`（CSを手動GPIO制御に切り替えるための呼び出し、コンストラクタの一部として実行される）が`chip_select.pin_mux(...)`を呼んでいた。今回の`pin_mux()`修正により、この呼び出しが`chip_select`を**再登録**してしまい、直前の`forget()`が意味をなさなくなっていた——2つの正しい修正が組み合わさると壊れる、という典型的な相互作用のバグ
+- **修正**: `pin_registry_forget(&chip_select)`を、コンストラクタ内で`chip_select`に対して`pin_mux()`を呼ぶ最後の箇所（`cs_manual_control(true)`）より**後**、コンストラクタの末尾に移動。「これ以降`chip_select.pin_mux()`を呼ぶコードを足したら同じ問題が再発する」という注意コメントも追加
+- 両ボードで`test_SPI1_MikroBus`・`MultiPeripheralDump`のコンパイル確認、全55サンプル×両ボード回帰スイープも新規失敗なし（既知の11件のみ）。push済み（`98840bb`）
+- **再々の実機確認は未実施**（次のステップ）
 
 ---
 
