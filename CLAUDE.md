@@ -1012,7 +1012,18 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 - **フェーズ1実装（`DigitalInOut`のみ）**: `mcx-arduino-core`側に`pin_registry.h`/`.cpp`を新規作成（weakデフォルト2関数）、`DigitalInOut`のコンストラクタ末尾（`_pn`が有効なピンだった場合のみ、`DISABLED_PIN`の早期returnより後）で`pin_registry_note(this, "GPIO", &_pn, 1)`、デストラクタで`pin_registry_forget(this)`を呼ぶよう変更。`mcxPinState`側に`PinState`クラス（`print(Print &out = Serial)`のみ）＋固定長32エントリのレジストリ配列＋強い実装の`pin_registry_note`/`forget`を実装
 - **weak/strong切り替えの実機前（リンク時）検証**: `arm-none-eabi-nm`でビルド済み`.elf`のシンボル種別を直接確認——`PinState`を使わない`hello_world`では`pin_registry_note`/`forget`が`W`（weak）のまま、`mcxPinState`の`PinState pins;`をグローバル宣言した`examples/BasicPinDump`では同じシンボルが`T`（strong、`mcxPinState`側の実装で上書き）になっていることを両ボードで確認——設計通りの挙動が実証できた
 - **サイズ実測**: `DigitalInOut`のフック追加後、`hello_world`のサイズ増加は両ボードで+80〜88 bytesのみ（見積もりの「常時コスト」レンジと整合、`DigitalInOut`だけなので全クラス対応時よりまだ小さい）。全55サンプル×両ボード回帰スイープも新規失敗なし（既知の11件のみ）
-- **残作業（未着手）**: `Serial`のTX/RX、`SPI`のMOSI/MISO/SCLKへの明示的な登録呼び出し追加（`Serial::apply_pin_mux()`・`r01lib_spi.cpp`のコンストラクタに数行）、`AnalogIn`/`PwmOut`への明示的な登録呼び出し追加。`mcxPinState`側は「MUX期待値との突き合わせ」（各クラスが要求するALT値を覗き見るgetter）は未実装、現状は「同じ物理ピンを複数の生きているオブジェクトが主張していないか」の検出のみ。GitHubへのpushは未実施（ローカルrepoのみ）
+### フェーズ2実装: `Serial`/`SPI`/`AnalogIn`/`PwmOut`への明示的な登録呼び出し追加
+ユーザーから「実装を進める」と依頼、フェーズ1で拾えなかった4クラスに対応。
+
+- **`Serial`**: `apply_pin_mux()`の末尾（`tx_pin`/`rx_pin`が実際にmuxされた直後）で`pin_registry_note(this, "Serial", pins, 2)`、`~Serial()`で無条件に`pin_registry_forget(this)`（`_base`が`nullptr`でも安全、未登録なら単に見つからずno-op）
+- **`SPI`**（r01lib）: 非C444（実際にA153/N947がビルドする）コンストラクタで、MOSI/MISO/SCLKのローカル`DigitalInOut`が`pin_mux()`した直後に`pin_registry_note(this, "SPI", spi_pins, 3)`、`~SPI()`で`forget`。CSは`chip_select`が**永続的な**`DigitalInOut`メンバなので、フェーズ1の`DigitalInOut`フックで既に拾えている（明示対応不要）。C444向けの別コンストラクタ/デストラクタ（現在どちらのボードもビルドしない、レガシー分岐）にも構造上の対称性のため同様に追加
+- **`AnalogIn`/`PwmOut`**: それぞれA153/N947向けに完全に別クラス定義（`#if defined(CPU_MCXA153VLH) ... #elif defined(CPU_MCXN947VDF)`）を持つため、両方の構築子末尾・デストラクタ先頭に追加。`_pin`が`int`型なので`uint8_t pin8 = (uint8_t)_pin;`で明示的に変換してから渡す（`(uint8_t*)&_pin`のようなポインタキャストはリトルエンディアン依存で壊れやすいため避けた）
+- **AnalogIn.cppでの機械的置換時の注意**: A153/N947の2ブロックに同じ`#include "AnalogIn.h"\n#include "mcu.h"`という行が存在するため、Editツールでの単発置換は非一意でエラーになる箇所があった——Pythonで`count()`を先に確認してから2箇所とも機械的に置換（`PwmOut.cpp`も同様）
+- **サイズ実測**: `hello_world`はフェーズ1の43748→43796 bytes（+48 bytes、`Serial.begin()`経由で`apply_pin_mux()`がリンクされるため）。`SPI`/`AnalogIn`/`PwmOut`を使わない`hello_world`ではそれらのフック追加コストはゼロ——`--gc-sections`が関数単位で効いている証拠
+- 両ボードで`hello_world`・`test_analogWriteFrequency`（PwmOut経由）・`test_SPI1_MikroBus`（SPI経由）のコンパイル確認、全55サンプル×両ボード回帰スイープも新規失敗なし（既知の11件のみ）
+- `mcxPinState`側に`examples/MultiPeripheralDump`（GPIO・`Wire`・`SPI`を同時に立ち上げて一覧を出す、より実践的な例）を追加、両ボードでコンパイル確認
+- 両リポジトリともコミット・**`mcx-arduino-core`はpush済み**（`b04a21f`）。**`mcxPinState`はローカルrepoのみ、GitHubへのpushは未実施**
+- **残作業**: `mcxPinState`側の「MUX期待値との突き合わせ」（各クラスが要求するALT値を覗き見るgetter）は未実装、現状は「同じ物理ピンを複数の生きているオブジェクトが主張していないか」の検出のみ。**実機での動作確認は未実施**（コンパイルレベルの検証のみ）
 
 ---
 
