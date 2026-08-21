@@ -7,6 +7,8 @@
 
 Arduino board support package for NXP FRDM MCX Series boards.
 
+日本語版はこちら → [README.ja.md](README.ja.md)
+
 New here? Start with the [tutorial](TUTORIAL.md) ([日本語版](TUTORIAL.ja.md)).
 See [API_COMPATIBILITY.md](API_COMPATIBILITY.md) for the full Arduino API support status,
 [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) / [PIN_MAPPING_N947.md](PIN_MAPPING_N947.md)
