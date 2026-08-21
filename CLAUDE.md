@@ -1078,6 +1078,7 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 - **ユーザー指示で即座に検証コードを修正**: 既存の`D2-D3`ジャンパ（`OUTPUT_OPENDRAIN`検証で既に必須配線）を流用し、「D2をpush-pull OUTPUTとして意図的に逆方向へ強制駆動→Hi-Zへ解放→D3の内部プルが本当に引き戻すか」という、フローティングピンでは原理的に再現不可能な検証に置き換えた。これにより`D4`（配線なしの独立ピン）が不要になり、配線要件からも削除
 - `OUTPUT_OPENDRAIN`検証セクションはこの新しい厳密なプルダウン/プルアップ検証の**直後**に配置し直し、「D3のプルモードは直前で本物と実証済みなので、open-drain側の観測用ツールとして信頼できる」という構造に整理
 - 実機環境にない外部ライブラリ`P3T1755.h`依存のため直接コンパイルできず、一時的なスタブライブラリ（`/tmp/stublib/P3T1755/`）を作って構文面のみ検証（他のP3T1755依存サンプルと同じ既知の制約）、両ボードで成功確認。全55サンプル×両ボード回帰スイープも新規失敗なし（既知の11件のみ、このサンプル自身のP3T1755.h欠落による失敗も含めて想定通り）。push済み（`5d2b6c3`）
+- **実機での最終確認完了**: ユーザーがD0-D1・D2-D3のジャンパを配線した実機で`test_Wire_end_find_availForWrite_pullmodes.ino`を実行。新設した2件（`INPUT_PULLDOWN pulls the line back low after an external HIGH drive releases`／`INPUT_PULLUP pulls the line back high after an external LOW drive releases`）を含む全16項目が`OK`。`PORT_SetPinPullUpDown()`修正・新テスト設計とも実機で実証完了
 
 ---
 
