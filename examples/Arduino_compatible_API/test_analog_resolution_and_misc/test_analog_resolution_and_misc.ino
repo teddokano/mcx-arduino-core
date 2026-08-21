@@ -2,8 +2,8 @@
  *
  *  - analogReference(): no-op on this board (fixed hardware reference),
  *    just checked here for "compiles and doesn't crash"
- *  - analogReadResolution(): switches analogRead(A0) from the default
- *    10bit (0-1023) range to 12bit (0-4095) -- verified against A0's
+ *  - analogReadResolution(): switches analogRead(A2) from the default
+ *    10bit (0-1023) range to 12bit (0-4095) -- verified against A2's
  *    actual reading
  *  - analogWriteResolution(): exercised (0-1023 write at 10bit) but not
  *    independently verified here -- no scope/LED brightness readback
@@ -33,14 +33,14 @@ void setup() {
 
   // ---- analogReadResolution ----
   analogReadResolution(10);
-  int v10 = analogRead(A0);
-  Serial.print("A0 @ 10bit: ");
+  int v10 = analogRead(A2);
+  Serial.print("A2 @ 10bit: ");
   Serial.println(v10);
   check("10bit range", v10 >= 0 && v10 <= 1023);
 
   analogReadResolution(12);
-  int v12 = analogRead(A0);
-  Serial.print("A0 @ 12bit: ");
+  int v12 = analogRead(A2);
+  Serial.print("A2 @ 12bit: ");
   Serial.println(v12);
   check("12bit range", v12 >= 0 && v12 <= 4095);
 
