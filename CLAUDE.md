@@ -1023,7 +1023,18 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 - 両ボードで`hello_world`・`test_analogWriteFrequency`（PwmOut経由）・`test_SPI1_MikroBus`（SPI経由）のコンパイル確認、全55サンプル×両ボード回帰スイープも新規失敗なし（既知の11件のみ）
 - `mcxPinState`側に`examples/MultiPeripheralDump`（GPIO・`Wire`・`SPI`を同時に立ち上げて一覧を出す、より実践的な例）を追加、両ボードでコンパイル確認
 - 両リポジトリともコミット・**`mcx-arduino-core`はpush済み**（`b04a21f`）。**`mcxPinState`はローカルrepoのみ、GitHubへのpushは未実施**
-- **残作業**: `mcxPinState`側の「MUX期待値との突き合わせ」（各クラスが要求するALT値を覗き見るgetter）は未実装、現状は「同じ物理ピンを複数の生きているオブジェクトが主張していないか」の検出のみ。**実機での動作確認は未実施**（コンパイルレベルの検証のみ）
+- **残作業**: `mcxPinState`側の「MUX期待値との突き合わせ」（各クラスが要求するALT値を覗き見るgetter）は未実装、現状は「同じ物理ピンを複数の生きているオブジェクトが主張していないか」の検出のみ
+
+### `mcxPinState`実機検証: `SPI::chip_select`の誤検出を発見・修正
+ユーザーに実機確認を依頼。事前に、ライブラリ置き場が`~/Documents/Arduino/libraries/`ではなく`~/dev/Arduino/libraries/`（このプロジェクトの他の関連ライブラリと同じ階層）だとユーザーから指摘があり、シンボリックリンクを作り直した。`mcxPinState`側に`examples/ConflictDemo`（同一ピンに`DigitalInOut`を2つ意図的に生かす、配線不要の衝突デモ）も追加してからユーザーに`MultiPeripheralDump`と`ConflictDemo`の実機確認を依頼。
+
+- **`MultiPeripheralDump`の実機出力**: GPIO×4・`Serial`×2・`SPI`×3に加え、`Pin 31: GPIO, GPIO *** CONFLICT ***`が出現——`ConflictDemo`の意図した衝突ではなく、意図せぬ本物の二重所有だった（出力の生ピン数を数えて`MultiPeripheralDump`由来と特定）
+- **原因調査**: `MultiPeripheralDump.ino`の`pinMode(SS, OUTPUT); digitalWrite(SS, HIGH); SPI.begin();`という書き方——このプロジェクトのSPIサンプル全部（`test_SPI_bitorder_end_transfer16.ino`等）が使っている標準パターン——が原因と判明。`pinMode(SS,...)`が`digital_pins[SS] = new DigitalInOut(...)`という永続オブジェクトを1つ作り、続く`SPI.begin()`がr01lib`SPI`内部の`chip_select`という**別の**永続`DigitalInOut`を同じ物理ピンに対してもう1つ作る（`cs_manual_control()`用の内部実装）。両方が`DigitalInOut`のフェーズ1フックで自動的に`"GPIO"`として自己登録するため、CSピンには常に2つのオーナーが存在する状態になっていた——このプロジェクトのSPIサンプル全部で毎回起きていたはずだが、今回`mcxPinState`で初めて可視化された
+- **実害の有無**: 実害なし。どちらの`DigitalInOut`も同じハードウェアGPIOレジスタを読み書きするだけなので、電気的にも機能的にも矛盾は起きない。v0.4.0のCS再設計（CS制御をスケッチ側の責任にした変更）の意図通りの状態であり、`chip_select`は`cs_manual_control()`用の内部簿記のためだけに存在する
+- **除外するか維持するかユーザーに相談**: 「実際に2つ生きているという事実をそのまま見せる」か「ノイズになるので除外する」かを提示、ユーザーが「除外」を選択
+- **修正**: `DigitalInOut`側のフック自体（プロジェクト全体で共有される仕組み）には一切手を入れず、`SPI`のコンストラクタ側で`chip_select`の初期化直後に`pin_registry_forget(&chip_select)`を呼んで自己登録を打ち消す方式を採用——`DigitalInOut`にopt-outパラメータを追加する案より局所的で、他の利用箇所に影響しない。実際にビルドされる非C444コンストラクタと、現在どちらのボードもビルドしないレガシーC444コンストラクタの両方に適用（構造上の対称性のため）
+- 両ボードで`MultiPeripheralDump`・`ConflictDemo`のコンパイル確認、全55サンプル×両ボード回帰スイープも新規失敗なし（既知の11件のみ）。**実機での再確認は未実施**（ユーザーの次のステップとして依頼予定）
+- `mcx-arduino-core`側push済み（`89212cb`）
 
 ---
 
