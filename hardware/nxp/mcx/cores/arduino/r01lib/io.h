@@ -1018,8 +1018,16 @@ public:
  */
 static inline void PORT_SetPinPullUpDown( PORT_Type *base, uint32_t pin, int enable, int logic )
 {
-	base->PCR[pin] = (base->PCR[pin] & ~PORT_PCR_PS_MASK) | PORT_PCR_PS( enable );
-	base->PCR[pin] = (base->PCR[pin] & ~PORT_PCR_PE_MASK) | PORT_PCR_PE( logic );
+	// `enable`/`logic` go into PE/PS respectively, matching the doc comment
+	// above -- these were previously swapped (enable into PS, logic into
+	// PE), which meant PullDown (enable=1, logic=0) wrote PE=0 and left
+	// the pin with no pull enabled at all. Found via mcxPinState reading
+	// back the live PCR register on real hardware: INPUT_PULLUP correctly
+	// showed a pull-up (enable=1, logic=1 happened to still land on the
+	// right bits before this fix), but INPUT_PULLDOWN showed no pull
+	// whatsoever.
+	base->PCR[pin] = (base->PCR[pin] & ~PORT_PCR_PE_MASK) | PORT_PCR_PE( enable );
+	base->PCR[pin] = (base->PCR[pin] & ~PORT_PCR_PS_MASK) | PORT_PCR_PS( logic );
 }
 
 /** Set a pin's open-drain configuration directly on its PORT PCR register.

@@ -623,15 +623,12 @@ PinPcrInfo pin_registry_read_pcr( uint8_t raw_pin )
 	info.ode	= 0 != ( pcr & PORT_PCR_ODE_MASK );
 #endif
 
-	// Per PORT_PCR_PE_MASK/PORT_PCR_PS_MASK's own documented meaning: PE
-	// (pull enable) gates whether PS (pull select: 0=down, 1=up) means
-	// anything. NOTE: this reads the fields correctly, but
-	// PORT_SetPinPullUpDown() -- the setter just above -- writes its
-	// `enable`/`logic` args into PS/PE swapped from what its own doc
-	// comment says (confirmed while adding this, unrelated to it; not
-	// fixed here). So a pin actually configured through that function may
-	// not show the pull state its caller intended -- that's a bug in the
-	// write path, not in this read.
+	// PE (pull enable) gates whether PS (pull select: 0=down, 1=up) means
+	// anything -- matches PORT_SetPinPullUpDown()'s own field usage (that
+	// function's enable/logic-vs-PE/PS assignment was briefly swapped
+	// during this tool's own development, confirmed and fixed via real
+	// hardware: INPUT_PULLDOWN was silently leaving pins with no pull
+	// enabled at all -- see PORT_SetPinPullUpDown()'s comment).
 	if ( pcr & PORT_PCR_PE_MASK )
 		info.pull	= ( pcr & PORT_PCR_PS_MASK ) ? 2 : 1;
 
