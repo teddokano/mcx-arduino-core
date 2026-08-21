@@ -9,5 +9,6 @@ var searchData=
   ['notes_20see_20project_20discussion_6',['Design notes (see project discussion)',['../_analog_in_8h.html#autotoc_md1',1,'']]],
   ['notes_20see_20project_20discussion_20—_20important_7',['Design notes (see project discussion) — IMPORTANT',['../_pwm_out_8h.html#autotoc_md3',1,'']]],
   ['notone_8',['noTone',['../arduino__tone_8cpp.html#a2c7061bf635e1e161e73d12241a28cca',1,'noTone(int pin_num):&#160;arduino_tone.cpp'],['../arduino__tone_8h.html#a2c7061bf635e1e161e73d12241a28cca',1,'noTone(int pin_num):&#160;arduino_tone.cpp']]],
-  ['notusinginterrupt_9',['notUsingInterrupt',['../class_s_p_i_class.html#a7d1e15e5d075ee08c3aa006fab78f637',1,'SPIClass']]]
+  ['notusinginterrupt_9',['notUsingInterrupt',['../class_s_p_i_class.html#a7d1e15e5d075ee08c3aa006fab78f637',1,'SPIClass']]],
+  ['num_5fdigital_5fpins_10',['NUM_DIGITAL_PINS',['../arduino__io_8h.html#a0ef783fbc452748b33c5a307d0565f7a',1,'arduino_io.h']]]
 ];

@@ -17,12 +17,14 @@
  *  Separate MAJOR/MINOR/PATCH integers (plus MCX_ARDUINO_CORE_VERSION_VAL()
  *  to pack them into one comparable integer) exist so code can gate on a
  *  minimum core version at compile time -- something a plain version
- *  *string* can't do, since the preprocessor's #if only evaluates integer
+ *  *string* can't do, since the preprocessor's \#if only evaluates integer
  *  constant expressions:
  *
+ *  @code
  *    #if MCX_ARDUINO_CORE_VERSION >= MCX_ARDUINO_CORE_VERSION_VAL(0, 4, 0)
  *      // use a feature only present from 0.4.0 onward
  *    #endif
+ *  @endcode
  *
  *  Modeled on arduino-esp32's esp_arduino_version.h (MIT-compatible
  *  design pattern, not copied code -- Apache-2.0 original, this is an

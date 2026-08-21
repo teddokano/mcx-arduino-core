@@ -18,7 +18,7 @@
  *    (no "0" suffix) — the 2-FIFO variants of these calls don't exist here.
  *
  * @author  Tedd OKANO
- * @license MIT
+ * @copyright MIT License
  */
 
 #if defined( CPU_MCXA153VLH )

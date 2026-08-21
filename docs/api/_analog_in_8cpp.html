@@ -112,6 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <div class="textblock"><code>#include &quot;fsl_reset.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="_analog_in_8h_source.html">AnalogIn.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="mcu_8h_source.html">mcu.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="pin__registry_8h_source.html">pin_registry.h</a>&quot;</code><br />
 </div>
 <p><a href="_analog_in_8cpp_source.html">Go to the source code of this file.</a></p>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
@@ -122,7 +123,8 @@ document.addEventListener('DOMContentLoaded', () => {
 <li><span class="tt">LPADC_DoAutoCalibration()</span> is required on this part, gated by FSL_FEATURE_LPADC_HAS_CTRL_CAL_REQ (both this feature and ...CTRL_CALOFS happen to be 1 on MCXA153, but CAL_REQ is the one the NXP example actually gates the calibration call with).</li>
 <li>FSL_FEATURE_LPADC_FIFO_COUNT is 1 on this part, so <span class="tt">LPADC_GetConvResult()</span> takes no FIFO-index argument and FIFO reset is <span class="tt">LPADC_DoResetFIFO()</span> (no "0" suffix) — the 2-FIFO variants of these calls don't exist here.</li>
 </ul>
-<dl class="section author"><dt>Author</dt><dd>Tedd OKANO @license MIT </dd></dl>
+<dl class="section author"><dt>Author</dt><dd>Tedd OKANO </dd></dl>
+<dl class="section copyright"><dt>Copyright</dt><dd>MIT License </dd></dl>
 
 <p class="definition">Definition in file <a class="el" href="_analog_in_8cpp_source.html">AnalogIn.cpp</a>.</p>
 </div></div><!-- contents -->

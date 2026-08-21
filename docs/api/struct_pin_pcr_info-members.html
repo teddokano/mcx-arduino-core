@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.17.0"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>mcx-arduino-core: hardware/nxp/mcx/cores/arduino/r01lib/PwmOut.cpp File Reference</title>
+<title>mcx-arduino-core: Member List</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="codefolding.js"></script>
 <script type="text/javascript" src="clipboard.js"></script>
@@ -96,38 +96,20 @@ document.addEventListener('DOMContentLoaded', () => {
 </div>
 </div>
 
-<div id="nav-path" class="navpath">
-  <ul>
-<li class="navelem"><a href="dir_f4316de2dfb04db90651672103de31d6.html">hardware</a></li><li class="navelem"><a href="dir_2ea19a3358433cce9fcb081e44c0eeaf.html">nxp</a></li><li class="navelem"><a href="dir_a0f24fb436b722a00819d76c34516f49.html">mcx</a></li><li class="navelem"><a href="dir_40b72edd5f5af5b0abf0d4e80c43ee7f.html">cores</a></li><li class="navelem"><a href="dir_137da5c55f55e051bcd28dee55457b88.html">arduino</a></li><li class="navelem"><a href="dir_8cb014912ba1c332630210d1e5d33736.html">r01lib</a></li>  </ul>
-</div>
 </div><!-- top -->
 <div id="doc-content">
 <div class="header">
-  <div class="headertitle"><div class="title">PwmOut.cpp File Reference</div></div>
+  <div class="headertitle"><div class="title">PinPcrInfo Member List</div></div>
 </div><!--header-->
 <div class="contents">
 
-<p>Mbed-compatible <a class="el" href="class_pwm_out.html" title="Mbed-compatible PWM output class.">PwmOut</a> implementation for r01lib (FRDM-MCXA153).  
-<a href="#details">More...</a></p>
-<div class="textblock"><code>#include &quot;fsl_reset.h&quot;</code><br />
-<code>#include &quot;<a class="el" href="_pwm_out_8h_source.html">PwmOut.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="mcu_8h_source.html">mcu.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="pin__registry_8h_source.html">pin_registry.h</a>&quot;</code><br />
-</div>
-<p><a href="_pwm_out_8cpp_source.html">Go to the source code of this file.</a></p>
-<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Mbed-compatible <a class="el" href="class_pwm_out.html" title="Mbed-compatible PWM output class.">PwmOut</a> implementation for r01lib (FRDM-MCXA153). </p>
-<p>Verified against the FRDM-MCXA153 SDK FlexPWM driver example (examples/driver_examples/pwm) and MCXA153_features.h before writing this file:</p><ul>
-<li>FSL_FEATURE_PWM_FAULT_CH_COUNT is 1 on this part, so only <span class="tt">kPWM_faultchannel_0</span> (a single DISMAP register per submodule) exists.</li>
-<li>The SDK doc for <span class="tt">PWM_SetupFaultDisableMap()</span> states "a reset sets all
-   bits in this field" — i.e. out of reset, <em>every</em> FAULTx input is mapped to disable each channel's output. Since these fault pins are not driven by anything on this design, the disable-map is explicitly cleared for both channels of a submodule the first time it is used, otherwise the PWM output may never toggle. This is the concern the project memo flagged as needing verification before implementation.</li>
-<li><span class="tt">PWM_SetupPwm()</span> only supports integer 0-100% duty. For the continuous-duty Mbed API this file uses the raw-tick API <span class="tt">PWM_UpdatePwmPeriodAndDutycycle()</span> (16-bit period/duty) for all period()/write() calls after the one-time <span class="tt">PWM_SetupPwm()</span> call that establishes OUTEN/polarity/fault-state for the channel.</li>
-</ul>
-<dl class="section author"><dt>Author</dt><dd>Tedd OKANO </dd></dl>
-<dl class="section copyright"><dt>Copyright</dt><dd>MIT License </dd></dl>
-
-<p class="definition">Definition in file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
-</div></div><!-- contents -->
+<p>This is the complete list of members for <a class="el" href="struct_pin_pcr_info.html">PinPcrInfo</a>, including all inherited members.</p>
+<table class="directory">
+  <tr class="even"><td class="entry"><a class="el" href="struct_pin_pcr_info.html#ad63fc0d34b73e69223edb580ea5b8514">ibe</a></td><td class="entry"><a class="el" href="struct_pin_pcr_info.html">PinPcrInfo</a></td><td class="entry"></td></tr>
+  <tr class="odd"><td class="entry"><a class="el" href="struct_pin_pcr_info.html#a2aa65809ff660b613c3aa66361274150">mux</a></td><td class="entry"><a class="el" href="struct_pin_pcr_info.html">PinPcrInfo</a></td><td class="entry"></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="struct_pin_pcr_info.html#a9594c4e97a2dba8f2a2b0378dfaba394">ode</a></td><td class="entry"><a class="el" href="struct_pin_pcr_info.html">PinPcrInfo</a></td><td class="entry"></td></tr>
+  <tr class="odd"><td class="entry"><a class="el" href="struct_pin_pcr_info.html#af4fb4a1b6acdf2f689caa66000923c2a">pull</a></td><td class="entry"><a class="el" href="struct_pin_pcr_info.html">PinPcrInfo</a></td><td class="entry"></td></tr>
+</table></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.17.0

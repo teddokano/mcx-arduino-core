@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.17.0"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>mcx-arduino-core: hardware/nxp/mcx/cores/arduino/r01lib/io.cpp File Reference</title>
+<title>mcx-arduino-core: hardware/nxp/mcx/cores/arduino/r01lib/pin_registry.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="codefolding.js"></script>
 <script type="text/javascript" src="clipboard.js"></script>
@@ -105,98 +105,97 @@ document.addEventListener('DOMContentLoaded', () => {
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
-<a href="#define-members">Macros</a> &#124;
-<a href="#typedef-members">Typedefs</a> &#124;
-<a href="#func-members">Functions</a> &#124;
-<a href="#var-members">Variables</a>  </div>
-  <div class="headertitle"><div class="title">io.cpp File Reference</div></div>
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle"><div class="title">pin_registry.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;cstdio&gt;</code><br />
-<code>#include &quot;fsl_common.h&quot;</code><br />
-<code>#include &quot;fsl_gpio.h&quot;</code><br />
-<code>#include &quot;fsl_port.h&quot;</code><br />
-<code>#include &quot;pin_mux.h&quot;</code><br />
-<code>#include &quot;<a class="el" href="mcu_8h_source.html">mcu.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="io_8h_source.html">io.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="pin__registry_8h_source.html">pin_registry.h</a>&quot;</code><br />
-<code>#include &quot;fsl_debug_console.h&quot;</code><br />
+<div class="textblock"><code>#include &lt;cstdint&gt;</code><br />
 </div>
-<p><a href="io_8cpp_source.html">Go to the source code of this file.</a></p>
+<p><a href="pin__registry_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-nested-classes" class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
-<tr class="memitem:_5Fgpio_5Fpin" id="r__5Fgpio_5Fpin"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="struct__gpio__pin.html">_gpio_pin</a></td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-define-members" class="groupheader"><a id="define-members" name="define-members"></a>
-Macros</h2></td></tr>
-<tr class="memitem:a558ea429228d4d91c2ca448f9653102b" id="r_a558ea429228d4d91c2ca448f9653102b"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#a558ea429228d4d91c2ca448f9653102b">DISABLED_GPIO</a>&#160;&#160;&#160;-1</td></tr>
-<tr class="memitem:ac1ce626a969ca4e6c05c76611217dd92" id="r_ac1ce626a969ca4e6c05c76611217dd92"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#ac1ce626a969ca4e6c05c76611217dd92">DISABLED_PIN</a>&#160;&#160;&#160;0xFF</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-typedef-members" class="groupheader"><a id="typedef-members" name="typedef-members"></a>
-Typedefs</h2></td></tr>
-<tr class="memitem:afeb5c3f13f07451d42b30b0e13645c26" id="r_afeb5c3f13f07451d42b30b0e13645c26"><td class="memItemLeft">typedef struct <a class="el" href="struct__gpio__pin.html">_gpio_pin</a>&#160;</td><td class="memItemRight"><a class="el" href="#afeb5c3f13f07451d42b30b0e13645c26">gpio_pin</a></td></tr>
+<tr class="memitem:PinPcrInfo" id="r_PinPcrInfo"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="struct_pin_pcr_info.html">PinPcrInfo</a></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:abd107c9bdf4b1d5d4ee0923860b9ae91" id="r_abd107c9bdf4b1d5d4ee0923860b9ae91"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#abd107c9bdf4b1d5d4ee0923860b9ae91">pin_registry_note</a> (const void *owner, const char *owner_name, const uint8_t *pins, uint8_t pin_count, uint8_t wanted_mux)</td></tr>
+<tr class="memitem:ad93e159a47138736ef12377512a5548f" id="r_ad93e159a47138736ef12377512a5548f"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ad93e159a47138736ef12377512a5548f">pin_registry_forget</a> (const void *owner)</td></tr>
 <tr class="memitem:a4aba611ac18d0ccc0a62ec7cfd36022b" id="r_a4aba611ac18d0ccc0a62ec7cfd36022b"><td class="memItemLeft"><a class="el" href="struct_pin_pcr_info.html">PinPcrInfo</a>&#160;</td><td class="memItemRight"><a class="el" href="#a4aba611ac18d0ccc0a62ec7cfd36022b">pin_registry_read_pcr</a> (uint8_t raw_pin)</td></tr>
 <tr class="memitem:a55c6e3c8f00b90a66d70ea6782df39c7" id="r_a55c6e3c8f00b90a66d70ea6782df39c7"><td class="memItemLeft">const char *&#160;</td><td class="memItemRight"><a class="el" href="#a55c6e3c8f00b90a66d70ea6782df39c7">pin_registry_pin_name</a> (uint8_t raw_pin, char *buf, uint8_t buf_size)</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-var-members" class="groupheader"><a id="var-members" name="var-members"></a>
-Variables</h2></td></tr>
-<tr class="memitem:a6cc2c704233b052dd6bb1df6298a4e4b" id="r_a6cc2c704233b052dd6bb1df6298a4e4b"><td class="memItemLeft">GPIO_Type *&#160;</td><td class="memItemRight"><a class="el" href="#a6cc2c704233b052dd6bb1df6298a4e4b">gpio_type</a> [] = GPIO_BASE_PTRS</td></tr>
-<tr class="memitem:a6b00a781f7b6edc2a45e188f18a1510a" id="r_a6b00a781f7b6edc2a45e188f18a1510a"><td class="memItemLeft">PORT_Type *&#160;</td><td class="memItemRight"><a class="el" href="#a6b00a781f7b6edc2a45e188f18a1510a">port_type</a> [] = PORT_BASE_PTRS</td></tr>
-<tr class="memitem:a33509297e19148e95cf14a303a882185" id="r_a33509297e19148e95cf14a303a882185"><td class="memItemLeft">static <a class="el" href="#afeb5c3f13f07451d42b30b0e13645c26">gpio_pin</a>&#160;</td><td class="memItemRight"><a class="el" href="#a33509297e19148e95cf14a303a882185">pins</a> []</td></tr>
 </table>
-<a name="doc-define-members" id="doc-define-members"></a><h2 id="header-doc-define-members" class="groupheader">Macro Definition Documentation</h2>
-<a id="a558ea429228d4d91c2ca448f9653102b" name="a558ea429228d4d91c2ca448f9653102b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a558ea429228d4d91c2ca448f9653102b">&#9670;&#160;</a></span>DISABLED_GPIO</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define DISABLED_GPIO&#160;&#160;&#160;-1</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="io_8cpp_source.html#l00016">16</a> of file <a class="el" href="io_8cpp_source.html">io.cpp</a>.</p>
-
-</div>
-</div>
-<a id="ac1ce626a969ca4e6c05c76611217dd92" name="ac1ce626a969ca4e6c05c76611217dd92"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac1ce626a969ca4e6c05c76611217dd92">&#9670;&#160;</a></span>DISABLED_PIN</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define DISABLED_PIN&#160;&#160;&#160;0xFF</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="io_8cpp_source.html#l00017">17</a> of file <a class="el" href="io_8cpp_source.html">io.cpp</a>.</p>
-
-</div>
-</div>
-<a name="doc-typedef-members" id="doc-typedef-members"></a><h2 id="header-doc-typedef-members" class="groupheader">Typedef Documentation</h2>
-<a id="afeb5c3f13f07451d42b30b0e13645c26" name="afeb5c3f13f07451d42b30b0e13645c26"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afeb5c3f13f07451d42b30b0e13645c26">&#9670;&#160;</a></span>gpio_pin</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">typedef struct <a class="el" href="struct__gpio__pin.html">_gpio_pin</a> <a class="el" href="#afeb5c3f13f07451d42b30b0e13645c26">gpio_pin</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
 <a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function Documentation</h2>
+<a id="ad93e159a47138736ef12377512a5548f" name="ad93e159a47138736ef12377512a5548f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad93e159a47138736ef12377512a5548f">&#9670;&#160;</a></span>pin_registry_forget()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void pin_registry_forget </td>
+          <td>(</td>
+          <td class="paramtype">const void *</td>          <td class="paramname"><span class="paramname"><em>owner</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Called by a pin-owning object's destructor. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">owner</td><td>same pointer previously passed to <a class="el" href="#abd107c9bdf4b1d5d4ee0923860b9ae91">pin_registry_note()</a> </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="abd107c9bdf4b1d5d4ee0923860b9ae91" name="abd107c9bdf4b1d5d4ee0923860b9ae91"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abd107c9bdf4b1d5d4ee0923860b9ae91">&#9670;&#160;</a></span>pin_registry_note()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void pin_registry_note </td>
+          <td>(</td>
+          <td class="paramtype">const void *</td>          <td class="paramname"><span class="paramname"><em>owner</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *</td>          <td class="paramname"><span class="paramname"><em>owner_name</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const uint8_t *</td>          <td class="paramname"><span class="paramname"><em>pins</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint8_t</td>          <td class="paramname"><span class="paramname"><em>pin_count</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint8_t</td>          <td class="paramname"><span class="paramname"><em>wanted_mux</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Pin-ownership debug hooks (see the mcxPinState library, a separate project: <a href="https://github.com/teddokano/mcxPinState">https://github.com/teddokano/mcxPinState</a>).</p>
+<p>These are weak, empty by default &ndash; pin-owning r01lib classes (<a class="el" href="class_digital_in_out.html">DigitalInOut</a> and friends) call them unconditionally from their constructor/destructor, but with no sketch pulling in a strong override, the calls cost only a few bytes per call site and touch nothing else. Constructing a mcxPinState::PinState object anywhere in a sketch links in that library's strong override instead (same mechanism as this core's own weak <a class="el" href="arduino__main_8cpp.html#a77868085315562e92c19e63a62a4097a">main()</a>, which a sketch's own <a class="el" href="arduino__main_8cpp.html#a77868085315562e92c19e63a62a4097a">main()</a> overrides the same way) &ndash; from that point on every call here actually records who holds which pin, so mcxPinState can report it.</p>
+<p>Deliberately NOT part of this core's own debug-output story: the real registry (the array, the table-printing logic) lives entirely in mcxPinState, outside this core's cores/arduino/ tree &ndash; which is force-linked whole-archive (see platform.txt's recipe.c.combine.pattern) precisely so weak/strong overrides like <a class="el" href="arduino__main_8cpp.html#a77868085315562e92c19e63a62a4097a">main()</a> resolve correctly. Had the registry lived in cores/arduino/ instead, that same whole-archive flag would have pulled it into every build whether any sketch constructed a PinState or not, defeating the entire point. Called by a pin-owning object's constructor once it has resolved and claimed its pin(s). </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">owner</td><td>opaque identity for this object (its own <span class="tt">this</span>) &ndash; used only to pair a later <a class="el" href="#ad93e159a47138736ef12377512a5548f">pin_registry_forget()</a> call with this one, never dereferenced </td></tr>
+    <tr><td class="paramname">owner_name</td><td>short label for the object's class (e.g. "GPIO", "Serial1", "SPI") &ndash; a string literal is fine, this is never freed </td></tr>
+    <tr><td class="paramname">pins</td><td>raw r01lib pin values (<a class="el" href="io_8h.html">io.h</a>'s pin enum) this object holds </td></tr>
+    <tr><td class="paramname">pin_count</td><td>number of entries in <span class="tt"><a class="el" href="io_8cpp.html#a33509297e19148e95cf14a303a882185">pins</a></span> </td></tr>
+    <tr><td class="paramname">wanted_mux</td><td>the PORT_MuxAltN value (0-15) this object just set &ndash; or was expecting to already be set to &ndash; on all of <span class="tt"><a class="el" href="io_8cpp.html#a33509297e19148e95cf14a303a882185">pins</a></span>. Every current caller uses a single shared ALT across its whole pin group (e.g. <a class="el" href="class_serial.html" title="Mbed-compatible UART class backed by interrupt-driven ring buffers.">Serial</a>'s TX/RX both land on the same LPUART ALT, <a class="el" href="class_s_p_i.html">SPI</a>'s MOSI/MISO/SCLK all share one ALT), so one scalar is enough for now; a future caller needing per-pin ALTs would need this signature extended. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="a55c6e3c8f00b90a66d70ea6782df39c7" name="a55c6e3c8f00b90a66d70ea6782df39c7"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a55c6e3c8f00b90a66d70ea6782df39c7">&#9670;&#160;</a></span>pin_registry_pin_name()</h2>
 
@@ -221,7 +220,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>Render a raw pin's physical name ("P1_17" style) into a caller-supplied buffer.</p>
-<p>Deliberately doesn't return a string literal from a lookup table: <a class="el" href="io_8h.html">io.h</a>'s pin enum has gaps per board (unavailable physical pins are simply omitted, so a raw value isn't an arithmetic function of port/pin number), which would otherwise call for a full {value -&gt; name} string table, one entry per pin (121 on N947, 52 on A153) &ndash; real, if modest, flash cost, and a second place (besides <a class="el" href="io_8cpp.html">io.cpp</a>'s own <span class="tt"><a class="el" href="#a33509297e19148e95cf14a303a882185">pins</a>[]</span>) that would need to stay in sync with <a class="el" href="io_8h.html">io.h</a> by hand. Formatting from <span class="tt"><a class="el" href="#a33509297e19148e95cf14a303a882185">pins</a>[]</span> (which <a class="el" href="io_8cpp.html">io.cpp</a> already has and already keeps in sync with <a class="el" href="io_8h.html">io.h</a>, being right next to it) costs only the snprintf call site &ndash; no table at all. Same &ndash;gc-sections-if-unused property as <a class="el" href="pin__registry_8h.html#a4aba611ac18d0ccc0a62ec7cfd36022b">pin_registry_read_pcr()</a>.</p>
+<p>Deliberately doesn't return a string literal from a lookup table: <a class="el" href="io_8h.html">io.h</a>'s pin enum has gaps per board (unavailable physical pins are simply omitted, so a raw value isn't an arithmetic function of port/pin number), which would otherwise call for a full {value -&gt; name} string table, one entry per pin (121 on N947, 52 on A153) &ndash; real, if modest, flash cost, and a second place (besides <a class="el" href="io_8cpp.html">io.cpp</a>'s own <span class="tt"><a class="el" href="io_8cpp.html#a33509297e19148e95cf14a303a882185">pins</a>[]</span>) that would need to stay in sync with <a class="el" href="io_8h.html">io.h</a> by hand. Formatting from <span class="tt"><a class="el" href="io_8cpp.html#a33509297e19148e95cf14a303a882185">pins</a>[]</span> (which <a class="el" href="io_8cpp.html">io.cpp</a> already has and already keeps in sync with <a class="el" href="io_8h.html">io.h</a>, being right next to it) costs only the snprintf call site &ndash; no table at all. Same &ndash;gc-sections-if-unused property as <a class="el" href="#a4aba611ac18d0ccc0a62ec7cfd36022b">pin_registry_read_pcr()</a>.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">raw_pin</td><td>r01lib's internal pin number (<a class="el" href="io_8h.html">io.h</a>'s pin enum) </td></tr>
@@ -251,7 +250,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>Read back a raw pin's live PCR register, decoded.</p>
-<p>The <span class="tt">mux</span> field is for comparing against what an owner in the registry claimed to want (<a class="el" href="pin__registry_8h.html#abd107c9bdf4b1d5d4ee0923860b9ae91">pin_registry_note()</a>'s wanted_mux), to catch cases where something re-muxed the pin out from under its owner after the fact (see this core's own history for a real example: Serial1 silently re-muxing <a class="el" href="class_i3_c.html">I3C</a>'s pins on FRDM-MCXN947, well after <a class="el" href="class_i3_c.html">I3C</a>'s own constructor had already set them and considered the job done).</p>
+<p>The <span class="tt">mux</span> field is for comparing against what an owner in the registry claimed to want (<a class="el" href="#abd107c9bdf4b1d5d4ee0923860b9ae91">pin_registry_note()</a>'s wanted_mux), to catch cases where something re-muxed the pin out from under its owner after the fact (see this core's own history for a real example: Serial1 silently re-muxing <a class="el" href="class_i3_c.html">I3C</a>'s pins on FRDM-MCXN947, well after <a class="el" href="class_i3_c.html">I3C</a>'s own constructor had already set them and considered the job done).</p>
 <p>Deliberately NOT extern "C"/weak like the two hooks above &ndash; this doesn't need overriding, it's just a plain read. Defined in <a class="el" href="io_8cpp.html">io.cpp</a>, which is where the per-board pin/PORT lookup tables this needs already live; &ndash;gc-sections drops it from any build that never calls it, the same as every other unused function here.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -262,63 +261,6 @@ Variables</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>the pin's decoded PCR state; <span class="tt">mux</span> is 0xFF if the pin is DISABLED_PIN or otherwise out of range </dd></dl>
 
 <p class="definition">Definition at line <a class="el" href="io_8cpp_source.html#l00607">607</a> of file <a class="el" href="io_8cpp_source.html">io.cpp</a>.</p>
-
-</div>
-</div>
-<a name="doc-var-members" id="doc-var-members"></a><h2 id="header-doc-var-members" class="groupheader">Variable Documentation</h2>
-<a id="a6cc2c704233b052dd6bb1df6298a4e4b" name="a6cc2c704233b052dd6bb1df6298a4e4b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6cc2c704233b052dd6bb1df6298a4e4b">&#9670;&#160;</a></span>gpio_type</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">GPIO_Type* gpio_type[] = GPIO_BASE_PTRS</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="io_8cpp_source.html#l00019">19</a> of file <a class="el" href="io_8cpp_source.html">io.cpp</a>.</p>
-
-</div>
-</div>
-<a id="a33509297e19148e95cf14a303a882185" name="a33509297e19148e95cf14a303a882185"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a33509297e19148e95cf14a303a882185">&#9670;&#160;</a></span>pins</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="#afeb5c3f13f07451d42b30b0e13645c26">gpio_pin</a> pins[]</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="io_8cpp_source.html#l00028">28</a> of file <a class="el" href="io_8cpp_source.html">io.cpp</a>.</p>
-
-</div>
-</div>
-<a id="a6b00a781f7b6edc2a45e188f18a1510a" name="a6b00a781f7b6edc2a45e188f18a1510a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6b00a781f7b6edc2a45e188f18a1510a">&#9670;&#160;</a></span>port_type</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">PORT_Type* port_type[] = PORT_BASE_PTRS</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="io_8cpp_source.html#l00020">20</a> of file <a class="el" href="io_8cpp_source.html">io.cpp</a>.</p>
 
 </div>
 </div>

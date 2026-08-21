@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['_5f_5fattribute_5f_5f_0',['__attribute__',['../mcu_8cpp.html#a2e8f27ca5475299bb25d3263939c69c8',1,'__attribute__((constructor(0))) void start_mcu():&#160;mcu.cpp'],['../dummy_8cpp.html#a3449bb6a6cd5f5aed2872e0179beaa7a',1,'__attribute__((noreturn)) void _exit(int):&#160;dummy.cpp']]],
+  ['_5f_5fattribute_5f_5f_0',['__attribute__',['../mcu_8cpp.html#a2e8f27ca5475299bb25d3263939c69c8',1,'__attribute__((constructor(0))) void start_mcu():&#160;mcu.cpp'],['../pin__registry_8cpp.html#a2ce3e21bc206235d04ff09c1d5ee52c5',1,'__attribute__((weak)) pin_registry_note(const void *owner:&#160;pin_registry.cpp'],['../dummy_8cpp.html#a3449bb6a6cd5f5aed2872e0179beaa7a',1,'__attribute__((noreturn)) void _exit(int):&#160;dummy.cpp']]],
   ['_5facquire_5fmodule_1',['_acquire_module',['../class_pwm_out.html#acd8c7f27d189e6b042b9caa032adeb2a',1,'PwmOut']]],
   ['_5facquire_5fperipheral_2',['_acquire_peripheral',['../class_analog_in.html#a4bca447951159de1e0b106c4482ab319',1,'AnalogIn']]],
   ['_5falloc_5fcopy_3',['_alloc_copy',['../class_string.html#ab2a59f0c24a84873723af333a7aeaede',1,'String']]],

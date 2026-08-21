@@ -214,6 +214,9 @@ Static Private Attributes</h2></td></tr>
 Additional Inherited Members</h2></td></tr>
 <tr class="inherit_header pub_attribs_class_i2_c"><td colspan="2">Public Attributes inherited from <a class="el" href="class_i2_c.html">I2C</a></td></tr>
 <tr class="memitem:a2f20a9d723af29875ec25ea943fcc49c pub_attribs_class_i2_c" id="r_a2f20a9d723af29875ec25ea943fcc49c"><td class="memItemLeft">status_t&#160;</td><td class="memItemRight"><a class="el" href="class_i2_c.html#a2f20a9d723af29875ec25ea943fcc49c">last_status</a></td></tr>
+<tr class="inherit_header pro_attribs_class_i2_c"><td colspan="2">Protected Attributes inherited from <a class="el" href="class_i2_c.html">I2C</a></td></tr>
+<tr class="memitem:af8f7be292c9db76518888e35bc5e2335 pro_attribs_class_i2_c" id="r_af8f7be292c9db76518888e35bc5e2335"><td class="memItemLeft"><a class="el" href="class_digital_in_out.html">DigitalInOut</a>&#160;</td><td class="memItemRight"><a class="el" href="class_i2_c.html#af8f7be292c9db76518888e35bc5e2335">_sda</a></td></tr>
+<tr class="memitem:a44f399fc7fa62a3d606e584371f29b33 pro_attribs_class_i2_c" id="r_a44f399fc7fa62a3d606e584371f29b33"><td class="memItemLeft"><a class="el" href="class_digital_in_out.html">DigitalInOut</a>&#160;</td><td class="memItemRight"><a class="el" href="class_i2_c.html#a44f399fc7fa62a3d606e584371f29b33">_scl</a></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p><a class="el" href="class_i3_c.html">I3C</a> class</p>
@@ -360,7 +363,7 @@ Additional Inherited Members</h2></td></tr>
 </div><div class="memdoc">
 <p>Destructor to free <a class="el" href="class_i3_c.html">I3C</a> resource </p>
 
-<p class="definition">Definition at line <a class="el" href="i3c_8cpp_source.html#l00123">123</a> of file <a class="el" href="i3c_8cpp_source.html">i3c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="i3c_8cpp_source.html#l00129">129</a> of file <a class="el" href="i3c_8cpp_source.html">i3c.cpp</a>.</p>
 
 </div>
 </div>
@@ -413,7 +416,7 @@ Additional Inherited Members</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>status_t </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="i3c_8cpp_source.html#l00211">211</a> of file <a class="el" href="i3c_8cpp_source.html">i3c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="i3c_8cpp_source.html#l00217">217</a> of file <a class="el" href="i3c_8cpp_source.html">i3c.cpp</a>.</p>
 
 </div>
 </div>
@@ -467,7 +470,7 @@ Additional Inherited Members</h2></td></tr>
 
 <p>Reimplemented from <a class="el" href="class_i2_c.html#a629b5c62a4a173fc1950010b75cec34b">I2C</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="i3c_8cpp_source.html#l00244">244</a> of file <a class="el" href="i3c_8cpp_source.html">i3c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="i3c_8cpp_source.html#l00250">250</a> of file <a class="el" href="i3c_8cpp_source.html">i3c.cpp</a>.</p>
 
 </div>
 </div>
@@ -515,7 +518,7 @@ Additional Inherited Members</h2></td></tr>
 
 <p>Reimplemented from <a class="el" href="class_i2_c.html#ae10dac7be46ae36aa1ebbb952ab967fd">I2C</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="i3c_8cpp_source.html#l00234">234</a> of file <a class="el" href="i3c_8cpp_source.html">i3c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="i3c_8cpp_source.html#l00240">240</a> of file <a class="el" href="i3c_8cpp_source.html">i3c.cpp</a>.</p>
 
 </div>
 </div>
@@ -544,7 +547,7 @@ Additional Inherited Members</h2></td></tr>
 <p>check IBI status Non-blocking poll of whether an In-Band Interrupt has occurred since the last call. Clears the pending flag on read.</p>
 <dl class="section return"><dt>Returns</dt><dd>target address of IBI initiated device or zero if no event happened </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="i3c_8cpp_source.html#l00254">254</a> of file <a class="el" href="i3c_8cpp_source.html">i3c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="i3c_8cpp_source.html#l00260">260</a> of file <a class="el" href="i3c_8cpp_source.html">i3c.cpp</a>.</p>
 
 </div>
 </div>
@@ -590,7 +593,7 @@ Additional Inherited Members</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>int for number of devices which has newly assigned addresses (max 10) </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="i3c_8cpp_source.html#l00307">307</a> of file <a class="el" href="i3c_8cpp_source.html">i3c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="i3c_8cpp_source.html#l00313">313</a> of file <a class="el" href="i3c_8cpp_source.html">i3c.cpp</a>.</p>
 
 </div>
 </div>
@@ -636,7 +639,7 @@ Additional Inherited Members</h2></td></tr>
 </dl>
 <dl class="section note"><dt>Note</dt><dd>use zero or DEFAULT_FREQ_SETTING to leave a given rate at its default </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="i3c_8cpp_source.html#l00127">127</a> of file <a class="el" href="i3c_8cpp_source.html">i3c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="i3c_8cpp_source.html#l00133">133</a> of file <a class="el" href="i3c_8cpp_source.html">i3c.cpp</a>.</p>
 
 </div>
 </div>
@@ -664,7 +667,7 @@ Additional Inherited Members</h2></td></tr>
 </div><div class="memdoc">
 <p>All frequency settings (<a class="el" href="class_i2_c.html">I2C</a>, <a class="el" href="class_i3_c.html">I3C</a> open-drain, <a class="el" href="class_i3_c.html">I3C</a> push-pull) reverted to default </p>
 
-<p class="definition">Definition at line <a class="el" href="i3c_8cpp_source.html#l00138">138</a> of file <a class="el" href="i3c_8cpp_source.html">i3c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="i3c_8cpp_source.html#l00144">144</a> of file <a class="el" href="i3c_8cpp_source.html">i3c.cpp</a>.</p>
 
 </div>
 </div>
@@ -715,7 +718,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="i3c_8cpp_source.html#l00292">292</a> of file <a class="el" href="i3c_8cpp_source.html">i3c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="i3c_8cpp_source.html#l00298">298</a> of file <a class="el" href="i3c_8cpp_source.html">i3c.cpp</a>.</p>
 
 </div>
 </div>
@@ -766,7 +769,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="i3c_8cpp_source.html#l00264">264</a> of file <a class="el" href="i3c_8cpp_source.html">i3c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="i3c_8cpp_source.html#l00270">270</a> of file <a class="el" href="i3c_8cpp_source.html">i3c.cpp</a>.</p>
 
 </div>
 </div>
@@ -800,7 +803,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="i3c_8cpp_source.html#l00143">143</a> of file <a class="el" href="i3c_8cpp_source.html">i3c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="i3c_8cpp_source.html#l00149">149</a> of file <a class="el" href="i3c_8cpp_source.html">i3c.cpp</a>.</p>
 
 </div>
 </div>
@@ -891,7 +894,7 @@ Additional Inherited Members</h2></td></tr>
 
 <p>Reimplemented from <a class="el" href="class_i2_c.html#aadfd70d22d88ab93a33e4bfb50097616">I2C</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="i3c_8cpp_source.html#l00153">153</a> of file <a class="el" href="i3c_8cpp_source.html">i3c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="i3c_8cpp_source.html#l00159">159</a> of file <a class="el" href="i3c_8cpp_source.html">i3c.cpp</a>.</p>
 
 </div>
 </div>
@@ -949,7 +952,7 @@ Additional Inherited Members</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>status_t </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="i3c_8cpp_source.html#l00164">164</a> of file <a class="el" href="i3c_8cpp_source.html">i3c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="i3c_8cpp_source.html#l00170">170</a> of file <a class="el" href="i3c_8cpp_source.html">i3c.cpp</a>.</p>
 
 </div>
 </div>
@@ -1007,7 +1010,7 @@ Additional Inherited Members</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>status_t </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="i3c_8cpp_source.html#l00159">159</a> of file <a class="el" href="i3c_8cpp_source.html">i3c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="i3c_8cpp_source.html#l00165">165</a> of file <a class="el" href="i3c_8cpp_source.html">i3c.cpp</a>.</p>
 
 </div>
 </div>
@@ -1068,7 +1071,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="i3c_8cpp_source.html#l00169">169</a> of file <a class="el" href="i3c_8cpp_source.html">i3c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="i3c_8cpp_source.html#l00175">175</a> of file <a class="el" href="i3c_8cpp_source.html">i3c.cpp</a>.</p>
 
 </div>
 </div>
@@ -1226,7 +1229,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="i3c_8cpp_source.html#l00205">205</a> of file <a class="el" href="i3c_8cpp_source.html">i3c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="i3c_8cpp_source.html#l00211">211</a> of file <a class="el" href="i3c_8cpp_source.html">i3c.cpp</a>.</p>
 
 </div>
 </div>
@@ -1280,7 +1283,7 @@ Additional Inherited Members</h2></td></tr>
 
 <p>Reimplemented from <a class="el" href="class_i2_c.html#aba7f5f777e19bb5aded1847da55212d6">I2C</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="i3c_8cpp_source.html#l00148">148</a> of file <a class="el" href="i3c_8cpp_source.html">i3c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="i3c_8cpp_source.html#l00154">154</a> of file <a class="el" href="i3c_8cpp_source.html">i3c.cpp</a>.</p>
 
 </div>
 </div>
@@ -1331,7 +1334,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="i3c_8cpp_source.html#l00185">185</a> of file <a class="el" href="i3c_8cpp_source.html">i3c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="i3c_8cpp_source.html#l00191">191</a> of file <a class="el" href="i3c_8cpp_source.html">i3c.cpp</a>.</p>
 
 </div>
 </div>
@@ -1408,10 +1411,10 @@ Additional Inherited Members</h2></td></tr>
 <div class="line">    .ibiCallback        = <a class="code hl_function" href="#a0d9aa4e7f9c24b812b25d2434ca5adec">master_ibi_callback</a>,</div>
 <div class="line">    .transferComplete   = <a class="code hl_function" href="#a444405d5fbdbbe12c7f6f66bed3ccb91">master_callback</a></div>
 <div class="line">}</div>
-<div class="ttc" id="aclass_i3_c_html_a0d9aa4e7f9c24b812b25d2434ca5adec"><div class="ttname"><a href="#a0d9aa4e7f9c24b812b25d2434ca5adec">I3C::master_ibi_callback</a></div><div class="ttdeci">static void master_ibi_callback(I3C_Type *base, i3c_master_handle_t *handle, i3c_ibi_type_t ibiType, i3c_ibi_state_t ibiState)</div><div class="ttdef"><b>Definition</b> <a href="i3c_8cpp_source.html#l00264">i3c.cpp:264</a></div></div>
-<div class="ttc" id="aclass_i3_c_html_a444405d5fbdbbe12c7f6f66bed3ccb91"><div class="ttname"><a href="#a444405d5fbdbbe12c7f6f66bed3ccb91">I3C::master_callback</a></div><div class="ttdeci">static void master_callback(I3C_Type *base, i3c_master_handle_t *handle, status_t status, void *userData)</div><div class="ttdef"><b>Definition</b> <a href="i3c_8cpp_source.html#l00292">i3c.cpp:292</a></div></div>
+<div class="ttc" id="aclass_i3_c_html_a0d9aa4e7f9c24b812b25d2434ca5adec"><div class="ttname"><a href="#a0d9aa4e7f9c24b812b25d2434ca5adec">I3C::master_ibi_callback</a></div><div class="ttdeci">static void master_ibi_callback(I3C_Type *base, i3c_master_handle_t *handle, i3c_ibi_type_t ibiType, i3c_ibi_state_t ibiState)</div><div class="ttdef"><b>Definition</b> <a href="i3c_8cpp_source.html#l00270">i3c.cpp:270</a></div></div>
+<div class="ttc" id="aclass_i3_c_html_a444405d5fbdbbe12c7f6f66bed3ccb91"><div class="ttname"><a href="#a444405d5fbdbbe12c7f6f66bed3ccb91">I3C::master_callback</a></div><div class="ttdeci">static void master_callback(I3C_Type *base, i3c_master_handle_t *handle, status_t status, void *userData)</div><div class="ttdef"><b>Definition</b> <a href="i3c_8cpp_source.html#l00298">i3c.cpp:298</a></div></div>
 </div><!-- fragment -->
-<p class="definition">Definition at line <a class="el" href="i3c_8h_source.html#l00300">300</a> of file <a class="el" href="i3c_8h_source.html">i3c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="i3c_8h_source.html#l00306">306</a> of file <a class="el" href="i3c_8h_source.html">i3c.h</a>.</p>
 
 </div>
 </div>

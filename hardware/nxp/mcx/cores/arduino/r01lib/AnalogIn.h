@@ -33,7 +33,7 @@
  *   ISR context.
  *
  * @author  Tedd OKANO
- * @license MIT
+ * @copyright MIT License
  */
 
 #ifndef R01LIB_ANALOGIN_H

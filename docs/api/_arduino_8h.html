@@ -113,6 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <div class="textblock"><code>#include &lt;math.h&gt;</code><br />
 <code>#include &lt;cstdlib&gt;</code><br />
 <code>#include &lt;cctype&gt;</code><br />
+<code>#include &quot;<a class="el" href="mcx__arduino__core__version_8h_source.html">mcx_arduino_core_version.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="r01lib_8h_source.html">r01lib.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="arduino__string_8h_source.html">arduino_string.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="_printable_8h_source.html">Printable.h</a>&quot;</code><br />
@@ -241,7 +242,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>absolute value of x </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00161">161</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00163">163</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -268,7 +269,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>1UL &lt;&lt; b </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00185">185</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00187">187</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -291,7 +292,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line">( (value) &amp;= ~(1UL &lt;&lt; (<a class="code hl_define" href="#af419eea95c24741f969fbe9eb534404e">bit</a>)) )</div>
-<div class="ttc" id="a_arduino_8h_html_af419eea95c24741f969fbe9eb534404e"><div class="ttname"><a href="#af419eea95c24741f969fbe9eb534404e">bit</a></div><div class="ttdeci">#define bit(b)</div><div class="ttdef"><b>Definition</b> <a href="_arduino_8h_source.html#l00185">Arduino.h:185</a></div></div>
+<div class="ttc" id="a_arduino_8h_html_af419eea95c24741f969fbe9eb534404e"><div class="ttname"><a href="#af419eea95c24741f969fbe9eb534404e">bit</a></div><div class="ttdeci">#define bit(b)</div><div class="ttdef"><b>Definition</b> <a href="_arduino_8h_source.html#l00187">Arduino.h:187</a></div></div>
 </div><!-- fragment --><p>Clear a bit in value, in place.</p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">value</td><td>integer lvalue</td></tr>
@@ -300,7 +301,7 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00179">179</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00181">181</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -332,7 +333,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>the bit's value (0 or 1) </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00175">175</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00177">177</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -363,7 +364,7 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00177">177</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00179">179</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -394,7 +395,7 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00181">181</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00183">183</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -422,8 +423,8 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line">( (bitvalue) ? <a class="code hl_define" href="#a6a8195c0e930f86c6af03ba6af8b41dd">bitSet</a>( (value), (<a class="code hl_define" href="#af419eea95c24741f969fbe9eb534404e">bit</a>) ) : <a class="code hl_define" href="#abbe843c0521806a4ab2e7cffe44769e2">bitClear</a>( (value), (<a class="code hl_define" href="#af419eea95c24741f969fbe9eb534404e">bit</a>) ) )</div>
-<div class="ttc" id="a_arduino_8h_html_a6a8195c0e930f86c6af03ba6af8b41dd"><div class="ttname"><a href="#a6a8195c0e930f86c6af03ba6af8b41dd">bitSet</a></div><div class="ttdeci">#define bitSet(value, bit)</div><div class="ttdef"><b>Definition</b> <a href="_arduino_8h_source.html#l00177">Arduino.h:177</a></div></div>
-<div class="ttc" id="a_arduino_8h_html_abbe843c0521806a4ab2e7cffe44769e2"><div class="ttname"><a href="#abbe843c0521806a4ab2e7cffe44769e2">bitClear</a></div><div class="ttdeci">#define bitClear(value, bit)</div><div class="ttdef"><b>Definition</b> <a href="_arduino_8h_source.html#l00179">Arduino.h:179</a></div></div>
+<div class="ttc" id="a_arduino_8h_html_a6a8195c0e930f86c6af03ba6af8b41dd"><div class="ttname"><a href="#a6a8195c0e930f86c6af03ba6af8b41dd">bitSet</a></div><div class="ttdeci">#define bitSet(value, bit)</div><div class="ttdef"><b>Definition</b> <a href="_arduino_8h_source.html#l00179">Arduino.h:179</a></div></div>
+<div class="ttc" id="a_arduino_8h_html_abbe843c0521806a4ab2e7cffe44769e2"><div class="ttname"><a href="#abbe843c0521806a4ab2e7cffe44769e2">bitClear</a></div><div class="ttdeci">#define bitClear(value, bit)</div><div class="ttdef"><b>Definition</b> <a href="_arduino_8h_source.html#l00181">Arduino.h:181</a></div></div>
 </div><!-- fragment --><p>Set or clear a bit in value, in place.</p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">value</td><td>integer lvalue</td></tr>
@@ -433,7 +434,7 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00183">183</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00185">185</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -452,9 +453,9 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line">( <a class="code hl_define" href="#a43bafb28b29491ec7f871319b5a3b2f8">F_CPU</a> / 1000000UL )</div>
-<div class="ttc" id="a_arduino_8h_html_a43bafb28b29491ec7f871319b5a3b2f8"><div class="ttname"><a href="#a43bafb28b29491ec7f871319b5a3b2f8">F_CPU</a></div><div class="ttdeci">#define F_CPU</div><div class="ttdef"><b>Definition</b> <a href="_arduino_8h_source.html#l00127">Arduino.h:127</a></div></div>
+<div class="ttc" id="a_arduino_8h_html_a43bafb28b29491ec7f871319b5a3b2f8"><div class="ttname"><a href="#a43bafb28b29491ec7f871319b5a3b2f8">F_CPU</a></div><div class="ttdeci">#define F_CPU</div><div class="ttdef"><b>Definition</b> <a href="_arduino_8h_source.html#l00129">Arduino.h:129</a></div></div>
 </div><!-- fragment -->
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00129">129</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00131">131</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -473,9 +474,9 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line">( (a) / <a class="code hl_define" href="#ae6741cdb6d1d3f17299b9874ddc2c12e">clockCyclesPerMicrosecond</a>() )</div>
-<div class="ttc" id="a_arduino_8h_html_ae6741cdb6d1d3f17299b9874ddc2c12e"><div class="ttname"><a href="#ae6741cdb6d1d3f17299b9874ddc2c12e">clockCyclesPerMicrosecond</a></div><div class="ttdeci">#define clockCyclesPerMicrosecond()</div><div class="ttdef"><b>Definition</b> <a href="_arduino_8h_source.html#l00129">Arduino.h:129</a></div></div>
+<div class="ttc" id="a_arduino_8h_html_ae6741cdb6d1d3f17299b9874ddc2c12e"><div class="ttname"><a href="#ae6741cdb6d1d3f17299b9874ddc2c12e">clockCyclesPerMicrosecond</a></div><div class="ttdeci">#define clockCyclesPerMicrosecond()</div><div class="ttdef"><b>Definition</b> <a href="_arduino_8h_source.html#l00131">Arduino.h:131</a></div></div>
 </div><!-- fragment -->
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00130">130</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00132">132</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -513,7 +514,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>amt clamped to [low, high] </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00163">163</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00165">165</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -529,7 +530,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00084">84</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00086">86</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -548,7 +549,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line">( (rad) * <a class="code hl_define" href="#a89e47af0449640d4f15191aba5ca24c6">RAD_TO_DEG</a> )</div>
-<div class="ttc" id="a_arduino_8h_html_a89e47af0449640d4f15191aba5ca24c6"><div class="ttname"><a href="#a89e47af0449640d4f15191aba5ca24c6">RAD_TO_DEG</a></div><div class="ttdeci">#define RAD_TO_DEG</div><div class="ttdef"><b>Definition</b> <a href="_arduino_8h_source.html#l00085">Arduino.h:85</a></div></div>
+<div class="ttc" id="a_arduino_8h_html_a89e47af0449640d4f15191aba5ca24c6"><div class="ttname"><a href="#a89e47af0449640d4f15191aba5ca24c6">RAD_TO_DEG</a></div><div class="ttdeci">#define RAD_TO_DEG</div><div class="ttdef"><b>Definition</b> <a href="_arduino_8h_source.html#l00087">Arduino.h:87</a></div></div>
 </div><!-- fragment --><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">rad</td><td>angle in radians </td></tr>
@@ -557,7 +558,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>angle in degrees </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00092">92</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00094">94</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -574,7 +575,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="#aae3f0b4211ba45d265973d40ccbb5fd1">SERIAL</a> </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00104">104</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00106">106</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -590,7 +591,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00086">86</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00088">88</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -609,7 +610,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line">( <span class="keyword">reinterpret_cast&lt;</span><span class="keyword">const </span>__FlashStringHelper *<span class="keyword">&gt;</span>( <a class="code hl_define" href="#a05ca900ebf7cd121be73c654d9ccb3eb">PSTR</a>( string_literal ) ) )</div>
-<div class="ttc" id="a_arduino_8h_html_a05ca900ebf7cd121be73c654d9ccb3eb"><div class="ttname"><a href="#a05ca900ebf7cd121be73c654d9ccb3eb">PSTR</a></div><div class="ttdeci">#define PSTR(s)</div><div class="ttdef"><b>Definition</b> <a href="_arduino_8h_source.html#l00040">Arduino.h:40</a></div></div>
+<div class="ttc" id="a_arduino_8h_html_a05ca900ebf7cd121be73c654d9ccb3eb"><div class="ttname"><a href="#a05ca900ebf7cd121be73c654d9ccb3eb">PSTR</a></div><div class="ttdeci">#define PSTR(s)</div><div class="ttdef"><b>Definition</b> <a href="_arduino_8h_source.html#l00042">Arduino.h:42</a></div></div>
 </div><!-- fragment --><p>Wrap a string literal for the String/Print/SerialClass overloads that take a <span class="tt">const __FlashStringHelper*</span> (matches classic Arduino's <a class="el" href="#a2520eacecda4bdd7dafaf12b911626d6">F()</a> macro; here it's purely a type-tag, since there's no separate flash address space to route through). </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">string_literal</td><td>a plain C string literal, e.g. F("hello") </td></tr>
@@ -617,7 +618,7 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00055">55</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00057">57</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -633,7 +634,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00127">127</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00129">129</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -649,7 +650,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00082">82</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00084">84</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -676,7 +677,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>its high byte </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00170">170</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00172">172</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -696,7 +697,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line">__asm <span class="keyword">volatile</span> ( <span class="stringliteral">&quot;cpsie i&quot;</span> ::: <span class="stringliteral">&quot;memory&quot;</span> )</div>
 </div><!-- fragment -->
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00190">190</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00192">192</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -723,7 +724,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>its low byte </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00168">168</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00170">170</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -740,7 +741,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>SPI/shiftOut()/shiftIn() bit-order constants. </p>
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00096">96</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00098">98</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -760,7 +761,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line">( (a) * <a class="code hl_define" href="#ae6741cdb6d1d3f17299b9874ddc2c12e">clockCyclesPerMicrosecond</a>() )</div>
 </div><!-- fragment -->
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00131">131</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00133">133</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -777,7 +778,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="#a5811613d98580676f67f0dde8125433e">LSBFIRST</a> </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00097">97</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00099">99</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -797,7 +798,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line">__asm <span class="keyword">volatile</span> ( <span class="stringliteral">&quot;cpsid i&quot;</span> ::: <span class="stringliteral">&quot;memory&quot;</span> )</div>
 </div><!-- fragment -->
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00191">191</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00193">193</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -813,7 +814,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00038">38</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00040">40</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -833,7 +834,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line">( *(<span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">char</span> *)(addr) )</div>
 </div><!-- fragment -->
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00041">41</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00043">43</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -853,7 +854,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line">( *(<span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> *)(addr) )</div>
 </div><!-- fragment -->
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00043">43</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00045">45</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -873,7 +874,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line">( *(<span class="keyword">const</span> <span class="keywordtype">float</span> *)(addr) )</div>
 </div><!-- fragment -->
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00044">44</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00046">46</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -893,7 +894,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line">( *(<span class="keyword">const</span> <span class="keywordtype">void</span> * <span class="keyword">const</span> *)(addr) )</div>
 </div><!-- fragment -->
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00045">45</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00047">47</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -913,7 +914,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line">( *(<span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">short</span> *)(addr) )</div>
 </div><!-- fragment -->
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00042">42</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00044">44</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -929,7 +930,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00081">81</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00083">83</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -945,7 +946,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00037">37</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00039">39</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -966,7 +967,7 @@ Functions</h2></td></tr>
 <b>Value:</b><div class="fragment"><div class="line">( s )</div>
 </div><!-- fragment --><p>Identity &ndash; string literals need no special flash-placement here. </p>
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00040">40</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00042">42</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -982,7 +983,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00085">85</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00087">87</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -1001,7 +1002,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line">( (deg) * <a class="code hl_define" href="#a212460e743fecb084d717bb2180c5a56">DEG_TO_RAD</a> )</div>
-<div class="ttc" id="a_arduino_8h_html_a212460e743fecb084d717bb2180c5a56"><div class="ttname"><a href="#a212460e743fecb084d717bb2180c5a56">DEG_TO_RAD</a></div><div class="ttdeci">#define DEG_TO_RAD</div><div class="ttdef"><b>Definition</b> <a href="_arduino_8h_source.html#l00084">Arduino.h:84</a></div></div>
+<div class="ttc" id="a_arduino_8h_html_a212460e743fecb084d717bb2180c5a56"><div class="ttname"><a href="#a212460e743fecb084d717bb2180c5a56">DEG_TO_RAD</a></div><div class="ttdeci">#define DEG_TO_RAD</div><div class="ttdef"><b>Definition</b> <a href="_arduino_8h_source.html#l00086">Arduino.h:86</a></div></div>
 </div><!-- fragment --><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">deg</td><td>angle in degrees </td></tr>
@@ -1010,7 +1011,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>angle in radians </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00090">90</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00092">92</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -1027,7 +1028,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Not used anywhere in this core's own implementation &ndash; declared purely for source compatibility with sketches/libraries that reference them (matches UNO R3/R4's <a class="el" href="_arduino_8h.html">Arduino.h</a>, which likewise leaves them unused by the core itself). </p>
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00103">103</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00105">105</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -1054,7 +1055,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>x squared </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00165">165</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00167">167</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -1070,7 +1071,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00083">83</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00085">85</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -1087,7 +1088,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00118">118</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00120">120</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -1103,7 +1104,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00136">136</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00138">138</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -1119,7 +1120,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00137">137</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00139">139</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -1135,7 +1136,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00138">138</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00140">140</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -1213,7 +1214,7 @@ Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00262">262</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00264">264</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -1240,7 +1241,7 @@ Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00261">261</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00263">263</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -1268,7 +1269,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Unlike the rest of this family, not a &lt;cctype&gt; wrapper &ndash; newlib's own isascii() isn't used here, just a direct range check. </p>
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00264">264</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00266">266</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -1295,7 +1296,7 @@ Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00266">266</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00268">268</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -1322,7 +1323,7 @@ Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00267">267</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00269">269</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -1349,7 +1350,7 @@ Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00268">268</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00270">270</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -1376,7 +1377,7 @@ Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00274">274</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00276">276</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -1403,7 +1404,7 @@ Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00269">269</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00271">271</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -1430,7 +1431,7 @@ Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00270">270</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00272">272</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -1457,7 +1458,7 @@ Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00271">271</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00273">273</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -1484,7 +1485,7 @@ Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00272">272</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00274">274</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -1511,7 +1512,7 @@ Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00273">273</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00275">275</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -1538,7 +1539,7 @@ Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00265">265</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00267">267</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -1603,7 +1604,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Re-scale x from [in_min, in_max] to [out_min, out_max] (linear interpolation; out-of-range x extrapolates rather than clamping, matching classic Arduino's <a class="el" href="#aada2d75bc8a8c6eb845bd940eadfa3fd">map()</a>). </p><dl class="section return"><dt>Returns</dt><dd>the re-scaled value </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00199">199</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00201">201</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -1629,7 +1630,7 @@ template&lt;class T, class L&gt; </div>
 </div><div class="memdoc">
 <dl class="section return"><dt>Returns</dt><dd>the larger of a and b (return type follows whichever operand's type "wins" via decltype) </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00152">152</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00154">154</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -1695,7 +1696,7 @@ template&lt;class T, class L&gt; </div>
 </div><div class="memdoc">
 <dl class="section return"><dt>Returns</dt><dd>the smaller of a and b (return type follows whichever operand's type "wins" via decltype) </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00145">145</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00147">147</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -1729,7 +1730,7 @@ template&lt;class T, class L&gt; </div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>a pseudo-random value in [0, max), or 0 if max &lt;= 0 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00217">217</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00219">219</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -1768,7 +1769,7 @@ template&lt;class T, class L&gt; </div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>a pseudo-random value in [min, max), or min if min &gt;= max </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00226">226</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00228">228</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -1801,7 +1802,7 @@ template&lt;class T, class L&gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00210">210</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00212">212</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>
@@ -1847,7 +1848,7 @@ template&lt;class T, class L&gt; </div>
 </div><div class="memdoc">
 <p>No-op on this core &ndash; see explanation above. </p>
 
-<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00255">255</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_arduino_8h_source.html#l00257">257</a> of file <a class="el" href="_arduino_8h_source.html">Arduino.h</a>.</p>
 
 </div>
 </div>

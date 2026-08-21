@@ -41,7 +41,7 @@
  *   (matches Mbed's pwmout_free() scope).
  *
  * @author  Tedd OKANO
- * @license MIT
+ * @copyright MIT License
  */
 
 #ifndef R01LIB_PWMOUT_H

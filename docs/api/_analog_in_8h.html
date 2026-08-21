@@ -154,7 +154,8 @@ Design notes (see project discussion)</h3>
 <li>Each read() performs a full single-shot conversion (channel select + software trigger + poll for done + result read). No persistent hardware state is held between reads, so instances never conflict.</li>
 <li>read() blocks (polls) until conversion completes — do not call from ISR context.</li>
 </ul>
-<dl class="section author"><dt>Author</dt><dd>Tedd OKANO @license MIT </dd></dl>
+<dl class="section author"><dt>Author</dt><dd>Tedd OKANO </dd></dl>
+<dl class="section copyright"><dt>Copyright</dt><dd>MIT License </dd></dl>
 
 <p class="definition">Definition in file <a class="el" href="_analog_in_8h_source.html">AnalogIn.h</a>.</p>
 </div></div><!-- contents -->

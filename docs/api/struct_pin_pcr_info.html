@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.17.0"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>mcx-arduino-core: _gpio_pin Struct Reference</title>
+<title>mcx-arduino-core: PinPcrInfo Struct Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="codefolding.js"></script>
 <script type="text/javascript" src="clipboard.js"></script>
@@ -101,54 +101,95 @@ document.addEventListener('DOMContentLoaded', () => {
 <div class="header">
   <div class="summary">
 <a href="#pub-attribs">Public Attributes</a> &#124;
-<a href="struct__gpio__pin-members.html">List of all members</a>  </div>
-  <div class="headertitle"><div class="title">_gpio_pin Struct Reference</div></div>
+<a href="struct_pin_pcr_info-members.html">List of all members</a>  </div>
+  <div class="headertitle"><div class="title">PinPcrInfo Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="pin__registry_8h_source.html">pin_registry.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a9261beafe70e695ea75934d22fc4dbfa" id="r_a9261beafe70e695ea75934d22fc4dbfa"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#a9261beafe70e695ea75934d22fc4dbfa">base</a></td></tr>
-<tr class="memitem:a55c8e1eca5a59ff1e20c8e4a823cf637" id="r_a55c8e1eca5a59ff1e20c8e4a823cf637"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#a55c8e1eca5a59ff1e20c8e4a823cf637">pin</a></td></tr>
+<tr class="memitem:a2aa65809ff660b613c3aa66361274150" id="r_a2aa65809ff660b613c3aa66361274150"><td class="memItemLeft">uint8_t&#160;</td><td class="memItemRight"><a class="el" href="#a2aa65809ff660b613c3aa66361274150">mux</a></td></tr>
+<tr class="memitem:ad63fc0d34b73e69223edb580ea5b8514" id="r_ad63fc0d34b73e69223edb580ea5b8514"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#ad63fc0d34b73e69223edb580ea5b8514">ibe</a></td></tr>
+<tr class="memitem:a9594c4e97a2dba8f2a2b0378dfaba394" id="r_a9594c4e97a2dba8f2a2b0378dfaba394"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a9594c4e97a2dba8f2a2b0378dfaba394">ode</a></td></tr>
+<tr class="memitem:af4fb4a1b6acdf2f689caa66000923c2a" id="r_af4fb4a1b6acdf2f689caa66000923c2a"><td class="memItemLeft">uint8_t&#160;</td><td class="memItemRight"><a class="el" href="#af4fb4a1b6acdf2f689caa66000923c2a">pull</a></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock">
-<p class="definition">Definition at line <a class="el" href="io_8cpp_source.html#l00022">22</a> of file <a class="el" href="io_8cpp_source.html">io.cpp</a>.</p>
+<div class="textblock"><p>A raw pin's PCR register, decoded into the fields pin-ownership debug tooling cares about. </p>
+
+<p class="definition">Definition at line <a class="el" href="pin__registry_8h_source.html#l00067">67</a> of file <a class="el" href="pin__registry_8h_source.html">pin_registry.h</a>.</p>
 </div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
-<a id="a9261beafe70e695ea75934d22fc4dbfa" name="a9261beafe70e695ea75934d22fc4dbfa"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9261beafe70e695ea75934d22fc4dbfa">&#9670;&#160;</a></span>base</h2>
+<a id="ad63fc0d34b73e69223edb580ea5b8514" name="ad63fc0d34b73e69223edb580ea5b8514"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad63fc0d34b73e69223edb580ea5b8514">&#9670;&#160;</a></span>ibe</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int _gpio_pin::base</td>
+          <td class="memname">bool PinPcrInfo::ibe</td>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>input buffer enabled &ndash; without this, reads/incoming-signal detection on the pin don't work even if mux is otherwise correct (see this core's own history: I3C1_SDA/SCL's mux was right but IBE was left disabled, and every read NAK'd) </p>
 
-<p class="definition">Definition at line <a class="el" href="io_8cpp_source.html#l00023">23</a> of file <a class="el" href="io_8cpp_source.html">io.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pin__registry_8h_source.html#l00070">70</a> of file <a class="el" href="pin__registry_8h_source.html">pin_registry.h</a>.</p>
 
 </div>
 </div>
-<a id="a55c8e1eca5a59ff1e20c8e4a823cf637" name="a55c8e1eca5a59ff1e20c8e4a823cf637"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a55c8e1eca5a59ff1e20c8e4a823cf637">&#9670;&#160;</a></span>pin</h2>
+<a id="a2aa65809ff660b613c3aa66361274150" name="a2aa65809ff660b613c3aa66361274150"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2aa65809ff660b613c3aa66361274150">&#9670;&#160;</a></span>mux</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">uint32_t _gpio_pin::pin</td>
+          <td class="memname">uint8_t PinPcrInfo::mux</td>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>current PORT_MuxAltN value (0-15), or 0xFF if the pin is DISABLED_PIN or otherwise out of range (ibe/ode/pull are meaningless in that case) </p>
 
-<p class="definition">Definition at line <a class="el" href="io_8cpp_source.html#l00024">24</a> of file <a class="el" href="io_8cpp_source.html">io.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pin__registry_8h_source.html#l00069">69</a> of file <a class="el" href="pin__registry_8h_source.html">pin_registry.h</a>.</p>
+
+</div>
+</div>
+<a id="a9594c4e97a2dba8f2a2b0378dfaba394" name="a9594c4e97a2dba8f2a2b0378dfaba394"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9594c4e97a2dba8f2a2b0378dfaba394">&#9670;&#160;</a></span>ode</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool PinPcrInfo::ode</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>open-drain output enabled &ndash; always false on chips whose PCR has no ODE field </p>
+
+<p class="definition">Definition at line <a class="el" href="pin__registry_8h_source.html#l00071">71</a> of file <a class="el" href="pin__registry_8h_source.html">pin_registry.h</a>.</p>
+
+</div>
+</div>
+<a id="af4fb4a1b6acdf2f689caa66000923c2a" name="af4fb4a1b6acdf2f689caa66000923c2a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af4fb4a1b6acdf2f689caa66000923c2a">&#9670;&#160;</a></span>pull</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint8_t PinPcrInfo::pull</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>0 = no pull resistor, 1 = pull-down, 2 = pull-up </p>
+
+<p class="definition">Definition at line <a class="el" href="pin__registry_8h_source.html#l00072">72</a> of file <a class="el" href="pin__registry_8h_source.html">pin_registry.h</a>.</p>
 
 </div>
 </div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
-<li>hardware/nxp/mcx/cores/arduino/r01lib/<a class="el" href="io_8cpp_source.html">io.cpp</a></li>
+<li>hardware/nxp/mcx/cores/arduino/r01lib/<a class="el" href="pin__registry_8h_source.html">pin_registry.h</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

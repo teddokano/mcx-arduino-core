@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.17.0"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>mcx-arduino-core: hardware/nxp/mcx/cores/arduino/arduino_api/SPI.h Source File</title>
+<title>mcx-arduino-core: hardware/nxp/mcx/cores/arduino/arduino_api/mcx_arduino_core_version.h Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="codefolding.js"></script>
 <script type="text/javascript" src="clipboard.js"></script>
@@ -103,33 +103,41 @@ document.addEventListener('DOMContentLoaded', () => {
 </div><!-- top -->
 <div id="doc-content">
 <div class="header">
-  <div class="headertitle"><div class="title">SPI.h</div></div>
+  <div class="headertitle"><div class="title">mcx_arduino_core_version.h</div></div>
 </div><!--header-->
 <div class="contents">
-<a href="_s_p_i_8h.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="comment">/*</span></div>
+<a href="mcx__arduino__core__version_8h.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="comment">/*</span></div>
 <div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span><span class="comment"> *  @author Tedd OKANO</span></div>
 <div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="comment"> *</span></div>
 <div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="comment"> *  Released under the MIT license</span></div>
-<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="comment"> *</span></div>
-<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="comment"> *  Real Arduino sketches expect to find the SPI API via `#include &lt;SPI.h&gt;`</span></div>
-<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="comment"> *  (capital-cased, matching every official Arduino core&#39;s convention).</span></div>
-<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="comment"> *  This project&#39;s actual SPIClass implementation lives in arduino_spi.h --</span></div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="comment"> *  this is a thin, filename-only wrapper so that convention holds here</span></div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="comment"> *  too. Kept as its own file (rather than renaming arduino_spi.h) since</span></div>
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="comment"> *  r01lib&#39;s own low-level SPI driver is cores/arduino/r01lib/r01lib_spi.h, and</span></div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="comment"> *  filesystems that are case-insensitive (macOS, Windows) can&#39;t hold both</span></div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="comment"> *  an &quot;SPI.h&quot; and an &quot;spi.h&quot; in the same directory -- keeping this wrapper</span></div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span><span class="comment"> *  separate from arduino_spi.h avoids ever needing a same-directory</span></div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span><span class="comment"> *  case-only pair.</span></div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span><span class="comment"> */</span></div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span> </div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="preprocessor">#ifndef R01LIB_SPI_WRAPPER_H</span></div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span><span class="preprocessor">#define R01LIB_SPI_WRAPPER_H</span></div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span> </div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span><span class="preprocessor">#include &quot;<a class="code" href="arduino__spi_8h.html">arduino_spi.h</a>&quot;</span></div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span> </div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><span class="preprocessor">#endif </span><span class="comment">// !R01LIB_SPI_WRAPPER_H</span></div>
-<div class="ttc" id="aarduino__spi_8h_html"><div class="ttname"><a href="arduino__spi_8h.html">arduino_spi.h</a></div></div>
+<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="comment"> */</span></div>
+<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span></div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span> </div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span><span class="preprocessor">#ifndef MCX_ARDUINO_CORE_VERSION_H</span></div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="preprocessor">#define MCX_ARDUINO_CORE_VERSION_H</span></div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span> </div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span><span class="preprocessor">#ifndef MCX_ARDUINO_CORE_VERSION_MAJOR</span></div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno"><a class="line" href="mcx__arduino__core__version_8h.html#ac393c5665335ab85b3d36c2b104e25e0">   41</a></span><span class="preprocessor">#define MCX_ARDUINO_CORE_VERSION_MAJOR  0</span></div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span> </div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span><span class="preprocessor">#ifndef MCX_ARDUINO_CORE_VERSION_MINOR</span></div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno"><a class="line" href="mcx__arduino__core__version_8h.html#af2f89903a20c90a726e3e4aa5f4b26aa">   45</a></span><span class="preprocessor">#define MCX_ARDUINO_CORE_VERSION_MINOR  0</span></div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span> </div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span><span class="preprocessor">#ifndef MCX_ARDUINO_CORE_VERSION_PATCH</span></div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno"><a class="line" href="mcx__arduino__core__version_8h.html#aea3a6057c19e5a28cf99abefd0282d0a">   49</a></span><span class="preprocessor">#define MCX_ARDUINO_CORE_VERSION_PATCH  0</span></div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span></div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno"><a class="line" href="mcx__arduino__core__version_8h.html#a089e3831931d97d01460e03c93b8b7af">   53</a></span><span class="preprocessor">#define MCX_ARDUINO_CORE_VERSION_VAL( major, minor, patch ) ( ( (major) &lt;&lt; 16 ) | ( (minor) &lt;&lt; 8 ) | (patch) )</span></div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span></div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno"><a class="line" href="mcx__arduino__core__version_8h.html#a7b882e280ce838e56b95610a244c6806">   56</a></span><span class="preprocessor">#define MCX_ARDUINO_CORE_VERSION    MCX_ARDUINO_CORE_VERSION_VAL( MCX_ARDUINO_CORE_VERSION_MAJOR, MCX_ARDUINO_CORE_VERSION_MINOR, MCX_ARDUINO_CORE_VERSION_PATCH )</span></div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span> </div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno"><a class="line" href="mcx__arduino__core__version_8h.html#a31483e7b5ebf6ad24ac4293bf6899d05">   58</a></span><span class="preprocessor">#define MCX_ARDUINO_CORE_VERSION_XSTR( s )  #s</span></div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno"><a class="line" href="mcx__arduino__core__version_8h.html#a6ca0f76a1d408b486b6a52a87b76f669">   59</a></span><span class="preprocessor">#define MCX_ARDUINO_CORE_VERSION_STR2( s )  MCX_ARDUINO_CORE_VERSION_XSTR( s )</span></div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span></div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno"><a class="line" href="mcx__arduino__core__version_8h.html#ad4eae6810211d2a74c9b30548a85d162">   62</a></span><span class="preprocessor">#define MCX_ARDUINO_CORE_VERSION_STR    MCX_ARDUINO_CORE_VERSION_STR2( MCX_ARDUINO_CORE_VERSION_MAJOR ) &quot;.&quot; MCX_ARDUINO_CORE_VERSION_STR2( MCX_ARDUINO_CORE_VERSION_MINOR ) &quot;.&quot; MCX_ARDUINO_CORE_VERSION_STR2( MCX_ARDUINO_CORE_VERSION_PATCH )</span></div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span> </div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span><span class="preprocessor">#endif </span><span class="comment">// MCX_ARDUINO_CORE_VERSION_H</span></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

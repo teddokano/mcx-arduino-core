@@ -414,10 +414,27 @@ document.addEventListener('DOMContentLoaded', () => {
 <div class="line"><a id="l00401" name="l00401"></a><span class="lineno"><a class="line" href="arduino__io_8h.html#a5d3f11f2fdf8a7e27b975291e0c2c8cc">  401</a></span><span class="preprocessor">#define MOSI    ARD_MOSI</span></div>
 <div class="line"><a id="l00402" name="l00402"></a><span class="lineno"><a class="line" href="arduino__io_8h.html#a7334c540878c8c4d801fd75ed9fd8063">  402</a></span><span class="preprocessor">#define MISO    ARD_MISO</span></div>
 <div class="line"><a id="l00403" name="l00403"></a><span class="lineno"><a class="line" href="arduino__io_8h.html#a2dd443a4430713d325ab86895a4a45eb">  403</a></span><span class="preprocessor">#define SCK     ARD_SCK</span></div>
-<div class="line"><a id="l00404" name="l00404"></a><span class="lineno">  404</span> </div>
-<div class="line"><a id="l00405" name="l00405"></a><span class="lineno">  405</span><span class="preprocessor">#endif </span><span class="comment">// ARDUINO_PIN_RENUMBERING</span></div>
-<div class="line"><a id="l00406" name="l00406"></a><span class="lineno">  406</span> </div>
-<div class="line"><a id="l00407" name="l00407"></a><span class="lineno">  407</span><span class="preprocessor">#endif </span><span class="comment">// !R01LIB_ARDUINO_IO_H</span></div>
+<div class="line"><a id="l00404" name="l00404"></a><span class="lineno">  404</span></div>
+<div class="line"><a id="l00414" name="l00414"></a><span class="lineno"><a class="line" href="arduino__io_8h.html#a5fcb3227b70aeaf186ff18374043ffa2">  414</a></span><span class="preprocessor">#define PIN_WIRE_SDA    I2C_SDA</span></div>
+<div class="line"><a id="l00415" name="l00415"></a><span class="lineno"><a class="line" href="arduino__io_8h.html#a0364759bc664c3b40eca8894ceb37774">  415</a></span><span class="preprocessor">#define PIN_WIRE_SCL    I2C_SCL</span></div>
+<div class="line"><a id="l00416" name="l00416"></a><span class="lineno"><a class="line" href="arduino__io_8h.html#a9753df01ccb7361f4a85e843c60484a9">  416</a></span><span class="preprocessor">#define PIN_SPI_SS      ARD_CS</span></div>
+<div class="line"><a id="l00417" name="l00417"></a><span class="lineno"><a class="line" href="arduino__io_8h.html#a78530c2d4dd5656190162d062b1fed5e">  417</a></span><span class="preprocessor">#define PIN_SPI_MOSI    ARD_MOSI</span></div>
+<div class="line"><a id="l00418" name="l00418"></a><span class="lineno"><a class="line" href="arduino__io_8h.html#a5a7c039615f027ce1f975f625e9b15ac">  418</a></span><span class="preprocessor">#define PIN_SPI_MISO    ARD_MISO</span></div>
+<div class="line"><a id="l00419" name="l00419"></a><span class="lineno"><a class="line" href="arduino__io_8h.html#a704e2660aedb97382a6503160b27d968">  419</a></span><span class="preprocessor">#define PIN_SPI_SCK     ARD_SCK</span></div>
+<div class="line"><a id="l00420" name="l00420"></a><span class="lineno">  420</span></div>
+<div class="line"><a id="l00425" name="l00425"></a><span class="lineno"><a class="line" href="arduino__io_8h.html#a0ef783fbc452748b33c5a307d0565f7a">  425</a></span><span class="preprocessor">#define NUM_DIGITAL_PINS    16</span></div>
+<div class="line"><a id="l00426" name="l00426"></a><span class="lineno">  426</span></div>
+<div class="line"><a id="l00438" name="l00438"></a><span class="lineno">  438</span><span class="preprocessor">#if defined( FRDM_MCXA153 )</span></div>
+<div class="line"><a id="l00439" name="l00439"></a><span class="lineno">  439</span><span class="preprocessor">#define NUM_ANALOG_INPUTS   6</span></div>
+<div class="line"><a id="l00440" name="l00440"></a><span class="lineno">  440</span><span class="preprocessor">#elif   defined( FRDM_MCXN947 )</span></div>
+<div class="line"><a id="l00441" name="l00441"></a><span class="lineno">  441</span><span class="preprocessor">#define NUM_ANALOG_INPUTS   4</span></div>
+<div class="line"><a id="l00442" name="l00442"></a><span class="lineno">  442</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00443" name="l00443"></a><span class="lineno">  443</span></div>
+<div class="line"><a id="l00451" name="l00451"></a><span class="lineno"><a class="line" href="arduino__io_8h.html#afaede01afebc78aa04e0c28dc85bcbd5">  451</a></span><span class="preprocessor">#define digitalPinHasPWM( p )   ( ( (p) &gt;= PWM0 ) &amp;&amp; ( (p) &lt;= PWM5 ) )</span></div>
+<div class="line"><a id="l00452" name="l00452"></a><span class="lineno">  452</span> </div>
+<div class="line"><a id="l00453" name="l00453"></a><span class="lineno">  453</span><span class="preprocessor">#endif </span><span class="comment">// ARDUINO_PIN_RENUMBERING</span></div>
+<div class="line"><a id="l00454" name="l00454"></a><span class="lineno">  454</span> </div>
+<div class="line"><a id="l00455" name="l00455"></a><span class="lineno">  455</span><span class="preprocessor">#endif </span><span class="comment">// !R01LIB_ARDUINO_IO_H</span></div>
 <div class="ttc" id="aarduino__io_8h_html_a09693226f6fbf478cd15e47de0c2e84e"><div class="ttname"><a href="arduino__io_8h.html#a09693226f6fbf478cd15e47de0c2e84e">detachInterrupt</a></div><div class="ttdeci">void detachInterrupt(int int_num)</div><div class="ttdef"><b>Definition</b> <a href="arduino__io_8cpp_source.html#l00129">arduino_io.cpp:129</a></div></div>
 <div class="ttc" id="aarduino__io_8h_html_a0d453cce620bcd7a7f31d1a06aa00794"><div class="ttname"><a href="arduino__io_8h.html#a0d453cce620bcd7a7f31d1a06aa00794">_raw_I3C_SCL</a></div><div class="ttdeci">constexpr int _raw_I3C_SCL</div><div class="ttdef"><b>Definition</b> <a href="#l00186">arduino_io.h:186</a></div></div>
 <div class="ttc" id="aarduino__io_8h_html_a1a5b2873aaef59db8a671e1227b77cc7"><div class="ttname"><a href="arduino__io_8h.html#a1a5b2873aaef59db8a671e1227b77cc7">OUTPUT_OPENDRAIN</a></div><div class="ttdeci">constexpr int OUTPUT_OPENDRAIN</div><div class="ttdef"><b>Definition</b> <a href="#l00026">arduino_io.h:26</a></div></div>

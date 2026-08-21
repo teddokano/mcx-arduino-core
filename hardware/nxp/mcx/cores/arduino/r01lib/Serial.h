@@ -40,7 +40,7 @@
  *   `_tx_callback` (if attached).
  *
  * @author  Tedd OKANO
- * @license MIT
+ * @copyright MIT License
  */
 
 #ifndef R01LIB_SERIAL_H

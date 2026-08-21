@@ -21,7 +21,7 @@
  *    establishes OUTEN/polarity/fault-state for the channel.
  *
  * @author  Tedd OKANO
- * @license MIT
+ * @copyright MIT License
  */
 
 #if defined( CPU_MCXA153VLH )

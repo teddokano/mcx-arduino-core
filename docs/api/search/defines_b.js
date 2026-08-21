@@ -14,8 +14,16 @@ var searchData=
   ['mb_5fscl_11',['MB_SCL',['../io_8h.html#a9f4a8e8a825a5393cbae30c0e331fdad',1,'io.h']]],
   ['mb_5fsda_12',['MB_SDA',['../io_8h.html#aa728225001f206ccacc3770837e69021',1,'io.h']]],
   ['mb_5ftx_13',['MB_TX',['../io_8h.html#ab3bc4a236503d91ef966494bb0227054',1,'io.h']]],
-  ['microsecondstoclockcycles_14',['microsecondsToClockCycles',['../_arduino_8h.html#aa4a5bbc71d71ab25856c1366b6ca15bb',1,'Arduino.h']]],
-  ['miso_15',['MISO',['../arduino__io_8h.html#a7334c540878c8c4d801fd75ed9fd8063',1,'arduino_io.h']]],
-  ['mosi_16',['MOSI',['../arduino__io_8h.html#a5d3f11f2fdf8a7e27b975291e0c2c8cc',1,'arduino_io.h']]],
-  ['msbfirst_17',['MSBFIRST',['../_arduino_8h.html#a1c7ef42eff02618bde70868af4944d81',1,'Arduino.h']]]
+  ['mcx_5farduino_5fcore_5fversion_14',['MCX_ARDUINO_CORE_VERSION',['../mcx__arduino__core__version_8h.html#a7b882e280ce838e56b95610a244c6806',1,'mcx_arduino_core_version.h']]],
+  ['mcx_5farduino_5fcore_5fversion_5fmajor_15',['MCX_ARDUINO_CORE_VERSION_MAJOR',['../mcx__arduino__core__version_8h.html#ac393c5665335ab85b3d36c2b104e25e0',1,'mcx_arduino_core_version.h']]],
+  ['mcx_5farduino_5fcore_5fversion_5fminor_16',['MCX_ARDUINO_CORE_VERSION_MINOR',['../mcx__arduino__core__version_8h.html#af2f89903a20c90a726e3e4aa5f4b26aa',1,'mcx_arduino_core_version.h']]],
+  ['mcx_5farduino_5fcore_5fversion_5fpatch_17',['MCX_ARDUINO_CORE_VERSION_PATCH',['../mcx__arduino__core__version_8h.html#aea3a6057c19e5a28cf99abefd0282d0a',1,'mcx_arduino_core_version.h']]],
+  ['mcx_5farduino_5fcore_5fversion_5fstr_18',['MCX_ARDUINO_CORE_VERSION_STR',['../mcx__arduino__core__version_8h.html#ad4eae6810211d2a74c9b30548a85d162',1,'mcx_arduino_core_version.h']]],
+  ['mcx_5farduino_5fcore_5fversion_5fstr2_19',['MCX_ARDUINO_CORE_VERSION_STR2',['../mcx__arduino__core__version_8h.html#a6ca0f76a1d408b486b6a52a87b76f669',1,'mcx_arduino_core_version.h']]],
+  ['mcx_5farduino_5fcore_5fversion_5fval_20',['MCX_ARDUINO_CORE_VERSION_VAL',['../mcx__arduino__core__version_8h.html#a089e3831931d97d01460e03c93b8b7af',1,'mcx_arduino_core_version.h']]],
+  ['mcx_5farduino_5fcore_5fversion_5fxstr_21',['MCX_ARDUINO_CORE_VERSION_XSTR',['../mcx__arduino__core__version_8h.html#a31483e7b5ebf6ad24ac4293bf6899d05',1,'mcx_arduino_core_version.h']]],
+  ['microsecondstoclockcycles_22',['microsecondsToClockCycles',['../_arduino_8h.html#aa4a5bbc71d71ab25856c1366b6ca15bb',1,'Arduino.h']]],
+  ['miso_23',['MISO',['../arduino__io_8h.html#a7334c540878c8c4d801fd75ed9fd8063',1,'arduino_io.h']]],
+  ['mosi_24',['MOSI',['../arduino__io_8h.html#a5d3f11f2fdf8a7e27b975291e0c2c8cc',1,'arduino_io.h']]],
+  ['msbfirst_25',['MSBFIRST',['../_arduino_8h.html#a1c7ef42eff02618bde70868af4944d81',1,'Arduino.h']]]
 ];

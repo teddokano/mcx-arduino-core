@@ -170,7 +170,8 @@ Internal architecture</h3>
 <li><b>RX path</b>: <span class="tt">kLPUART_RxDataRegFullInterruptEnable</span> fires → ISR reads one byte → pushes into <span class="tt">_rx_buf</span> → calls <span class="tt">_rx_callback</span>.</li>
 <li><b>TX path</b>: <span class="tt">putc</span> / <span class="tt">write</span> / <span class="tt">printf</span> push bytes into <span class="tt">_tx_buf</span> and enable <span class="tt">kLPUART_TxDataRegEmptyInterruptEnable</span> → ISR pops one byte → writes to hardware. When <span class="tt">_tx_buf</span> is empty the ISR disables the TX interrupt and calls <span class="tt">_tx_callback</span> (if attached).</li>
 </ul>
-<dl class="section author"><dt>Author</dt><dd>Tedd OKANO @license MIT </dd></dl>
+<dl class="section author"><dt>Author</dt><dd>Tedd OKANO </dd></dl>
+<dl class="section copyright"><dt>Copyright</dt><dd>MIT License </dd></dl>
 
 <p class="definition">Definition in file <a class="el" href="_serial_8h_source.html">Serial.h</a>.</p>
 </div><a name="doc-typedef-members" id="doc-typedef-members"></a><h2 id="header-doc-typedef-members" class="groupheader">Typedef Documentation</h2>

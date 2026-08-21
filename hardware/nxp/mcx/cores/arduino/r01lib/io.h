@@ -24,7 +24,7 @@ extern "C" {
  *  CPU (selected by the same CPU_* macro each board's boards.txt defines).
  *  The enum gives every pinctrl-capable pin on the chip a raw r01lib pin
  *  value (matching pin_mux.c's physical pin naming, e.g. P0_16); the
- *  #defines below it are the logical names actual application/driver code
+ *  \#defines below it are the logical names actual application/driver code
  *  is written against, aliased onto whichever physical pin that role maps
  *  to on this particular board:
  *   - D0..D19, A0..A5     : Arduino-numbered digital/analog pins (see also

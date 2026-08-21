@@ -266,17 +266,30 @@ document.addEventListener('DOMContentLoaded', () => {
 <div class="foldopen" id="foldopen00134" data-start="{" data-end="}">
 <div class="line"><a id="l00134" name="l00134"></a><span class="lineno"><a class="line" href="class_s_p_i_class.html#a087424b12239fa3eb35346334d316a6f">  134</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="class_s_p_i_class.html#a087424b12239fa3eb35346334d316a6f">SPIClass::txrx</a>( uint8_t *data, <span class="keywordtype">size_t</span> size )</div>
 <div class="line"><a id="l00135" name="l00135"></a><span class="lineno">  135</span>{</div>
-<div class="line"><a id="l00136" name="l00136"></a><span class="lineno">  136</span>    <span class="keyword">static</span> <span class="keyword">constexpr</span> <span class="keywordtype">int</span>    READ_BUFFER_SIZE    = 128;</div>
-<div class="line"><a id="l00137" name="l00137"></a><span class="lineno">  137</span> </div>
-<div class="line"><a id="l00138" name="l00138"></a><span class="lineno">  138</span>    uint8_t r_data[ READ_BUFFER_SIZE ];</div>
-<div class="line"><a id="l00139" name="l00139"></a><span class="lineno">  139</span> </div>
-<div class="line"><a id="l00140" name="l00140"></a><span class="lineno">  140</span>    <a class="code hl_variable" href="class_s_p_i_class.html#aebe480d6a13eaedf3ecebcb073eb7eba">spi</a>-&gt;write( data, r_data, (<span class="keywordtype">int</span>)size );</div>
-<div class="line"><a id="l00141" name="l00141"></a><span class="lineno">  141</span>    memcpy( data, r_data, size );</div>
-<div class="line"><a id="l00142" name="l00142"></a><span class="lineno">  142</span>}</div>
+<div class="line"><a id="l00136" name="l00136"></a><span class="lineno">  136</span>    <span class="comment">// Chunked through a fixed-size stack buffer rather than a single</span></div>
+<div class="line"><a id="l00137" name="l00137"></a><span class="lineno">  137</span>    <span class="comment">// size-sized one -- a caller-supplied count has no compile-time bound,</span></div>
+<div class="line"><a id="l00138" name="l00138"></a><span class="lineno">  138</span>    <span class="comment">// and CS stays under the sketch&#39;s own digitalWrite() control across</span></div>
+<div class="line"><a id="l00139" name="l00139"></a><span class="lineno">  139</span>    <span class="comment">// this whole call (see SPIClass&#39;s header comment), so splitting into</span></div>
+<div class="line"><a id="l00140" name="l00140"></a><span class="lineno">  140</span>    <span class="comment">// multiple back-to-back r01lib write() calls is transparent to the bus.</span></div>
+<div class="line"><a id="l00141" name="l00141"></a><span class="lineno">  141</span>    <span class="keyword">static</span> <span class="keyword">constexpr</span> <span class="keywordtype">size_t</span> READ_BUFFER_SIZE    = 128;</div>
+<div class="line"><a id="l00142" name="l00142"></a><span class="lineno">  142</span> </div>
+<div class="line"><a id="l00143" name="l00143"></a><span class="lineno">  143</span>    uint8_t r_data[ READ_BUFFER_SIZE ];</div>
+<div class="line"><a id="l00144" name="l00144"></a><span class="lineno">  144</span> </div>
+<div class="line"><a id="l00145" name="l00145"></a><span class="lineno">  145</span>    <span class="keywordflow">while</span> ( size &gt; 0 )</div>
+<div class="line"><a id="l00146" name="l00146"></a><span class="lineno">  146</span>    {</div>
+<div class="line"><a id="l00147" name="l00147"></a><span class="lineno">  147</span>        <span class="keywordtype">size_t</span>  chunk   = size &lt; READ_BUFFER_SIZE ? size : READ_BUFFER_SIZE;</div>
+<div class="line"><a id="l00148" name="l00148"></a><span class="lineno">  148</span> </div>
+<div class="line"><a id="l00149" name="l00149"></a><span class="lineno">  149</span>        <a class="code hl_variable" href="class_s_p_i_class.html#aebe480d6a13eaedf3ecebcb073eb7eba">spi</a>-&gt;write( data, r_data, (<span class="keywordtype">int</span>)chunk );</div>
+<div class="line"><a id="l00150" name="l00150"></a><span class="lineno">  150</span>        memcpy( data, r_data, chunk );</div>
+<div class="line"><a id="l00151" name="l00151"></a><span class="lineno">  151</span> </div>
+<div class="line"><a id="l00152" name="l00152"></a><span class="lineno">  152</span>        data    += chunk;</div>
+<div class="line"><a id="l00153" name="l00153"></a><span class="lineno">  153</span>        size    -= chunk;</div>
+<div class="line"><a id="l00154" name="l00154"></a><span class="lineno">  154</span>    }</div>
+<div class="line"><a id="l00155" name="l00155"></a><span class="lineno">  155</span>}</div>
 </div>
-<div class="line"><a id="l00143" name="l00143"></a><span class="lineno">  143</span> </div>
-<div class="line"><a id="l00144" name="l00144"></a><span class="lineno"><a class="line" href="arduino__spi_8cpp.html#a56953eb3affc2a9f56e1680bbc537bf7">  144</a></span><a class="code hl_class" href="class_s_p_i_class.html">SPIClass</a>    <a class="code hl_class" href="class_s_p_i.html">SPI</a>;</div>
-<div class="line"><a id="l00145" name="l00145"></a><span class="lineno"><a class="line" href="arduino__spi_8cpp.html#a43acbc5715901cf39e8f7119cf245c7d">  145</a></span><a class="code hl_class" href="class_s_p_i_class.html">SPIClass</a>    <a class="code hl_variable" href="arduino__spi_8cpp.html#a43acbc5715901cf39e8f7119cf245c7d">SPI1</a>( <a class="code hl_define" href="io_8h.html#a8230651d92f9f5cb41c262100fabd349">MB_MOSI</a>, <a class="code hl_define" href="io_8h.html#a992fa848ae3bcec9d75077cf369386ef">MB_MISO</a>, <a class="code hl_define" href="io_8h.html#a4e7edf7c986b4196d01b556f0a50fe8c">MB_SCK</a>, <a class="code hl_define" href="io_8h.html#abbe1a3d173991fd183e3ed0496d1fdbb">MB_CS</a> );</div>
+<div class="line"><a id="l00156" name="l00156"></a><span class="lineno">  156</span> </div>
+<div class="line"><a id="l00157" name="l00157"></a><span class="lineno"><a class="line" href="arduino__spi_8cpp.html#a56953eb3affc2a9f56e1680bbc537bf7">  157</a></span><a class="code hl_class" href="class_s_p_i_class.html">SPIClass</a>    <a class="code hl_class" href="class_s_p_i.html">SPI</a>;</div>
+<div class="line"><a id="l00158" name="l00158"></a><span class="lineno"><a class="line" href="arduino__spi_8cpp.html#a43acbc5715901cf39e8f7119cf245c7d">  158</a></span><a class="code hl_class" href="class_s_p_i_class.html">SPIClass</a>    <a class="code hl_variable" href="arduino__spi_8cpp.html#a43acbc5715901cf39e8f7119cf245c7d">SPI1</a>( <a class="code hl_define" href="io_8h.html#a8230651d92f9f5cb41c262100fabd349">MB_MOSI</a>, <a class="code hl_define" href="io_8h.html#a992fa848ae3bcec9d75077cf369386ef">MB_MISO</a>, <a class="code hl_define" href="io_8h.html#a4e7edf7c986b4196d01b556f0a50fe8c">MB_SCK</a>, <a class="code hl_define" href="io_8h.html#abbe1a3d173991fd183e3ed0496d1fdbb">MB_CS</a> );</div>
 <div class="ttc" id="aarduino__spi_8cpp_html_a43acbc5715901cf39e8f7119cf245c7d"><div class="ttname"><a href="arduino__spi_8cpp.html#a43acbc5715901cf39e8f7119cf245c7d">SPI1</a></div><div class="ttdeci">SPIClass SPI1(MB_MOSI, MB_MISO, MB_SCK, MB_CS)</div></div>
 <div class="ttc" id="aarduino__spi_8cpp_html_abcce430271d5c637345874b2091f51ea"><div class="ttname"><a href="arduino__spi_8cpp.html#abcce430271d5c637345874b2091f51ea">r01libSPI</a></div><div class="ttdeci">SPI r01libSPI</div><div class="ttdef"><b>Definition</b> <a href="#l00010">arduino_spi.cpp:10</a></div></div>
 <div class="ttc" id="aarduino__spi_8h_html"><div class="ttname"><a href="arduino__spi_8h.html">arduino_spi.h</a></div></div>
