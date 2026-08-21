@@ -40,8 +40,16 @@ SPI::SPI( int mosi, int miso, int sclk, int cs ) : Obj( true ), chip_select( cs 
 	frequency( SPI_FREQ );
 	mode( 0 );
 
+	// chip_select's own DigitalInOut constructor (initializer list, above)
+	// already self-registered it as a generic "GPIO" pin owner. Undo that
+	// here -- see the non-C444 constructor's matching comment for why: CS
+	// is deliberately left under the sketch's own pinMode()/digitalWrite()
+	// control, so this member exists only for internal bookkeeping, not to
+	// compete with the sketch for pin ownership.
+	pin_registry_forget( &chip_select );
+
 	//	pin enable
-	
+
 //	DigitalInOut	_cs(   cs   );
 	DigitalInOut	_mosi( mosi );
 	DigitalInOut	_miso( miso );
@@ -185,6 +193,19 @@ DigitalOut* SPI::cs_manual_control( bool flag )
 
 SPI::SPI( int mosi, int miso, int sclk, int cs ) : Obj( true ), chip_select( cs, 1 )
 {
+	// chip_select's own DigitalInOut constructor (initializer list, above)
+	// already self-registered it as a generic "GPIO" pin owner. Undo that
+	// here: CS is deliberately left under the sketch's own pinMode()/
+	// digitalWrite() control (see the "cs defaults to manual/GPIO control"
+	// comment further down), so a sketch following the documented
+	// `pinMode(SS,...); SPI.begin();` pattern always ends up with two
+	// independent DigitalInOut objects on the same physical pin --
+	// functionally harmless (both read/write the same GPIO register), but
+	// reported as a false-positive CONFLICT by pin-ownership debug tooling.
+	// This member exists only for cs_manual_control()'s internal
+	// bookkeeping, not to compete with the sketch for pin ownership.
+	pin_registry_forget( &chip_select );
+
 	uint8_t	mux_setting	= 2;   // overridden below for pin-sets needing a different ALT (e.g. N947's MikroBus header)
 
 #pragma GCC diagnostic push
