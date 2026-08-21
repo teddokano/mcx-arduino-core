@@ -1044,7 +1044,15 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 - **`pin_registry_read_mux(raw_pin)`を新設**: 生ピン番号からそのピンの現在のPCRレジスタのMUXフィールドだけを読んで返す。`io.cpp`に定義（`pins[]`/`port_type[]`という、その実装に必要なボードごとのテーブルにアクセスできる唯一の場所のため）。weakフックの対とは違い、上書きの必要がない素の読み取り関数なのでweak化していない——これまでの他の追加関数と同様、呼ばれなければ`--gc-sections`で自動的に落ちるため、`PinState`を使わないビルドへのコスト増はゼロ
 - **`mcxPinState`側**: `Entry`に`wanted_mux`を追加、`print()`が`pin_registry_read_mux()`で実測ALTを読み、単独オーナーの場合はその要求値と比較して食い違えば`*** MISMATCH (wanted ALTn) ***`を表示。複数オーナー（`CONFLICT`）の場合はそちらを優先表示（個別のMISMATCH詳細より重大な異常のため）
 - 両ボードで`MultiPeripheralDump`/`ConflictDemo`/`BasicPinDump`のコンパイル確認、全55サンプル×両ボード回帰スイープも新規失敗なし（既知の11件のみ）。`mcx-arduino-core`側push済み（`50c614c`）、`mcxPinState`側もコミット済み（ローカルrepoのみ）
-- **実機での検証はまだ**（次のステップ）
+### 実機検証で発覚: `DigitalInOut::pin_mux()`未更新による誤MISMATCH検出、修正
+`MultiPeripheralDump`を実機で確認したところ、`Wire`のSDA/SCL（pin 16/17）が両方とも`[ALT3]: GPIO *** MISMATCH (wanted ALT0) ***`と表示された。実際には`Wire`は正常に動作しており、ALT3はI2C機能として正しい値——つまり誤検出。
+
+- **原因**: `I2C`のコンストラクタは`_sda(sda), _scl(scl)`という初期化子リストで永続的な`DigitalInOut`メンバを構築する。この時点で各`DigitalInOut`自身のコンストラクタが`pin_registry_note(this, "GPIO", &_pn, 1, 0)`を呼び、`wanted_mux=0`として登録してしまう（`DigitalInOut`の生成時登録は「プレーンGPIOとして使われ、以後muxを変えられない」ことを前提にしていたが、これは`pinMode()`経由の場合にしか成り立たない）。続けて`I2C`のコンストラクタ本体が`_scl.pin_mux(mux_setting); _sda.pin_mux(mux_setting);`で本来のI2C用ALTに変更するが、`DigitalInOut::pin_mux()`はレジストリを一切更新していなかったため、生成時点の古い`wanted_mux=0`が実測値と食い違ったまま残っていた——ハードウェア上の問題ではなく、単なる記録の更新漏れ
+- **同種の問題は`SPI`の`chip_select`等、「`DigitalInOut`として構築された後に外部から`pin_mux()`で用途を変更される」全パターンで起きうる潜在バグだった**
+- **修正**: `DigitalInOut::pin_mux()`自体が、`PORT_SetPinMux()`の直後に`pin_registry_note(this, "GPIO", &_pn, 1, (uint8_t)mux)`を呼ぶよう変更。`pin_registry_note()`は同一ownerの再登録を「既存スロットの更新」として扱う設計だったので、これだけで「直近に実際に設定されたALT」を正しく追跡するようになった（`pinMode()`のGPIO再取得パス`pin_mux(0)`にも同じ経路で正しく効く）
+- 両ボードで`hello_world`のコンパイル確認、全55サンプル×両ボード回帰スイープも新規失敗なし（既知の11件のみ）。`mcx-arduino-core`側push済み（`4af93b2`）
+- **`ConflictDemo`（D2への意図的な二重`DigitalInOut`）は複数オーナーの場合`CONFLICT`表示が優先され`MISMATCH`は出ない設計のため、今回のバグの影響を受けず正しく動作していた**——実機出力でも矛盾なし
+- **再度の実機確認は未実施**（次のステップ）
 
 ---
 
