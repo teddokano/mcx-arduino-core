@@ -93,4 +93,25 @@ struct PinPcrInfo
  */
 PinPcrInfo pin_registry_read_pcr( uint8_t raw_pin );
 
+/** Render a raw pin's physical name ("P1_17" style) into a caller-supplied
+ *  buffer.
+ *
+ *  Deliberately doesn't return a string literal from a lookup table: io.h's
+ *  pin enum has gaps per board (unavailable physical pins are simply
+ *  omitted, so a raw value isn't an arithmetic function of port/pin
+ *  number), which would otherwise call for a full {value -> name} string
+ *  table, one entry per pin (121 on N947, 52 on A153) -- real, if modest,
+ *  flash cost, and a second place (besides io.cpp's own `pins[]`) that
+ *  would need to stay in sync with io.h by hand. Formatting from `pins[]`
+ *  (which io.cpp already has and already keeps in sync with io.h, being
+ *  right next to it) costs only the snprintf call site -- no table at all.
+ *  Same --gc-sections-if-unused property as pin_registry_read_pcr().
+ *
+ * @param raw_pin r01lib's internal pin number (io.h's pin enum)
+ * @param buf destination buffer
+ * @param buf_size size of buf; the result is always null-terminated
+ * @return buf, for convenient chaining into a print call
+ */
+const char *pin_registry_pin_name( uint8_t raw_pin, char *buf, uint8_t buf_size );
+
 #endif // R01LIB_PIN_REGISTRY_H

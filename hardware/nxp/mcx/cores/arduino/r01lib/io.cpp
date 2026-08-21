@@ -4,6 +4,7 @@
  *  Released under the MIT license License
  */
 
+#include	<cstdio>
 #include	"fsl_common.h"
 #include	"fsl_gpio.h"
 #include	"fsl_port.h"
@@ -633,5 +634,18 @@ PinPcrInfo pin_registry_read_pcr( uint8_t raw_pin )
 		info.pull	= ( pcr & PORT_PCR_PS_MASK ) ? 2 : 1;
 
 	return info;
+}
+
+const char *pin_registry_pin_name( uint8_t raw_pin, char *buf, uint8_t buf_size )
+{
+	if ( (raw_pin >= sizeof( pins ) / sizeof( pins[ 0 ] )) || (-1 == pins[ raw_pin ].base) )
+	{
+		snprintf( buf, buf_size, "?%u", raw_pin );
+		return buf;
+	}
+
+	snprintf( buf, buf_size, "P%d_%lu", pins[ raw_pin ].base, pins[ raw_pin ].pin );
+
+	return buf;
 }
 

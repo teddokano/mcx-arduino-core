@@ -1090,6 +1090,15 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 - 両ボードで`r01lib_I3C.ino`・`hello_world`・`CombinedPeripheralsAudit`のコンパイル確認、全55サンプル×両ボード回帰スイープも新規失敗なし（既知の11件のみ）
 - **実機確認完了**: ユーザーがA153・N947両方で`CombinedPeripheralsAudit`を再実行、両ボードとも`*** CONFLICT ***`/`*** MISMATCH ***`が完全に消えたことを確認（I3CのSDA/SCLは`[ALT10 IBE]: GPIO`のみと正しく表示）
 
+### `mcxPinState`: ピン番号を物理名（P1_17等）・Arduino別名（D2等）で表示
+ユーザーから「やはりP1_17やD2のような表示がほしい」と依頼。raw pin番号のままでは読みにくいという指摘。設計を検討し、以下の分担で実装:
+
+- **物理名（`P1_17`）— `mcx-arduino-core`側に実装**: `io.h`のenum定義は各ポート内で歯抜け（未配線ピンは単に列挙から省かれる）のため、raw pin値から算術的に物理名を導出できず、本来なら文字列テーブルが必要になる（N947は121エントリ、A153は52エントリ）。ただし`io.cpp`は既に`pins[]`（raw_pin→`{port, pin番号}`）というテーブルを`pin_registry_read_pcr()`用に持っていたため、新規`pin_registry_pin_name()`はこの既存データから`snprintf("P%d_%lu", ...)`でその場生成するだけにし、追加の文字列データは一切持たせなかった。実測コスト: `CombinedPeripheralsAudit`で+92B（A153）/+100B（N947）、`PinState`未使用時（`hello_world`）は完全にゼロ
+- **Arduino別名（`D2`/`MB_SDA`等）— `mcxPinState`側に実装**: ユーザーから「サイズを大きくしたくないので別名テーブルは`mcx-arduino-core`に持ちたくない。`mcx-arduino-core`のデータを元にライブラリ側に持たせられないか」と方針の指定があった。`arduino_io.h`が既に持つ`arduino_pin_by_number[]`（`ArduinoPinNum`enum値→raw pin値の変換テーブル、Arduinoリナンバリング機構自体のために元から存在する）に着目——これを`<Arduino.h>`経由でそのまま参照すれば、**値は`mcx-arduino-core`自身の定義から取得**でき、ズレが原理的に起こらない。`mcxPinState`側で用意するのは名前の文字列リスト（`arduino_io.h`の配列と同じ順序で`"D0","D1",...,"PWM5"`）だけとし、`static_assert(sizeof(ALIAS_NAMES)/sizeof(...) == sizeof(arduino_pin_by_number)/sizeof(...), ...)`で項目数の食い違い（別名の追加・削除漏れ）をコンパイル時に検出——リリースのたびの手動突き合わせは、`static_assert`では拾えない稀な「同じ項目数のまま順序だけ入れ替わる」ケースの保険という位置づけに縮小できた
+- 実測コスト（別名テーブル分、`mcx-arduino-core`側は無変更）: `CombinedPeripheralsAudit`で追加+876B（A153）/+868B（N947）、物理名分と合わせて合計+968B（両ボードとも同一——固定54エントリの同一文字列データのため）。`PinState`未使用ビルドへの影響は引き続きゼロ
+- 両ボードで`hello_world`（無変化を確認）・`CombinedPeripheralsAudit`のコンパイル確認、全55サンプル×両ボード回帰スイープも新規失敗なし（既知の11件のみ、並列化した`xargs -P 4`版で実施——逐次実行より大幅に高速）
+- **実機確認完了**: ユーザーがA153・N947両方で`CombinedPeripheralsAudit`を再実行、`Pin P0_29 (D2)`のような物理名＋別名表示を確認。`Serial`（USBTX/USBRX）には別名が付かない（`ArduinoPinNum`に含まれないピンのため）ことも含め正しい挙動
+
 ---
 
 ## 動作確認済み
