@@ -9,11 +9,11 @@ void setup() {
 }
 
 void loop() {
-  int value = analogRead(A0);
+  int value = analogRead(A2);
 
   analogWrite(PWM0, value >> 2);   // 10bit -> 8bit
 
-  Serial.print("A0 = ");
+  Serial.print("A2 = ");
   Serial.println(value);
 
   delay(200);
