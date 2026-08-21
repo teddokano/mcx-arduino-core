@@ -193,19 +193,6 @@ DigitalOut* SPI::cs_manual_control( bool flag )
 
 SPI::SPI( int mosi, int miso, int sclk, int cs ) : Obj( true ), chip_select( cs, 1 )
 {
-	// chip_select's own DigitalInOut constructor (initializer list, above)
-	// already self-registered it as a generic "GPIO" pin owner. Undo that
-	// here: CS is deliberately left under the sketch's own pinMode()/
-	// digitalWrite() control (see the "cs defaults to manual/GPIO control"
-	// comment further down), so a sketch following the documented
-	// `pinMode(SS,...); SPI.begin();` pattern always ends up with two
-	// independent DigitalInOut objects on the same physical pin --
-	// functionally harmless (both read/write the same GPIO register), but
-	// reported as a false-positive CONFLICT by pin-ownership debug tooling.
-	// This member exists only for cs_manual_control()'s internal
-	// bookkeeping, not to compete with the sketch for pin ownership.
-	pin_registry_forget( &chip_select );
-
 	uint8_t	mux_setting	= 2;   // overridden below for pin-sets needing a different ALT (e.g. N947's MikroBus header)
 
 #pragma GCC diagnostic push
@@ -317,6 +304,24 @@ SPI::SPI( int mosi, int miso, int sclk, int cs ) : Obj( true ), chip_select( cs,
 	//	device thinks it's currently deselected.
 	cs_manual_control( true );
 	manual_cs_control	= true;
+
+	// chip_select's own DigitalInOut constructor self-registered it as a
+	// generic "GPIO" pin owner, and cs_manual_control() above just did it
+	// again via DigitalInOut::pin_mux() (which keeps the registry's
+	// wanted-ALT in sync -- see that method). Undo both here, now that
+	// nothing else in this constructor still needs to call pin_mux() on
+	// chip_select: CS is deliberately left under the sketch's own
+	// pinMode()/digitalWrite() control (see the "cs defaults to manual/
+	// GPIO control" comment above), so a sketch following the documented
+	// `pinMode(SS,...); SPI.begin();` pattern always ends up with two
+	// independent DigitalInOut objects on the same physical pin --
+	// functionally harmless (both read/write the same GPIO register), but
+	// reported as a false-positive CONFLICT by pin-ownership debug
+	// tooling. This member exists only for cs_manual_control()'s internal
+	// bookkeeping, not to compete with the sketch for pin ownership. Must
+	// stay the last statement in this constructor: anything added below
+	// that calls chip_select.pin_mux() again would silently re-register it.
+	pin_registry_forget( &chip_select );
 
 #pragma GCC diagnostic pop
 }
