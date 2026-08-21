@@ -420,7 +420,7 @@ void Serial::apply_pin_mux( void )
     rx_io.input_buffer( true );
 
     uint8_t pins[ 2 ] = { (uint8_t)_tx_pin, (uint8_t)_rx_pin };
-    pin_registry_note( this, "Serial", pins, 2 );
+    pin_registry_note( this, "Serial", pins, 2, (uint8_t)_tx_mux );
 }
 
 Serial::~Serial()

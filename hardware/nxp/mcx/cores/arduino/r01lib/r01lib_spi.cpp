@@ -64,7 +64,7 @@ SPI::SPI( int mosi, int miso, int sclk, int cs ) : Obj( true ), chip_select( cs 
 
 	{
 		uint8_t	spi_pins[ 3 ]	= { (uint8_t)mosi, (uint8_t)miso, (uint8_t)sclk };
-		pin_registry_note( this, "SPI", spi_pins, 3 );
+		pin_registry_note( this, "SPI", spi_pins, 3, mux_setting );
 	}
 
 	chip_select			= true;
@@ -304,7 +304,7 @@ SPI::SPI( int mosi, int miso, int sclk, int cs ) : Obj( true ), chip_select( cs,
 
 	{
 		uint8_t	spi_pins[ 3 ]	= { (uint8_t)mosi, (uint8_t)miso, (uint8_t)sclk };
-		pin_registry_note( this, "SPI", spi_pins, 3 );
+		pin_registry_note( this, "SPI", spi_pins, 3, mux_setting );
 	}
 
 	//	cs defaults to manual/GPIO control, never the LPSPI hardware PCS

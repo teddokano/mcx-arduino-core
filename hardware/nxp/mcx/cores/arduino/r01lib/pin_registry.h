@@ -43,8 +43,16 @@ extern "C" {
  *                   is never freed
  * @param pins raw r01lib pin values (io.h's pin enum) this object holds
  * @param pin_count number of entries in `pins`
+ * @param wanted_mux the PORT_MuxAltN value (0-15) this object just set --
+ *                   or was expecting to already be set to -- on all of
+ *                   `pins`. Every current caller uses a single shared ALT
+ *                   across its whole pin group (e.g. Serial's TX/RX both
+ *                   land on the same LPUART ALT, SPI's MOSI/MISO/SCLK all
+ *                   share one ALT), so one scalar is enough for now; a
+ *                   future caller needing per-pin ALTs would need this
+ *                   signature extended.
  */
-void pin_registry_note( const void *owner, const char *owner_name, const uint8_t *pins, uint8_t pin_count );
+void pin_registry_note( const void *owner, const char *owner_name, const uint8_t *pins, uint8_t pin_count, uint8_t wanted_mux );
 
 /** Called by a pin-owning object's destructor.
  * @param owner same pointer previously passed to pin_registry_note()
@@ -52,5 +60,25 @@ void pin_registry_note( const void *owner, const char *owner_name, const uint8_t
 void pin_registry_forget( const void *owner );
 
 }	// extern "C"
+
+/** Read back the PORT_MuxAltN value currently set in a raw pin's PCR
+ *  register -- for comparing against what an owner in the registry
+ *  claimed to want (pin_registry_note()'s wanted_mux), to catch cases
+ *  where something re-muxed the pin out from under its owner after the
+ *  fact (see mcx-arduino-core's own history for a real example: Serial1
+ *  silently re-muxing I3C's pins on FRDM-MCXN947, well after I3C's own
+ *  constructor had already set them and considered the job done).
+ *
+ *  Deliberately NOT extern "C"/weak like the two hooks above -- this
+ *  doesn't need overriding, it's just a plain read. Defined in io.cpp,
+ *  which is where the per-board pin/PORT lookup tables this needs already
+ *  live; --gc-sections drops it from any build that never calls it, the
+ *  same as every other unused function here.
+ *
+ * @param raw_pin r01lib's internal pin number (io.h's pin enum)
+ * @return the current ALT value (0-15), or 0xFF if the pin is
+ *         DISABLED_PIN or otherwise out of range
+ */
+uint8_t pin_registry_read_mux( uint8_t raw_pin );
 
 #endif // R01LIB_PIN_REGISTRY_H

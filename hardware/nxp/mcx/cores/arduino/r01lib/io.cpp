@@ -490,7 +490,7 @@ DigitalInOut::DigitalInOut( uint8_t pin_num, bool direction, bool v, int pin_mod
 
 	value( (bool)_value );
 
-	pin_registry_note( this, "GPIO", &_pn, 1 );
+	pin_registry_note( this, "GPIO", &_pn, 1, 0 );
 }
 
 DigitalInOut::~DigitalInOut()
@@ -591,4 +591,18 @@ DigitalIn::DigitalIn( uint8_t pin_num, int pin_mode )
 }
 
 DigitalIn::~DigitalIn() {}
+
+uint8_t pin_registry_read_mux( uint8_t raw_pin )
+{
+	if ( raw_pin >= sizeof( pins ) / sizeof( pins[ 0 ] ) )
+		return 0xFF;
+
+	if ( -1 == pins[ raw_pin ].base )
+		return 0xFF;
+
+	PORT_Type	*port	= port_type[ pins[ raw_pin ].base ];
+	uint32_t	pcr		= PORT_GetPinMode( port, pins[ raw_pin ].pin );
+
+	return (uint8_t)( ( pcr & PORT_PCR_MUX_MASK ) >> PORT_PCR_MUX_SHIFT );
+}
 

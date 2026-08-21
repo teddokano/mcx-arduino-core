@@ -149,7 +149,7 @@ AnalogIn::AnalogIn( int pin )
     LPADC_SetConvCommandConfig( ADC0, _channel_id, &cmd );
 
     uint8_t pin8 = (uint8_t)_pin;
-    pin_registry_note( this, "AnalogIn", &pin8, 1 );
+    pin_registry_note( this, "AnalogIn", &pin8, 1, (uint8_t)kPORT_MuxAlt0 );
 }
 
 AnalogIn::~AnalogIn()
@@ -335,7 +335,7 @@ AnalogIn::AnalogIn( int pin )
     LPADC_SetConvCommandConfig( ADC0, _channel_id, &cmd );
 
     uint8_t pin8 = (uint8_t)_pin;
-    pin_registry_note( this, "AnalogIn", &pin8, 1 );
+    pin_registry_note( this, "AnalogIn", &pin8, 1, (uint8_t)kPORT_MuxAlt0 );
 }
 
 AnalogIn::~AnalogIn()

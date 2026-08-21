@@ -150,7 +150,7 @@ PwmOut::PwmOut( int pin )
     PWM_StartTimer( FLEXPWM0, (uint8_t)( 1u << _submodule ) );
 
     uint8_t pin8 = (uint8_t)_pin;
-    pin_registry_note( this, "PwmOut", &pin8, 1 );
+    pin_registry_note( this, "PwmOut", &pin8, 1, (uint8_t)kPORT_MuxAlt5 );
 }
 
 PwmOut::~PwmOut()
@@ -421,7 +421,7 @@ PwmOut::PwmOut( int pin )
     PWM_StartTimer( FLEXPWM1, (uint8_t)( 1u << _submodule ) );
 
     uint8_t pin8 = (uint8_t)_pin;
-    pin_registry_note( this, "PwmOut", &pin8, 1 );
+    pin_registry_note( this, "PwmOut", &pin8, 1, (uint8_t)kPORT_MuxAlt5 );
 }
 
 PwmOut::~PwmOut()
