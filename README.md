@@ -14,6 +14,13 @@ for each board's pin assignments, [CHANGELOG.md](CHANGELOG.md) for release histo
 [docs/api/](docs/api/index.html) for generated Doxygen class reference (the r01lib driver
 core and the Arduino-compatible API layer).
 
+Past the standard Arduino API, a few advanced guides go deeper:
+[calling the MCUXpresso SDK directly](docs/advanced_sdk_tuning.md) for
+GPIO speed, [native I3C via r01lib](docs/advanced_r01lib_i3c.md) for
+functionality `Wire`-shaped APIs can't expose, and
+[debugging pin ownership with mcxPinState](docs/mcxpinstate_guide.md), a
+companion library for exactly that.
+
 [![youtube](img/youtube.png) Setup guide video](https://youtu.be/g_rDAxnVnro) is available. 
 
 ## Supported Boards

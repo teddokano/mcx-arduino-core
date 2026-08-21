@@ -528,3 +528,7 @@ extra `#include`s needed: `PI`, `HALF_PI`, `TWO_PI`, `DEG_TO_RAD`,
 - [`examples/Arduino_compatible_API/`](examples/Arduino_compatible_API) — one focused sketch per feature
 - [`examples/Arduino_compatible_API/test_combined_peripherals_A153`](examples/Arduino_compatible_API/test_combined_peripherals_A153) — everything running at once
 - [CHANGELOG.md](CHANGELOG.md) — what changed between versions
+- Advanced guides, past the standard Arduino API:
+  [calling the MCUXpresso SDK directly](docs/advanced_sdk_tuning.md),
+  [native I3C via r01lib](docs/advanced_r01lib_i3c.md), and
+  [debugging pin ownership with mcxPinState](docs/mcxpinstate_guide.md)
