@@ -1212,6 +1212,12 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 - **修正**: `mcu.cpp`でN947のFlexComm6アタッチを`kFRO12M_to_FLEXCOMM6`→`kFRO_HF_DIV_to_FLEXCOMM6`に変更（デフォルト`SPI`と同じ48MHz系統）。純粋なクロックMUX定数の変更のためコードサイズは無変化、両ボードの回帰スイープも新規失敗なし。MikroBusのI2C（Flexcomm3、`Wire2`）は今回のバグ報告に含まれておらず、I2Cはタイミング要求がSPIより緩いため未確認・未修正のまま据え置き
 - **実機確認完了**: ユーザーが再フラッシュし「問題解決」と確認
 
+### Serial/Stream系ヘルパー4本を1本に統合、統合時のミスを実機で発見・修正
+ユーザーから「`test_Serial_stream_helpers`/`test_Serial_readString`/`test_Serial_flush`/`test_Serial_peek`——Serial/Stream系ヘルパー一式は全て1本化して確認を楽に」と依頼。4本とも同じ`Serial1`（D0-D1ジャンパ）ループバック配線を必要とし、個別に書き込み・確認する手間があったため、`test_Serial_stream_helpers`に集約（readBytes/readBytesUntil/parseInt/parseFloat/find/タイムアウト経路、readString/readStringUntil＋String系、`flush()`、`peek()`の順）、他3ディレクトリを削除。両ボードでコンパイル確認・全52サンプル回帰スイープ新規失敗なし。
+
+- **実機で発見: `peek()`セクションだけFAIL（A153）**: 統合前は全部OKだったのに、統合後は`peek()`の最終チェックだけFAILしたとの報告。原因は統合作業自体のミスと判明——直前の`flush()`セクションが`Serial1.print(flushMsg)`で24バイト送信するが、これはループバック配線なので同じ24バイトがRX側にも返ってくる。`flush()`はTX側の完了しか待たないため、この24バイトは未読のままRXバッファに残り、直後の`peek()`セクションが新たに送った`"AB"`より前に居座っていた（`peek()`が`'A'`ではなく残っていた`'H'`を返す）。`flush()`セクションの直後に`while (Serial1.available()) Serial1.read();`でRXバッファを明示的にドレインして解消
+- **実機確認完了**: ユーザーがA153・N947両方で再確認し「OK」と報告
+
 ---
 
 ## 動作確認済み
