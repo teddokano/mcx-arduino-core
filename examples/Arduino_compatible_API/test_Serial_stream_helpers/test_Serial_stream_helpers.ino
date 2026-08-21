@@ -137,6 +137,14 @@ void setup() {
   Serial.println(" us)");
   check("flush() blocks for real hardware TX time", flushElapsed >= flushExpected_us / 2);
 
+  // flush() only waits for the TX side -- it doesn't touch RX. Since this
+  // is a loopback, flushMsg above arrived back on RX too and was never
+  // read; drain it before the next section, or peek() below would see the
+  // leftover 'H' from "Hello, Serial1 world!\r\n" instead of the 'A' it
+  // sends itself.
+  while (Serial1.available())
+    Serial1.read();
+
   // ---- peek() ----
   // peek() must return the next byte without consuming it -- calling it
   // repeatedly must keep returning the same byte, and available() must
