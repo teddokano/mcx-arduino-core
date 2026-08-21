@@ -1099,6 +1099,17 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 - 両ボードで`hello_world`（無変化を確認）・`CombinedPeripheralsAudit`のコンパイル確認、全55サンプル×両ボード回帰スイープも新規失敗なし（既知の11件のみ、並列化した`xargs -P 4`版で実施——逐次実行より大幅に高速）
 - **実機確認完了**: ユーザーがA153・N947両方で`CombinedPeripheralsAudit`を再実行、`Pin P0_29 (D2)`のような物理名＋別名表示を確認。`Serial`（USBTX/USBRX）には別名が付かない（`ArduinoPinNum`に含まれないピンのため）ことも含め正しい挙動
 
+### `mcxPinState`: 表示を「named pinsテーブル + Peripheral instance stateテーブル」の2段構成に刷新
+ユーザーから初期モックアップ（セッション序盤で提示した2テーブル構成のイメージ）を再度示され「このフォーマットにできる？」と依頼。4つの要素（1. 全named pin列挙、2. 同一物理ピンの複数別名グルーピング、3. Peripheral instance stateテーブル、4. CONFLICT時の自然言語説明）に分解して提示し、ユーザーが「まず1・2だけ」→動作確認後「2番で」（3番の実装方針として、`mcx-arduino-core`側は変更せず`mcxPinState`側だけでピン存在チェックにより`begun()?`を推定する方式）と段階的に進行。4番は未着手のまま。
+
+- **1・2（全named pin列挙＋グルーピング）**: `print()`を全面刷新。従来の「現在クレームされているピンだけを1行ずつ列挙」する方式から、`ALIAS_NAMES`/`arduino_pin_by_number[]`にある名前付きピン全部（未クレームでも`-`表示）を対象にする表形式に変更。同一物理ピンを指す複数の別名（`D10, SPI_CS, ARD_CS`等）は1行にカンマ結合してグルーピング
+- **実機で発見: `DISABLED_PIN`（raw pin=0）が無関係な複数別名を1行にまとめてしまう誤表示**: N947の`A0`/`A1`/`MB_AN`（いずれも未配線のため`io.h`の`DISABLED_PIN`センチネル値0に揃って割り当てられている）が「同じ物理ピンを共有している」かのように1行にグルーピングされ、`Pin ?0`という紛らわしい表示になっていた。`AskUserQuestion`で対応方針をユーザーに確認し「テーブルから除外」を選択——raw_pin==0の別名はテーブルから丸ごと除外するよう修正
+- **3（Peripheral instance stateテーブル）**: 新規`KNOWN_INSTANCES`テーブル（`Wire`/`Wire1`/`Wire2`(N947のみ)/`SPI`/`SPI1`/`Serial`/`Serial1`、各々が使う既知ピンを保持）を`mcxPinState`側に新設。各インスタンスの`begun()?`は、そのインスタンスの既知ピンが現在レジストリに（正しいオーナーとして）登録されているかで推定——`mcx-arduino-core`側は無変更。既知ピンの値自体は`arduino_pin_by_number[]`・`I2C_SDA`等の固定値マクロから取得するため値のドリフトはなく、`Wire2`/`Serial1`の存在有無・ピン差異はボードごとに`#if defined(FRDM_MCXA153)`/`#elif defined(FRDM_MCXN947)`で分岐
+- **実機で発見: `SPI`が`tone()`のD13使用を誤って「SPIの一部が生きている」と判定するバグ（PARTIAL誤表示）**: `SPI`のデフォルトSCLKピンはD13の物理ピンと同一だが、このサンプルの`tone(BUZZER_PIN=D13, ...)`が同じピンをGPIOとして掴んでいるだけなのに、「そのピンに何らかのオーナーが存在するか」だけを見る初期実装では区別できず`SPI: PARTIAL`と誤表示されていた。オーナー名（`SPI`/`Serial`はクラス単位で固有のラベル、`Wire`系はDigitalInOut由来で常に`"GPIO"`）に加えて`wanted_mux != 0`（ALT0=プレーンGPIOではないこと）も条件に加える`owned_by()`ヘルパーを新設して修正——`Wire`系の"GPIO"ラベルの曖昧さは、素の`pinMode()`では`wanted_mux`が常に0のまま（`DigitalInOut`のデフォルト登録）だが、I2C/I3Cの`begin()`は実際に非ゼロの周辺機能ALTへ再ムクスするため、この条件で正しく区別できる
+- 実測コスト（item3分、item1+2ベースラインとの差分）: `CombinedPeripheralsAudit`で+720B（A153）/+748B（N947）。`hello_world`は引き続き無変化
+- 両ボードで`hello_world`・全既存`mcxPinState`サンプル（`BasicPinDump`/`MultiPeripheralDump`/`ConflictDemo`/`PullModeCheck`）・`CombinedPeripheralsAudit`のコンパイル確認、いずれも回帰なし
+- **実機確認完了**: ユーザーがA153・N947両方で`CombinedPeripheralsAudit`を再実行。`DISABLED_PIN`グループの除外・`Peripheral instance state`テーブルの`begun()?`/`Holds pins`/`Status`（`SPI`の誤`PARTIAL`解消含む）とも正しく表示されることを確認
+
 ---
 
 ## 動作確認済み
