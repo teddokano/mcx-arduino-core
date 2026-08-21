@@ -1145,6 +1145,16 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 - 実機確認用の一時テストスケッチ（`SERIAL_PORT_MONITOR.begin()`/`SERIAL_PORT_HARDWARE.begin()`呼び出し＋`static_assert(&SERIAL_PORT_MONITOR==&Serial, ...)`等でアドレス一致を検証）を作成し両ボードでコンパイル確認してから削除。`hello_world`のサイズは完全に無変化、全55サンプル×両ボード回帰スイープも新規失敗なし（既知の11件のみ）
 - `API_COMPATIBILITY.md`・`CHANGELOG.md`の`[Unreleased]`セクションに追記
 
+### ドキュメントのルート直下配置についての方針確認、`docs/`配下に上級者向けガイド3本を新設
+ユーザーから「repoルートに.mdファイルが多いが見やすいか？チュートリアルを`docs/`配下に移すべきか」と質問。過去に`PIN_MAPPING_A153.md`/`PIN_MAPPING_N947.md`を分割した際「`variants/`配下のような深い場所は見つけにくいのでルート直下に置く」と決めた前例があり、それと逆方向の提案になると指摘——既存5点（README/TUTORIAL/CHANGELOG/API_COMPATIBILITY/PIN_MAPPING）は現状維持を推奨し、ユーザーも同意
+
+続けてユーザーから「チュートリアルのアドバンスト版（MCUXpresso-SDK速度チューニング、Arduino API非対応のI3Cをr01libクラスで実行、mcxPinStateの使い方）を作りたい、これらは`docs/`配下がいいのでは」と提案。今度は「上級者向け・低頻度アクセスの補足資料」という性質の違い（`docs/api/`のDoxygen出力という前例も既にある）から、前回の判断と矛盾しないと回答し合意——「基本５点はルート直下、上級者向け補足は`docs/`」という切り分けを確立
+
+- **`docs/advanced_sdk_tuning.md`**: 既存の`test_GPIO_toggle_speed_SDK_API`サンプルと、CLAUDE.mdに記録済みの実測ベンチマーク（A153: digitalWrite 784.7ns vs SDK直接22.9ns、34.23倍高速化／N947: 488.8ns vs 14.67ns、33.32倍）を基に作成。ループアンロールの必要性の説明も含む
+- **`docs/advanced_r01lib_i3c.md`**: `examples/Arduino_incompatible_API/r01lib_I3C/r01lib_I3C.ino`（このセッション全体で何度も実機バグを見つけ・直してきた実績のあるサンプル）を基に、`i3c.h`の実APIを直接確認しながら作成。CCCコマンド一覧表、`NO_STOP`によるリピートスタート、`int main(void)`直接定義（weak `main()`の仕組み）、`Serial.printf()`がr01lib独自メソッドである点などを解説。N947でのSerial1/Wire1ピン共有の注意も明記
+- **`docs/mcxpinstate_guide.md`**: 作成前に「`mcxPinState`がまだGitHubにpushされていない」ことに気づきユーザーに確認、`AskUserQuestion`で「今pushする」を選択。`LICENSE`（MIT、`mcx-arduino-core`と同一文面）・`.gitignore`（`.DS_Store`）を新規追加し、`library.properties`に`license=MIT`を追記してから`gh repo create teddokano/mcxPinState --public --source=. --push`で公開: https://github.com/teddokano/mcxPinState 。ガイド執筆中に`mcxPinState`側の3サンプル（`ConflictDemo`/`MultiPeripheralDump`/`CombinedPeripheralsAudit`）のコメントが、`print()`をテーブル形式に刷新する前の古い`"*** CONFLICT ***"`インライン表記のまま陳腐化していたのを発見・修正（コメントのみ、機能に影響なし）——`mcxPinState`側もコミット・push済み
+- 3本とも`README.md`冒頭・`TUTORIAL.md`/`TUTORIAL.ja.md`の「Where to go next」セクションからリンク
+
 ---
 
 ## 動作確認済み
