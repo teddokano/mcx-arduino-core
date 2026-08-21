@@ -1205,6 +1205,13 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 上記の一連の修正（N947 SPIクロック、`delayMicroseconds`のDWT化、analogRead関連のSOSパニック2件、`ARDUINO_FRDM_MCXN947`マクロチェック）を踏まえ、ユーザーが以下19本のサンプルで実機動作に問題がないことを確認（`test_analogRead_precision_N947`はN947専用、他は両ボードまたは該当ボードで確認）:
 `~/dev/Arduino/libraries/Waveshare_TFT_Touch/examples/SDBitmapViewer/`、`hello_world`、`onboard_temperature_sensor`、`test_Interrupt_SW2`、`test_analogWrite_all_channels`、`test_Analog_read_write`、`test_analogRead_precision_N947`、`test_delayMicroseconds`、`test_combined_peripherals`、`test_detachInterrupt`、`test_digitalWrite_all_pins`、`test_digitalWrite_analog_pins`、`test_digitalWrite_mikrobus_pins`、`test_math_constants`、`test_millis_micros`、`test_Print_Stream_hierarchy`、`test_PROGMEM_F_ARDUINO_macros`、`test_String_64bit`、`test_tone`、`test_Wire_LM75B`
 
+### 実機バグ発見・修正: N947の`SPI1`（MikroBus）も要求クロックの半分で動作（実機確認済み）
+続けてユーザーが`test_SPI1_MikroBus`を実機確認したところ、A153はSCLK 1MHzで正しいが、N947は500kHzと報告——直前に`SPI1`について「同じ非対称パターンが潜在している可能性が高い」とCLAUDE.mdに記録していた予測が的中。
+
+- **原因**: デフォルト`SPI`と全く同じパターン。N947の`SPI1`（Flexcomm6経由のLPSPI6）も`clock_config.c`が一切触れておらず`kFRO12M_to_FLEXCOMM6`（12MHz）のまま——A153の同等の`SPI1`（LPSPI0）は`clock_config.c`が`LPSPI0`/`LPSPI1`両方を`FRO_HF_DIV`（48MHz）へ上書きしているため問題なし
+- **修正**: `mcu.cpp`でN947のFlexComm6アタッチを`kFRO12M_to_FLEXCOMM6`→`kFRO_HF_DIV_to_FLEXCOMM6`に変更（デフォルト`SPI`と同じ48MHz系統）。純粋なクロックMUX定数の変更のためコードサイズは無変化、両ボードの回帰スイープも新規失敗なし。MikroBusのI2C（Flexcomm3、`Wire2`）は今回のバグ報告に含まれておらず、I2Cはタイミング要求がSPIより緩いため未確認・未修正のまま据え置き
+- **実機確認完了**: ユーザーが再フラッシュし「問題解決」と確認
+
 ---
 
 ## 動作確認済み
