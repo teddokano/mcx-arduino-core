@@ -21,6 +21,7 @@ extern "C" {
 #include	"io.h"
 #include	"r01lib_spi.h"
 #include	"mcu.h"
+#include	"pin_registry.h"
 
 #ifdef	CPU_MCXC444VLH
 
@@ -53,12 +54,18 @@ SPI::SPI( int mosi, int miso, int sclk, int cs ) : Obj( true ), chip_select( cs 
 	_miso.pin_mux( mux_setting );
 //	_cs.pin_mux(   mux_setting );
 
+	{
+		uint8_t	spi_pins[ 3 ]	= { (uint8_t)mosi, (uint8_t)miso, (uint8_t)sclk };
+		pin_registry_note( this, "SPI", spi_pins, 3 );
+	}
+
 	chip_select			= true;
 	manual_cs_control	= false;
 }
 
 SPI::~SPI()
 {
+	pin_registry_forget( this );
 	SPI_Deinit( unit_base );
 }
 
@@ -274,6 +281,11 @@ SPI::SPI( int mosi, int miso, int sclk, int cs ) : Obj( true ), chip_select( cs,
 	_sclk.pin_mux( mux_setting );
 	_miso.pin_mux( mux_setting );
 
+	{
+		uint8_t	spi_pins[ 3 ]	= { (uint8_t)mosi, (uint8_t)miso, (uint8_t)sclk };
+		pin_registry_note( this, "SPI", spi_pins, 3 );
+	}
+
 	//	cs defaults to manual/GPIO control, never the LPSPI hardware PCS
 	//	function: one physical SPI bus is routinely shared by several
 	//	devices (e.g. an LCD + SD card), each with its own independently
@@ -290,6 +302,7 @@ SPI::SPI( int mosi, int miso, int sclk, int cs ) : Obj( true ), chip_select( cs,
 
 SPI::~SPI()
 {
+	pin_registry_forget( this );
 	LPSPI_Deinit( unit_base );
 }
 

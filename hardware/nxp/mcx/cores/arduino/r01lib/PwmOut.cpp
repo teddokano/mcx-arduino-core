@@ -32,6 +32,7 @@ extern "C" {
 
 #include "PwmOut.h"
 #include "mcu.h"
+#include "pin_registry.h"
 
 uint8_t PwmOut::_instance_count = 0;
 
@@ -147,10 +148,15 @@ PwmOut::PwmOut( int pin )
 
     apply();   // sets the real default period/duty and calls PWM_SetPwmLdok()
     PWM_StartTimer( FLEXPWM0, (uint8_t)( 1u << _submodule ) );
+
+    uint8_t pin8 = (uint8_t)_pin;
+    pin_registry_note( this, "PwmOut", &pin8, 1 );
 }
 
 PwmOut::~PwmOut()
 {
+    pin_registry_forget( this );
+
     if ( -1 == _pin )
         return;
 
@@ -284,6 +290,7 @@ static PWM_Type * const FLEXPWM1 = PWM1;
 
 #include "PwmOut.h"
 #include "mcu.h"
+#include "pin_registry.h"
 
 uint8_t PwmOut::_instance_count = 0;
 
@@ -412,10 +419,15 @@ PwmOut::PwmOut( int pin )
 
     apply();   // sets the real default period/duty and calls PWM_SetPwmLdok()
     PWM_StartTimer( FLEXPWM1, (uint8_t)( 1u << _submodule ) );
+
+    uint8_t pin8 = (uint8_t)_pin;
+    pin_registry_note( this, "PwmOut", &pin8, 1 );
 }
 
 PwmOut::~PwmOut()
 {
+    pin_registry_forget( this );
+
     if ( -1 == _pin )
         return;
 

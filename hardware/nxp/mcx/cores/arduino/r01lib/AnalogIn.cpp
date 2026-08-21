@@ -29,6 +29,7 @@ extern "C" {
 
 #include "AnalogIn.h"
 #include "mcu.h"
+#include "pin_registry.h"
 
 uint8_t AnalogIn::_instance_count = 0;
 bool    AnalogIn::_calibrated     = false;
@@ -146,10 +147,15 @@ AnalogIn::AnalogIn( int pin )
     cmd.channelNumber            = _input_positive;
     cmd.conversionResolutionMode = kLPADC_ConversionResolutionStandard;  // 12-bit
     LPADC_SetConvCommandConfig( ADC0, _channel_id, &cmd );
+
+    uint8_t pin8 = (uint8_t)_pin;
+    pin_registry_note( this, "AnalogIn", &pin8, 1 );
 }
 
 AnalogIn::~AnalogIn()
 {
+    pin_registry_forget( this );
+
     if ( -1 == _pin )
         return;
 
@@ -196,6 +202,7 @@ AnalogIn::operator float()
 
 #include "AnalogIn.h"
 #include "mcu.h"
+#include "pin_registry.h"
 
 uint8_t AnalogIn::_instance_count = 0;
 bool    AnalogIn::_calibrated     = false;
@@ -326,10 +333,15 @@ AnalogIn::AnalogIn( int pin )
     cmd.sampleChannelMode        = _side;
     cmd.conversionResolutionMode = kLPADC_ConversionResolutionStandard;  // 12-bit
     LPADC_SetConvCommandConfig( ADC0, _channel_id, &cmd );
+
+    uint8_t pin8 = (uint8_t)_pin;
+    pin_registry_note( this, "AnalogIn", &pin8, 1 );
 }
 
 AnalogIn::~AnalogIn()
 {
+    pin_registry_forget( this );
+
     if ( -1 == _pin )
         return;
 

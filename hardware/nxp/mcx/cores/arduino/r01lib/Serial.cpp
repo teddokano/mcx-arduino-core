@@ -47,6 +47,7 @@ extern "C" {
 #include "io.h"
 #include "mcu.h"
 #include "Serial.h"
+#include "pin_registry.h"
 
 // ===========================================================================
 //  MCX A153  (LPUART0/1/2, PORT mux, CLOCK_AttachClk / CLOCK_SetClockDiv)
@@ -417,10 +418,15 @@ void Serial::apply_pin_mux( void )
     // with the digital input buffer disabled -- MUX alone isn't enough,
     // the peripheral never sees the incoming signal without this.
     rx_io.input_buffer( true );
+
+    uint8_t pins[ 2 ] = { (uint8_t)_tx_pin, (uint8_t)_rx_pin };
+    pin_registry_note( this, "Serial", pins, 2 );
 }
 
 Serial::~Serial()
 {
+    pin_registry_forget( this );
+
     if ( !_base )
         return;
 
