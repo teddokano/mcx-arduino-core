@@ -1138,6 +1138,13 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 - 実機確認用に一時テストスケッチ（`static_assert`で`NUM_DIGITAL_PINS`・`PIN_WIRE_*`/`PIN_SPI_*`の値一致・`digitalPinHasPWM(PWM0/PWM5)`が真かつ`digitalPinHasPWM(D13/A0)`が偽・ボード別`NUM_ANALOG_INPUTS`を検証）を作成し両ボードでコンパイル確認してから削除。`hello_world`のサイズは完全に無変化を確認。全55サンプル×両ボード回帰スイープも新規失敗なし（既知の11件のみ）
 - `API_COMPATIBILITY.md`・`CHANGELOG.md`の`[Unreleased]`セクションに追記
 
+### `SERIAL_PORT_MONITOR`/`SERIAL_PORT_HARDWARE`/`SERIAL_PORT_HARDWARE_OPEN`を追加
+ユーザーから「他に0.4.0で入れておいた方がいいものは？」と続けて依頼。`gh api`でAVR・SAMD両公式コアの`pins_arduino.h`/`variant.h`をさらに確認し、`SERIAL_PORT_MONITOR`/`SERIAL_PORT_HARDWARE`/`SERIAL_PORT_HARDWARE_OPEN`（GPS/Bridge系ライブラリ・サンプルが慣習的に参照する「モニター用」「衝突しない予備のハードウェアシリアル」の役割エイリアス）が両コアにあり`mcx-arduino-core`には無いと確認、提案してユーザーが採用。`SERIAL_PORT_USBVIRTUAL`（SAMDのネイティブUSB CDC向け慣習、このボードの`Serial`は外付けUSB-CDCブリッジチップ経由のハードウェアUARTで該当しない——AVR側の非ネイティブUSBボードも同じ理由で未定義）は意図的に対象外とした
+
+- `arduino_serial.h`（`extern SerialClass Serial1;`の直後）に`SERIAL_PORT_MONITOR=Serial`/`SERIAL_PORT_HARDWARE=Serial1`/`SERIAL_PORT_HARDWARE_OPEN=Serial1`を追加。グローバル変数へのマクロエイリアスなので`arduino_io.h`（ピンマクロ専用）ではなくこちらに配置
+- 実機確認用の一時テストスケッチ（`SERIAL_PORT_MONITOR.begin()`/`SERIAL_PORT_HARDWARE.begin()`呼び出し＋`static_assert(&SERIAL_PORT_MONITOR==&Serial, ...)`等でアドレス一致を検証）を作成し両ボードでコンパイル確認してから削除。`hello_world`のサイズは完全に無変化、全55サンプル×両ボード回帰スイープも新規失敗なし（既知の11件のみ）
+- `API_COMPATIBILITY.md`・`CHANGELOG.md`の`[Unreleased]`セクションに追記
+
 ---
 
 ## 動作確認済み

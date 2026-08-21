@@ -19,6 +19,7 @@ surface except where a row below notes a difference. See the main
 | `NUM_ANALOG_INPUTS` | ✅ | `6` on FRDM-MCXA153, `4` on FRDM-MCXN947 (A0/A1 unavailable there — see Analog section below) |
 | `digitalPinHasPWM(pin)` | ✅ | True only for `PWM0`-`PWM5` — this board's PWM capability lives on those dedicated pins, not on the D-pins the way it does on AVR boards |
 | `PIN_WIRE_SDA` / `PIN_WIRE_SCL` / `PIN_SPI_SS` / `PIN_SPI_MOSI` / `PIN_SPI_MISO` / `PIN_SPI_SCK` | ✅ | Standard `pins_arduino.h`-style aliases (AVR/SAMD convention) for this board's `I2C_SDA`/`I2C_SCL`/`ARD_CS`/`ARD_MOSI`/`ARD_MISO`/`ARD_SCK` |
+| `SERIAL_PORT_MONITOR` / `SERIAL_PORT_HARDWARE` / `SERIAL_PORT_HARDWARE_OPEN` | ✅ | Standard AVR/SAMD-convention aliases — `Serial` / `Serial1` / `Serial1`. `SERIAL_PORT_USBVIRTUAL` is deliberately not defined: this board's `Serial` is a hardware UART routed through an external USB-CDC bridge chip, not a native-USB virtual port |
 
 ## Serial
 

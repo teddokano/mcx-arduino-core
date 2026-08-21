@@ -95,4 +95,19 @@ extern SerialClass	Serial;
 /** Global Serial1 instance -- hardware UART pin pair, board-dependent (see above). */
 extern SerialClass	Serial1;
 
+/** Standard cross-core serial-port role aliases, same convention as
+ *  ArduinoCore-avr's/ArduinoCore-samd's pins_arduino.h/variant.h -- for
+ *  generic sketches/libraries (GPS modules, Bridge-style examples, ...)
+ *  written against these names instead of Serial/Serial1 directly.
+ *  SERIAL_PORT_USBVIRTUAL is deliberately not defined: that's for cores
+ *  with a native USB CDC device in firmware (e.g. SAMD's SerialUSB) --
+ *  this board's Serial is a hardware LPUART routed through an external
+ *  USB-CDC bridge chip, not a virtual port this core implements, same
+ *  reasoning as why ArduinoCore-avr's non-native-USB boards also leave
+ *  it undefined.
+ */
+#define	SERIAL_PORT_MONITOR			Serial
+#define	SERIAL_PORT_HARDWARE			Serial1
+#define	SERIAL_PORT_HARDWARE_OPEN		Serial1
+
 #endif // !R01LIB_ARDUINO_SERIAL_H
