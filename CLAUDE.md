@@ -1125,6 +1125,19 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 - 実機確認用に一時テストスケッチ（`static_assert`でMAJOR/MINOR/PATCH各値・`VAL()`のビットパック結果・大小比較演算子・文字列マクロの型を検証）を作成し両ボードでコンパイル確認、`--verbose`ビルドで実際の`-D`展開値も確認してから削除。`hello_world`のサイズは完全に無変化（プリプロセッサマクロのみのため、未使用なら本当にゼロコスト）を確認。全55サンプル×両ボード回帰スイープも新規失敗なし（既知の11件のみ）
 - `API_COMPATIBILITY.md`・`CHANGELOG.md`の`[Unreleased]`セクションに追記
 
+### 標準的なピン/ボードマクロ4種を追加（`NUM_DIGITAL_PINS`/`NUM_ANALOG_INPUTS`/`digitalPinHasPWM`/`PIN_WIRE_*`・`PIN_SPI_*`）
+ユーザーから「他に持たせておくと良いマクロを提案して」と依頼。`gh api`でAVR公式コア（`pins_arduino.h`）・SAMD公式コア（`variant.h`）を実際に確認したところ（推測に頼らず一次情報で検証）、両コアとも`NUM_DIGITAL_PINS`/`NUM_ANALOG_INPUTS`/`digitalPinHasPWM(p)`/`PIN_WIRE_SDA`等の標準的な慣習を持つが、`mcx-arduino-core`には1件も存在しないと確認。Issue #1/#3と同じ「サードパーティライブラリ互換性」カテゴリの実利があるものとして提案し、ユーザーが採用（`HAS_WIRE2`のようなボード機能フラグ案は「そのようなボードが出てきた時に考える」と保留）。
+
+- 「マクロ定義はコストを意識する必要があるか」との質問に、プリプロセッサ定数マクロは未使用なら実行バイナリに一切残らない（`MCX_ARDUINO_CORE_VERSION`系で実証済み）ため、優先度分けはコストではなく「標準的で確実に有用」対「既存マクロと役割が被る」という価値判断だったと説明
+- 「`HAS_WIRE2`があるなら`Serial`/`SPI`にも要る？」との質問には、`Wire2`が特別な理由（A153では**シンボル自体が存在せず**無条件参照でコンパイルが通らない）を説明——`Serial`/`Serial1`/`SPI`/`SPI1`/`Wire`/`Wire1`は現行両ボードともシンボルが存在するため、今`HAS_*`を足しても常に`1`で無意味、CLAUDE.mdの既存方針（仮定の将来要件のために先回りしない）にも反すると回答し、ユーザーが同意
+- **実装**（`arduino_io.h`、`MOSI`/`MISO`/`SCK`のすぐ下——Issue #1と同じ場所）:
+  - `NUM_DIGITAL_PINS=16`（D0-D13, D18, D19。`ArduinoPinNum`は両ボード共有の単一enumなので値も共通）
+  - `NUM_ANALOG_INPUTS`は`#if defined(FRDM_MCXA153)`で`6`、`#elif defined(FRDM_MCXN947)`で`4`（N947はA0/A1が`DISABLED_PIN`のため実際に動くチャンネル数のみを正直に報告——「A0起点で`NUM_ANALOG_INPUTS`個ループ」という定番イディオムはN947ではA0自体が動かないため結局破綻するが、少なくとも「6と嘘をつく」よりは正しい情報だとコメントに明記）
+  - `digitalPinHasPWM(p)`は`(p) >= PWM0 && (p) <= PWM5`という単純な範囲チェック（PWM対応ピンはD-pinとは別名前空間の専用ピンのため、ボード分岐不要で両ボード共通の1マクロで済む）
+  - `PIN_WIRE_SDA`/`PIN_WIRE_SCL`→`I2C_SDA`/`I2C_SCL`、`PIN_SPI_SS`/`PIN_SPI_MOSI`/`PIN_SPI_MISO`/`PIN_SPI_SCK`→`ARD_CS`/`ARD_MOSI`/`ARD_MISO`/`ARD_SCK`の単純エイリアス
+- 実機確認用に一時テストスケッチ（`static_assert`で`NUM_DIGITAL_PINS`・`PIN_WIRE_*`/`PIN_SPI_*`の値一致・`digitalPinHasPWM(PWM0/PWM5)`が真かつ`digitalPinHasPWM(D13/A0)`が偽・ボード別`NUM_ANALOG_INPUTS`を検証）を作成し両ボードでコンパイル確認してから削除。`hello_world`のサイズは完全に無変化を確認。全55サンプル×両ボード回帰スイープも新規失敗なし（既知の11件のみ）
+- `API_COMPATIBILITY.md`・`CHANGELOG.md`の`[Unreleased]`セクションに追記
+
 ---
 
 ## 動作確認済み

@@ -402,6 +402,54 @@ enum ArduinoPinNum {
 #define	MISO	ARD_MISO
 #define	SCK		ARD_SCK
 
+/** Standard SPI/Wire pin identifiers, same convention as
+ *  ArduinoCore-avr's/ArduinoCore-samd's pins_arduino.h/variant.h --
+ *  aliases for this board's own I2C_SDA/I2C_SCL and default-SPI pins
+ *  (ARD_CS/ARD_MOSI/ARD_MISO/ARD_SCK), for third-party code that
+ *  references the PIN_* names directly instead of going through the
+ *  Wire/SPI objects. Same values on both boards (I2C_SDA/I2C_SCL and
+ *  ARD_*, unlike A0-A5, are uniform ArduinoPinNum entries -- see their
+ *  own definitions above).
+ */
+#define	PIN_WIRE_SDA	I2C_SDA
+#define	PIN_WIRE_SCL	I2C_SCL
+#define	PIN_SPI_SS		ARD_CS
+#define	PIN_SPI_MOSI	ARD_MOSI
+#define	PIN_SPI_MISO	ARD_MISO
+#define	PIN_SPI_SCK		ARD_SCK
+
+/** Total digital pins (D0-D13, D18, D19 -- D14-D17 are simply never
+ *  defined, same "gap" as this board's other examples). Same on both
+ *  boards: ArduinoPinNum is a single shared enum, not per-board.
+ */
+#define	NUM_DIGITAL_PINS	16
+
+/** Working analog-input pins. Genuinely differs by board: FRDM-MCXA153
+ *  has A0-A5 all wired to LPADC channels, but FRDM-MCXN947's A0/A1 have
+ *  no LPADC channel routed to them at all (fixed to io.h's DISABLED_PIN
+ *  sentinel -- see PIN_MAPPING_N947.md) -- analogRead() on either panics.
+ *  A portable library assuming NUM_ANALOG_INPUTS pins starting at A0
+ *  still won't work correctly on N947 purely from this count being
+ *  right (A0 itself is the missing one, not one past the working range),
+ *  but reporting the real working count here is still strictly more
+ *  honest than the alternative of claiming 6 on a board where 2 of those
+ *  6 don't work.
+ */
+#if	defined( FRDM_MCXA153 )
+#define	NUM_ANALOG_INPUTS	6
+#elif	defined( FRDM_MCXN947 )
+#define	NUM_ANALOG_INPUTS	4
+#endif
+
+/** Whether analogWrite() works on the given ArduinoPinNum. On this board
+ *  PWM capability lives entirely on the dedicated PWM0-PWM5 pins (a
+ *  separate namespace from D0-D19, unlike AVR boards where PWM shares
+ *  the D-pin numbers) -- so this is a plain range check against the
+ *  enum above, true only for PWM0..PWM5, correctly false for every
+ *  D-pin/A-pin/etc regardless of board.
+ */
+#define	digitalPinHasPWM( p )	( ( (p) >= PWM0 ) && ( (p) <= PWM5 ) )
+
 #endif // ARDUINO_PIN_RENUMBERING
 
 #endif // !R01LIB_ARDUINO_IO_H
