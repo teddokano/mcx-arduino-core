@@ -603,17 +603,38 @@ DigitalIn::DigitalIn( uint8_t pin_num, int pin_mode )
 
 DigitalIn::~DigitalIn() {}
 
-uint8_t pin_registry_read_mux( uint8_t raw_pin )
+PinPcrInfo pin_registry_read_pcr( uint8_t raw_pin )
 {
+	PinPcrInfo	info	= { 0xFF, false, false, 0 };
+
 	if ( raw_pin >= sizeof( pins ) / sizeof( pins[ 0 ] ) )
-		return 0xFF;
+		return info;
 
 	if ( -1 == pins[ raw_pin ].base )
-		return 0xFF;
+		return info;
 
 	PORT_Type	*port	= port_type[ pins[ raw_pin ].base ];
 	uint32_t	pcr		= PORT_GetPinMode( port, pins[ raw_pin ].pin );
 
-	return (uint8_t)( ( pcr & PORT_PCR_MUX_MASK ) >> PORT_PCR_MUX_SHIFT );
+	info.mux	= (uint8_t)( ( pcr & PORT_PCR_MUX_MASK ) >> PORT_PCR_MUX_SHIFT );
+	info.ibe	= 0 != ( pcr & PORT_PCR_IBE_MASK );
+
+#ifndef	CPU_MCXC444VLH
+	info.ode	= 0 != ( pcr & PORT_PCR_ODE_MASK );
+#endif
+
+	// Per PORT_PCR_PE_MASK/PORT_PCR_PS_MASK's own documented meaning: PE
+	// (pull enable) gates whether PS (pull select: 0=down, 1=up) means
+	// anything. NOTE: this reads the fields correctly, but
+	// PORT_SetPinPullUpDown() -- the setter just above -- writes its
+	// `enable`/`logic` args into PS/PE swapped from what its own doc
+	// comment says (confirmed while adding this, unrelated to it; not
+	// fixed here). So a pin actually configured through that function may
+	// not show the pull state its caller intended -- that's a bug in the
+	// write path, not in this read.
+	if ( pcr & PORT_PCR_PE_MASK )
+		info.pull	= ( pcr & PORT_PCR_PS_MASK ) ? 2 : 1;
+
+	return info;
 }
 

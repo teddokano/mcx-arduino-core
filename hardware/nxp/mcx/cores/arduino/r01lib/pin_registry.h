@@ -61,11 +61,23 @@ void pin_registry_forget( const void *owner );
 
 }	// extern "C"
 
-/** Read back the PORT_MuxAltN value currently set in a raw pin's PCR
- *  register -- for comparing against what an owner in the registry
+/** A raw pin's PCR register, decoded into the fields pin-ownership debug
+ *  tooling cares about.
+ */
+struct PinPcrInfo
+{
+	uint8_t	mux;	/**< current PORT_MuxAltN value (0-15), or 0xFF if the pin is DISABLED_PIN or otherwise out of range (ibe/ode/pull are meaningless in that case) */
+	bool	ibe;	/**< input buffer enabled -- without this, reads/incoming-signal detection on the pin don't work even if mux is otherwise correct (see this core's own history: I3C1_SDA/SCL's mux was right but IBE was left disabled, and every read NAK'd) */
+	bool	ode;	/**< open-drain output enabled -- always false on chips whose PCR has no ODE field */
+	uint8_t	pull;	/**< 0 = no pull resistor, 1 = pull-down, 2 = pull-up */
+};
+
+/** Read back a raw pin's live PCR register, decoded.
+ *
+ *  The `mux` field is for comparing against what an owner in the registry
  *  claimed to want (pin_registry_note()'s wanted_mux), to catch cases
  *  where something re-muxed the pin out from under its owner after the
- *  fact (see mcx-arduino-core's own history for a real example: Serial1
+ *  fact (see this core's own history for a real example: Serial1
  *  silently re-muxing I3C's pins on FRDM-MCXN947, well after I3C's own
  *  constructor had already set them and considered the job done).
  *
@@ -76,9 +88,9 @@ void pin_registry_forget( const void *owner );
  *  same as every other unused function here.
  *
  * @param raw_pin r01lib's internal pin number (io.h's pin enum)
- * @return the current ALT value (0-15), or 0xFF if the pin is
+ * @return the pin's decoded PCR state; `mux` is 0xFF if the pin is
  *         DISABLED_PIN or otherwise out of range
  */
-uint8_t pin_registry_read_mux( uint8_t raw_pin );
+PinPcrInfo pin_registry_read_pcr( uint8_t raw_pin );
 
 #endif // R01LIB_PIN_REGISTRY_H
