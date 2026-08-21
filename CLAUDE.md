@@ -1062,6 +1062,15 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 - 両ボードで`test_SPI1_MikroBus`・`MultiPeripheralDump`のコンパイル確認、全55サンプル×両ボード回帰スイープも新規失敗なし（既知の11件のみ）。push済み（`98840bb`）
 - **再々の実機確認完了**: `MultiPeripheralDump`が全ピン`MISMATCH`/`CONFLICT`なしの正常表示に、`ConflictDemo`は引き続きPin 2で`CONFLICT`を正しく検出——**MUX期待値クロスチェック機能、実機検証完了**。`mcxPinState`のREADMEも更新（「実機未検証」を解消）
 
+### `mcxPinState`: IBE/ODE/Pull情報の復元
+ユーザーから、以前のモックアップ画像を示され「IBEの情報などはどうなった？」と指摘。最初のモックアップ設計にはIBE/ODE/Pull列が含まれていたが、実装段階でMUXだけのクロスチェックに絞った際、明示的に「削る」と決めた記憶もないまま単純に落ちていたと判明——ピン名表示の省略（意図的に決定済み）とは違い、こちらは決定なき欠落だった。
+
+- **`pin_registry_read_mux()`を`pin_registry_read_pcr()`に置き換え**: 単なる`uint8_t`ではなく`PinPcrInfo{mux, ibe, ode, pull}`構造体を返す形に変更。`io.cpp`側で`PORT_PCR_IBE_MASK`/`ODE_MASK`/`PE_MASK`/`PS_MASK`をデコード。`ODE`は既存の`PORT_SetPinOpenDrain()`と同じ`#ifndef CPU_MCXC444VLH`ガードを踏襲
+- **実装中に既存の別バグを発見（今回は未修正）**: `PORT_SetPinPullUpDown()`のドキュメントコメント（`enable`→PE、`logic`→PS）と実装（`enable`→PS、`logic`→PE、逆）が食い違っている。呼び出し側の実際の引数の組み合わせから判断すると、`INPUT_PULLDOWN`指定時に実際にはプル自体が無効化される可能性がある（`enable=1,logic=0`→書き込まれるのは`PS=1,PE=0`→PE=0なのでプル無効）。今回作業中に偶然見つけたもので、今回のスコープ外として修正はせず、読み取り側のコード中にコメントで記録するに留めた
+- `mcxPinState`側`print()`を更新、`[ALTx IBE OD PD/PU]`の形でPCRの主要フラグを表示するように
+- 両ボードで`MultiPeripheralDump`/`ConflictDemo`/`BasicPinDump`のコンパイル確認、全55サンプル×両ボード回帰スイープも新規失敗なし（既知の11件のみ）。`mcx-arduino-core`側push済み（`9738871`）、`mcxPinState`側もコミット済み（ローカルrepoのみ）
+- **実機での検証はまだ**（次のステップ）
+
 ---
 
 ## 動作確認済み
