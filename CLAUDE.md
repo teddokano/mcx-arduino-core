@@ -1110,6 +1110,21 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 - 両ボードで`hello_world`・全既存`mcxPinState`サンプル（`BasicPinDump`/`MultiPeripheralDump`/`ConflictDemo`/`PullModeCheck`）・`CombinedPeripheralsAudit`のコンパイル確認、いずれも回帰なし
 - **実機確認完了**: ユーザーがA153・N947両方で`CombinedPeripheralsAudit`を再実行。`DISABLED_PIN`グループの除外・`Peripheral instance state`テーブルの`begun()?`/`Holds pins`/`Status`（`SPI`の誤`PARTIAL`解消含む）とも正しく表示されることを確認
 
+### `MCX_ARDUINO_CORE_VERSION`系マクロを新設（`mcxPinState`のテーブル整合チェック用）
+ユーザーから「今のmcx-arduino-coreにリリース番号を確認できるマクロはあるか」と質問。既存の`ARDUINO`（Arduino IDE本体のAPIバージョン、固定値10819）・`ARDUINO_ARCH_MCX`・`ARDUINO_FRDM_MCXA153`/`ARDUINO_FRDM_MCXN947`はいずれもこのパッケージ自身のリリース番号（`platform.txt`の`version=`）を反映しないと回答。「他のBSPではどのようなマクロが使われる？」と問われ、`gh api`で実際に確認（推測に頼らず一次情報で検証）:
+- **ESP32**（`arduino-esp32`、`cores/esp32/esp_arduino_version.h`）: `ESP_ARDUINO_VERSION_MAJOR`/`_MINOR`/`_PATCH`＋`ESP_ARDUINO_VERSION_VAL(major,minor,patch)`（3つを1つの整数にビットパック）＋結合マクロ`ESP_ARDUINO_VERSION`＋文字列版`ESP_ARDUINO_VERSION_STR`、という作り込まれた構成
+- **ESP8266**（`esp8266/Arduino`、`cores/esp8266/core_version.h`）: `ARDUINO_ESP8266_MAJOR`/`_MINOR`/`_REVISION`のみ、結合・比較用マクロなしのより簡素な構成
+- **STM32duino**（`Arduino_Core_STM32`）: 該当マクロが**存在しない**ことを確認（`platform.txt`に`version=`はあるが、そこから生成されるマクロは無し）。ArduinoCore-renesas/samdも同様に専用マクロ見当たらず——「バージョンマクロを持つコア」自体が少数派
+
+「ESPのようにmajor/minor/patchに分けるメリットは？」との質問に、プリプロセッサの`#if`は整数定数式しか評価できないため文字列マクロでは大小比較ができないこと、ビットパックする理由は3値タプル比較の連鎖条件を避けるためであることを説明。ただし「現状mcx-arduino-core自身のバージョンを見て分岐するような外部ライブラリ連携は想定されていない、将来への投資」と留保も伝えた。
+
+ユーザーから「`mcxPinState`ライブラリのため（`ALIAS_NAMES`/`KNOWN_INSTANCES`テーブルとの整合確認用）に用意しておきたい」と具体的な用途の指定があり、ESP32方式（MAJOR/MINOR/PATCH＋`_VAL()`＋結合＋文字列）で実装に着手。
+
+- **新規ファイル**: `cores/arduino/arduino_api/mcx_arduino_core_version.h`。ESP32の`esp_arduino_version.h`と同じ構成（設計パターンの参考であってコードのコピーではない——`String`/`Print`/`Stream`実装時に確立した同じ判断基準）
+- **`platform.txt`**: `version=0.4.0`の直後に`version.major=0`/`version.minor=4`/`version.patch=0`を追加（`{version}`をドット分割する手段がplatform.txtの変数展開に無いため、手動で並べて保守——今後のリリースで`version=`を更新する際にこの3行も一緒に更新する運用が必要）。`compiler.defines`に`-DMCX_ARDUINO_CORE_VERSION_MAJOR={version.major}`等を追加し、`Arduino.h`冒頭で新規ヘッダをinclude
+- 実機確認用に一時テストスケッチ（`static_assert`でMAJOR/MINOR/PATCH各値・`VAL()`のビットパック結果・大小比較演算子・文字列マクロの型を検証）を作成し両ボードでコンパイル確認、`--verbose`ビルドで実際の`-D`展開値も確認してから削除。`hello_world`のサイズは完全に無変化（プリプロセッサマクロのみのため、未使用なら本当にゼロコスト）を確認。全55サンプル×両ボード回帰スイープも新規失敗なし（既知の11件のみ）
+- `API_COMPATIBILITY.md`・`CHANGELOG.md`の`[Unreleased]`セクションに追記
+
 ---
 
 ## 動作確認済み

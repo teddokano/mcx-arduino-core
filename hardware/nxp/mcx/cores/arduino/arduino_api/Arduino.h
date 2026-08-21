@@ -18,6 +18,8 @@
 #include	<cstdlib>
 #include	<cctype>
 
+#include	"mcx_arduino_core_version.h"
+
 /*
  *  PROGMEM / F() / pgm_read_*() compatibility -- no-ops on this Cortex-M
  *  target. AVR is a Harvard-architecture chip where flash and RAM are

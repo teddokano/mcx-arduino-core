@@ -1,9 +1,18 @@
 name=NXP FRDM MCX Series
 version=0.4.0
+# version.major/minor/patch mirror the version= line above (split by hand,
+# since platform.txt's {} substitution can't parse a dot-separated string
+# itself) -- keep these three in lockstep with version= at every release.
+# Consumed by compiler.defines below, which turns them into the
+# MCX_ARDUINO_CORE_VERSION_MAJOR/_MINOR/_PATCH macros a sketch/library
+# sees via mcx_arduino_core_version.h (included from Arduino.h).
+version.major=0
+version.minor=4
+version.patch=0
 
 compiler.path={runtime.tools.arm-none-eabi-gcc.path}/bin/
 compiler.cpu_flags=-mcpu={build.mcu} {build.fpu_flags} -mthumb
-compiler.defines=-DPRINTF_FLOAT_ENABLE=1 -DSCANF_FLOAT_ENABLE=1 -DPRINTF_ADVANCED_ENABLE=1 -DSCANF_ADVANCED_ENABLE=1 -D__NEWLIB__ -DSDK_OS_BAREMETAL -DSERIAL_PORT_TYPE_UART=1 -DSDK_DEBUGCONSOLE=0 -D__USE_CMSIS -DARDUINO=10819 -DARDUINO_ARCH_MCX -DARDUINO_{build.board} -DF_CPU={build.f_cpu} {build.board_defines}
+compiler.defines=-DPRINTF_FLOAT_ENABLE=1 -DSCANF_FLOAT_ENABLE=1 -DPRINTF_ADVANCED_ENABLE=1 -DSCANF_ADVANCED_ENABLE=1 -D__NEWLIB__ -DSDK_OS_BAREMETAL -DSERIAL_PORT_TYPE_UART=1 -DSDK_DEBUGCONSOLE=0 -D__USE_CMSIS -DARDUINO=10819 -DARDUINO_ARCH_MCX -DARDUINO_{build.board} -DF_CPU={build.f_cpu} -DMCX_ARDUINO_CORE_VERSION_MAJOR={version.major} -DMCX_ARDUINO_CORE_VERSION_MINOR={version.minor} -DMCX_ARDUINO_CORE_VERSION_PATCH={version.patch} {build.board_defines}
 compiler.opt_flags={build.opt_flags} -fno-common -g3 -gdwarf-4 -ffunction-sections -fdata-sections -fno-builtin -fmerge-constants -specs=nano.specs
 compiler.warning_flags.none=
 compiler.warning_flags.default=-Wall
