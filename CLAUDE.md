@@ -1155,6 +1155,14 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 - **`docs/mcxpinstate_guide.md`**: 作成前に「`mcxPinState`がまだGitHubにpushされていない」ことに気づきユーザーに確認、`AskUserQuestion`で「今pushする」を選択。`LICENSE`（MIT、`mcx-arduino-core`と同一文面）・`.gitignore`（`.DS_Store`）を新規追加し、`library.properties`に`license=MIT`を追記してから`gh repo create teddokano/mcxPinState --public --source=. --push`で公開: https://github.com/teddokano/mcxPinState 。ガイド執筆中に`mcxPinState`側の3サンプル（`ConflictDemo`/`MultiPeripheralDump`/`CombinedPeripheralsAudit`）のコメントが、`print()`をテーブル形式に刷新する前の古い`"*** CONFLICT ***"`インライン表記のまま陳腐化していたのを発見・修正（コメントのみ、機能に影響なし）——`mcxPinState`側もコミット・push済み
 - 3本とも`README.md`冒頭・`TUTORIAL.md`/`TUTORIAL.ja.md`の「Where to go next」セクションからリンク
 
+### `README.ja.md`を新設
+ユーザーから「`docs/`配下の3ガイドは日本語版を用意するか、それとも自動翻訳の普及に期待して英語のみにするか」と質問。`TUTORIAL.md`だけが意図的にバイリンガル（他のCHANGELOG/API_COMPATIBILITY/PIN_MAPPING_*は英語のみ）という既存の使い分けと、上級者向け・低頻度参照という3ガイドの性質、`TUTORIAL.ja.md`の同期漏れが過去に複数回発生した実績（このCLAUDE.md記載）を踏まえ、英語のみを推奨しユーザーも同意
+
+続けてユーザーから「`docs/`内で一部だけ日本語版があるのはユーザーに理由が伝わりにくいので避けたい。ただし`README.md`はチュートリアル以前の最初の接点なので日本語版があってもよいのでは」と提案。実際`README.md`は`TUTORIAL.md`よりさらに手前の接点であり、`TUTORIAL.ja.md`と同じパターン（冒頭に日本語版へのリンク）を踏襲すれば同期の手間も`TUTORIAL.ja.md`ほど大きくないと回答し、「最初の接点（README/TUTORIAL）はバイリンガル、それ以降の参照系（CHANGELOG/API_COMPATIBILITY/PIN_MAPPING/docs/配下）は英語のみ」という一本の方針で合意——ユーザーが作成を依頼
+
+- `README.ja.md`を新規作成（英語版と全10見出し1:1対応するよう翻訳、`TUTORIAL.ja.md`と同じ「English version → README.md」リンクを冒頭に配置）。`README.md`側にも「日本語版はこちら → README.ja.md」を追加し相互リンク
+- 参照リンク先（`docs/api/`・`API_COMPATIBILITY.md`・`PIN_MAPPING_*.md`・`CHANGELOG.md`・`docs/advanced_*.md`等）は方針通り英語版のまま、日本語版からもそのまま参照する形にした
+
 ---
 
 ## 動作確認済み
