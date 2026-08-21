@@ -73,9 +73,15 @@ void init_mcu( void )
 	CLOCK_SetClkDiv(kCLOCK_DivFlexcom3Clk, 1u);
 	CLOCK_AttachClk(kFRO12M_to_FLEXCOMM3);
 
-	/* SPI on MikroBus (MB_MOSI/MB_MISO/MB_SCK/MB_CS -> LPSPI6) */
+	/* SPI on MikroBus (MB_MOSI/MB_MISO/MB_SCK/MB_CS -> LPSPI6) -- FRO_HF_DIV,
+	   same reasoning as the default SPI above (FRO12M is too coarse a
+	   source for LPSPI's baud-rate divider search to land on the exact
+	   requested rate). Confirmed on real hardware: a 1MHz SPISettings
+	   request on FRO12M measured as 500kHz actual SCK; FRDM-MCXA153's
+	   equivalent SPI1 (LPSPI0) already uses FRO_HF_DIV via its own
+	   clock_config.c and hits the requested rate correctly. */
 	CLOCK_SetClkDiv(kCLOCK_DivFlexcom6Clk, 1u);
-	CLOCK_AttachClk(kFRO12M_to_FLEXCOMM6);
+	CLOCK_AttachClk(kFRO_HF_DIV_to_FLEXCOMM6);
 
 	/* Serial1 on MikroBus (MB_TX/MB_RX -> LPUART5); the attach itself is
 	   also done lazily by Serial::_setup_clock() when the instance begin()s,
