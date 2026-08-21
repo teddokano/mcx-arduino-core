@@ -1172,6 +1172,15 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
   - `AnalogIn.cpp/h`・`PwmOut.cpp/h`・`Serial.h`（5周目のDoxygen整備セッション由来）が`@license MIT`という**実在しないDoxygenコマンド**を使っていた（正しくは`@copyright`）。全5箇所を`@copyright MIT License`に置換
 - `doxygen Doxyfile`が警告ゼロで完走することを確認してから最終生成。コメントのみの変更のため`hello_world`のサイズは無変化、全55サンプル×両ボード回帰スイープも新規失敗なし（既知の11件のみ）
 
+### 実機バグ発見・修正: N947のデフォルト`SPI`が要求クロックを大幅に下回る実クロックで動作（実機確認済み）
+ユーザーが実機での基本動作確認中、`/Users/tedd/dev/Arduino/libraries/Waveshare_TFT_Touch/examples/`の全サンプル（LCD＋タッチ）がN947でだけ「非常に遅い」と報告（A153は問題なし）。ロジアナで実際にSCKを測定してもらったところ、**N947は約31kHz、A153は約24MHz**（`ST7789`ドライバのデフォルト`SPISettings`要求値と一致）と判明——2桁以上の差。
+
+- **原因調査**: `mcu.cpp`を確認したところ、N947のデフォルト`SPI`（Flexcomm1経由のLPSPI1）は`kFRO12M_to_FLEXCOMM1`（12MHz固定オシレータ）にアタッチされたままだった。SPIは物理的にソースクロックの半分程度を超える速度を出せないため、12MHzソースから24MHz要求は本来不可能——測定された31kHzは、要求値に遠く及ばない場合の分周探索が異常な（ほぼ最大分周の）値にフォールバックしていた結果と考えられる
+- A153の同等の`SPI`（LPSPI1）がこの問題を持たない理由も特定: A153の`clock_config.c`（`BOARD_InitBootClocks()`経由で呼ばれる）が、`mcu.cpp`の初期`FRO12M`アタッチを**後から`FRO_HF_DIV`（48MHz）へ上書き**していた。N947の`clock_config.c`はFlexComm1のクロックに一切触れておらず、`mcu.cpp`の`FRO12M`設定がそのまま残っていたことが非対称の原因。N947のSDKにも同じ48MHzソースへの選択肢（`kFRO_HF_DIV_to_FLEXCOMM1`）自体は存在していた（`BOARD_BootClockPLL150M()`が`CLOCK_SetupFROHFClocking(48000000U)`でFRO_HFを48MHzに設定済み）
+- **修正**: N947の`mcu.cpp`でSPIのクロックアタッチを`kFRO12M_to_FLEXCOMM1`→`kFRO_HF_DIV_to_FLEXCOMM1`に変更（A153と同じ48MHz系統）。純粋なクロックMUX定数の変更のためコードサイズは無変化、両ボードの回帰スイープも新規失敗なし
+- **実機確認完了**: ユーザーが再フラッシュし「問題ない動作となった」と確認
+- **未検証の関連課題（今回は対象外）**: `SPI1`（MikroBusのFlexComm6）も`clock_config.c`が一切触れておらず、`mcu.cpp`は`kFRO12M_to_FLEXCOMM6`のまま——同じ非対称パターンが潜在している可能性が高いが、今回のバグ報告は既定の`SPI`のみだったため未修正・未実測のまま。`SPI1`を高速用途で使う場面が出てきたら要確認
+
 ---
 
 ## 動作確認済み
