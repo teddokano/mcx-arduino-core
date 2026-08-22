@@ -1325,6 +1325,21 @@ Windowsで`Blink`スケッチをビルドしたところ、`variants/*/src/fsl_*
 **両修正を反映してリリースzipを再構築・GitHub Release差し替え**
 `main`から`git archive`で新zip作成（SHA-256 `19cbe0495a515bd855ad9ad21286c23e2aa37d38191172cca5eeda5a8075fd44`、8020507 bytes）、展開して3つの修正（`-Wno-*`フラグ・`i3c.cpp`のキャスト・`boards.txt`のバックスラッシュ）が正しく反映されていることを確認してから`gh release upload 0.4.0 --clobber`で既存アセットを差し替え、ダウンロードして再計算したchecksumが一致することを確認。`staging-0.4.0`ブランチの`package_nxp_mcx_index.json`のchecksum/sizeも新しい値に更新してpush。開発用symlinkを復元
 
+### Windows再検証で判明: `boards.txt`パス修正だけでは不十分、`-Woverloaded-virtual`も新規発見
+ユーザーがWindowsで再インストール・PC再起動まで行って再検証したところ、2点報告——「ユーザーからの指示: GitHubでステージング・公開されたファイルが更新されたものかどうかをもう1度チェックして」という慎重な確認依頼もあり、まずサーバー側（GitHub Releaseの実体・`staging-0.4.0`のindex）が確かに最新の修正版であることをダウンロード・展開して直接検証——問題なし、ローカルWindows環境側の状況と特定
+
+**1件目: `i2c.h`/`i3c.h`のwarningが一部残存（`-Woverloaded-virtual`）**
+このプロジェクト自身の`--warnings all`（`-Wall -Wextra`）では再現しなかったが、`-Woverloaded-virtual`を一時的に明示追加して検証したところ再現——`I3C`が`I2C`と同名だが異なるシグネチャの仮想関数（`write`/`read`/`reg_write`/`reg_read`/`frequency`）を宣言しているため、C++の名前隠蔽規則により`I2C`側の同名オーバーロード全てが`I3C`経由では不可視になっていた（本物のバグ、Windows側の環境差ではなく実際のC++設計上の問題として確認）。`i3c.h`に`using I2C::write; using I2C::read; using I2C::frequency;`（＋`CUSTOM_REGISTAR_XFER`ガード内に`using I2C::reg_write; using I2C::reg_read;`）を追加し解消。標準的な「隠蔽より継承」修正パターンで、既存呼び出し箇所への挙動影響なし。`-Woverloaded-virtual`を一時追加した検証で両ボードとも`hidden`警告ゼロを確認後、フラグ自体はrevert（`platform.txt`の`warning_flags.all`には追加していない——`-Wall -Wextra`に含まれない拡張警告のため、追加要否は本題と別軸の判断）。`main`にコミット・push（`66f1293`）
+
+**2件目: `boards.txt`のバックスラッシュ修正だけではデバッガ起動失敗が直らなかった**
+`74ea2a6`の修正（混在パスをバックスラッシュに統一）を適用した状態で再度Windows実機テストしたところ、**全く同じ`ECONNRESET`エラーが再現**——今度はIDEログのパスも正しく全バックスラッシュになっていることを確認済みだったため、パス区切り文字は原因ではなかったと判明。Arduino IDE 2バンドルの`cortex-debug`（Node.js/Electron）が`.bat`をspawnする際、スペースを含む引用符付き引数（`-f "C:/Program Files/Arduino IDE/.../openocd-helpers.tcl"`）を渡すケースでNode.js側に既知の問題があるという仮説に至った——手動コマンドプロンプト実行・`arduino-cli debug`は問題なく動くのに、IDE経由のspawnだけが即座に失敗する、という切り分け結果と整合
+- 対処: Windows向けだけ`.bat`ラッパー自体を廃止し、`boards.txt`の`debug.server.openocd.path.windows`をボードごとのネイティブexeに直接向ける方式に変更。`gdb-bridge`の`main.go`に、ビルド時に`-ldflags "-X main.defaultDevice=..."`で焼き込めるデバイス文字列変数を追加（未指定なら従来通りargv[1]必須、macOS/Linuxの`.sh`ラッパー・既存の汎用バイナリの挙動は完全に不変）。`gdb-bridge-a153-windows-amd64.exe`/`gdb-bridge-n947-windows-amd64.exe`の2つを新規ビルドし、`.bat`を経由しない直接起動に変更
+- 不要になった`launch-a153.bat`/`launch-n947.bat`・汎用`gdb-bridge-windows-amd64.exe`は削除（`.bat`経由の手動診断で実際に役立った実績はあるが、将来ボード追加時に同じパターンで作り直せばよく、恒久的に保持する理由はないと判断）
+- 全プラットフォームバイナリを`main.go`更新後に再ビルド（`-ldflags "-s -w" -trimpath`、既存と同じ手順）、汎用バイナリ5種のサイズが元と完全一致することを確認（挙動不変の裏付け）。macOSの`arduino-cli debug --info`で`.sh`パス解決に影響がないことも確認。全61サンプル回帰スイープも新規失敗なし。`main`にコミット・push（`2ad8fed`）
+
+**リリースzip再々構築・GitHub Release再差し替え**
+`main`から新zip作成（SHA-256 `9cfeeebed842fb9a426c1c2800a0ba16acf35801763bd4f016ba173cf7c0db82`、9264269 bytes——新規exeバイナリ2本分サイズ増）、展開して`boards.txt`の新パス・`i3c.h`の`using`宣言・新規exeの存在を確認してから`gh release upload 0.4.0 --clobber`で差し替え、ダウンロードしたchecksumが一致することを確認。`staging-0.4.0`のchecksum/sizeも更新してpush。開発用symlinkを復元
+
 ---
 
 ## 動作確認済み
