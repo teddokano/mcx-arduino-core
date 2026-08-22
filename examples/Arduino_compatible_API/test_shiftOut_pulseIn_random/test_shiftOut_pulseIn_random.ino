@@ -32,6 +32,16 @@
 volatile uint8_t captured     = 0;
 volatile uint8_t bitsCaptured = 0;
 
+int failCount = 0;
+
+void check(const char *label, bool ok) {
+  Serial.print(label);
+  Serial.print(": ");
+  Serial.println(ok ? "OK" : "FAIL");
+  if (!ok)
+    failCount++;
+}
+
 void onMonitorClockRise() {
   captured = (uint8_t)((captured << 1) | (digitalRead(MONITOR_DATA) ? 1 : 0));
   bitsCaptured = bitsCaptured + 1;
@@ -50,7 +60,9 @@ void setup() {
   pinMode(SHIFTIN_CLOCK, OUTPUT);
   pinMode(PULSE_MONITOR_PIN, INPUT);
 
-  Serial.println("--- shiftOut + interrupt-captured shiftIn-equivalent (D5<->D8, D6<->D9) ---");
+  Serial.println("shiftOut/shiftIn/pulseIn/pulseInLong/random test");
+
+  // ---- shiftOut + interrupt-captured shiftIn-equivalent (D5<->D8, D6<->D9) ----
   attachInterrupt(digitalPinToInterrupt(MONITOR_CLOCK), onMonitorClockRise, RISING);
 
   uint8_t sent = 0xB6;
@@ -63,34 +75,70 @@ void setup() {
   Serial.print("sent     = 0x"); Serial.println(sent, HEX);
   Serial.print("captured = 0x"); Serial.println(captured, HEX);
   Serial.print("bits     = "); Serial.println(bitsCaptured);
-  Serial.println(captured == sent && bitsCaptured == 8 ? "MATCH" : "MISMATCH");
+  check("shiftOut() bit-for-bit via interrupt capture", captured == sent && bitsCaptured == 8);
 
-  Serial.println("--- shiftIn standalone sanity (D10<->D11 jumper, expect 0xFF) ---");
+  // ---- shiftIn standalone sanity (D10<->D11 jumper, expect 0xFF) ----
   uint8_t sIn = shiftIn(SHIFTIN_DATA, SHIFTIN_CLOCK, MSBFIRST);
   Serial.print("shiftIn() = 0x");
   Serial.println(sIn, HEX);
+  check("shiftIn() standalone sanity (DATA tied to CLOCK)", sIn == 0xFF);
 
-  Serial.println("--- pulseIn / pulseInLong (D13<->D7 jumper, tone 1kHz) ---");
+  // ---- pulseIn / pulseInLong (D13<->D7 jumper, tone 1kHz) ----
   tone(TONE_PIN, 1000);
   unsigned long w1 = pulseIn(PULSE_MONITOR_PIN, HIGH, 100000UL);
   Serial.print("pulseIn(HIGH) us = ");
   Serial.println(w1);
+  check("pulseIn(HIGH) ~500us (1kHz square wave)", w1 > 450 && w1 < 550);
 
   unsigned long w2 = pulseInLong(PULSE_MONITOR_PIN, HIGH, 100000UL);
   Serial.print("pulseInLong(HIGH) us = ");
   Serial.println(w2);
+  check("pulseInLong(HIGH) ~500us (1kHz square wave)", w2 > 450 && w2 < 550);
   noTone(TONE_PIN);
 
-  Serial.println("--- random / randomSeed ---");
+  // ---- random / randomSeed ----
+  // Not checked against exact values (that would couple this test to the
+  // specific libc rand() sequence behind random()) -- instead checked
+  // against random()'s actual contract: results stay within the
+  // requested range, and aren't all identical (a degenerate/stuck PRNG).
   randomSeed(42);
+
+  bool inRange100 = true;
+  bool varies100  = false;
+  int  first100   = -1;
   for (int i = 0; i < 5; i++) {
+    int v = random(100);
     Serial.print("random(100) = ");
-    Serial.println(random(100));
+    Serial.println(v);
+    if (v < 0 || v >= 100)
+      inRange100 = false;
+    if (i == 0)
+      first100 = v;
+    else if (v != first100)
+      varies100 = true;
   }
+  check("random(100) stays within [0,100)", inRange100);
+  check("random(100) doesn't stick on one value", varies100);
+
+  bool inRange1020 = true;
+  bool varies1020  = false;
+  int  first1020   = -1;
   for (int i = 0; i < 5; i++) {
+    int v = random(10, 20);
     Serial.print("random(10,20) = ");
-    Serial.println(random(10, 20));
+    Serial.println(v);
+    if (v < 10 || v >= 20)
+      inRange1020 = false;
+    if (i == 0)
+      first1020 = v;
+    else if (v != first1020)
+      varies1020 = true;
   }
+  check("random(10,20) stays within [10,20)", inRange1020);
+  check("random(10,20) doesn't stick on one value", varies1020);
+
+  Serial.println();
+  Serial.println(failCount == 0 ? "ALL OK" : "SOME FAILED");
 }
 
 void loop() {
