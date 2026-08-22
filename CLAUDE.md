@@ -1301,6 +1301,30 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 - ついでに`mcx_arduino_core_version.h`（arduino-esp32の`esp_arduino_version.h`を参考にした設計、Apache-2.0）を確認したところ、ファイル自身のヘッダコメントに既に適切な帰属説明（設計パターン参考であってコード非コピー、Print/Stream/Stringと同じ判断基準）が入っていたため追加対応不要と確認
 - `PwmOut.h`/`AnalogIn.h`の"Modeled on"記述もIchigoJam/Mbed API形状への言及で無関係な既存コメントと確認、`Print.h`/`Stream.h`/`arduino_string.h`/`arduino_serial.h`は既に個別に帰属コメント済みと確認——これ以外に抜けは見つからず
 
+### v0.4.0リリース実行: `main`マージ・GitHub Release・ステージング検証で2件の実バグ発見
+- `0.4.0-dev`（`7e48434`）→`main`へ`--ff-only`でマージ（134コミット）・push
+- リリースzip: v0.4.0はソース配布方式のため`.gitignore`にもう`hardware/nxp/mcx/`配下の除外が無く、`git archive --format=zip --prefix=mcx/ HEAD:hardware/nxp/mcx`だけで完結（過去バージョンのようなA153`.a`の手動追加は不要になった）
+- **リリース前ローカル検証**: zipを展開し、開発用symlinkを一時退避したうえで実ディレクトリ`0.4.0`としてBoards Manager相当の設置をして`hello_world`・`05_spi_loopback`・`test_combined_peripherals`（P3T1755スタブ使用）のコンパイル確認、`arduino-cli debug --info`でSVD/gdb-bridgeのパスもすべて新しい設置場所から正しく解決されることを確認
+- `gh release create 0.4.0`でGitHub Release作成、ダウンロードして再計算したchecksumがローカルと完全一致することを確認
+- **ステージングブランチ`staging-0.4.0`を作成**、`package_nxp_mcx_index.json`に0.4.0エントリを新規追加してpush。ユーザーがこのMacで検証するとのことで開発用symlinkを`packages/`外へ完全退避、ローカルの`package_nxp_mcx_index.json`キャッシュも削除
+- **Windows実機検証で発覚した既知の罠が再発**: ステージングURLを追加してもBoards Managerに`0.4.0`が出ない、との報告。過去のv0.2.2 Linux検証時と同じ「ローカルpackage indexキャッシュの残存」パターンと判断し、`%LOCALAPPDATA%\Arduino15\package_nxp_mcx_index.json`の削除→IDE再起動を案内、解決（`0.4.0`を認識）
+- **macOS・Linuxでの検証完了**: ユーザーが両OSともA153・N947でインストール〜ビルド〜アップロード〜**IDEデバッガ（ブレークポイント・ステップ実行）**まで確認、問題なしと報告
+
+**Windows実機検証で発見した実バグ1件目: ビルド時のwarning大量発生**
+Windowsで`Blink`スケッチをビルドしたところ、`variants/*/src/fsl_*.c`（NXP SDKベンダーコード）由来のcompiler warningが大量に表示されると報告（screenshot添付）。macOS/Linuxでは見えていなかった理由を調査した結果、**プラットフォーム差ではなくArduino IDEの「Compiler warnings」プリファレンス設定の違い**（Windows側が「Default」以上、macOS/Linux側は「None」）と判明——`arduino-cli --warnings all`でクリーンな状態から再現したところ、macOSでも同じ49件のwarningが出ることを確認。ただし「Compiler warnings: Default」はArduino IDEでは一般的な選択肢であり、どのOSでもこの設定のユーザーは同じnoiseに遭遇するため、リリース前に対処する価値ありと判断
+- 内訳: 46件がベンダーSDK（`fsl_*.c`、`unused-parameter`/`missing-field-initializers`/`old-style-declaration`）、3件が自コード（`i3c.cpp`のenum/非enum混在の三項演算子、`-Wextra`）
+- 修正: `platform.txt`の`compiler.c.flags`に`-Wno-unused-parameter -Wno-missing-field-initializers -Wno-old-style-declaration`を追加（既存の`-Wno-address-of-packed-member`と同じ精神・パターン、ベンダーファイル自体は無改変のまま）。`i3c.cpp`の3箇所は`(uint32_t)`への明示キャストで解消（挙動は不変）。再テストで`compiler.cpp.flags`側にも同種のwarning（`BusInOut.cpp`/`i3c.cpp`/`i2c.cpp`/`obj.cpp`、コールバック/仮想関数オーバーライドの意図的な未使用引数）が23件残っていたと判明し、`compiler.cpp.flags`にも`-Wno-unused-parameter -Wno-missing-field-initializers`を追加
+- 両ボードで`--warnings all`（最も厳しいレベル）・クリーンキャッシュから再ビルドしゼロ件を確認、バイナリサイズもほぼ不変（+32/+28バイト、キャストのみに起因）、全61サンプル回帰スイープも新規失敗なし。`main`にコミット・push（`1f9946b`）
+
+**Windows実機検証で発見した実バグ2件目: IDEデバッガが起動しない**
+「Request 2 cancelled on connection close」というエラーとともにデバッガが起動しない、と報告（screenshot添付）。タスクマネージャーに`LinkServer.exe`の残留プロセスなし、Debug Consoleにも`gdb-bridge:`メッセージが出ない、という切り分け情報から、コマンドプロンプトで同じ`launch-a153.bat`コマンドを手動実行してもらったところ**正常に「Info : Listening on port 50000 for gdb connections」まで到達**——`gdb-bridge`自体・LinkServer自体は正常、IDEが`.bat`を起動する経路にのみ問題があると特定
+- `boards.txt`の実際の呼び出しパス（IDEログのスクリーンショットで確認）が`...\hardware\mcx\0.4.0/tools/gdb-bridge/launch-a153.bat`と**バックスラッシュとスラッシュが混在**していたのに対し、手動実行時（成功）は全てバックスラッシュだった点に着目。`boards.txt`の`debug.server.openocd.path.windows={runtime.platform.path}/tools/gdb-bridge/launch-a153.bat`が原因——`{runtime.platform.path}`はWindowsではバックスラッシュ解決されるのに、後続の静的部分がスラッシュのままだったため混在パスになっていた
+- `tools.linkserver.upload.pattern.windows`にも同じ混在パターンがあるが、そちらはarduino-cli自身（Go製）が起動するため問題なく動作済み（実機確認済み）——Arduino IDE 2バンドルの`cortex-debug`（Node.js製）が`.bat`をspawnする際にのみ混在パスに弱いと判断
+- 修正: `boards.txt`の`debug.server.openocd.path.windows`（両ボード）を`{runtime.platform.path}\tools\gdb-bridge\launch-a153.bat`（バックスラッシュ）に変更。`.windows`サフィックスはWindows限定の上書きのためmacOS/Linuxには一切影響しない（`arduino-cli debug --info`でmacOSが引き続き`.sh`パスを正しく解決することを確認）。全61サンプル回帰スイープも新規失敗なし。`main`にコミット・push（`74ea2a6`）
+
+**両修正を反映してリリースzipを再構築・GitHub Release差し替え**
+`main`から`git archive`で新zip作成（SHA-256 `19cbe0495a515bd855ad9ad21286c23e2aa37d38191172cca5eeda5a8075fd44`、8020507 bytes）、展開して3つの修正（`-Wno-*`フラグ・`i3c.cpp`のキャスト・`boards.txt`のバックスラッシュ）が正しく反映されていることを確認してから`gh release upload 0.4.0 --clobber`で既存アセットを差し替え、ダウンロードして再計算したchecksumが一致することを確認。`staging-0.4.0`ブランチの`package_nxp_mcx_index.json`のchecksum/sizeも新しい値に更新してpush。開発用symlinkを復元
+
 ---
 
 ## 動作確認済み
