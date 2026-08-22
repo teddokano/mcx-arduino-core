@@ -1296,6 +1296,11 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 ### `docs/api/`の再生成漏れを発見・修正
 ユーザーから「doxygenのアップデートはした？」と確認。`mcu.cpp`（N947のSPIクロック修正2件、コミット`55bcf8f`/`6bba778`）が`docs/api/`生成時点より新しく更新されており、クロスリファレンスの行番号（`panic()`が実際は259行目なのに245行目のまま等）が古い状態だったと判明。`doxygen Doxyfile`を再実行し16ファイルに差分（ソースコード自体の変更はなし、Doxygen出力のみ）、コミット・push済み
 
+### リリース前ライセンスチェック: `gdb-bridge`の帰属記載漏れを発見・修正
+ユーザーから「ライセンス関連は？」と確認依頼。`LICENSE`全文を再読、`gdb-bridge`が実際にArduino IDE 2バンドルの`cortex-debug`拡張機能（`Marus/cortex-debug`、実バイナリの`package.json`で`license: MIT`・Copyright 2017-2022 Marcel Ballと確認）とarduino-cliのソース（Apache 2.0）を読んでプロトコル互換の詳細（引数フォーマット・ログ行フォーマット・正規表現）を決定していた（`main.go`冒頭のコード内コメントに経緯明記済み）にも関わらず、`LICENSE`のThird-Party Noticesに一切記載がないと判明。upload.shのArduinoCore-zephyr参照と同じ「コードはコピーしていないが挙動を読んで独立実装した」パターンのため、同水準の透明性を保つべきと判断し新規セクションを追加（`arduino-cli`・`cortex-debug`の2件、あわせて`gdb-bridge`のLinkServer探索ロジックがupload.sh/upload.bat由来の既存記載パターンを再利用している旨も明記）
+- ついでに`mcx_arduino_core_version.h`（arduino-esp32の`esp_arduino_version.h`を参考にした設計、Apache-2.0）を確認したところ、ファイル自身のヘッダコメントに既に適切な帰属説明（設計パターン参考であってコード非コピー、Print/Stream/Stringと同じ判断基準）が入っていたため追加対応不要と確認
+- `PwmOut.h`/`AnalogIn.h`の"Modeled on"記述もIchigoJam/Mbed API形状への言及で無関係な既存コメントと確認、`Print.h`/`Stream.h`/`arduino_string.h`/`arduino_serial.h`は既に個別に帰属コメント済みと確認——これ以外に抜けは見つからず
+
 ---
 
 ## 動作確認済み
