@@ -52,3 +52,20 @@ corresponding chip, unmodified aside from being extracted from the SDK
 package. Each file retains its own original copyright header.
 
 - NXP MCUXpresso SDK — https://github.com/nxp-mcuxpresso/mcux-sdk (BSD-3-Clause)
+
+`hardware/nxp/mcx/tools/gdb-bridge` (Go, original code, no external
+dependencies) relays Arduino IDE 2's built-in debugger to NXP
+LinkServer's own gdbserver. Its LinkServer-executable discovery logic
+reuses the same adapted pattern as `tools/upload.sh`/`upload.bat`
+above (see the ArduinoCore-zephyr notice). Its protocol handling was
+also written by reading, but not copying code from, two other
+projects' source to determine the exact interoperability details
+required (an argument format, a log-line format, a regular
+expression) — arduino-cli's debug command construction, and Arduino
+IDE 2's bundled `cortex-debug` extension's OpenOCD-server launch and
+detection logic. No source code was copied from either project; see
+the code comments in `tools/gdb-bridge/src/main.go` for exactly which
+details were cross-checked and where.
+
+- arduino-cli — https://github.com/arduino/arduino-cli (Apache License 2.0)
+- cortex-debug — https://github.com/Marus/cortex-debug (MIT License, Copyright 2017-2022 Marcel Ball)
