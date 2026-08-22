@@ -70,7 +70,7 @@ void setup() {
 
   Serial.println("=== Release check 6/N: shiftOut/shiftIn/pulseIn/random (4-jumper) ===");
 
-  // ---- shiftOut + interrupt-captured shiftIn-equivalent (D5<->D8, D6<->D9) ----
+  // ---- shiftOut + interrupt-captured shiftIn-equivalent (D0<->D1, D2<->D3) ----
   attachInterrupt(digitalPinToInterrupt(MONITOR_CLOCK), onMonitorClockRise, RISING);
 
   uint8_t sent = 0xB6;
@@ -85,13 +85,13 @@ void setup() {
   Serial.print("bits     = "); Serial.println(bitsCaptured);
   check("shiftOut() bit-for-bit via interrupt capture", captured == sent && bitsCaptured == 8);
 
-  // ---- shiftIn standalone sanity (D10<->D11 jumper, expect 0xFF) ----
+  // ---- shiftIn standalone sanity (D4<->D5 jumper, expect 0xFF) ----
   uint8_t sIn = shiftIn(SHIFTIN_DATA, SHIFTIN_CLOCK, MSBFIRST);
   Serial.print("shiftIn() = 0x");
   Serial.println(sIn, HEX);
   check("shiftIn() standalone sanity (DATA tied to CLOCK)", sIn == 0xFF);
 
-  // ---- pulseIn / pulseInLong (D13<->D7 jumper, tone 1kHz) ----
+  // ---- pulseIn / pulseInLong (D6<->D7 jumper, tone 1kHz) ----
   tone(TONE_PIN, 1000);
   unsigned long w1 = pulseIn(PULSE_MONITOR_PIN, HIGH, 100000UL);
   Serial.print("pulseIn(HIGH) us = ");
