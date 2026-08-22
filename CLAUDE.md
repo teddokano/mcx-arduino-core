@@ -1280,6 +1280,19 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 
 続けてユーザーから「`06_shiftout_pulsein_loopback`はピンの接続が煩雑。D0〜D7の隣り合うピン同士をショートする仕様に変更できる？」と依頼。従来の配線（D5-D8、D6-D9、D10-D11、D13-D7、いずれもヘッダ上で離れたピン同士）を、D0-D1/D2-D3/D4-D5/D6-D7という隣接ペア4組（各ジャンパがヘッダ上の1ピン分の隙間だけをまたぐ）に再マッピング。ロジック・チェック内容は変更なし、ピン定義のみの変更。両ボードでコンパイル確認（バイナリサイズ完全一致）、全61サンプル×両ボード回帰スイープも直前のベースラインと差分なし。**実機確認完了**: ユーザーがA153・N947両方で新しい配線（D0-D1/D2-D3/D4-D5/D6-D7）でも「ALL OK」と報告
 
+### CHANGELOG.mdの補完・確定、リリース前ドキュメント再監査
+リリース作業に入る前に、ユーザーから「CHANGELOG補完から着手」と依頼。それまでの`[Unreleased]`セクションはデバッガ/Doxygen/SVD/バージョンマクロ/標準ピンマクロの8項目のみで、今回のセッション規模（`mcxPinState`、`examples/release_check/`、`docs/`配下の上級者向けガイド、`README.ja.md`、`analogWriteFrequency()`、`FRDM_MCXA153`/`FRDM_MCXN947`マクロ、examplesの条件コンパイル統合、N947 PWM命名統一、そして今回発見・修正した10件超の実バグ）に対して大幅に手薄だったため、全項目を書き起こして追記。ユーザー承認のうえ`[Unreleased]`→`[0.4.0] - 2026-08-22`に確定
+
+続けてユーザーから「その前にドキュメントをもう一度精査」（`main`マージ前）と依頼。Explore agentに全`.md`ファイル（README/README.ja/TUTORIAL/API_COMPATIBILITY/PIN_MAPPING/CHANGELOG/LICENSE/`docs/`配下/`variants/*/README.md`/`release_check/README.md`）を対象にした網羅監査を依頼——古いサンプル名の残存、`PWM_0`系の残存、プリビルド`.a`時代の記述、`cores/arduino/Arduino.h`のフラットパス残存、README/README.ja.mdの見出し対応、内部リンク切れ、`release_check/README.md`とディレクトリ実体の突き合わせ、CHANGELOGとバージョン番号の整合、の8観点
+
+- **実問題15件を発見・修正**（直近の`_A153`/`_N947`サンプル統合、`io.h`の`variants/*/include/`→共有`cores/arduino/r01lib/`への移動、に追従できていなかった箇所）:
+  - `TUTORIAL.md`/`TUTORIAL.ja.md`: 削除済み`test_combined_peripherals_A153`へのリンク切れ→`test_combined_peripherals`に修正
+  - `PIN_MAPPING_A153.md`/`PIN_MAPPING_N947.md`: `io.h`へのリンク切れ（`variants/*/include/io.h`は既に存在しない）→`cores/arduino/r01lib/io.h`に修正、`test_SPI1_MikroBus_A153`/`_N947`・`test_digitalWrite_mikrobus_pins_N947`の古いサンプル名記述も修正
+  - `variants/frdm_mcxa153/README.md`/`variants/frdm_mcxn947/README.md`: 本文中に残っていた`_A153`/`_N947`サフィックス付き旧サンプル名8箇所を現行名に修正
+- **他7観点は問題なし**: `PWM_0`系・プリビルド`.a`時代の記述・`cores/arduino/Arduino.h`フラットパスは現行ドキュメントに残存ゼロ（過去の監査で既に一掃済みと確認）、README/README.ja.mdは10見出し完全1:1対応、`release_check/README.md`とディレクトリ実体も完全一致、CHANGELOGのバージョン番号も`platform.txt`と一致
+- **CLAUDE.md自身の古いサンプル名言及は対象外と判断**: 開発日誌という性質上、執筆時点で実在した名前への過去形の言及であり、現在のドキュメントとしての誤りではないため修正不要とExplore agentも判定・自分もこれに同意
+- 修正はいずれもコメント/リンクのみ（コード変更なし）、コミット・push済み
+
 ---
 
 ## 動作確認済み
