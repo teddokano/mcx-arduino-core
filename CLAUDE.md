@@ -1262,6 +1262,13 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 - **配線コメントのボード間差異を発見**: ユーザーから「コメントのD0-D1ショートはN947では正しくない」と指摘。N947のSerial1はD0/D1ではなくMikroBusヘッダ（`MB_TX`-`MB_RX`、FlexComm5）——D0/D1はN947では`Wire`とのFlexComm2資源競合により意図的に未対応（既にCLAUDE.md記載済みの制約）。ヘッダコメント・`release_check/README.md`の配線列を両ボードの実際の配線（A153=D0-D1、N947=MikroBus MB_TX-MB_RX）が分かるよう修正（コメントのみ、両ボードでコンパイル確認・サイズ不変）
 - **`04`〜`06`とも実機確認完了**（A153・N947とも「ALL OK」）。これで`examples/release_check/`全6グループの実機検証が完了
 
+### `0A_wire_lm75b_external_module`を追加: プレーン`Wire`（I2C）のrelease_checkカバレッジの欠落を解消
+ユーザーから「Wireのテストはどこにあった？」と質問。`release_check/01`に含まれるのは`Wire1`（オンボードI3C-as-I2C）と（N947限定）`Wire2`（MikroBus）のみで、`Wire`（プレーンI2C、D18/D19）の実デバイス通信テスト`test_Wire_LM75B`は外部LM75系センサーモジュールが必要なため`release_check/`から意図的に除外していたと回答。ユーザーから「`test_Wire_LM75B.ino`を『外部モジュール必要』として`release_check/`にコピー、01からの連番ではなく`0A`として」と依頼。
+
+- `examples/release_check/0A_wire_lm75b_external_module/`を新設、`test_Wire_LM75B.ino`をほぼ verbatim にコピー（ヘッダコメントに「01-06の連番の外、外部モジュールが要るため」という位置付けを追記）
+- `release_check/README.md`の表に`0A`行を追加、「Not covered here」リストから`test_Wire_LM75B`の言及を削除（今は`0A`としてカバー済みのため）
+- 両ボードでコンパイル確認、全59サンプル×両ボード回帰スイープも新規失敗なし（既知の失敗のみ：`P3T1755.h`依存5本＋`test_Wire2_MikroBus_N947`のN947専用扱い）
+
 ---
 
 ## 動作確認済み
