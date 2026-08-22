@@ -1229,6 +1229,21 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 これまでの一連の修正（N947 SPIクロック×2件、`delayMicroseconds`のDWT化、analogRead関連SOS×2件、`ARDUINO_FRDM_MCXN947`マクロ、Serial/Streamヘルパー統合）を踏まえ、ユーザーが上記19本に加えて以下を確認（重複含め計30本相当）——以前「優先度高」として提案していた項目（`test_analog_resolution_and_misc`・`r01lib_I3C`・`test_GPIO_toggle_speed_SDK_API`・SPI系・`test_String`・`test_Serial_stream_helpers`・`test_Wire1_onboard_sensor_raw`・`test_Wire2_MikroBus_N947`）がほぼ全てカバーされた:
 `test_analog_resolution_and_misc`、`r01lib_I3C`、`test_GPIO_toggle_speed_SDK_API`、`test_SPI1_MikroBus`、`test_SPI_legacy_api`、`test_String`、`test_Serial_stream_helpers`、`test_shiftOut_pulseIn_random`、`test_Wire1_onboard_sensor_raw`、`test_Wire2_MikroBus_N947`
 
+### `examples/release_check/`新設: リリース前チェック用の集約サンプル群
+ユーザーから「`Arduino_compatible_API/`は個別のAPIチェック用サンプル集になっているが、リリース前のチェックに実行するのは不便。少ないサンプルコードで効率よく機能をカバーできるように、`examples/`直下に別フォルダを作って集約したサンプルを作って」と依頼。既存の個別サンプル（チュートリアル・ドキュメント用途、ピンポイント診断用途としては引き続き有用）はそのまま残し、`examples/release_check/`を新設して並存させる方針（置き換えではなく追加）。
+
+配線構成でグルーピングするのが効率的と判断（同じジャンパ配線のものをまとめて1回の配線・書き込みで済ませる）:
+- **`01_no_wiring_checks`**: 配線不要・自動OK/FAIL判定できるもの13サンプル分を集約（`test_math_constants`/`test_arduino_compat_macros`/`test_MOSI_MISO_SCK_macros`/`test_Print_writeError`/`test_String`/`test_String_64bit`/`test_Serial_print_time_t`/`test_millis_micros`/`test_delayMicroseconds`/`test_analog_resolution_and_misc`/`test_Analog_read_write`/`test_Wire1_onboard_sensor_raw`/N947のみ`test_Wire2_MikroBus_N947`）。生の値を出力するだけだった`test_math_constants`/`test_arduino_compat_macros`等は計算済みの期待値と比較する`check()`形式に変換
+- **`02_no_wiring_manual_observe`**: 配線不要だが人間がスコープ/LA/耳で確認する必要があるもの7サンプル分（`test_digitalWrite_all_pins`/`_analog_pins`/`_mikrobus_pins`を1つの結合ピン配列にマージ、`test_analogWrite_all_channels`（3ペア→1ペアに短縮）、`test_analogWriteFrequency`、`test_tone`、`test_GPIO_toggle_speed_SDK_API`——最後はオリジナル通りD2での連続SDKトグル出力に移行してloop()で継続）。`test_GPIO_D0_to_D7`（`test_digitalWrite_all_pins`に完全上位互換）・`test_analogWrite_duty`（`test_analogWrite_all_channels`と重複）は対象外、`test_PWM_pin_identify`（合否判定ではなく「どのピンか探す」リファレンス用途）も対象外とし理由をコメントに明記
+- **`03_sw2_interrupts`**: SW2ボタン操作が必要なもの3サンプル分（`test_Interrupt_SW2`＋`test_detachInterrupt`のFALLINGモード+detach/reattachシーケンス、`test_Interrupt_LOW`のLOWレベルトリガーシーケンス）。各フェーズにタイムアウトを設け、SW2が押されなくても永久ハングしないようにした
+
+実装中に2件の実機バグ・警告を自ら発見・修正:
+- **このプロジェクトで繰り返し踏んでいる`*/`コメント早期終了バグを`01`のヘッダコメント内で再度踏んだ**（`release_check/NN_*/`という表記の`*/`部分）。コンパイルエラーで即座に発覚・修正。以後、新規ファイルは`*/`パターンをコンパイル前に機械チェックする習慣を継続
+- ローカルクラス`FlakyPrint`（`Print`継承、仮想関数オーバーライド持ち）を`setup()`内で定義したところ、GCC 14のツールチェーンで`char_traits<char32_t>`/placement-new関連のコンパイルエラーが発生。原因究明よりも、動作実績のある元のファイルと同じくファイルスコープへ戻す方を選択して解消
+- `03`で`volatile`変数への`++`がC++20非推奨警告——元の`test_Interrupt_LOW.ino`が`count = count + 1`という書き方で最初から回避していたのと同じパターンを踏襲して解消
+
+3本とも両ボードでコンパイル確認・全55サンプル回帰スイープ新規失敗なし。**実機確認完了**: ユーザーがA153・N947両方で3本とも動作OKと報告
+
 ---
 
 ## 動作確認済み
