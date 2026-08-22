@@ -3,37 +3,38 @@
  *  separate from the other release_check/ sketches.
  *
  *  Mirrors examples/Arduino_compatible_API/test_shiftOut_pulseIn_random
- *  exactly (that sketch is already a single, self-contained, fully-
- *  checked test -- copied here so every release_check/ group lives
- *  together in one place).
+ *  in behavior (that sketch is already a single, self-contained, fully-
+ *  checked test), but with the pins remapped to four adjacent pairs
+ *  within D0-D7 -- each jumper spans just one pin gap on the header,
+ *  instead of the original's scattered D5/D6/D7/D8/D9/D10/D11/D13.
  *
  *  Wiring needed:
- *    1) Jumper D5 (SHIFTOUT_DATA) <-> D8 (MONITOR_DATA)
- *       Jumper D6 (SHIFTOUT_CLOCK) <-> D9 (MONITOR_CLOCK)
+ *    1) Jumper D0 (SHIFTOUT_DATA) <-> D1 (MONITOR_DATA)
+ *       Jumper D2 (SHIFTOUT_CLOCK) <-> D3 (MONITOR_CLOCK)
  *       shiftOut() and shiftIn() both try to drive the clock themselves, so
  *       they can't loop back to each other directly on one MCU. Instead,
  *       attachInterrupt() on MONITOR_CLOCK's rising edge captures
  *       MONITOR_DATA in real time -- the same "digitalRead synced to a
  *       clock edge" mechanism shiftIn() itself uses internally -- so the
  *       byte shiftOut() actually sent can be verified bit-for-bit.
- *    2) Jumper D10 (SHIFTIN_DATA) <-> D11 (SHIFTIN_CLOCK)
+ *    2) Jumper D4 (SHIFTIN_DATA) <-> D5 (SHIFTIN_CLOCK)
  *       Standalone shiftIn() sanity check: shiftIn() drives CLOCK high
  *       right before sampling DATA, so with DATA tied directly to CLOCK,
  *       every sampled bit reads 1 -- shiftIn() should return 0xFF.
- *    3) Jumper D13 (TONE_PIN) <-> D7 (PULSE_MONITOR_PIN)
- *       tone(D13, 1000) is a 1kHz square wave (500us high / 500us low).
+ *    3) Jumper D6 (TONE_PIN) <-> D7 (PULSE_MONITOR_PIN)
+ *       tone(D6, 1000) is a 1kHz square wave (500us high / 500us low).
  *       pulseIn()/pulseInLong() on D7 should read ~500 (microseconds).
  */
 
 #include <Arduino.h>
 
-#define SHIFTOUT_DATA      D5
-#define SHIFTOUT_CLOCK     D6
-#define MONITOR_DATA       D8
-#define MONITOR_CLOCK      D9
-#define SHIFTIN_DATA       D10
-#define SHIFTIN_CLOCK      D11
-#define TONE_PIN           D13
+#define SHIFTOUT_DATA      D0
+#define MONITOR_DATA       D1
+#define SHIFTOUT_CLOCK     D2
+#define MONITOR_CLOCK      D3
+#define SHIFTIN_DATA       D4
+#define SHIFTIN_CLOCK      D5
+#define TONE_PIN           D6
 #define PULSE_MONITOR_PIN  D7
 
 volatile uint8_t captured     = 0;

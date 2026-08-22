@@ -18,7 +18,7 @@ Run in order:
 | 3 | `03_sw2_interrupts` | none (press the on-board SW2 button as prompted) | manual |
 | 4 | `04_serial1_and_gpio_loopback` | Serial1 TX/RX loopback jumper (D0-D1 on A153, MikroBus MB_TX-MB_RX on N947) + D2-D3 jumper | automatic |
 | 5 | `05_spi_loopback` | D11-D12 jumper + MikroBus MOSI-MISO jumper | automatic |
-| 6 | `06_shiftout_pulsein_loopback` | D5-D8, D6-D9, D10-D11, D13-D7 jumpers (4) | automatic |
+| 6 | `06_shiftout_pulsein_loopback` | D0-D1, D2-D3, D4-D5, D6-D7 jumpers (4 adjacent pairs) | automatic |
 | 09 | `09_combined_peripherals_external_module` | needs the external `P3T1755.h` library + (A153 only) D1-D0 jumper + MikroBus MOSI-MISO jumper | manual (watch the Serial log for WARNING lines) |
 | 0A | `0A_wire_lm75b_external_module` | D18(SDA)/D19(SCL)/3V3/GND to an external LM75-family sensor (needs the module itself, so numbered outside the 01-06 sequence) | manual (read the printed temperature) |
 | 0B | `0B_wire2_mikrobus_scan_N947` | none (N947 only -- Wire2 doesn't exist on A153) | manual (confirm I2C traffic on a logic analyzer) |
