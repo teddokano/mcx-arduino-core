@@ -101,6 +101,9 @@ public:
 	 *
 	 *  @note use zero or DEFAULT_FREQ_SETTING to leave a given rate at its default
 	 */
+	using I2C::frequency;	// I3C's own frequency() overloads below have different
+							// signatures from I2C::frequency(uint32_t), which would
+							// otherwise hide it from lookup through an I3C object
 	virtual void	frequency( uint32_t i2c_freq, uint32_t i3c_od_freq, uint32_t i3c_pp_freq );
 
 	/** All frequency settings (I2C, I3C open-drain, I3C push-pull) reverted to default
@@ -113,6 +116,10 @@ public:
 	 * @param mode I3C_MODE, I2C_MODE or I3CDDR_MODE
 	 */
 	virtual void 	mode( MODE mode );
+
+	using I2C::write;	// I3C only overrides the buffer-write/-read overloads
+	using I2C::read;	// below; I2C's single-byte write(uint8_t,uint8_t,bool)/
+						// read(uint8_t,bool) would otherwise be hidden
 
 	/** write transaction
 	 *
@@ -135,6 +142,9 @@ public:
 	virtual status_t	read( uint8_t targ, uint8_t *dp, int length, bool stop = STOP );
 	
 #ifdef	CUSTOM_REGISTAR_XFER
+	using I2C::reg_write;	// see the frequency() using-declaration above -- same
+	using I2C::reg_read;	// reasoning, I3C's own overloads below add a `stop` param
+
 	/** Register write (multiple byte data)
 	 *	provides interface for register write
 	 *
