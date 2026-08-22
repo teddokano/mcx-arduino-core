@@ -21,11 +21,11 @@ compiler.warning_flags.all=-Wall -Wextra
 compiler.includes=-I{build.core.path} -I{build.core.path}/sdk -I{build.core.path}/r01lib -I{build.core.path}/arduino_api -I{build.variant.path}/include
 
 compiler.c.cmd=arm-none-eabi-gcc
-compiler.c.flags={compiler.cpu_flags} {compiler.defines} {compiler.opt_flags} {compiler.warning_flags} -c -D__NEWLIB__ -fstack-usage
+compiler.c.flags={compiler.cpu_flags} {compiler.defines} {compiler.opt_flags} {compiler.warning_flags} -Wno-unused-parameter -Wno-missing-field-initializers -Wno-old-style-declaration -c -D__NEWLIB__ -fstack-usage
 recipe.c.o.pattern="{compiler.path}{compiler.c.cmd}" {compiler.c.flags} {compiler.includes} {includes} -o "{object_file}" "{source_file}"
 
 compiler.cpp.cmd=arm-none-eabi-c++
-compiler.cpp.flags={compiler.cpu_flags} {compiler.defines} {compiler.opt_flags} {compiler.warning_flags} -Wno-address-of-packed-member -std=c++20 -c -fno-rtti -fno-exceptions -D__NEWLIB__ -fstack-usage
+compiler.cpp.flags={compiler.cpu_flags} {compiler.defines} {compiler.opt_flags} {compiler.warning_flags} -Wno-address-of-packed-member -Wno-unused-parameter -Wno-missing-field-initializers -std=c++20 -c -fno-rtti -fno-exceptions -D__NEWLIB__ -fstack-usage
 recipe.cpp.o.pattern="{compiler.path}{compiler.cpp.cmd}" {compiler.cpp.flags} {compiler.includes} {includes} -o "{object_file}" "{source_file}"
 
 compiler.S.cmd=arm-none-eabi-gcc

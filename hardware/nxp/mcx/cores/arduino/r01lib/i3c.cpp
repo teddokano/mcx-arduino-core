@@ -79,9 +79,9 @@ I3C::I3C( int sda, int scl, uint32_t i2c_freq, uint32_t i3c_od_freq, uint32_t i3
 	
 	I3C_MasterGetDefaultConfig( &masterConfig );
 
-	masterConfig.baudRate_Hz.i2cBaud          = i2c_freq    ? i2c_freq    : I2C::FREQ;
-	masterConfig.baudRate_Hz.i3cOpenDrainBaud = i3c_od_freq ? i3c_od_freq : OD_FREQ;
-	masterConfig.baudRate_Hz.i3cPushPullBaud  = i3c_pp_freq ? i3c_pp_freq : PP_FREQ;
+	masterConfig.baudRate_Hz.i2cBaud          = i2c_freq    ? i2c_freq    : (uint32_t)I2C::FREQ;
+	masterConfig.baudRate_Hz.i3cOpenDrainBaud = i3c_od_freq ? i3c_od_freq : (uint32_t)OD_FREQ;
+	masterConfig.baudRate_Hz.i3cPushPullBaud  = i3c_pp_freq ? i3c_pp_freq : (uint32_t)PP_FREQ;
 	masterConfig.enableOpenDrainStop          = false;
 	masterConfig.disableTimeout               = true;
 	
