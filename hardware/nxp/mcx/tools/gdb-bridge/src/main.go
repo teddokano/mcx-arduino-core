@@ -41,13 +41,35 @@ import (
 	"time"
 )
 
+// defaultDevice is empty in the generic binary (gdb-bridge-<os>-<arch>,
+// launched via launch-<board>.sh/.bat, which prepend the LinkServer DEVICE
+// string as argv[1] -- see the usage comment above). It's baked in via
+// `go build -ldflags "-X main.defaultDevice=..."` for the per-board Windows
+// binaries (gdb-bridge-<board>-windows-amd64.exe), which boards.txt points
+// debug.server.openocd.path.windows at directly -- no .bat wrapper, and so
+// no argv[1] prepending needed. That sidesteps a Windows-only bug where
+// Arduino IDE 2's bundled cortex-debug (Node.js-based) spawning a .bat file
+// with argv containing double-quoted, space-containing paths (e.g. "C:/
+// Program Files/Arduino IDE/...") produced instant, silent process failure
+// -- reproducible only through the IDE, not via a direct command-prompt
+// invocation of the exact same command, nor via `arduino-cli debug`, which
+// doesn't go through a shell the same way.
+var defaultDevice string
+
 func main() {
-	if len(os.Args) < 2 {
-		fmt.Fprintln(os.Stderr, "gdb-bridge: usage: gdb-bridge <LinkServer DEVICE> [openocd-style args...]")
-		os.Exit(1)
+	var device string
+	var toolArgs []string
+	if defaultDevice != "" {
+		device = defaultDevice
+		toolArgs = os.Args[1:]
+	} else {
+		if len(os.Args) < 2 {
+			fmt.Fprintln(os.Stderr, "gdb-bridge: usage: gdb-bridge <LinkServer DEVICE> [openocd-style args...]")
+			os.Exit(1)
+		}
+		device = os.Args[1]
+		toolArgs = os.Args[2:]
 	}
-	device := os.Args[1]
-	toolArgs := os.Args[2:]
 
 	linkserver, err := findLinkServer()
 	if err != nil {
