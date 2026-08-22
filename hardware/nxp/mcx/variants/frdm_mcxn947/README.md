@@ -180,7 +180,7 @@ MOSI(D11)-MISO(D12)ジャンパーによるループバックで`transfer()`/`tr
     スロットを消費しない特殊項目」（`CLOCK_OUT`等）が挟まるケースが
     あるため、可能な場合はZephyrのpinctrlヘッダのような、より権威ある
     ソースと突き合わせ、最終的には必ず実機で確認すること
-- **実機確認済み（全6チャンネル・独立性込み）**: `test_analogWrite_all_channels_N947.ino`
+- **実機確認済み（全6チャンネル・独立性込み）**: `test_analogWrite_all_channels.ino`
   で、(A) 6チャンネル同時に異なる固定duty比（PWM0≈10%〜PWM4≈90%）を
   出力し全チャンネルが個別に正しい値で出ることを確認、(B) `PWM0`/`PWM1`
   （sm2共有）・`PWM2`/`PWM3`（sm1共有）・`PWM4`/`PWM5`（sm0共有）の
@@ -260,12 +260,12 @@ MOSI(D11)-MISO(D12)ジャンパーによるループバックで`transfer()`/`tr
   関わらず、確実にGPIOとして再取得する
 - **双方向切り替えの実機確認**: `onboard_temperature_sensor.ino`
   （`Wire1`経由でI3Cモードのオンボードセンサーにアクセス）→
-  `test_digitalWrite_mikrobus_pins_N947.ino`（同じ`MB_RX`/`MB_TX`ピンを
+  `test_digitalWrite_mikrobus_pins.ino`（同じ`MB_RX`/`MB_TX`ピンを
   プレーンGPIOとして駆動）の順に実機で連続実行し、`MB_RX`/`MB_TX`が
   I3CモードとプレーンGPIOモードの間で正しく切り替わることを確認完了
-- 確認用スケッチ: `test_digitalWrite_all_pins_N947`（D0-D13,D18,D19）、
-  `test_digitalWrite_mikrobus_pins_N947`（MikroBusヘッダ）、
-  `test_digitalWrite_analog_pins_N947`（A2-A5）。いずれも実機ロジアナで
+- 確認用スケッチ: `test_digitalWrite_all_pins`（D0-D13,D18,D19）、
+  `test_digitalWrite_mikrobus_pins`（MikroBusヘッダ）、
+  `test_digitalWrite_analog_pins`（A2-A5）。いずれも実機ロジアナで
   確認済み
 
 ## MikroBusのSPI/I2C/UART: `Wire2`/`SPI1`/`Serial1`（実機検証済み）
@@ -305,7 +305,7 @@ MikroBusヘッダの`MB_SDA`/`MB_SCL`（I2C）・`MB_MOSI`/`MB_MISO`/`MB_SCK`/
   新規`SPI1(MB_MOSI, MB_MISO, MB_SCK, MB_CS)`を追加
 - **実機確認済み**: `Wire2`は`test_Wire2_MikroBus_N947`（バススキャン、
   デバイス未接続でもハング・クラッシュなし）、`SPI1`は
-  `test_SPI1_MikroBus_N947`（`MB_MOSI`-`MB_MISO`ループバック、
+  `test_SPI1_MikroBus`（`MB_MOSI`-`MB_MISO`ループバック、
   `transfer()`/`transfer16()`）で実機確認——ロジアナ波形・Serial出力の
   両方でOK
 
@@ -342,6 +342,6 @@ MikroBusヘッダの`MB_SDA`/`MB_SCL`（I2C）・`MB_MOSI`/`MB_MISO`/`MB_SCK`/
 - **実機確認済み（3用途の排他切り替えを含む）**: `test_Serial1_MikroBus_N947`
   （`MB_TX`-`MB_RX`ループバック）で波形・Serial出力とも問題なしを確認。
   さらに`onboard_temperature_sensor`（`Wire1`でI3Cアクセス）→
-  `test_digitalWrite_mikrobus_pins_N947`（プレーンGPIO）→
+  `test_digitalWrite_mikrobus_pins`（プレーンGPIO）→
   `test_Serial1_MikroBus_N947`（UART）の順に実機で連続実行し、同じ2本の
   物理ピンがI3C・GPIO・UARTの3モードを正しく切り替えられることを確認

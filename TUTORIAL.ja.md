@@ -444,7 +444,7 @@ Arduino UNO向けに書かれたスケッチが、追加の`#include`なしで�
 
 - [README.md](README.md) — API対応表・ピン配置の全体像
 - [`examples/Arduino_compatible_API/`](examples/Arduino_compatible_API) — 機能ごとの単体サンプル
-- [`examples/Arduino_compatible_API/test_combined_peripherals_A153`](examples/Arduino_compatible_API/test_combined_peripherals_A153) — 全機能同時動作の例
+- [`examples/Arduino_compatible_API/test_combined_peripherals`](examples/Arduino_compatible_API/test_combined_peripherals) — 全機能同時動作の例
 - [CHANGELOG.md](CHANGELOG.md) — バージョン間の変更点
 - 標準Arduino APIの先にある上級者向けガイド:
   [MCUXpresso SDKを直接呼び出す](docs/advanced_sdk_tuning.md)、

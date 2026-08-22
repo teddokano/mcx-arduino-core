@@ -1,7 +1,7 @@
 # Pin Mapping — FRDM-MCXN947
 
 Arduino pin names are defined in
-[`hardware/nxp/mcx/variants/frdm_mcxn947/include/io.h`](hardware/nxp/mcx/variants/frdm_mcxn947/include/io.h),
+[`hardware/nxp/mcx/cores/arduino/r01lib/io.h`](hardware/nxp/mcx/cores/arduino/r01lib/io.h),
 which maps each one (`D0`-`D13`, `D18`/`D19`, `A0`-`A5`, `PWM0`-`PWM5`) to its
 physical MCU port pin. See that board's own
 [`variants/frdm_mcxn947/README.md`](hardware/nxp/mcx/variants/frdm_mcxn947/README.md)
@@ -92,7 +92,7 @@ peripheral instances on the SPI/I2C rows (see below the table):
 >
 > **`SPI1`** is a plain SPI instance on `MB_MOSI`/`MB_MISO`/`MB_SCK`/`MB_CS`,
 > backed by its own peripheral (`LPSPI6`/FlexComm6) independent of `SPI`
-> (FlexComm1). Verified on real hardware with `test_SPI1_MikroBus_N947`
+> (FlexComm1). Verified on real hardware with `test_SPI1_MikroBus`
 > (MOSI-MISO loopback, logic analyzer + Serial both confirmed OK).
 
 > **Note on `Wire1`/`Serial1`**: `MB_RX`/`MB_TX` (`P1_16`/`P1_17`) are shared
@@ -105,7 +105,7 @@ peripheral instances on the SPI/I2C rows (see below the table):
 > switch cleanly between each other: `pinMode()` explicitly reclaims ALT0
 > (GPIO) on every call, and `Wire1.begin()`/`Serial1.begin()` each
 > explicitly set their own ALT — confirmed on real hardware by running
-> `onboard_temperature_sensor` (I3C) → `test_digitalWrite_mikrobus_pins_N947`
+> `onboard_temperature_sensor` (I3C) → `test_digitalWrite_mikrobus_pins`
 > (GPIO) → `test_Serial1_MikroBus_N947` (UART loopback) back to back.
 
 > **`Serial1` is NOT available on `D0`/`D1`.** Their only UART-capable

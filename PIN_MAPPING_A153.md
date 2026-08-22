@@ -1,7 +1,7 @@
 # Pin Mapping — FRDM-MCXA153
 
 Arduino pin names are defined in
-[`hardware/nxp/mcx/variants/frdm_mcxa153/include/io.h`](hardware/nxp/mcx/variants/frdm_mcxa153/include/io.h),
+[`hardware/nxp/mcx/cores/arduino/r01lib/io.h`](hardware/nxp/mcx/cores/arduino/r01lib/io.h),
 which maps each one (`D0`-`D13`, `D18`/`D19`, `A0`-`A5`, `PWM0`-`PWM5`) to its
 physical MCU port pin.
 
@@ -75,7 +75,7 @@ these, verified on real hardware:
 > **`SPI1`** is a plain SPI instance on `MB_MOSI`/`MB_MISO`/`MB_SCK`/`MB_CS`,
 > backed by its own peripheral (`LPSPI0`, vs. `SPI`'s `LPSPI1` — this chip
 > only has these two LPSPI instances total), so both can be used in the same
-> sketch. Verified on real hardware with `test_SPI1_MikroBus_A153`
+> sketch. Verified on real hardware with `test_SPI1_MikroBus`
 > (MOSI-MISO loopback, logic analyzer + Serial both confirmed OK).
 >
 > **No independent `Wire2`/second `Serial1` on this board.** Unlike

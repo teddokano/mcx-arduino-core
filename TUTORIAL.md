@@ -526,7 +526,7 @@ extra `#include`s needed: `PI`, `HALF_PI`, `TWO_PI`, `DEG_TO_RAD`,
 
 - [README.md](README.md) — full API support table and pin mapping
 - [`examples/Arduino_compatible_API/`](examples/Arduino_compatible_API) — one focused sketch per feature
-- [`examples/Arduino_compatible_API/test_combined_peripherals_A153`](examples/Arduino_compatible_API/test_combined_peripherals_A153) — everything running at once
+- [`examples/Arduino_compatible_API/test_combined_peripherals`](examples/Arduino_compatible_API/test_combined_peripherals) — everything running at once
 - [CHANGELOG.md](CHANGELOG.md) — what changed between versions
 - Advanced guides, past the standard Arduino API:
   [calling the MCUXpresso SDK directly](docs/advanced_sdk_tuning.md),

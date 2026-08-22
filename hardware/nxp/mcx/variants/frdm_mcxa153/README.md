@@ -20,7 +20,7 @@ variants/frdm_mcxa153/
 MikroBusヘッダの全12ピン（`MB_AN`/`MB_RST`/`MB_CS`/`MB_SCK`/`MB_MISO`/
 `MB_MOSI`/`MB_PWM`/`MB_INT`/`MB_RX`/`MB_TX`/`MB_SCL`/`MB_SDA`）は
 `pinMode`/`digitalWrite`によるプレーンGPIOとして実機確認済み
-（`test_digitalWrite_mikrobus_pins_A153`）。
+（`test_digitalWrite_mikrobus_pins`）。
 
 SPIについては、N947と同様に独立した`SPI1`インスタンスを追加した
 （`MB_MOSI`/`MB_MISO`/`MB_SCK`/`MB_CS`、`P1_0`/`P1_2`/`P1_1`/`P1_3`）。
