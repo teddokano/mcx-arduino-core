@@ -1269,6 +1269,17 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 - `release_check/README.md`の表に`0A`行を追加、「Not covered here」リストから`test_Wire_LM75B`の言及を削除（今は`0A`としてカバー済みのため）
 - 両ボードでコンパイル確認、全59サンプル×両ボード回帰スイープも新規失敗なし（既知の失敗のみ：`P3T1755.h`依存5本＋`test_Wire2_MikroBus_N947`のN947専用扱い）
 
+### 外部ハードウェア依存の`release_check`エントリを追加（`0B`/`09`/`0C`）、`06`の配線を簡略化
+ユーザーから連続で3件の追加依頼。
+
+- **`0B_wire2_mikrobus_scan_N947`**: `test_Wire2_MikroBus_N947`（`Wire2`のバススキャン、N947限定——`Wire2`はA153には物理的に存在しない）をverbatimコピー。判定はSerial出力ではなくロジアナでのI2Cトラフィック確認（デバイス未接続なので毎回「0 device(s) found」が正常）
+- **`09_combined_peripherals_external_module`**: `test_combined_peripherals`（A153のみ`Serial1`/`SPI1`込みの複合ペリフェラルストレステスト）をverbatimコピー。`P3T1755.h`依存のため`/tmp/stublib/P3T1755/`の一時スタブライブラリで構文確認（検証後削除、既存の確立済み手法）
+- **`0C_waveshare_tft_touch_external_library`**: `.ino`を作らず`README.md`のみ——外部ライブラリ`Waveshare_TFT_Touch`自身のサンプル（`SDBitmapViewer`）を再実行するよう指示する文書のみのエントリ。このライブラリは実際にSPI CS強制PCS化バグ・SPI1バイト単位転送オーバーヘッドバグの発見元だったため、再実行が最も実アプリに近い回帰チェックになるとして追加
+- `release_check/README.md`のテーブルに`0B`/`09`/`0C`を追加、「Not covered here」から`test_Wire2_MikroBus_N947`（実質`0B`でカバー済みと同義、元々未記載）・`test_combined_peripherals`の言及を削除
+- 3件とも両ボードでコンパイル確認（`0B`はN947限定なのでA153では想定通り失敗）、全61サンプル×両ボード回帰スイープも新規失敗なし
+
+続けてユーザーから「`06_shiftout_pulsein_loopback`はピンの接続が煩雑。D0〜D7の隣り合うピン同士をショートする仕様に変更できる？」と依頼。従来の配線（D5-D8、D6-D9、D10-D11、D13-D7、いずれもヘッダ上で離れたピン同士）を、D0-D1/D2-D3/D4-D5/D6-D7という隣接ペア4組（各ジャンパがヘッダ上の1ピン分の隙間だけをまたぐ）に再マッピング。ロジック・チェック内容は変更なし、ピン定義のみの変更。両ボードでコンパイル確認（バイナリサイズ完全一致）、全61サンプル×両ボード回帰スイープも直前のベースラインと差分なし
+
 ---
 
 ## 動作確認済み
