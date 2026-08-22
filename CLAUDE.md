@@ -1340,6 +1340,8 @@ Windowsで`Blink`スケッチをビルドしたところ、`variants/*/src/fsl_*
 **リリースzip再々構築・GitHub Release再差し替え**
 `main`から新zip作成（SHA-256 `9cfeeebed842fb9a426c1c2800a0ba16acf35801763bd4f016ba173cf7c0db82`、9264269 bytes——新規exeバイナリ2本分サイズ増）、展開して`boards.txt`の新パス・`i3c.h`の`using`宣言・新規exeの存在を確認してから`gh release upload 0.4.0 --clobber`で差し替え、ダウンロードしたchecksumが一致することを確認。`staging-0.4.0`のchecksum/sizeも更新してpush。開発用symlinkを復元
 
+**Windows再々検証: 完了**。ユーザーが`%LOCALAPPDATA%\Arduino15\staging\packages\`のzipキャッシュ削除→Boards Manager経由で`0.4.0`再インストール後、「warningは全て消え、デバッガも起動した」と報告。これで`examples/release_check/`等ペリフェラル機能の実機検証（macOS・Linux）に加え、ビルドwarningゼロ・IDE内蔵デバッガ動作の3プラットフォーム（macOS・Linux・Windows）検証が全て完了——ステージング検証、実質完了
+
 ---
 
 ## 動作確認済み
