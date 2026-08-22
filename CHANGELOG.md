@@ -5,7 +5,7 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.4.0] - 2026-08-22
 
 ### Added
 - Arduino IDE 2 debugger support (both boards): breakpoints, stepping, and variable/register inspection now work from the IDE's built-in debug UI. Under the hood this uses NXP LinkServer's own gdbserver — not OpenOCD, which has no MCX chip support — via a small relay (`tools/gdb-bridge`) that presents itself as `openocd` (the only debug server backend `arduino-cli`/the IDE's bundled cortex-debug extension know how to drive) but actually launches and bridges to LinkServer. Verified on real hardware, both through the IDE's own "Start Debugging" flow and directly via `arduino-cli debug`, on both FRDM-MCXA153 and FRDM-MCXN947
