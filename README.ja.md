@@ -105,6 +105,10 @@ mcx-arduino-core/
 `pinMode()`や`Serial`など任意の関数にジャンプすると、ヘッダの宣言だけでなく
 実装している実際の`.cpp`に飛びます。
 
+`examples/Arduino_compatible_API/`には機能ごとの単体サンプル（[TUTORIAL.ja.md](TUTORIAL.ja.md)で
+辿るもの）が揃っています。少ない書き込み回数でひと通り確認したい場合は
+[`examples/release_check/`](examples/release_check)を参照してください。
+
 ## サンプルスケッチ
 ```cpp
 #include <Arduino.h>

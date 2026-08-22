@@ -108,6 +108,11 @@ Since it's all source, Arduino IDE's "Go to Definition" works normally —
 jumping into `pinMode()`, `Serial`, or any other function lands you in the
 actual implementing `.cpp`, not just its header declaration.
 
+`examples/Arduino_compatible_API/` has one focused sketch per feature
+(what [TUTORIAL.md](TUTORIAL.md) walks through); for a quick pass over
+most of it in a handful of flashes instead, see
+[`examples/release_check/`](examples/release_check).
+
 ## Example Sketch
 ```cpp
 #include <Arduino.h>
