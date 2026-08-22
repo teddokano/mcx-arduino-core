@@ -20,6 +20,7 @@ Run in order:
 | 5 | `05_spi_loopback` | D11-D12 jumper + MikroBus MOSI-MISO jumper | automatic |
 | 6 | `06_shiftout_pulsein_loopback` | D5-D8, D6-D9, D10-D11, D13-D7 jumpers (4) | automatic |
 | 0A | `0A_wire_lm75b_external_module` | D18(SDA)/D19(SCL)/3V3/GND to an external LM75-family sensor (needs the module itself, so numbered outside the 01-06 sequence) | manual (read the printed temperature) |
+| 0B | `0B_wire2_mikrobus_scan_N947` | none (N947 only -- Wire2 doesn't exist on A153) | manual (confirm I2C traffic on a logic analyzer) |
 
 Not covered here -- these need external hardware/libraries a release
 check can't assume are on hand, and stay as individual examples instead:
