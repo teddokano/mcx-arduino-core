@@ -1218,6 +1218,17 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 - **実機で発見: `peek()`セクションだけFAIL（A153）**: 統合前は全部OKだったのに、統合後は`peek()`の最終チェックだけFAILしたとの報告。原因は統合作業自体のミスと判明——直前の`flush()`セクションが`Serial1.print(flushMsg)`で24バイト送信するが、これはループバック配線なので同じ24バイトがRX側にも返ってくる。`flush()`はTX側の完了しか待たないため、この24バイトは未読のままRXバッファに残り、直後の`peek()`セクションが新たに送った`"AB"`より前に居座っていた（`peek()`が`'A'`ではなく残っていた`'H'`を返す）。`flush()`セクションの直後に`while (Serial1.available()) Serial1.read();`でRXバッファを明示的にドレインして解消
 - **実機確認完了**: ユーザーがA153・N947両方で再確認し「OK」と報告
 
+### `test_shiftOut_pulseIn_random`にOK/FAIL判定を追加
+ユーザーから「判断結果(OK/FAIL)を表示するように変更」と依頼。従来は生の値を出力するだけ（`shiftOut`セクションのみMATCH/MISMATCH表示あり）で、`shiftIn`/`pulseIn`/`pulseInLong`/`random`には合否判定が無かった。他examplesと同じ`check()`ヘルパー形式に統一:
+- `shiftIn()`: DATA-CLOCK直結ジャンパでの`0xFF`期待値チェック
+- `pulseIn()`/`pulseInLong()`: 1kHz方形波に対し`~500us ± 50`の範囲チェック
+- `random()`: 特定のlibc実装の乱数列に依存させないよう、正確な値ではなく契約（要求範囲内に収まる・同じ値に固まらない）をチェック
+両ボードでコンパイル確認・回帰スイープ新規失敗なし
+
+### 実機検証まとめ: 30本のサンプルで動作確認完了（累積）
+これまでの一連の修正（N947 SPIクロック×2件、`delayMicroseconds`のDWT化、analogRead関連SOS×2件、`ARDUINO_FRDM_MCXN947`マクロ、Serial/Streamヘルパー統合）を踏まえ、ユーザーが上記19本に加えて以下を確認（重複含め計30本相当）——以前「優先度高」として提案していた項目（`test_analog_resolution_and_misc`・`r01lib_I3C`・`test_GPIO_toggle_speed_SDK_API`・SPI系・`test_String`・`test_Serial_stream_helpers`・`test_Wire1_onboard_sensor_raw`・`test_Wire2_MikroBus_N947`）がほぼ全てカバーされた:
+`test_analog_resolution_and_misc`、`r01lib_I3C`、`test_GPIO_toggle_speed_SDK_API`、`test_SPI1_MikroBus`、`test_SPI_legacy_api`、`test_String`、`test_Serial_stream_helpers`、`test_shiftOut_pulseIn_random`、`test_Wire1_onboard_sensor_raw`、`test_Wire2_MikroBus_N947`
+
 ---
 
 ## 動作確認済み
