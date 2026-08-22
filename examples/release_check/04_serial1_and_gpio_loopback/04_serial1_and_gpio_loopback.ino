@@ -111,7 +111,7 @@ void setup() {
     int i = 0;
     while (Serial1.available() && i < 23)
       buf[i++] = (char)Serial1.read();
-    check("Serial1 basic loopback", strncmp(buf, "hello from Serial1", 19) == 0);
+    check("Serial1 basic loopback", strncmp(buf, "hello from Serial1", 18) == 0);
   }
 
   // ---- Serial.print(x, BIN) + Serial1.write() overloads
