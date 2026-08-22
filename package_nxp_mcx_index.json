@@ -16,8 +16,8 @@
           "category": "Contributed",
           "url": "https://github.com/teddokano/mcx-arduino-core/releases/download/0.4.0/mcx-arduino-core-0.4.0.zip",
           "archiveFileName": "mcx-arduino-core-0.4.0.zip",
-          "checksum": "SHA-256:b9b63d87a199bcf47b116fde60aebfbd4956ffaaf15e09c43a8ddedad23feaad",
-          "size": "1521162",
+          "checksum": "SHA-256:9cfeeebed842fb9a426c1c2800a0ba16acf35801763bd4f016ba173cf7c0db82",
+          "size": "9264269",
           "boards": [
             {
               "name": "FRDM-MCXA153 (mcx-arduino-core)"
