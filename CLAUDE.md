@@ -1244,6 +1244,16 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 
 3本とも両ボードでコンパイル確認・全55サンプル回帰スイープ新規失敗なし。**実機確認完了**: ユーザーがA153・N947両方で3本とも動作OKと報告
 
+### `examples/release_check/`残り3グループ（04〜06）を追加、README.md/ja.mdからもリンク
+`01`〜`03`の実機確認完了を受け、残り3グループを続けて実装。
+
+- **`04_serial1_and_gpio_loopback`**（D0-D1＋D2-D3ジャンパ）: `test_Print_Stream_hierarchy`/`test_Serial1`/`test_Serial_BIN_and_write`/`test_Serial_stream_helpers`/`test_String_plus_numeric_Printable_fastGPIO`の5本を集約。**実装中に発見**: `Print_Stream_hierarchy`由来の`Stream&`多態性チェック（`find("HELLO")`）は一致箇所までしか消費せず`"yyy"`が未読のまま残る——直前に修正済みの`flush()`→`peek()`と全く同じ「未読バイトが次のセクションに混入する」クラスのバグを、今度は自分でマージしながら事前に察知し、明示的なドレイン処理を挟んで対処（実機確認前にコードレビューで気づけた）
+- **`05_spi_loopback`**（D11-D12＋MikroBus MOSI-MISOジャンパ）: `test_SPI_bitorder_end_transfer16`/`test_SPI_large_transfer`/`test_SPI_legacy_api`/`test_SPI1_MikroBus`の4本を集約。`SPI`と`SPI1`は独立ペリフェラルで同一スケッチ内で共存できるため、両方のジャンパを同時装着する前提で1本にまとめた
+- **`06_shiftout_pulsein_loopback`**: `test_shiftOut_pulseIn_random`は既にそれ自体が独自の4ジャンパ構成で完結した1本だったため、内容をそのまま`release_check/`側にもコピーして番号を揃えた
+- `examples/release_check/README.md`を新設し、6グループの配線・判定方式一覧、および意図的に対象外とした項目（外部ライブラリ/デバイス依存6本、上位互換で不要になった`test_GPIO_D0_to_D7`等3本）を明記
+- `README.md`/`README.ja.md`にも`examples/release_check/`へのリンクを追加
+- 3本とも両ボードでコンパイル確認、全58サンプル回帰スイープ新規失敗なし
+
 ---
 
 ## 動作確認済み
