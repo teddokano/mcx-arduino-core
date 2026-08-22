@@ -16,7 +16,7 @@ Run in order:
 | 1 | `01_no_wiring_checks` | none | automatic (reads "ALL OK"/"N FAILED") |
 | 2 | `02_no_wiring_manual_observe` | none | manual (watch/listen -- scope, LA, multimeter, ears) |
 | 3 | `03_sw2_interrupts` | none (press the on-board SW2 button as prompted) | manual |
-| 4 | `04_serial1_and_gpio_loopback` | D0-D1 jumper + D2-D3 jumper | automatic |
+| 4 | `04_serial1_and_gpio_loopback` | Serial1 TX/RX loopback jumper (D0-D1 on A153, MikroBus MB_TX-MB_RX on N947) + D2-D3 jumper | automatic |
 | 5 | `05_spi_loopback` | D11-D12 jumper + MikroBus MOSI-MISO jumper | automatic |
 | 6 | `06_shiftout_pulsein_loopback` | D5-D8, D6-D9, D10-D11, D13-D7 jumpers (4) | automatic |
 

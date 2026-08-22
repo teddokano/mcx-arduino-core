@@ -1,12 +1,15 @@
-/** Release check 4/N: automatic OK/FAIL checks needing D0-D1 (Serial1
- *  loopback) and D2-D3 (fast-GPIO) jumpers -- both can stay installed at
- *  once, one flash covers everything here.
+/** Release check 4/N: automatic OK/FAIL checks needing a Serial1 TX/RX
+ *  loopback jumper and a D2-D3 (fast-GPIO) jumper -- both can stay
+ *  installed at once, one flash covers everything here.
  *
  *  Consolidates (from examples/Arduino_compatible_API/):
  *  test_Print_Stream_hierarchy, test_Serial1, test_Serial_BIN_and_write,
  *  test_Serial_stream_helpers, test_String_plus_numeric_Printable_fastGPIO.
  *
- *  Wiring needed: D0-D1 jumper (Serial1 TX/RX loopback), D2-D3 jumper
+ *  Wiring needed: a Serial1 TX/RX loopback jumper -- on FRDM-MCXA153
+ *  that's D0-D1, but on FRDM-MCXN947 Serial1 lives on the MikroBus
+ *  header instead (MB_TX-MB_RX), since D0/D1 there conflicts with Wire
+ *  over FlexComm2 (see PIN_MAPPING_N947.md) -- plus a D2-D3 jumper
  *  (fast-GPIO register test drives D2, observes it on D3).
  */
 
