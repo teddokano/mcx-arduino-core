@@ -5,6 +5,11 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.4.1] - 2026-08-23
+
+### Fixed
+- `SPI.beginTransaction()` could silently fail to change the actual SPI clock. `SPI::frequency()` disabled the LPSPI module and immediately called the SDK's `LPSPI_MasterSetBaudRate()`, but that function's own guard reads the module's enable bit back before the disable is observable across the LPSPI's clock domain, so it saw the module as still enabled and returned without programming the clock divider — confirmed directly: reading the enable bit right after clearing it returns set, the very next read returns clear. A second, compounding defect made this far worse in practice: the divider variable being written back was left uninitialized, and the SDK call's success/failure was never checked, so whenever the guard silently failed, an indeterminate stack value got written as the actual clock divider — different (and wrong) on every build, which made the bug look like it came and went with unrelated code changes. Fixed by seeding the divider from the currently-programmed value instead of leaving it uninitialized, waiting (bounded) for the disable to actually take effect before calling into the SDK, and only writing the divider back if that call reports success. Found and hardware-verified (both boards) via a real application hitting it hard — an SD card library sharing one SPI bus with a display, switching between two different clock speeds every frame ([Issue #4](https://github.com/teddokano/mcx-arduino-core/issues/4))
+
 ## [0.4.0] - 2026-08-22
 
 ### Added
