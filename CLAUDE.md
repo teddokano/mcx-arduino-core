@@ -1375,6 +1375,8 @@ Windowsで`Blink`スケッチをビルドしたところ、`variants/*/src/fsl_*
 
 **実機確認（1）完了**: ユーザーがA153・N947両方で実行、両ボードとも「ALL OK」。実測値もIssue記載の測定値（24MHz≈2ms、250kHz≈69-72ms、50kHz≈360-383ms）とほぼ一致することを確認
 
+**実機確認（2）完了**: `release_check/05_spi_loopback`（同じ配線のまま連続実行）もA153・N947両方で全項目「ALL OK」——セッション中の複数回のSPISettings/legacy API切り替えを含め、今回の修正で回帰が無いことを確認
+
 ---
 
 ## 動作確認済み
