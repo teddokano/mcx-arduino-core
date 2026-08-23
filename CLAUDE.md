@@ -1400,6 +1400,8 @@ Windowsで`Blink`スケッチをビルドしたところ、`variants/*/src/fsl_*
 
 これでv0.4.1のリリース作業が全て完了。Issue #4（`SPI::frequency()`のLPSPIボーレート設定不具合）を修正し、macOS・Windows・Linuxの3プラットフォームで検証済み
 
+**`main`確定後の最終インストール確認**: checksum確定・Issueクローズ・ブランチ整理が終わった後、ユーザーがこのMacで改めて開発用symlinkを退避し、ステージングではなく本番の`main`ブランチURL経由で`0.4.1`をクリーンインストール——問題ないことを確認
+
 ---
 
 ## 動作確認済み
