@@ -1394,6 +1394,11 @@ Windowsで`Blink`スケッチをビルドしたところ、`variants/*/src/fsl_*
 - `gh release create 0.4.1`でGitHub Release作成、ダウンロードして再計算したchecksumがローカルと完全一致することを確認
 - `staging-0.4.1`ブランチを作成、`package_nxp_mcx_index.json`に0.4.1エントリを新規追加してpush
 - **macOS・Windows・Linuxの3プラットフォームでの検証完了**: ユーザーが`staging-0.4.1`URL経由でBoards Managerインストールを試し、全プラットフォームで異常なしと報告
+- `main`のchecksum確定作業: 前回（v0.4.0）の教訓を踏まえ、`update_package_index.yml`実行前に`package_nxp_mcx_index.json`へ0.4.1のプレースホルダーエントリを追加してからpush（`cc2d55c`）。`workflow_dispatch`を`main`に対して実行し一発成功、確定値（SHA-256 `7639ad06e628e82d18d3c3e5a4af1429eb0615ca6743955f2901f214f1fb3d91`、9264830 bytes）がローカル計算値と完全一致することを確認
+- GitHub Issue #4は`main`マージ時のコミットメッセージ（`Fixes #4`）により既に自動クローズ済み——「Shipped in 0.4.1」コメントを追加してリリースへのリンクを残した
+- `staging-0.4.1`・`0.4.1-dev`ブランチともマージ済み・役目終了のためリモート・ローカルとも削除
+
+これでv0.4.1のリリース作業が全て完了。Issue #4（`SPI::frequency()`のLPSPIボーレート設定不具合）を修正し、macOS・Windows・Linuxの3プラットフォームで検証済み
 
 ---
 
