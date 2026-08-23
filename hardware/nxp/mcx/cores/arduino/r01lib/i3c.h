@@ -92,7 +92,11 @@ public:
 	/** Destructor to free I3C resource
 	 */
 	virtual ~I3C();
-	
+
+	using I2C::frequency;	// I3C's own frequency() overloads below have different
+							// signatures from I2C::frequency(uint32_t), which would
+							// otherwise hide it from lookup through an I3C object
+
 	/** Frequency settings
 	 *
 	 * @param i2c_freq    (optional) SCL frequency in Hz for I2C operation
@@ -101,9 +105,6 @@ public:
 	 *
 	 *  @note use zero or DEFAULT_FREQ_SETTING to leave a given rate at its default
 	 */
-	using I2C::frequency;	// I3C's own frequency() overloads below have different
-							// signatures from I2C::frequency(uint32_t), which would
-							// otherwise hide it from lookup through an I3C object
 	virtual void	frequency( uint32_t i2c_freq, uint32_t i3c_od_freq, uint32_t i3c_pp_freq );
 
 	/** All frequency settings (I2C, I3C open-drain, I3C push-pull) reverted to default
