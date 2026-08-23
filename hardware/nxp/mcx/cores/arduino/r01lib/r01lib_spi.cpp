@@ -350,12 +350,33 @@ void SPI::frequency( uint32_t frequency )
 	masterConfig.lastSckToPcsDelayInNanoSec    = 1000000000U / (masterConfig.baudRate * 2U);
 	masterConfig.betweenTransferDelayInNanoSec = 1000000000U / (masterConfig.baudRate * 2U);
 
-	uint32_t	tcr_prescale;
+	//	Seeded with the prescale currently in TCR, not left uninitialized:
+	//	LPSPI_MasterSetBaudRate() returns 0 *without* touching this out-param
+	//	if it finds the module still enabled or not in master mode, and
+	//	writing an indeterminate value into TCR[PRESCALE] would set the bus
+	//	to a random divider between /1 and /128. That is not theoretical --
+	//	it produced a silent 128x SPI slowdown on FRDM-MCXN947 that flipped
+	//	on and off with unrelated edits to the sketch, since the value taken
+	//	was whatever happened to be on the stack.
+	uint32_t	tcr_prescale	= (unit_base->TCR & LPSPI_TCR_PRESCALE_MASK) >> LPSPI_TCR_PRESCALE_SHIFT;
 
 	LPSPI_Enable( unit_base, false );
 
-	LPSPI_MasterSetBaudRate( unit_base, masterConfig.baudRate, master_clk_freq, &tcr_prescale );
-	unit_base->TCR = (unit_base->TCR & ~LPSPI_TCR_PRESCALE_MASK) | LPSPI_TCR_PRESCALE( tcr_prescale );
+	//	That CR write is not observable immediately -- the LPSPI sits on its
+	//	own clock domain, and reading CR straight back can still show MEN
+	//	set. LPSPI_MasterSetBaudRate() uses exactly that read as its guard
+	//	and silently gives up if it sees MEN, leaving the requested clock
+	//	unapplied: measured on FRDM-MCXA153 as TCR[PRESCALE] never moving
+	//	no matter whether 50kHz or 24MHz was asked for. So spin until the
+	//	disable is observable. Bounded, so a genuinely wedged peripheral
+	//	degrades to "keeps the previous clock" rather than hanging here.
+	for ( int i = 0; (unit_base->CR & LPSPI_CR_MEN_MASK) && (i < 1000); i++ )
+		;
+
+	if ( LPSPI_MasterSetBaudRate( unit_base, masterConfig.baudRate, master_clk_freq, &tcr_prescale ) != 0U )
+	{
+		unit_base->TCR = (unit_base->TCR & ~LPSPI_TCR_PRESCALE_MASK) | LPSPI_TCR_PRESCALE( tcr_prescale );
+	}
 
 	LPSPI_Enable( unit_base, true );
 
