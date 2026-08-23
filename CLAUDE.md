@@ -1392,7 +1392,8 @@ Windowsで`Blink`スケッチをビルドしたところ、`variants/*/src/fsl_*
 - リリースzip: `git archive --format=zip --prefix=mcx/ HEAD:hardware/nxp/mcx`で作成。SHA-256 `7639ad06e628e82d18d3c3e5a4af1429eb0615ca6743955f2901f214f1fb3d91`、9264830 bytes
 - **リリース前ローカル検証**: zipを展開し実ディレクトリ`0.4.1`としてBoards Manager相当の設置をして`test_SPI_frequency_accuracy`（A153）・`05_spi_loopback`（N947）のコンパイル確認——両方成功
 - `gh release create 0.4.1`でGitHub Release作成、ダウンロードして再計算したchecksumがローカルと完全一致することを確認
-- `staging-0.4.1`ブランチを作成、`package_nxp_mcx_index.json`に0.4.1エントリを新規追加してpush——3プラットフォーム検証はこれから
+- `staging-0.4.1`ブランチを作成、`package_nxp_mcx_index.json`に0.4.1エントリを新規追加してpush
+- **macOS・Windows・Linuxの3プラットフォームでの検証完了**: ユーザーが`staging-0.4.1`URL経由でBoards Managerインストールを試し、全プラットフォームで異常なしと報告
 
 ---
 
