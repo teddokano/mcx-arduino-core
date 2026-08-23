@@ -1387,6 +1387,13 @@ Windowsで`Blink`スケッチをビルドしたところ、`variants/*/src/fsl_*
 - **ドキュメント再監査**: Explore agentに軽量監査を依頼（今回はSPI一箇所のみの狭い変更のため、フル監査ではなく新規サンプル`test_SPI_frequency_accuracy`のクロスリファレンス要否・バージョン表記の残存・リンク切れ・CHANGELOG/platform.txtの整合性、の5項目に絞った）。全項目問題なし——新規サンプルは他の単独診断用サンプル（`test_delayMicroseconds`等）と同じく他ドキュメントから参照されないのが通常のパターンと確認、単独のままでOKと判定
 - **Doxygen再生成**: `docs/api/`が`r01lib_spi.cpp`（今回の修正、詳細なコメント込み）より古いままだったため再生成が必要と判明。生成時に新規warning（`I3C::frequency()`のDoxygenコメントが誤った宣言に関連付けられている）を検出——`-Woverloaded-virtual`修正（`66f1293`）で追加した`using I2C::frequency;`がコメントブロックと実際の3引数版`frequency()`宣言の間に割り込んでいたため、Doxygenがコメントを1引数版（`using`宣言側）に誤帰属させていた。`using`宣言をコメントブロックより前に移動して解消（他2箇所の`using`宣言は既に空行区切りで正しい位置にあったため無変更）。あわせて`Doxyfile`の`PROJECT_NUMBER`が`0.4.0`のまま更新し忘れていたことにユーザーが気づき指摘、`0.4.1`に修正——「Doxygenに表示されるバージョン番号にも注意」という一言が、リリースのたびに忘れがちなこの項目を思い出すきっかけになった。`i3c.h`のdeclaration順序変更を伴うため念のため両ボードのコンパイル確認（バイナリサイズ完全一致）・全62サンプル回帰スイープも実施、新規失敗なし
 
+### v0.4.1リリース実行
+- ライセンスチェック（新規のSDKコードコピーなし、既存記載で十分と判断）・最終`git status`確認・最終回帰スイープを経て、`0.4.1-dev`（`19e84a6`）→`main`へ`--ff-only`でマージ（9コミット）・push
+- リリースzip: `git archive --format=zip --prefix=mcx/ HEAD:hardware/nxp/mcx`で作成。SHA-256 `7639ad06e628e82d18d3c3e5a4af1429eb0615ca6743955f2901f214f1fb3d91`、9264830 bytes
+- **リリース前ローカル検証**: zipを展開し実ディレクトリ`0.4.1`としてBoards Manager相当の設置をして`test_SPI_frequency_accuracy`（A153）・`05_spi_loopback`（N947）のコンパイル確認——両方成功
+- `gh release create 0.4.1`でGitHub Release作成、ダウンロードして再計算したchecksumがローカルと完全一致することを確認
+- `staging-0.4.1`ブランチを作成、`package_nxp_mcx_index.json`に0.4.1エントリを新規追加してpush——3プラットフォーム検証はこれから
+
 ---
 
 ## 動作確認済み
