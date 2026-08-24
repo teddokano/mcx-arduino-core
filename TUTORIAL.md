@@ -221,6 +221,15 @@ void loop() {
   }
 }
 ```
+
+You may notice a second `got: 0` line show up a moment after each real
+number. That's not a bug — it's how `parseInt()` behaves everywhere. The
+Serial Monitor sends the digits followed by a newline (`42\n`); `parseInt()`
+consumes only the digits and leaves the newline unread. On the next `loop()`,
+that leftover newline gets discarded, then `parseInt()` waits (up to its
+default 1-second timeout) for a digit that never comes, and returns 0.
+Classic Arduino boards like the UNO R3 do the exact same thing.
+
 ![input_serial](img/input_serial.png)
 ### 2.3. Strings
 
@@ -297,7 +306,7 @@ way around (pulled low by default, reads `HIGH` when pressed).
 `analogRead` reads pins `A0`-`A3` through the on-chip LPADC and returns a
 10-bit value (0-1023), same range as classic Arduino boards. (`A4`/`A5` exist
 as pin names but aren't ADC-capable on this board — see the
-[pin mapping table](README.md#pin-mapping-frdm-mcxa153).)
+[pin mapping table](PIN_MAPPING_A153.md).)
 
 Connect a potentiometer (or any 0-3.3V analog signal) to `A0`, or just try it
 unconnected to see floating-pin noise:
