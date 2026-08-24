@@ -221,7 +221,7 @@ void loop() {
   }
 }
 ```
-
+![input_serial](img/input_serial.png)
 ### 2.3. Strings
 
 `String` works the same way as on classic Arduino — build text out of

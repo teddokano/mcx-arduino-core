@@ -183,7 +183,7 @@ void loop() {
   }
 }
 ```
-
+![input_serial](img/input_serial.png)
 ### 2.3. 文字列（String）
 
 `String`は従来のArduinoと同じように使えます —— `+`で数値や他の文字列を連結し、そのまま`Serial.print()`/`println()`に渡せます:
