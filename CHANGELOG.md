@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 - [`mcxPinState`](https://github.com/teddokano/mcxPinState) is now bundled with this package as `libraries/mcxPinState/`, so it's available to sketches immediately after installing this core — no separate library install needed. Its own GitHub repo remains the primary development location; the bundled copy is a release-time-synced snapshot. Zero-cost unless a sketch actually constructs a `PinState` object
+- `examples/Arduino_compatible_API/test_Wire2_frequency_accuracy_N947` — timing-based check (no logic analyzer required, no device required) of whether `Wire2.setClock()` actually changes `Wire2`'s (MikroBus I2C, N947 only) SCL rate. Written to investigate whether the same class of bug found and fixed for `SPI`/`SPI1` in v0.4.1 ([Issue #4](https://github.com/teddokano/mcx-arduino-core/issues/4)) — a FlexComm instance's clock source left at its too-slow reset default instead of being switched to a faster one — also affects `Wire2`'s FlexComm3
+
+### Changed
+- `test_combined_peripherals` (and its `release_check/09` mirror) now also exercises `SPI1` on FRDM-MCXN947 (previously A153-only) and adds a `Wire2` bus probe on FRDM-MCXN947 in place of `Serial1` (which N947 can't run alongside `Wire1`/I3C — see `variants/frdm_mcxn947/README.md`), closing a gap the sketch's own comment had flagged since v0.4.0
 
 ## [0.4.1] - 2026-08-23
 
