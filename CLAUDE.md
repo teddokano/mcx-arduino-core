@@ -1402,6 +1402,32 @@ Windowsで`Blink`スケッチをビルドしたところ、`variants/*/src/fsl_*
 
 **`main`確定後の最終インストール確認**: checksum確定・Issueクローズ・ブランチ整理が終わった後、ユーザーがこのMacで改めて開発用symlinkを退避し、ステージングではなく本番の`main`ブランチURL経由で`0.4.1`をクリーンインストール——問題ないことを確認
 
+### v0.4.1リリース後: `main`に直接コミットしたドキュメント修正2件
+新機能を説明するものではなく、既存の（リリース済みの）挙動・リンクの誤りを正すだけの修正だったため、開発用ブランチを切らず`main`に直接コミット。
+
+- **`Serial.parseInt()`のチュートリアル例で「なぜ`0`がもう1行出るのか」を追記**: ユーザーから「シリアルモニタで数字を送ると、しばらくして別行で`0`も出る？」と質問。`Stream::_parseNumber()`（`_timed_peek()`で数字でない先頭文字を読み捨ててから`_timed_peek()`+`read()`で数字を蓄積し、非数字は未読のまま残す実装）を読み、「シリアルモニタが送る改行`\n`が1回目の`parseInt()`では消費されずに残り、2回目の`loop()`でその改行が読み捨てられた後、`parseInt()`がタイムアウト（デフォルト約1秒）まで数字を待って`0`を返す」という典型的なArduinoの挙動（UNO R3でも同じ）と判明。ユーザーの判断で「コードは変更しない、この`0`が出る理由だけ書いておく」と決定——`TUTORIAL.md`/`TUTORIAL.ja.md`のSerial出力セクションに説明段落を追記
+- **「2.5. アナログ入力」の壊れたリンクを修正**: ユーザーが「詳細はピン配置表を参照」のリンク切れを発見。`README.md#pin-mapping-frdm-mcxa153`という、ピン配置表を`PIN_MAPPING_A153.md`/`PIN_MAPPING_N947.md`に分割する前の古いアンカーが両チュートリアルに残っていたと判明。`PIN_MAPPING_A153.md`への直接リンクに修正（他に同じ古いアンカーを参照しているファイルがないことも確認済み）
+- `fa8e23d`としてコミット・push
+
+### 「Unofficial list of 3rd party boards support urls」への掲載確認
+ユーザーから、Arduino公式の`package_index.json`へのPRでの反映方法を質問——公式バンドルへの掲載は公式パートナーシップが必要でPRの余地はないと回答した一方、コミュニティ運営のGitHub Wikiページ「Unofficial list of 3rd party boards support urls」経由での告知は別枠と説明。ユーザーが「すでに投稿していなかったか」と確認、実際に`teddokano`名義で掲載済みと確認。WebFetchの要約が「120MHz」という実際にはページ上に存在しない詳細を誤って報告した一幕があり（ユーザーの指摘で厳密な逐語確認により訂正）、FRDM-MCXN947の行が未掲載だった点もユーザー自身が追記・確認済み
+
+---
+
+## v0.4.2 で作業中の内容（`0.4.2-dev` ブランチ・未リリース）
+
+`0.4.2-dev`ブランチを新規作成、`platform.txt`の`version`/`version.major`/`version.minor`/`version.patch`を0.4.1→0.4.2に更新（`4a0df5c`）。
+
+### `mcxPinState`をこのボード用のバンドルライブラリとしてリリースに含める
+ユーザーから「別ライブラリとしていたmcxPinStateをこのボード用のライブラリとしてリリースに含める」と依頼。従来は`https://github.com/teddokano/mcxPinState`という別リポジトリで、ユーザーが手動でスケッチブックの`libraries/`にクローンする必要があった。Arduinoのボードパッケージが標準的にバンドルライブラリを配布する慣習（`hardware/<vendor>/<arch>/libraries/<LibName>/`、AVR公式コアがSPI/Wire/EEPROM等を同梱するのと同じ仕組み——ボードパッケージインストール後、スケッチから自動的に使えるようになる）を使って組み込む方針で着手。
+
+- **開発拠点の扱いをAskUserQuestionで確認**: 「mcxPinStateリポジトリを引き続き開発の本拠地とし、mcx-arduino-core側はリリース時に同期するコピー」という選択肢（Recommended）をユーザーが選択——既存のNXP SDKドライバファイル（`cores/arduino/sdk/`）に対して既に採用している「開発は元のプロジェクトで行い、mcx-arduino-core側はリリース時に同期する取り込み済みコピー」というパターンをそのまま踏襲する形
+- `mkdir -p hardware/nxp/mcx/libraries && rsync -a --exclude='.git' --exclude='.gitignore' --exclude='.DS_Store' /Users/tedd/dev/Arduino/mcxPinState/ hardware/nxp/mcx/libraries/mcxPinState/`でコピー（コピー時点の`mcxPinState`側は`origin/main`と同期済み、`b2e9182`）。`library.properties`の`architectures=mcx`は元から正しく`hardware/nxp/mcx/`のarch名を指しており変更不要
+- **`MCXPINSTATE_VERIFIED_AGAINST`の自己チェック警告に対応**: バンドル後の初回コンパイルで`PinState.cpp`自身が`#warning`（「ALIAS_NAMES/KNOWN_INSTANCESを現在のarduino_io.hと突き合わせて再確認し、MCXPINSTATE_VERIFIED_AGAINSTを上げること」、`#error`ではなく`#warning`——ピン命名を一切変えないリリースの方がむしろ多いため、というコメントが元々`PinState.cpp`に付いている）を発した（それまで`0, 4, 0`のまま据え置きだったため）。実際に`ALIAS_NAMES[]`（52エントリ）と`arduino_io.h`の`arduino_pin_by_number[]`を全項目突き合わせ——順序・内容とも完全一致、ドリフトなしと確認。`KNOWN_INSTANCES`（`Wire`/`Wire1`/`Wire2`/`SPI`/`SPI1`/`Serial`/`Serial1`の使用ピンを保持するテーブル）も、参照している各マクロ（`I2C_SDA`/`I3C_SDA`/`MB_SDA`/`ARD_MOSI`/`MB_MOSI`/`USBTX`/`D0`/`MB_TX`等）が現在の`arduino_io.h`でも同じ値・同じ意味のまま存在することを確認、N947限定の`Wire2`・A153/N947で異なる`Serial1`のピン分岐（`FRDM_MCXA153`/`FRDM_MCXN947`）も現状のFlexComm資源競合の制約と整合していることを再確認。ドリフトなしと確定したため`MCXPINSTATE_VERIFIED_AGAINST`を`MCX_ARDUINO_CORE_VERSION_VAL(0, 4, 2)`に更新——**バンドルされた側（`hardware/nxp/mcx/libraries/mcxPinState/`）だけでなく、開発本拠地である`mcxPinState`リポジトリ本体（`/Users/tedd/dev/Arduino/mcxPinState/`）側にも同じ修正をコミット**（`d881805`、ローカルのみ、GitHubへの未push）
+- 両ボードで5つの同梱サンプル（`BasicPinDump`/`ConflictDemo`/`MultiPeripheralDump`/`PullModeCheck`/`CombinedPeripheralsAudit`）を`--warnings all`でコンパイル確認——警告ゼロ（バンドル前に出ていた`#warning`も解消）。既存`examples/`全体の回帰スイープも実施、新規失敗なし（既知の失敗のみ：`P3T1755.h`依存5本、N947限定サンプルのA153誤コンパイル、gitignore対象の外部ライブラリクローン群`examples/tests/`）
+- **ドキュメント更新**: `CHANGELOG.md`に`[Unreleased]`セクションを新設（バンドル化の説明）。`docs/mcxpinstate_guide.md`の「Installing it」セクションを、手動`git clone`手順から「ボードパッケージインストール後は追加手順不要、開発版が欲しい場合のみ本家リポジトリを参照」という説明に更新。`README.md`/`README.ja.md`のmcxPinStateへの言及を「専用ライブラリ」→「同梱の専用ライブラリ」に、Architectureのディレクトリツリーにも`libraries/mcxPinState/`の行を追加
+- `4ac24ee`としてコミット（`0.4.2-dev`、未push）
+
 ---
 
 ## 動作確認済み
