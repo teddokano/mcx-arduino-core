@@ -1,12 +1,12 @@
 # Advanced: Debugging Pin Ownership with mcxPinState
 
-[mcxPinState](https://github.com/teddokano/mcxPinState) is a separate,
-companion library that answers a question this core's own API can't:
-*right now, which live object actually owns this pin, and does the
-hardware agree?* Two peripherals sharing a physical pin by accident, or a
-sketch calling `pinMode()` on a pin something else already claimed, are
-silent bugs otherwise — everything compiles, and the symptom shows up as
-one peripheral mysteriously not working, with no obvious cause.
+[mcxPinState](https://github.com/teddokano/mcxPinState) answers a question
+this core's own API can't: *right now, which live object actually owns
+this pin, and does the hardware agree?* Two peripherals sharing a physical
+pin by accident, or a sketch calling `pinMode()` on a pin something else
+already claimed, are silent bugs otherwise — everything compiles, and the
+symptom shows up as one peripheral mysteriously not working, with no
+obvious cause.
 
 It exists because this project's own development kept running into exactly
 that class of bug — see mcxPinState's own README for the real ones it
@@ -18,17 +18,16 @@ hardware).
 
 ## Installing it
 
-Not on the Arduino Library Manager — install manually into your sketchbook's
-`libraries/` folder:
+Bundled with this core from v0.4.2 onward: once you've installed
+mcx-arduino-core through the Boards Manager, `mcxPinState` is already
+available under *Sketch → Include Library* — no separate install step.
 
-```bash
-cd ~/Documents/Arduino/libraries   # or wherever your sketchbook lives
-git clone https://github.com/teddokano/mcxPinState.git
-```
-
-(Or download the repo as a ZIP and use the IDE's *Sketch → Include Library
-→ Add .ZIP Library...*.) Restart the Arduino IDE afterward so it picks up
-the new library.
+[mcxPinState's own GitHub repo](https://github.com/teddokano/mcxPinState)
+remains where it's actually developed; the copy shipped here is a snapshot
+taken at release time. If you want the latest in-development version
+ahead of the next mcx-arduino-core release, or want to file an issue
+against the library itself, that's the place — cloning it into your own
+sketchbook's `libraries/` folder will shadow the bundled copy.
 
 ## Basic usage
 

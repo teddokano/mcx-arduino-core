@@ -21,7 +21,7 @@ Past the standard Arduino API, a few advanced guides go deeper:
 GPIO speed, [native I3C via r01lib](docs/advanced_r01lib_i3c.md) for
 functionality `Wire`-shaped APIs can't expose, and
 [debugging pin ownership with mcxPinState](docs/mcxpinstate_guide.md), a
-companion library for exactly that.
+bundled companion library for exactly that.
 
 [![youtube](img/youtube.png) Setup guide video](https://youtu.be/g_rDAxnVnro) is available. 
 
@@ -89,6 +89,9 @@ mcx-arduino-core/
 │   │   ├── r01lib/           #   r01lib hardware driver core (Serial, I2C/I3C, SPI, GPIO,
 │   │   │                     #   AnalogIn, PwmOut, InterruptIn, Ticker, ...)
 │   │   └── sdk/               #   NXP MCX SDK driver files common to all supported chips
+│   ├── libraries/
+│   │   └── mcxPinState/       # Bundled companion library (see docs/mcxpinstate_guide.md);
+│   │                          #   developed in its own repo, synced here at release time
 │   ├── tools/
 │   │   ├── upload.sh         # Upload script (auto-detects LinkServer), upload.bat for Windows
 │   │   └── gdb-bridge/       # Bridges Arduino IDE 2's cortex-debug (expects OpenOCD) to

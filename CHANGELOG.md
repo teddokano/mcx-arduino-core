@@ -5,6 +5,11 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- [`mcxPinState`](https://github.com/teddokano/mcxPinState) is now bundled with this package as `libraries/mcxPinState/`, so it's available to sketches immediately after installing this core — no separate library install needed. Its own GitHub repo remains the primary development location; the bundled copy is a release-time-synced snapshot. Zero-cost unless a sketch actually constructs a `PinState` object
+
 ## [0.4.1] - 2026-08-23
 
 ### Fixed

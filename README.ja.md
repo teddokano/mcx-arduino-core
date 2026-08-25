@@ -19,7 +19,7 @@ Arduino API対応状況の一覧は[API_COMPATIBILITY.md](API_COMPATIBILITY.md)�
 標準Arduino APIの先にある上級者向けガイドもあります（いずれも英語のみ）:
 [MCUXpresso SDKを直接呼び出す](docs/advanced_sdk_tuning.md)（GPIO速度チューニング）、
 [r01libによるネイティブI3C](docs/advanced_r01lib_i3c.md)（`Wire`形式のAPIでは扱えない機能向け）、
-[mcxPinStateによるピン所有状況のデバッグ](docs/mcxpinstate_guide.md)（そのための専用ライブラリ）。
+[mcxPinStateによるピン所有状況のデバッグ](docs/mcxpinstate_guide.md)（そのためのライブラリ、本パッケージに同梱済み）。
 
 [![youtube](img/youtube.png) セットアップガイド動画](https://youtu.be/g_rDAxnVnro)もあります。
 
@@ -86,6 +86,9 @@ mcx-arduino-core/
 │   │   ├── r01lib/           #   r01libハードウェアドライバコア（Serial、I2C/I3C、SPI、GPIO、
 │   │   │                     #   AnalogIn、PwmOut、InterruptIn、Ticker等）
 │   │   └── sdk/               #   対応する全チップ共通のNXP MCX SDKドライバファイル
+│   ├── libraries/
+│   │   └── mcxPinState/       # 同梱の専用ライブラリ（docs/mcxpinstate_guide.md参照）。
+│   │                          #   開発は本体のリポジトリで行い、リリース時にここへ同期
 │   ├── tools/
 │   │   ├── upload.sh         # アップロードスクリプト（LinkServer自動検出）、Windows用はupload.bat
 │   │   └── gdb-bridge/       # Arduino IDE 2のcortex-debug（OpenOCDを想定）をLinkServer自身の
