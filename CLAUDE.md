@@ -1452,6 +1452,7 @@ Windowsで`Blink`スケッチをビルドしたところ、`variants/*/src/fsl_*
 - **C444は「半分できている」わけではない**: `r01lib`に`CPU_MCXC444VLH`分岐はあるが、(1) `r01lib.h`で`I3C_SUPPORTED`が定義されない＝I3Cペリフェラル自体が無い、(2) `AnalogIn.h`/`PwmOut.h`にはC444分岐が**一切無い**（A153とN947のみ）。しかもC444はKinetis系でLPADC/FlexPWMではなくADC16/TPMという別ペリフェラルのため、移植ではなく新規実装が必要——`analogRead`/`analogWrite`/`analogWriteFrequency`/`tone`が全部未実装。I2Cも`fsl_lpi2c`ではなく`fsl_i2c`、Cortex-M0+でFPU無し。GPIO/Serial/I2C/SPIの骨組みだけがある状態で、単独で1バージョン分の規模（ユーザーも「その通り．手間が大きい」と同意）
 - **オンボードセンサーの違い（ユーザーからの情報）**: C444とN236にはI3Cセンサーが無く、代わりに**加速度センサ**が載っている。したがってこの2ボードでの実機検証は、既存2ボードが使っている「`Wire1`(I3C)経由のP3T1755温度センサー」ではなく、プレーンI2C経由の加速度センサを使う形になる——`test_combined_peripherals`・`release_check/01`等、現状`Wire1`+`P3T1755`前提で書かれているサンプル群の設計に影響するため、0.6のポーティング手順書で扱うべき項目
 - **A156はA153の兄弟、N236はN947の兄弟**で流用が効く。3枚目を足すならA156が最も安い（N236は上記の加速度センサの件が追加で乗る）
+- **回路図が`ref/`に揃っている**（ユーザーが配置。`ref/`は`.gitignore`対象＝リポジトリ管理外なので、この記録が無いと存在に気づけない）: `FRDM-MCXA153.pdf`・`FRDM-MCXA156.pdf`・`FRDM-MCXC444.pdf`・`FRDM-MCXN236.pdf`・`FRDM-MCXN947SH.pdf`。ボード追加時のピン確認で参照する。**注意: NXPの回路図PDFは2カラムレイアウトのため`pdftotext`でのテキスト抽出は信頼できない**（無関係な項目が同じ行に混ざる）——N947のanalogWriteピン特定時に確立した通り、`Read`ツールでページを画像として直接開いて視認する方式を使うこと。あわせて`ref/r01lib_pin_table.xlsx`（各ピンのavailability一覧）も利用可能
 
 ---
 
