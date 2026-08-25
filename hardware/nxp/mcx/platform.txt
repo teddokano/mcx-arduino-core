@@ -1,5 +1,5 @@
 name=NXP FRDM MCX Series
-version=0.4.1
+version=0.4.2
 # version.major/minor/patch mirror the version= line above (split by hand,
 # since platform.txt's {} substitution can't parse a dot-separated string
 # itself) -- keep these three in lockstep with version= at every release.
@@ -8,7 +8,7 @@ version=0.4.1
 # sees via mcx_arduino_core_version.h (included from Arduino.h).
 version.major=0
 version.minor=4
-version.patch=1
+version.patch=2
 
 compiler.path={runtime.tools.arm-none-eabi-gcc.path}/bin/
 compiler.cpu_flags=-mcpu={build.mcu} {build.fpu_flags} -mthumb
