@@ -1427,6 +1427,7 @@ Windowsで`Blink`スケッチをビルドしたところ、`variants/*/src/fsl_*
 - 両ボードで5つの同梱サンプル（`BasicPinDump`/`ConflictDemo`/`MultiPeripheralDump`/`PullModeCheck`/`CombinedPeripheralsAudit`）を`--warnings all`でコンパイル確認——警告ゼロ（バンドル前に出ていた`#warning`も解消）。既存`examples/`全体の回帰スイープも実施、新規失敗なし（既知の失敗のみ：`P3T1755.h`依存5本、N947限定サンプルのA153誤コンパイル、gitignore対象の外部ライブラリクローン群`examples/tests/`）
 - **ドキュメント更新**: `CHANGELOG.md`に`[Unreleased]`セクションを新設（バンドル化の説明）。`docs/mcxpinstate_guide.md`の「Installing it」セクションを、手動`git clone`手順から「ボードパッケージインストール後は追加手順不要、開発版が欲しい場合のみ本家リポジトリを参照」という説明に更新。`README.md`/`README.ja.md`のmcxPinStateへの言及を「専用ライブラリ」→「同梱の専用ライブラリ」に、Architectureのディレクトリツリーにも`libraries/mcxPinState/`の行を追加
 - `4ac24ee`としてコミット（`0.4.2-dev`、未push）
+- **IDEでの表示確認**: ユーザーが手元にインストール済みだった同名の`mcxPinState`ライブラリ（スケッチブックの`libraries/`側）を一時退避したうえでArduino IDEを確認、File→Examples以下にボードバンドル版の`mcxPinState`のサンプル一式が正しく表示されることを確認
 
 ---
 
