@@ -18,7 +18,7 @@ hardware).
 
 ## Installing it
 
-Bundled with this core from v0.4.2 onward: once you've installed
+Bundled with this core from v0.5.0 onward: once you've installed
 mcx-arduino-core through the Boards Manager, `mcxPinState` is already
 available under *Sketch → Include Library* — no separate install step.
 

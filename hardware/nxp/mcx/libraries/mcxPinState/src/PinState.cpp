@@ -29,7 +29,7 @@ namespace {
 // 0.4.0 onward (mcx_arduino_core_version.h) -- on an older core this
 // whole check is silently skipped, not an error, since there's nothing
 // to compare against.
-#define MCXPINSTATE_VERIFIED_AGAINST	MCX_ARDUINO_CORE_VERSION_VAL( 0, 4, 2 )
+#define MCXPINSTATE_VERIFIED_AGAINST	MCX_ARDUINO_CORE_VERSION_VAL( 0, 5, 0 )
 
 #if defined( MCX_ARDUINO_CORE_VERSION ) && ( MCX_ARDUINO_CORE_VERSION > MCXPINSTATE_VERIFIED_AGAINST )
 #warning "mcxPinState's ALIAS_NAMES/KNOWN_INSTANCES (PinState.cpp) were last verified against an older mcx-arduino-core release than this build -- re-check them against the current arduino_io.h, then bump MCXPINSTATE_VERIFIED_AGAINST"

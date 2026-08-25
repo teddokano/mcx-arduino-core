@@ -1414,9 +1414,13 @@ Windowsで`Blink`スケッチをビルドしたところ、`variants/*/src/fsl_*
 
 ---
 
-## v0.4.2 で作業中の内容（`0.4.2-dev` ブランチ・未リリース）
+## v0.5.0 で作業中の内容（`0.5.0-dev` ブランチ・未リリース）
 
-`0.4.2-dev`ブランチを新規作成、`platform.txt`の`version`/`version.major`/`version.minor`/`version.patch`を0.4.1→0.4.2に更新（`4a0df5c`）。
+**当初`0.4.2`として開始したが、下記「0.5以降のロードマップ方針」の検討を経て0.5.0へ繰り上げた**（ユーザー判断）。理由: (1) 0.4.2は既に「緊急性なし、他の問題を待ってまとめてリリース」という判断になっており単独で出す動機がない、(2) 中身の`mcxPinState`バンドル＝新規同梱コンポーネントはそもそもパッチではなくマイナーバンプが妥当な性質、(3) 積み残していた`Wire2`のクロック実測は0.5のCI作業と同じタイミングで実機を触るため検証を1回にまとめられる。ブランチを`0.4.2-dev`→`0.5.0-dev`にリネーム（リモートも作り直し）、`platform.txt`の`version`/`version.major`/`version.minor`/`version.patch`と`Doxyfile`の`PROJECT_NUMBER`、ローカル開発用symlinkも合わせて0.5.0系に更新。
+
+繰り上げ時に判明した副作用: **バージョンを上げると`mcxPinState`の`#warning`（`MCXPINSTATE_VERIFIED_AGAINST`）が再度発火する**——`MCX_ARDUINO_CORE_VERSION`が上がるたびに「テーブルを再確認せよ」と促す仕組みなので設計通りの挙動。今回は`arduino_io.h`が照合時点（`4ac24ee`）から一切変更されていないことを`git log 4ac24ee..HEAD -- arduino_io.h`が空であることで確認したうえで、定数を`0, 5, 0`へ更新（バンドル側・`mcxPinState`リポジトリ本体の両方）。**今後もリリース番号を動かすたびにこの警告が出るので、そのたびに「`arduino_io.h`が変わっているか」を確認してから定数を上げること**（変わっていなければ照合結果はそのまま有効）。あわせて`docs/mcxpinstate_guide.md`の「Bundled with this core from v0.4.2 onward」も0.5.0に修正
+
+以下、当初`0.4.2`として着手した作業の記録（内容はそのまま0.5.0に含まれる）。開始時に`0.4.2-dev`ブランチを新規作成し`platform.txt`を0.4.1→0.4.2に更新（`4a0df5c`）。
 
 ### `mcxPinState`をこのボード用のバンドルライブラリとしてリリースに含める
 ユーザーから「別ライブラリとしていたmcxPinStateをこのボード用のライブラリとしてリリースに含める」と依頼。従来は`https://github.com/teddokano/mcxPinState`という別リポジトリで、ユーザーが手動でスケッチブックの`libraries/`にクローンする必要があった。Arduinoのボードパッケージが標準的にバンドルライブラリを配布する慣習（`hardware/<vendor>/<arch>/libraries/<LibName>/`、AVR公式コアがSPI/Wire/EEPROM等を同梱するのと同じ仕組み——ボードパッケージインストール後、スケッチから自動的に使えるようになる）を使って組み込む方針で着手。
