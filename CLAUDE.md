@@ -1458,6 +1458,26 @@ Windowsで`Blink`スケッチをビルドしたところ、`variants/*/src/fsl_*
 - **A156はA153の兄弟、N236はN947の兄弟**で流用が効く。3枚目を足すならA156が最も安い（N236は上記の加速度センサの件が追加で乗る）
 - **回路図が`ref/`に揃っている**（ユーザーが配置。`ref/`は`.gitignore`対象＝リポジトリ管理外なので、この記録が無いと存在に気づけない）: `FRDM-MCXA153.pdf`・`FRDM-MCXA156.pdf`・`FRDM-MCXC444.pdf`・`FRDM-MCXN236.pdf`・`FRDM-MCXN947SH.pdf`。ボード追加時のピン確認で参照する。**注意: NXPの回路図PDFは2カラムレイアウトのため`pdftotext`でのテキスト抽出は信頼できない**（無関係な項目が同じ行に混ざる）——N947のanalogWriteピン特定時に確立した通り、`Read`ツールでページを画像として直接開いて視認する方式を使うこと。あわせて`ref/r01lib_pin_table.xlsx`（各ピンのavailability一覧）も利用可能
 
+### CIの設計: キャッシュ実測を踏まえた構成、GitHub Actions新設
+0.5の本題に着手。設計に入る前に「回帰スイープは回るたびに時間がかかるが早くならないか」とユーザーから質問があり、実測ベースで検討した:
+
+- **arduino-cliのcore.aビルドキャッシュ（`~/Library/Caches/arduino/cores/...`）を保持することが最大のレバーと実測で確認**: 同一ボードで、キャッシュが空の状態から1本目をコンパイルすると6.4秒、キャッシュが温まった状態で2本目をコンパイルすると2.0秒——3倍以上の差。これまでのローカルスイープは`~/Library/Caches/arduino/sketches/*`だけを消し`cores/*`は消していなかったため、実は既にこの恩恵の大部分を受けていたと判明
+- **ccacheの追加効果は実測したが限定的だった**: ccache masquerade（`arm-none-eabi-gcc`/`g++`をccache経由に差し替え、`--build-property compiler.path=...`で安全に上書き——実ツールチェーンや`platform.txt`自体には一切触れない）を組んで検証。CI runner新規起動を想定した「arduino-cli自身のキャッシュは毎回冷たいがccacheだけ温かい」ケースで6.47秒→5.60秒（13%減）、ローカル反復開発を想定した「両方温かい」ケースでも1.91秒→1.67秒（13%減）と、どちらもcore.aキャッシュの効果（3倍以上）には遠く及ばなかった。理由はccacheがコンパイル工程しかカバーせず、リンク・`ar`によるアーカイブ化・arduino-cli自身の解析オーバーヘッドは変わらないため
+- **「内部並列(`-j`)を切って外側の`xargs -P`だけに制御を任せた方が素直にスケールするはず」という当初の仮説は実測で誤りと判明、撤回**: 20本のサンプルで比較したところ、両方とも毎回`cores/*`から作り直す条件で、`-j`デフォルト（自動でCPUコア数を使う）＋`xargs -P4`が23.9秒、`-j 1`に固定＋`xargs -P4`が39.0秒——内部並列を切ると逆に遅くなった。core.aを都度ビルドする状況では、外側の並列4本×内部1本＝実質4コアしか使えなくなるため。同条件で「`cores/*`を保持・`sketches/*`だけクリア」（＝私が既に実践していたやり方）が14.0秒と最速だった
+- 実測に基づく結論: **最大のレバーはcore.aキャッシュの永続化**（CIでは`actions/cache`でビルドキャッシュディレクトリを`cores/arduino/`等のハッシュキー付きで永続化）、**内部並列はいじらない**（デフォルトのままが最速）、**ccacheは任意の保険程度**（今回は導入見送り）、**外側の並列（`xargs -P`やCIのmatrix分割）は引き続き有効**
+
+**実装**（`.github/workflows/regression_check.yml`新設）:
+- ボードごとにmatrix分割（`frdm_mcxa153`/`frdm_mcxn947`、別ランナーで並列実行）
+- ツールチェーンのバージョン・URL・checksumは`package_nxp_mcx_index.json`の`toolsDependencies`/`tools`エントリから`jq`で動的取得——ハードコードしないことで、将来ツールチェーンが変わってもworkflow側の書き換えが不要になる設計
+- `actions/cache`を2箇所に設置: (1) ツールチェーン本体（`toolsDependencies`のバージョン文字列がキー、滅多に変わらないのでほぼ常にヒット）、(2) arduino-cliのビルドキャッシュ（`~/.cache/arduino`、`cores/arduino/`・`variants/`・`platform.txt`・`boards.txt`のハッシュがキー——このリポジトリの本体変更が無い限りcore.aをrun間で使い回せる）
+- ボード側の実体は`arduino-cli core install`で公開版をダウンロードするのではなく、**チェックアウトした`hardware/nxp/mcx`をそのまま`~/.arduino15/packages/nxp/hardware/mcx/<platform.txtのversion>/`にコピー**——ローカル開発用symlinkと同じ発想で、「今のブランチのソース」を直接テストする
+- **速い/フルの2段構成**（ユーザーとの過去の合意通り）: `.github/scripts/compile_examples.sh <board> <fast|full>`という1本のスクリプトで両モードを実装。`fast`は`release_check/`全体＋`hello_world`＋`mcxPinState`サンプル（push/PR毎）、`full`は`examples/`配下全部＋`mcxPinState`サンプル（`main`へのpush・`workflow_dispatch`・タグpushのみ）
+- **既知の失敗2パターンへの対処**: (1) 外部ライブラリ`P3T1755.h`依存6本（`onboard_temperature_sensor`/`test_Wire_P3T1755`/`test_Wire_setClock`/`test_Wire_end_find_availForWrite_pullmodes`/`test_combined_peripherals`/`release_check/09`、いずれも`P3T1755(TwoWire&, uint8_t)`コンストラクタと`.temp()`しか使っていないことを全サンプル確認済み）→ `.github/ci-stubs/P3T1755/`に最小スタブライブラリを新設し`--library`で渡す。`.github/`配下なので`git archive --format=zip --prefix=mcx/ HEAD:hardware/nxp/mcx`（`hardware/nxp/mcx`サブツリーのみを対象とするコマンド）には一切含まれないことを確認済み——リリースzipを汚さない。(2) `_N947`サフィックス付きディレクトリ（5個: `test_analogRead_precision_N947`/`test_Wire2_MikroBus_N947`/`test_Serial1_MikroBus_N947`/`test_Wire2_frequency_accuracy_N947`/`release_check/0B`、`_A153`サフィックスは現存しないことも確認済み）はディレクトリ名末尾で判定しA153では自動スキップ
+- **実装中のハマりどころ**: 当初`mapfile`（bash 4以降の組み込みコマンド）を使ったが、macOSのデフォルトbashは3.2（GPL理由で長年更新されていない）のためローカル検証が`mapfile: command not found`で落ちた。GitHub Actionsのubuntu runnerならbash 5系で動くはずだが、ローカルで検証できないのは不便なため、`find | sort > 一時ファイル` → `while read` という互換性の高い書き方に変更——これで両方の環境で動作確認できるようにした
+- **ローカルでの事前検証**（実際のLinux runner無しでも検証できる範囲を最大化）: `compile_examples.sh`をmacOS上でそのまま実行し、fast/fullの両モード×両ボードで全数OK（fast: A153 15件検出・13件実行・全OK、N947 15件検出・14件実行・全OK／full: 両ボードとも68件検出・全OK、A153が2分1秒）。P3T1755スタブと`_N947`フィルタが意図通り機能することも確認。`jq`によるツールチェーン情報抽出、実際のダウンロード→SHA-256照合→`tar --strip-components=1`展開までの一連の流れもローカルで通しテスト済み（Linux実行バイナリ自体はmacOSで動かせないので、そこだけは実際のGitHub Actions実行で確認が必要）
+- YAML構文（`python3 -c "import yaml..."`）・シェル構文（`bash -n`）は確認済み。`permissions: contents: read`を明示（書き込み不要なため最小権限）
+- **実装レビュー中に自ら発見・修正したバグ**: `cp -r hardware/nxp/mcx "~/.arduino15/packages/nxp/hardware/mcx/${PLATFORM_VERSION}"`——コピー先パスをダブルクォートで囲んでいたため、シェルの仕様上`~`がホームディレクトリに展開されない（チルダ展開はクォートされていない場合のみ有効）。`"$HOME/.arduino15/..."`に修正し、`HOME=/tmp/...`を差し替えたサンドボックスでローカル再現・修正確認済み
+
 ---
 
 ## 動作確認済み

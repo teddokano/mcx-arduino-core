@@ -1,0 +1,120 @@
+name: Regression check
+
+# Compile-checks every example sketch against this branch's own
+# hardware/nxp/mcx source (not a released/installed version), for both
+# boards. Two speed tiers, chosen after measuring locally what actually
+# moves the needle (see CLAUDE.md's "0.5以降のロードマップ方針" and
+# "0.5: CI" sections for the numbers behind these choices):
+#   fast - release_check/** + hello_world + mcxPinState examples.
+#          Runs on every push/PR; a few minutes.
+#   full - every example under examples/ and mcxPinState/examples/.
+#          Runs on push to main, workflow_dispatch, and version tags --
+#          not on every push, since it's the same fast-tier sketches
+#          plus everything else, at several times the cost.
+#
+# The toolchain to install and its download URL/checksum are read
+# straight out of package_nxp_mcx_index.json (via its toolsDependencies/
+# tools entries) rather than hardcoded here, so a future toolchain bump
+# in that file doesn't require touching this workflow.
+#
+# Caching (the single biggest lever found while measuring this locally):
+# arduino-cli's own build cache persists core.a across sketches within a
+# run for free -- what actually matters for CI is carrying that *across*
+# separate workflow runs, since each run starts on a fresh runner. The
+# cache key is a hash of cores/arduino, variants, platform.txt and
+# boards.txt, so a run that only touches examples/ or docs reuses a
+# previous run's core.a build outright.
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: regression-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compile:
+    strategy:
+      fail-fast: false
+      matrix:
+        board: [frdm_mcxa153, frdm_mcxn947]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Determine required toolchain version/URL/checksum
+        id: toolchain
+        run: |
+          VERSION=$(jq -r '
+            .packages[0].platforms
+            | sort_by(.version)
+            | last
+            | .toolsDependencies[]
+            | select(.name=="arm-none-eabi-gcc")
+            | .version' package_nxp_mcx_index.json)
+          URL=$(jq -r --arg v "$VERSION" '
+            .packages[0].tools[]
+            | select(.name=="arm-none-eabi-gcc" and .version==$v)
+            | .systems[]
+            | select(.host=="x86_64-linux-gnu")
+            | .url' package_nxp_mcx_index.json)
+          CHECKSUM=$(jq -r --arg v "$VERSION" '
+            .packages[0].tools[]
+            | select(.name=="arm-none-eabi-gcc" and .version==$v)
+            | .systems[]
+            | select(.host=="x86_64-linux-gnu")
+            | .checksum' package_nxp_mcx_index.json)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "checksum=$CHECKSUM" >> "$GITHUB_OUTPUT"
+
+      - name: Cache toolchain
+        id: cache-toolchain
+        uses: actions/cache@v4
+        with:
+          path: ~/.arduino15/packages/nxp/tools/arm-none-eabi-gcc/${{ steps.toolchain.outputs.version }}
+          key: toolchain-linux-x64-${{ steps.toolchain.outputs.version }}
+
+      - name: Download and verify toolchain
+        if: steps.cache-toolchain.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/.arduino15/packages/nxp/tools/arm-none-eabi-gcc/${{ steps.toolchain.outputs.version }}
+          curl -fsSL -o /tmp/toolchain.tar.gz "${{ steps.toolchain.outputs.url }}"
+          EXPECTED="${{ steps.toolchain.outputs.checksum }}"
+          ACTUAL="SHA-256:$(sha256sum /tmp/toolchain.tar.gz | cut -d' ' -f1)"
+          if [[ "$EXPECTED" != "$ACTUAL" ]]; then
+            echo "Checksum mismatch: expected $EXPECTED, got $ACTUAL" >&2
+            exit 1
+          fi
+          tar -xzf /tmp/toolchain.tar.gz -C ~/.arduino15/packages/nxp/tools/arm-none-eabi-gcc/${{ steps.toolchain.outputs.version }} --strip-components=1
+
+      - name: Install arduino-cli
+        run: curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh -s -- -b /usr/local/bin
+
+      - name: Install this branch's hardware/nxp/mcx as the board package source
+        run: |
+          PLATFORM_VERSION=$(grep '^version=' hardware/nxp/mcx/platform.txt | cut -d= -f2)
+          mkdir -p "$HOME/.arduino15/packages/nxp/hardware/mcx"
+          cp -r hardware/nxp/mcx "$HOME/.arduino15/packages/nxp/hardware/mcx/${PLATFORM_VERSION}"
+
+      - name: Cache arduino-cli build cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/arduino
+          key: build-cache-${{ matrix.board }}-${{ hashFiles('hardware/nxp/mcx/cores/**', 'hardware/nxp/mcx/variants/**', 'hardware/nxp/mcx/platform.txt', 'hardware/nxp/mcx/boards.txt') }}
+          restore-keys: |
+            build-cache-${{ matrix.board }}-
+
+      - name: Compile (fast tier)
+        if: github.event_name != 'workflow_dispatch' && github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/tags/')
+        run: .github/scripts/compile_examples.sh ${{ matrix.board }} fast
+
+      - name: Compile (full tier)
+        if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
+        run: .github/scripts/compile_examples.sh ${{ matrix.board }} full
