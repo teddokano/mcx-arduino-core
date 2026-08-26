@@ -95,7 +95,7 @@ jobs:
           tar -xzf /tmp/toolchain.tar.gz -C ~/.arduino15/packages/nxp/tools/arm-none-eabi-gcc/${{ steps.toolchain.outputs.version }} --strip-components=1
 
       - name: Install arduino-cli
-        run: curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh -s -- -b /usr/local/bin
+        uses: arduino/setup-arduino-cli@v2
 
       - name: Install this branch's hardware/nxp/mcx as the board package source
         run: |
