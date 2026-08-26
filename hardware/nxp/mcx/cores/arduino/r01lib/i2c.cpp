@@ -194,6 +194,45 @@ void I2C::frequency( uint32_t frequency )
 #if	CPU_MCXC444VLH
 	I2C_MasterSetBaudRate( unit_base, I2C_MASTER_CLOCK_FREQUENCY, frequency );
 #else
+	/*	Clear the glitch filters before handing over to the SDK.
+	 *
+	 *	LPI2C_MasterSetBaudRate() only ever raises FILTSDA, never lowers it:
+	 *	the block that writes it is guarded by
+	 *	  (sourceClock / baudRate / 20) > (divider + 2)
+	 *	which is false for fast baud rates, so switching *down* in period
+	 *	(i.e. up in speed) skips the write entirely and leaves whatever a
+	 *	previous, slower setting left behind.
+	 *
+	 *	Worked example on this hardware (12MHz source), all three values
+	 *	confirmed by reading MCFGR2 back on a real board:
+	 *	  begin() @100kHz -> 12e6/100e3/20 = 6  > 3  -> FILTSDA = 6-1-2  = 3
+	 *	  setClock(10kHz) -> 12e6/10e3/20  = 60 > 18 -> FILTSDA = 60-16-2 = 42,
+	 *	                     truncated to the 4-bit field as 42 & 0xF = 10
+	 *	  setClock(400kHz)-> 12e6/400e3/20 = 1  > 3? no -> skipped, stays 10
+	 *
+	 *	FILTSDA 10 at 12MHz is ~833ns of SDA filtering, against a 2.5us bit
+	 *	time at 400kHz. On a logic analyzer that showed up as the address
+	 *	phase being cut short after three SCL pulses and restarted with a
+	 *	repeated START, over and over -- and, before the STOP handling above
+	 *	was fixed, as an outright hang. It only ever reproduced when a fast
+	 *	rate followed a slow one, which is exactly what this guard predicts.
+	 *
+	 *	Zeroing both filter fields first makes each call recompute from a
+	 *	clean slate: the SDK then writes the right value when it wants one,
+	 *	and leaving it at 0 when it skips the block is the intended "no
+	 *	extra filtering needed at this speed" result rather than stale state.
+	 *
+	 *	MCFGR2 is only writable with the module disabled -- the SDK writes it
+	 *	inside its own disable/restore window for the same reason -- so do
+	 *	the same here, and hand the module back in the state it was found in
+	 *	so LPI2C_MasterSetBaudRate()'s own save/restore still sees the truth.
+	 */
+	bool	was_enabled	= ( unit_base->MCR & LPI2C_MCR_MEN_MASK ) != 0U;
+
+	LPI2C_MasterEnable( unit_base, false );
+	unit_base->MCFGR2	&= ~( LPI2C_MCFGR2_FILTSDA_MASK | LPI2C_MCFGR2_FILTSCL_MASK );
+	LPI2C_MasterEnable( unit_base, was_enabled );
+
 	LPI2C_MasterSetBaudRate( unit_base, LPI2C_MASTER_CLOCK_FREQUENCY, frequency );
 #endif
 }
@@ -273,6 +312,40 @@ status_t I2C::read_core( uint8_t address, uint8_t *dp, int length, bool stop )
 	return I2C_MasterTransferBlocking( unit_base, &masterXfer );
 }
 #else
+/*	Emit a STOP, working around LPI2C_MasterStop()'s own error handling.
+ *
+ *	LPI2C_MasterStop() opens with LPI2C_MasterWaitForTxReady(), which runs
+ *	LPI2C_MasterCheckAndClearError(). When the target NAKed, that check
+ *	consumes the NAK and makes STOP return kStatus_LPI2C_Nak *before* it
+ *	ever writes the stop command -- so the transaction is never terminated
+ *	on the bus.
+ *
+ *	This is not a rare corner: writing one byte to an absent address, the
+ *	NAK is not yet visible at either of the earlier checks in write_core()
+ *	(LPI2C_MasterStart() only queues the address, the FIFO-drain loop only
+ *	waits for it to leave the FIFO, and LPI2C_MasterSend() can still place
+ *	the data byte before the bus has answered), so LPI2C_MasterStop() is
+ *	where it consistently surfaces. Measured on real hardware: 1500 of 1500
+ *	probe transfers, with a logic analyzer showing each transaction's STOP
+ *	missing and only appearing once the *next* transaction started.
+ *
+ *	CheckAndClearError has cleared the flag by the time it returns, so a
+ *	second call goes through and actually emits the STOP. Only retried for
+ *	NAK: the other error flags (arbitration lost, pin-low timeout) mean the
+ *	bus itself is in trouble, and LPI2C_MasterStop() has no timeout of its
+ *	own to fall back on (I2C_RETRY_TIMES is 0), so retrying those could
+ *	block forever. The caller still gets the original status.
+ */
+static status_t stop_with_nak_recovery( LPI2C_Type *unit_base )
+{
+	status_t	r	= LPI2C_MasterStop( unit_base );
+
+	if ( r == kStatus_LPI2C_Nak )
+		LPI2C_MasterStop( unit_base );
+
+	return r;
+}
+
 status_t I2C::write_core( uint8_t address, const uint8_t *dp, int length, bool stop )
 {
 	status_t reVal        = kStatus_Fail;
@@ -286,8 +359,18 @@ status_t I2C::write_core( uint8_t address, const uint8_t *dp, int length, bool s
 			LPI2C_MasterGetFifoCounts( unit_base, NULL, &txCount );
 		}
 
-		if ( LPI2C_MasterGetStatusFlags( unit_base ) & kLPI2C_MasterNackDetectFlag )
+		uint32_t	status	= LPI2C_MasterGetStatusFlags( unit_base );
+
+		if ( status & kLPI2C_MasterNackDetectFlag )
 		{
+			//	Address-phase NAK, on the occasions it is already visible
+			//	here (on a slow enough SCL it can be). Clear the error first:
+			//	leaving the flag set would make the STOP below bail out without
+			//	emitting anything -- see stop_with_nak_recovery() above, which
+			//	is the same trap reached from the other direction.
+			(void)LPI2C_MasterCheckAndClearError( unit_base, status );
+			LPI2C_MasterStop( unit_base );
+
 			return kStatus_LPI2C_Nak;
 		}
 
@@ -303,7 +386,7 @@ status_t I2C::write_core( uint8_t address, const uint8_t *dp, int length, bool s
 
 		if ( stop )
 		{
-			reVal = LPI2C_MasterStop( unit_base );
+			reVal = stop_with_nak_recovery( unit_base );
 			if ( reVal != kStatus_Success )
 			{
 				return reVal;
@@ -331,7 +414,7 @@ status_t I2C::read_core( uint8_t address, uint8_t *dp, int length, bool stop )
 
 		if ( stop )
 		{
-			reVal = LPI2C_MasterStop( unit_base );
+			reVal = stop_with_nak_recovery( unit_base );
 			if ( reVal != kStatus_Success )
 			{
 				return reVal;

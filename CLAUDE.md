@@ -1487,6 +1487,24 @@ Windowsで`Blink`スケッチをビルドしたところ、`variants/*/src/fsl_*
 - 検証用に作成した空コミット2つ（「Trigger CI: ...」）はそのまま履歴に残置（このプロジェクトはブランチ履歴を詳細に残す運用が通常なので、squashせず）
 - **`full`ティアも`gh workflow run regression_check.yml --ref 0.5.0-dev`で手動発火して検証**（push/PRでは`fast`しか動かないため、`workflow_dispatch`を使わないと`main`マージまで一度も実行されないまま埋もれるリスクがあった）。`Compile (fast tier)`ステップが正しく`skipped`、`Compile (full tier)`が実行されることを`conclusion`フィールドで確認——A153 3分3秒・N947 6分24秒、両ボードとも68本全部成功。N947がローカル実測（3分7秒）より遅いのはCI runnerのCPU/IOがローカルMacより非力なためと考えられるが、失敗はゼロ。これで`fast`/`full`の両ティア・両ボード・両キャッシュ・`_N947`フィルタ・P3T1755スタブが実runnerで一通り検証できた
 
+### `Wire2`クロック実測から芋づる式に判明したI2Cの実バグ2件（両方とも修正・実機検証済み）
+0.5の残作業だった「`Wire2`（N947 MikroBus I2C、FlexComm3）のクロック未検証」の実測に着手。当初の懸念（`SPI`/`SPI1`と同じくクロック源が遅いまま）は**外れ**（FlexComm2/3とも12MHzと実測で確認）だったが、代わりに**LPI2C共通のより深刻なバグ2件**が見つかった。ユーザーがロジアナ、私がGDB/レジスタダンプ/計測コードを担当する形で切り分けた。
+
+**発端**: `test_Wire2_frequency_accuracy_N947`を実機で走らせると、10kHz・100kHzは正常なのに**400kHzでハングして完走しない**。ただし**400kHzを最初に実行すると正常**——「低速の後に高速へ切り替えたときだけ壊れる」という順序依存だった。
+
+**外れた仮説（記録として残す）**: (1) `i2c.cpp`の`LPI2C_MASTER_CLOCK_FREQUENCY`が`CLOCK_GetLPFlexCommClkFreq(2u)`とFlexComm2決め打ちである点——実測でFlexComm2/3とも12MHzと判明し無関係（決め打ち自体は潜在バグとして残置）。(2) `while(txCount)`ループが無限ループしている——GDBのブレークポイントで通過を確認、実際は最適化で行番号がずれて見えていただけ。(3) ボーレートレジスタに前の設定が残る——レジスタダンプで両順序とも完全に同一（CLKLO=14/CLKHI=12/PRESCALE=0＝計算上ちょうど400kHz）と確認、無関係
+
+**バグ1: アドレスNAK後にSTOPが送出されない**（`I2C::write_core`/`read_core`のLPI2C分岐）。ユーザーがロジアナで「各トランザクション直後にSTOPが来ず、次の周波数の転送開始前にSTOPが出る」と観測したのが端緒。計測コードを仕込んで判明した機序: **`LPI2C_MasterStop()`は冒頭で`LPI2C_MasterWaitForTxReady()`→`LPI2C_MasterCheckAndClearError()`を呼び、NAKを検出するとstopコマンドを書く前にreturnする**。存在しないアドレスへの1バイト書き込みでは、それより手前の2箇所のNAKチェック（アドレスフェーズの`GetStatusFlags`、`MasterSend`）はまだバス応答前で素通りするため、STOPのところで初めてNAKが表面化する——**1500回中1500回**で`LPI2C_MasterStop()`が`kStatus_LPI2C_Nak`(902)を返していた。修正: `stop_with_nak_recovery()`を新設し、NAKで失敗したら再度STOPを発行（`CheckAndClearError`がフラグをクリア済みなので2回目は実際に送出される）。呼び出し元には元のNAKステータスをそのまま返す。他のエラー（arbitration lost/pin-low timeout）はバス自体が異常でリトライが無限ブロックしうるため、NAKのみリトライ
+
+**バグ2（400kHzハングの真因）: `FILTSDA`が高速側へ切り替えても下がらない**。ユーザーの「ではWireではなぜ出ない？」という一言が決め手になった——`Wire`のテストは400kHzを**最初**に、`Wire2`は**最後**に実行していた。レジスタダンプの`FILTSDA`の変遷（`begin()`後3 → 10kHz後10 → 100kHz後も10 → 400kHz後も10）とSDKの実装が一致: `LPI2C_MasterSetBaudRate()`のFILTSDA書き込みは`(sourceClock/baudRate/20) > (divider+2)`でガードされており、**高速側ではこの条件が偽になってブロックごとスキップされ、遅い設定が残す値がそのまま生き残る**。12MHzでの実算とレジスタ実測が完全一致した:
+  - `begin()`@100kHz → 12e6/100e3/20 = 6 > 3 → FILTSDA = 6-1-2 = **3**
+  - `setClock(10kHz)` → 60 > 18 → FILTSDA = 60-16-2 = 42、4ビット幅に切り詰められ 42&0xF = **10**
+  - `setClock(400kHz)` → 1 > 3? 偽 → **スキップ、10のまま**
+  FILTSDA=10は12MHzで約833nsのSDAグリッチフィルタ。400kHzの1ビット時間2.5usに対して過大で、ロジアナ上は**アドレスフェーズが3クロックで打ち切られ即Repeated-STARTが発行される**（＝14us/転送という短さの正体）という形で現れていた。修正: `I2C::frequency()`でSDKに委譲する前に`MCFGR2`のFILTSDA/FILTSCLをクリアし、毎回まっさらな状態から再計算させる。`MCFGR2`はMEN=0でないと書けない（SDK自身も無効化区間で書いている）ため、元のenable状態を保存→無効化→クリア→復元、の順で行い、`LPI2C_MasterSetBaudRate()`自身のsave/restoreが正しい状態を見るようにしている
+- **実機検証済み**: 修正後、`Wire`（LPI2C2）・`Wire2`（LPI2C3）とも、ロジアナ波形（STOPが各トランザクション直後に出る／アドレスフェーズが最後まで出る）・数値の両方でOK。`max_single_transfer`は両者完全一致の31us(400k)/113us(100k)/1108us(10k)で、3周波数とも要求どおりスケール。400kHzは修正前14us→**31us**と本来の長さに復帰。両ボードで`--warnings all`ビルド確認済み
+
+**副産物: `Wire1`（I3C in I2C_MODE）に別系統の未修正バグ**。`Wire1.setClock()`は最初の1回しか効かず、400kHz要求→実測416kHz（正常）に対し、100kHz要求→2.5MHz、10kHz要求→1.25MHzという無関係な値になる。原因はI3Cの`I2CBAUD`がオープンドレインクロック(2.5MHz)からの3ビット幅分周でしか作れないこと——`250&0x7=2`→2.5MHz/2=1.25MHz、`25&0x7=1`→2.5MHz/1=2.5MHz と実測値が算数で完全に一致する。**つまり`Wire1`は約312kHz(2.5MHz÷8)より下を設定できず、それ以下を要求すると切り詰めで高い周波数になる**。`TwoWire::setClock()`がI3Cに対し`frequency(baudrate, 0, 0)`とオープンドレイン側を据え置いて呼ぶため。修正にはオープンドレイン周波数も連動させる設計判断が要るので、上記2件とは切り分けて別途対応する
+
 ---
 
 ## 動作確認済み

@@ -38,13 +38,29 @@ void check(const char *label, bool ok) {
     failCount++;
 }
 
+unsigned long lastMaxUs = 0;
+
+void printResult(const char *label, unsigned long totalUs, unsigned long maxUs) {
+  Serial.print(label);
+  Serial.print(" : total=");
+  Serial.print(totalUs);
+  Serial.print("us  max_single_transfer=");
+  Serial.print(maxUs);
+  Serial.println("us");
+}
+
 unsigned long timeProbes(uint32_t hz) {
   Wire2.setClock(hz);
+  lastMaxUs = 0;
   unsigned long t0 = micros();
   for (int i = 0; i < NUM_TRANSFERS; i++) {
+    unsigned long tStart = micros();
     Wire2.beginTransmission(PROBE_ADDR);
     Wire2.write(0x00);
     Wire2.endTransmission();
+    unsigned long elapsed = micros() - tStart;
+    if (elapsed > lastMaxUs)
+      lastMaxUs = elapsed;
   }
   return micros() - t0;
 }
@@ -59,18 +75,17 @@ void setup() {
   Wire2.begin();
 
   unsigned long t10k = timeProbes(10000UL);
+  unsigned long max10k = lastMaxUs;
+  delay(100);  // gap between segments, so they're easy to tell apart on a logic analyzer capture
   unsigned long t100k = timeProbes(100000UL);
+  unsigned long max100k = lastMaxUs;
+  delay(100);
   unsigned long t400k = timeProbes(400000UL);
+  unsigned long max400k = lastMaxUs;
 
-  Serial.print("Wire2  10kHz : ");
-  Serial.print(t10k);
-  Serial.println(" us");
-  Serial.print("Wire2 100kHz : ");
-  Serial.print(t100k);
-  Serial.println(" us");
-  Serial.print("Wire2 400kHz : ");
-  Serial.print(t400k);
-  Serial.println(" us");
+  printResult("Wire2  10kHz", t10k, max10k);
+  printResult("Wire2 100kHz", t100k, max100k);
+  printResult("Wire2 400kHz", t400k, max400k);
 
   // Generous upper bounds -- these only need to catch a true hang/stall,
   // not pin down the exact rate (that needs the logic analyzer). On a
@@ -81,6 +96,14 @@ void setup() {
   check("Wire2 400kHz completes within 200ms", t400k < 200000UL);
   check("Wire2 timing scales with requested clock (10kHz > 100kHz > 400kHz)",
         t10k > t100k && t100k > t400k);
+
+  // Per-transfer bound, not just the total: the address-NAK-without-STOP bug
+  // this sketch was written to chase showed up as a *single* transfer
+  // stalling for 122ms, which a total-time bound alone absorbed silently
+  // across 500 otherwise-fast transfers.
+  check("Wire2 10kHz: no single transfer exceeds 50ms", max10k < 50000UL);
+  check("Wire2 100kHz: no single transfer exceeds 50ms", max100k < 50000UL);
+  check("Wire2 400kHz: no single transfer exceeds 50ms", max400k < 50000UL);
 
   Serial.println();
   Serial.println("Point a logic analyzer at MB_SCL to read the actual SCL");
