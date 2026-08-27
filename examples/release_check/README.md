@@ -47,6 +47,6 @@ Also intentionally not folded in: `test_GPIO_D0_to_D7` and
 `test_analogWrite_duty` (superseded by the more complete `_all_pins`/
 `_all_channels` versions already consolidated into #2),
 `test_SPI_loopback_with_a_wire` (an older, weaker sanity check with no
-pass/fail verdict, superseded by what's in #5), and
+pass/fail verdict, superseded by what's in #12), and
 `test_PWM_pin_identify` (a "find my pins" reference tool, not a
 pass/fail check).

@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 - [`mcxPinState`](https://github.com/teddokano/mcxPinState) is now bundled with this package as `libraries/mcxPinState/`, so it's available to sketches immediately after installing this core — no separate library install needed. Its own GitHub repo remains the primary development location; the bundled copy is a release-time-synced snapshot. Zero-cost unless a sketch actually constructs a `PinState` object
+- `examples/release_check/04_mcxpinstate_audit` — a copy of `mcxPinState`'s own `CombinedPeripheralsAudit` example, so the bundled library above has a place in the pre-release hardware sweep too. Edit the original under `libraries/mcxPinState/examples/`, not this copy
 - `test_Wire_frequency_accuracy_N947`, `test_Wire1_frequency_accuracy_N947` and `test_Wire2_frequency_accuracy_N947` — regression tests for the I2C clock fixes below. No logic analyzer and no external device needed: each times a run of probe transfers at several `setClock()` rates and checks they scale as asked. They bound the time of a *single* transfer as well as the total, which is what the first version of these missed — one pathological 122ms stall disappears into the sum of 500 otherwise-fast transfers
 
 ### Fixed
@@ -17,7 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `Wire1.setClock()` (FRDM-MCXN947) produced unrelated rates instead of the requested one — 100kHz came out at ~2.5MHz and 10kHz at ~1.25MHz, while 400kHz happened to be correct. In I2C mode the rate is reached through a 3-bit divider off the I3C open-drain rate, which `setClock()` left at its I3C value, putting everything below it out of reach; asking for less silently truncated into that divider. The open-drain rate now follows the requested I2C rate, and rates outside the reachable range are clamped rather than turned into something unrelated. Measured after the fix: 400kHz → 357kHz, 100kHz → 104kHz, floor ~56kHz. One pre-existing limitation on this bus is unchanged and now documented in the source: an address-phase NAK emits no STOP, and a read's termination carries a repeated START. Neither is reached by the on-board sensor, which ACKs and terminates cleanly
 
 ### Changed
-- `test_combined_peripherals` (and its `release_check/09` mirror) now also exercises `SPI1` on FRDM-MCXN947 (previously A153-only) and adds a `Wire2` bus probe on FRDM-MCXN947 in place of `Serial1` (which N947 can't run alongside `Wire1`/I3C — see `variants/frdm_mcxn947/README.md`), closing a gap the sketch's own comment had flagged since v0.4.0
+- `test_combined_peripherals` (and its `release_check/21` mirror) now also exercises `SPI1` on FRDM-MCXN947 (previously A153-only) and adds a `Wire2` bus probe on FRDM-MCXN947 in place of `Serial1` (which N947 can't run alongside `Wire1`/I3C — see `variants/frdm_mcxn947/README.md`), closing a gap the sketch's own comment had flagged since v0.4.0
+- `examples/release_check/` renumbered so the number says what a check needs rather than just its position in an ad-hoc sequence: `0n` = nothing at all, `1n` = jumper wires only, `2n` = an external library, module, or board. See `examples/release_check/README.md` for the full table (and CLAUDE.md for the old→new mapping, since this shuffles what several past hardware-verification notes point at)
 
 ## [0.4.1] - 2026-08-23
 
