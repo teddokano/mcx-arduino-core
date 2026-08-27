@@ -130,25 +130,82 @@ I3C::~I3C(){
 	I3C_MasterDeinit( EXAMPLE_MASTER );
 }
 
-void I3C::frequency( uint32_t i2c_freq, uint32_t i3c_od_freq, uint32_t i3c_pp_freq )
+void I3C::apply_baudrate( void )
 {
-	i3c_baudrate_hz_t	baudRate_Hz;
-	
-	baudRate_Hz.i2cBaud				= i2c_freq    ? i2c_freq    : masterConfig.baudRate_Hz.i2cBaud;
-	baudRate_Hz.i3cOpenDrainBaud	= i3c_od_freq ? i3c_od_freq : masterConfig.baudRate_Hz.i3cOpenDrainBaud;
-	baudRate_Hz.i3cPushPullBaud  	= i3c_pp_freq ? i3c_pp_freq : masterConfig.baudRate_Hz.i3cPushPullBaud;
+	i3c_baudrate_hz_t	baudRate_Hz	= masterConfig.baudRate_Hz;
+
+	if ( bus_type == kI3C_TypeI2C )
+	{
+		/*	In I2C_MODE the SCL rate is reached through I2CBAUD, a 3-bit
+		 *	divider off the open-drain rate, so the open-drain rate has to be
+		 *	placed relative to the requested I2C rate rather than left at the
+		 *	I3C-native OD_FREQ -- otherwise everything below OD_FREQ/8 is
+		 *	unreachable and silently truncates into an unrelated, faster rate.
+		 *	See I2C_MODE_OD_RATIO in i3c.h for the measurements behind this.
+		 *
+		 *	The open-drain rate is never raised above OD_FREQ: that is what
+		 *	this bus is specified to run open-drain at, and I2C Fm+ (1MHz,
+		 *	the ceiling clamped to in frequency()) is still reachable from it.
+		 */
+		uint32_t	od	= baudRate_Hz.i2cBaud * (uint32_t)I2C_MODE_OD_RATIO;
+
+		baudRate_Hz.i3cOpenDrainBaud	= ( od > (uint32_t)OD_FREQ ) ? (uint32_t)OD_FREQ : od;
+	}
 
 	I3C_MasterSetBaudRate( EXAMPLE_MASTER, &baudRate_Hz, I3C_MASTER_CLOCK_FREQUENCY );
 }
 
+void I3C::frequency( uint32_t i2c_freq, uint32_t i3c_od_freq, uint32_t i3c_pp_freq )
+{
+	/*	Remember what was asked for, so a later mode() can re-derive the
+	 *	open-drain rate from it. These used to go straight to the hardware
+	 *	while masterConfig kept its construction-time values forever, so a
+	 *	later call passing 0 ("leave as is") reinstated the original rate
+	 *	rather than the one most recently set.
+	 */
+	if ( i2c_freq )
+	{
+		/*	Clamp rather than let an unreachable request truncate into
+		 *	something unrelated -- Wire.setClock() has no way to report a
+		 *	failure, so the nearest supported rate is the honest outcome.
+		 */
+		if ( i2c_freq < (uint32_t)I2C_MODE_MIN_FREQ )
+			i2c_freq	= (uint32_t)I2C_MODE_MIN_FREQ;
+		else if ( i2c_freq > (uint32_t)I2C_MODE_MAX_FREQ )
+			i2c_freq	= (uint32_t)I2C_MODE_MAX_FREQ;
+
+		masterConfig.baudRate_Hz.i2cBaud			= i2c_freq;
+	}
+
+	if ( i3c_od_freq )
+		masterConfig.baudRate_Hz.i3cOpenDrainBaud	= i3c_od_freq;
+
+	if ( i3c_pp_freq )
+		masterConfig.baudRate_Hz.i3cPushPullBaud	= i3c_pp_freq;
+
+	apply_baudrate();
+}
+
 void I3C::frequency( void )
 {
-	I3C_MasterSetBaudRate( EXAMPLE_MASTER, &(masterConfig.baudRate_Hz), I3C_MASTER_CLOCK_FREQUENCY );
+	masterConfig.baudRate_Hz.i2cBaud			= (uint32_t)I2C::FREQ;
+	masterConfig.baudRate_Hz.i3cOpenDrainBaud	= (uint32_t)OD_FREQ;
+	masterConfig.baudRate_Hz.i3cPushPullBaud	= (uint32_t)PP_FREQ;
+
+	apply_baudrate();
 }
 
 void I3C::mode( MODE mode )
 {
 	bus_type	= (i3c_bus_type_t)mode;
+
+	/*	The open-drain rate that suits I2C_MODE is not the one that suits
+	 *	I3C_MODE, so re-derive it here rather than leaving whichever mode ran
+	 *	last in charge of it. This matters in both directions: Wire1 switches
+	 *	to I2C_MODE at begin(), and a sketch driving this class directly can
+	 *	switch back to I3C_MODE afterwards and has to get OD_FREQ back.
+	 */
+	apply_baudrate();
 }
 
 status_t I3C::write( uint8_t targ, const uint8_t *dp, int length, bool stop )
@@ -185,6 +242,22 @@ status_t I3C::reg_xfer( i3c_direction_t dir, i3c_bus_type_t type, uint8_t targ, 
 	masterXfer.busType			= type;
 	masterXfer.flags			= stop ? kI3C_TransferDefaultFlag : kI3C_TransferNoStopFlag;
 	
+	/*	Known, pre-existing limitation (confirmed on hardware against an
+	 *	unmodified build, so this is not something the open-drain handling
+	 *	above introduced): when the *address* phase is NAKed -- probing an
+	 *	address nothing answers on, e.g. a bus scan -- no STOP reaches the
+	 *	bus. I3C_MasterTransferBlocking() emits one for a data-phase NAK,
+	 *	but the address phase is checked earlier, by the
+	 *	I3C_MasterWaitForCtrlDone() right after the START, and that path
+	 *	returns straight out. Same shape as the LPI2C bug fixed in i2c.cpp's
+	 *	write_core(), but the I3C controller does not recover the same way:
+	 *	issuing I3C_MasterStop() from here was tried and put a spurious
+	 *	repeated START on the bus ahead of the STOP, so it is deliberately
+	 *	not done pending a proper look at the controller's state machine.
+	 *
+	 *	Not reached by this bus's actual use -- the on-board sensor ACKs, and
+	 *	that path terminates correctly (verified with a logic analyzer).
+	 */
 	return I3C_MasterTransferBlocking( EXAMPLE_MASTER, &masterXfer );
 }
 

@@ -69,7 +69,44 @@ public:
 	{
 		OD_FREQ					= 4000000UL,
 		PP_FREQ					= 12500000UL,
-		DEFAULT_FREQ_SETTING	= 0
+		DEFAULT_FREQ_SETTING	= 0,
+
+		/** In I2C_MODE the SCL rate is not programmed directly: the hardware
+		 *  derives it from the open-drain rate through I2CBAUD, which is only
+		 *  3 bits wide (i2cFreq = odFreq / (I2CBAUD + 1), 0 <= I2CBAUD <= 7).
+		 *  Leaving the open-drain rate at its I3C value (OD_FREQ) therefore
+		 *  puts everything below OD_FREQ/8 out of reach, and asking for less
+		 *  than that does not fail -- the divider simply truncates into the
+		 *  3-bit field and the bus ends up running at some unrelated, much
+		 *  higher rate. Measured on FRDM-MCXN947: setClock(100000) produced
+		 *  ~2.5MHz and setClock(10000) produced ~1.25MHz, while 400kHz (the
+		 *  one rate that happens to be reachable at OD_FREQ) came out right.
+		 *
+		 *  I2C_MODE_OD_RATIO is how far the open-drain rate is put above the
+		 *  requested I2C rate while in I2C_MODE, so the divider lands at the
+		 *  top of its range instead of overflowing it. 8 (the full span of
+		 *  I2CBAUD) keeps the open-drain rate as low as possible for a given
+		 *  I2C rate, which is what leaves room at the bottom end.
+		 */
+		I2C_MODE_OD_RATIO		= 8,
+
+		/** Range of I2C_MODE SCL rates this driver will program. Requests
+		 *  outside it are clamped, rather than silently turned into an
+		 *  unrelated rate -- see the note above for what that looks like.
+		 *
+		 *  The floor is measured, not derived: on FRDM-MCXN947 the divider
+		 *  chain bottoms out around 56kHz, so asking for less simply lands
+		 *  there. (A first attempt set this to 10kHz from the register
+		 *  widths alone -- ODBAUD is 8 bits, which suggests far more range
+		 *  than the hardware actually delivers -- and 10kHz then measured
+		 *  as 56kHz on the bus. Believe the measurement.) The ceiling is
+		 *  I2C Fm+, past which OD_FREQ would have to be exceeded.
+		 *
+		 *  Accuracy across the range, on a logic analyzer: 400kHz -> 357kHz,
+		 *  100kHz -> 104kHz, floor -> ~56kHz.
+		 */
+		I2C_MODE_MIN_FREQ		= 50000UL,
+		I2C_MODE_MAX_FREQ		= 1000000UL
 	};
 	
 	/** constants for miscellaneous setting  */
@@ -261,6 +298,20 @@ protected:
 	using	I2C::scan;
 
 private:
+	/** Program the hardware from masterConfig's requested rates, applying
+	 *  whatever the current bus_type needs.
+	 *
+	 *  The open-drain rate cannot simply be left alone across a mode change:
+	 *  I3C_MODE wants it at its own OD_FREQ, while I2C_MODE needs it placed
+	 *  relative to the requested I2C rate for that rate to be reachable at
+	 *  all (see I2C_MODE_OD_RATIO). Every path that changes either the rates
+	 *  or the mode goes through here so the two stay consistent -- including
+	 *  switching back to I3C_MODE after I2C_MODE has moved the open-drain
+	 *  rate, which sketches driving this class directly (rather than through
+	 *  Wire) are free to do.
+	 */
+	void		apply_baudrate( void );
+
 	status_t	xfer( i3c_direction_t dir, i3c_bus_type_t type, uint8_t targ, uint8_t *dp, int length, bool stop = STOP );
 
 #ifdef	CUSTOM_REGISTAR_XFER

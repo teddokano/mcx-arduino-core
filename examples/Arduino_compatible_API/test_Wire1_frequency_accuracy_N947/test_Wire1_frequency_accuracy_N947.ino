@@ -15,7 +15,7 @@
  *  a sum-only bound missed entirely -- 500 fast transfers can absorb one
  *  huge outlier and still land under a generous total-time bound.
  *
- *  Order is 400kHz -> 100kHz -> 10kHz (reversed from the "obvious" order),
+ *  Order is 400kHz -> 100kHz -> 50kHz (reversed from the "obvious" order),
  *  matching what the Wire2 investigation found actually matters: the
  *  first clock speed used right after begin() behaved differently from a
  *  clock speed switched to after a prior transaction had already run.
@@ -78,20 +78,20 @@ void setup() {
   unsigned long t100k = timeProbes(100000UL);
   unsigned long max100k = lastMaxUs;
   delay(100);
-  unsigned long t10k = timeProbes(10000UL);
-  unsigned long max10k = lastMaxUs;
+  unsigned long t50k = timeProbes(50000UL);
+  unsigned long max50k = lastMaxUs;
 
   printResult("Wire1 400kHz", t400k, max400k);
   printResult("Wire1 100kHz", t100k, max100k);
-  printResult("Wire1  10kHz", t10k, max10k);
+  printResult("Wire1  50kHz", t50k, max50k);
 
   // 50ms is generous for a single transfer at any of these speeds (a
-  // normal transfer takes low tens of microseconds even at 10kHz) -- the
+  // normal transfer takes low tens of microseconds even at 50kHz) -- the
   // point is to catch the kind of pathological multi-tens/hundreds-ms
   // stall the Wire2 investigation found, not ordinary jitter.
   check("Wire1 400kHz: no single transfer exceeds 50ms", max400k < 50000UL);
   check("Wire1 100kHz: no single transfer exceeds 50ms", max100k < 50000UL);
-  check("Wire1  10kHz: no single transfer exceeds 50ms", max10k < 50000UL);
+  check("Wire1  50kHz: no single transfer exceeds 50ms", max50k < 50000UL);
 
   Serial.println();
   if (failCount == 0)
