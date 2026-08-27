@@ -12,6 +12,31 @@
         {
           "name": "NXP FRDM MCX Series",
           "architecture": "mcx",
+          "version": "0.5.0",
+          "category": "Contributed",
+          "url": "https://github.com/teddokano/mcx-arduino-core/releases/download/0.5.0/mcx-arduino-core-0.5.0.zip",
+          "archiveFileName": "mcx-arduino-core-0.5.0.zip",
+          "checksum": "SHA-256:8b994af51b453c2e0fc66590bf3302f6f9380f050058f1e00b9a1892fa5184ce",
+          "size": "9288039",
+          "boards": [
+            {
+              "name": "FRDM-MCXA153 (mcx-arduino-core)"
+            },
+            {
+              "name": "FRDM-MCXN947 (mcx-arduino-core)"
+            }
+          ],
+          "toolsDependencies": [
+            {
+              "packager": "nxp",
+              "name": "arm-none-eabi-gcc",
+              "version": "14.2.1-1.1"
+            }
+          ]
+        },
+        {
+          "name": "NXP FRDM MCX Series",
+          "architecture": "mcx",
           "version": "0.4.1",
           "category": "Contributed",
           "url": "https://github.com/teddokano/mcx-arduino-core/releases/download/0.4.1/mcx-arduino-core-0.4.1.zip",
