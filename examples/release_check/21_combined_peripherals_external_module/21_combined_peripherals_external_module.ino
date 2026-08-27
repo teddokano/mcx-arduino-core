@@ -1,7 +1,6 @@
-/** Release check 09: combined peripheral stress test -- needs the
- *  external P3T1755 library (same as 0A/0B), so it's numbered outside
- *  the 01-06 no-external-hardware sequence (see
- *  examples/release_check/README.md).
+/** Release check 21: combined peripheral stress test -- needs the
+ *  external P3T1755 library, so it sits in the 2n group (see
+ *  examples/release_check/README.md for the numbering).
  *
  *  Mirrors examples/Arduino_compatible_API/test_combined_peripherals
  *  exactly.
@@ -24,7 +23,7 @@
  *                   everything else here. No device required: this just
  *                   probes a fixed address every loop and expects a NAK
  *                   (err != 0) back promptly, the same way the bus-scan
- *                   in examples/release_check/0B works with nothing
+ *                   in examples/release_check/05 works with nothing
  *                   plugged in -- the point here is that it completes
  *                   promptly under load, not that anything ACKs
  *

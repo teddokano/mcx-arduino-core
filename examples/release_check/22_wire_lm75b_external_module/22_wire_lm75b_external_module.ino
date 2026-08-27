@@ -1,6 +1,6 @@
-/** Release check 0A: Wire (plain I2C) real-device test -- needs an
+/** Release check 22: Wire (plain I2C) real-device test -- needs an
  *  external LM75-family temperature sensor module, so it's numbered
- *  outside the 01-06 no-external-hardware sequence rather than folded
+ *  in the 2n group (needs external hardware) rather than folded
  *  into it (see examples/release_check/README.md).
  *
  *  Mirrors examples/Arduino_compatible_API/test_Wire_LM75B exactly.

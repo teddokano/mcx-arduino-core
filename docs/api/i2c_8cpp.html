@@ -27,7 +27,7 @@ mermaid.initialize({ startOnLoad: true, theme: theme });
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.4.1</span>
+   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.5.0</span>
    </div>
    <div id="projectbrief">Arduino board support package for NXP FRDM MCX Series boards</div>
   </td>
@@ -104,7 +104,8 @@ document.addEventListener('DOMContentLoaded', () => {
 <div id="doc-content">
 <div class="header">
   <div class="summary">
-<a href="#define-members">Macros</a>  </div>
+<a href="#define-members">Macros</a> &#124;
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">i2c.cpp File Reference</div></div>
 </div><!--header-->
 <div class="contents">
@@ -127,6 +128,10 @@ Macros</h2></td></tr>
 <tr class="memitem:aa2ae34e7e8d10c9d78c288704bec093c" id="r_aa2ae34e7e8d10c9d78c288704bec093c"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#aa2ae34e7e8d10c9d78c288704bec093c">LPI2C_MASTER_CLOCK_FREQUENCY</a>&#160;&#160;&#160;CLOCK_GetLPFlexCommClkFreq( 2u )</td></tr>
 <tr class="memitem:ad5347a2a6b4c1c4d23523be260fc633e" id="r_ad5347a2a6b4c1c4d23523be260fc633e"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#ad5347a2a6b4c1c4d23523be260fc633e">EXAMPLE_I2C_MASTER</a>&#160;&#160;&#160;((LPI2C_Type *)<a class="el" href="#a9c31b9ad89192edc1e92fd0140f5c0dc">EXAMPLE_I2C_MASTER_BASE</a>)</td></tr>
 <tr class="memitem:ab07e3ad824b9ca5467c60f046f1bdfd4" id="r_ab07e3ad824b9ca5467c60f046f1bdfd4"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#ab07e3ad824b9ca5467c60f046f1bdfd4">NAK_FLAG</a>&#160;&#160;&#160;kStatus_LPI2C_Nak</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:ada4c4650b8e4ef7dfd11836b0ea879f1" id="r_ada4c4650b8e4ef7dfd11836b0ea879f1"><td class="memItemLeft">static status_t&#160;</td><td class="memItemRight"><a class="el" href="#ada4c4650b8e4ef7dfd11836b0ea879f1">stop_with_nak_recovery</a> (LPI2C_Type *unit_base)</td></tr>
 </table>
 <a name="doc-define-members" id="doc-define-members"></a><h2 id="header-doc-define-members" class="groupheader">Macro Definition Documentation</h2>
 <a id="ad5347a2a6b4c1c4d23523be260fc633e" name="ad5347a2a6b4c1c4d23523be260fc633e"></a>
@@ -188,6 +193,34 @@ Macros</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function Documentation</h2>
+<a id="ada4c4650b8e4ef7dfd11836b0ea879f1" name="ada4c4650b8e4ef7dfd11836b0ea879f1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ada4c4650b8e4ef7dfd11836b0ea879f1">&#9670;&#160;</a></span>stop_with_nak_recovery()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">status_t stop_with_nak_recovery </td>
+          <td>(</td>
+          <td class="paramtype">LPI2C_Type *</td>          <td class="paramname"><span class="paramname"><em>unit_base</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="i2c_8cpp_source.html#l00339">339</a> of file <a class="el" href="i2c_8cpp_source.html">i2c.cpp</a>.</p>
 
 </div>
 </div>

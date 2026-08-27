@@ -1444,6 +1444,37 @@ Windowsで`Blink`スケッチをビルドしたところ、`variants/*/src/fsl_*
 - **(2)の実機確認完了**（I2Cバグ3件の修正後に実施したため、最終確認も兼ねた）: N947で`test_combined_peripherals`を実行し、`temp`（Wire1/I3C経由のオンボードセンサー、29.00℃前後で安定）・`adc`（104〜107）・`pwmDuty`（5刻みで増加）・`millis`/`micros`（同期進行）・`wire2Err=134`がすべて正常と確認。`wire2Err=134`は**期待どおりの値**——`Wire2`はデバイス未接続の0x08を叩いており、`MAKE_STATUS(kStatusGroup_LPI2C=9, 2)`＝`kStatus_LPI2C_Nak`(902)を`uint8_t`に切り詰めた値。`SPI1`のループバック警告はジャンパ未配線によるもので想定内。**今回修正したI2Cコード（Wire1のI3C経路・Wire2のLPI2C経路）が他ペリフェラルとの同時稼働下でも安定動作することの確認になった**
 - `CHANGELOG.md`の`[Unreleased]`に両方追記
 
+
+### `examples/release_check/`のナンバリング規則を変更（0.5.0リリース直前）
+0.5.0の実機リリースチェック中、ユーザーから「mcxPinStateのCombinedPeripheralsAuditは実行しなくていい？」と指摘を受けて発覚——**同梱ライブラリの目玉機能なのに`release_check/`に入っていなかった**（「Not covered here」リストにも挙がっておらず、単なる見落とし）。追加するにあたり番号をどうするか相談したところ、ユーザーから「ナンバリングルールをここから変えるのもあり。0n系は配線不要、1n系は配線ありなど」と提案があり、採用。
+
+**新しい規則**（`examples/release_check/README.md`に明記）:
+- **`0n`** — 配線も外部部品も不要
+- **`1n`** — ジャンパ配線のみ、外部部品は不要
+- **`2n`** — 外部ライブラリ・モジュール・ボードが必要
+
+**この変更で分類の誤りが1つ表面化した**: `0B_wire2_mikrobus_scan_N947`は「01-06の連番の外」に置かれていたが、実際は**配線不要**（ロジアナを当てるだけ）で、外部ハードウェアも要らない。新体系では`0n`グループ（`05`）に移動した。
+
+**新旧対応表**（CLAUDE.md内の過去の実機検証記録は旧番号で書かれているので、それらを読む際はこの表で読み替えること):
+
+| 新 | 旧 | 内容 |
+|---|---|---|
+| 01 | 01 | `no_wiring_checks` |
+| 02 | 02 | `no_wiring_manual_observe` |
+| 03 | 03 | `sw2_interrupts` |
+| **04** | — | **`mcxpinstate_audit`（0.5.0で新規追加）** |
+| **05** | **0B** | `wire2_mikrobus_scan_N947` |
+| **11** | 04 | `serial1_and_gpio_loopback` |
+| **12** | 05 | `spi_loopback` |
+| **13** | 06 | `shiftout_pulsein_loopback` |
+| **21** | 09 | `combined_peripherals_external_module` |
+| **22** | 0A | `wire_lm75b_external_module` |
+| **23** | 0C | `waveshare_tft_touch_external_library` |
+
+- 番号の付け替えを避けて新規を`07`にする案も検討したが、「配線不要なのに配線グループの後」という並びになるため却下。逆に04に挿入して05-07にずらす案は、過去の記録が壊れるコストが大きいので単独では採らず、**規則ごと変えたうえで対応表を残す**という形に落ち着いた
+- `04_mcxpinstate_audit`は同梱ライブラリの`CombinedPeripheralsAudit`のコピー。**編集はライブラリ側で行い、このコピーには手を入れない**旨をヘッダとREADMEに明記した
+- ディレクトリ名の`no_wiring_`という接頭辞は新体系では冗長だが、差分を読みやすく保つため今回は変更していない
+
 ---
 
 ## 0.5以降のロードマップ方針（v0.4.2開発中に策定）

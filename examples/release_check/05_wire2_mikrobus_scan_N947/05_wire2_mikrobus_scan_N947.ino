@@ -1,7 +1,7 @@
-/** Release check 0B: Wire2 (MikroBus I2C) bus-scan test, FRDM-MCXN947
+/** Release check 05: Wire2 (MikroBus I2C) bus-scan test, FRDM-MCXN947
  *  only -- Wire2 doesn't exist on A153 (that chip has only one I2C
- *  peripheral, already used by Wire), so this is numbered outside the
- *  01-06 no-external-hardware sequence rather than folded into it (see
+ *  peripheral, already used by Wire), so it is board-specific rather than
+ *  folded into the shared checks (see
  *  examples/release_check/README.md).
  *
  *  Mirrors examples/Arduino_compatible_API/test_Wire2_MikroBus_N947
