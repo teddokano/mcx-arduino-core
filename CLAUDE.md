@@ -1441,6 +1441,7 @@ Windowsで`Blink`スケッチをビルドしたところ、`variants/*/src/fsl_*
 
 **(2)を先に実装・実機検証不要な範囲で完了**: `test_combined_peripherals.ino`（および`release_check/09`のミラー）を更新——`SPI1`ループバックをA153限定から両ボード共通に変更（元々N947でも独立ペリフェラルとして使えるのに理由なくA153限定にされていただけ）、N947分岐に`Wire2`のバスプローブ（固定アドレス0x08への`beginTransmission`/`endTransmission`、デバイス不要・NAKを期待値として扱う、`release_check/0B`のバススキャンと同じ考え方）を追加し、A153限定の`Serial1`枠をN947では`Wire2`が代わりに埋める構成に整理。両ボード`--warnings all`でコンパイル確認（`P3T1755.h`一時スタブ使用）、全examplesの回帰スイープも新規失敗なし
 - **(1)の実機測定を容易にする診断サンプルを新規作成**: `examples/Arduino_compatible_API/test_Wire2_frequency_accuracy_N947`（N947限定、`Wire2`がA153に存在しないためA153コンパイルはエラーになる設計——実際にエラーになることも確認）。v0.4.1の`test_SPI_frequency_accuracy`と同じ手法（ロジアナ不要、`micros()`によるソフトウェアタイミング測定、複数速度間の厳密な単調性チェックが主判定）を踏襲し、`Wire2.setClock(10kHz/100kHz/400kHz)`それぞれで500回の`beginTransmission`/`write`/`endTransmission`プローブ（アドレス0x08、デバイス不要・NAK前提）のタイミングを比較。絶対時間の上限チェックはハング検出用に緩め（実測値のキャリブレーションがまだ無いため）、厳密な単調性（10kHz > 100kHz > 400kHz）を主判定とした。実際の周波数の数値的正確性はロジアナでMB_SCLを見る必要があると明記——このサンプル単体では「setClock()が何らかの実効果を持つか」までしか証明できない
+- **(2)の実機確認完了**（I2Cバグ3件の修正後に実施したため、最終確認も兼ねた）: N947で`test_combined_peripherals`を実行し、`temp`（Wire1/I3C経由のオンボードセンサー、29.00℃前後で安定）・`adc`（104〜107）・`pwmDuty`（5刻みで増加）・`millis`/`micros`（同期進行）・`wire2Err=134`がすべて正常と確認。`wire2Err=134`は**期待どおりの値**——`Wire2`はデバイス未接続の0x08を叩いており、`MAKE_STATUS(kStatusGroup_LPI2C=9, 2)`＝`kStatus_LPI2C_Nak`(902)を`uint8_t`に切り詰めた値。`SPI1`のループバック警告はジャンパ未配線によるもので想定内。**今回修正したI2Cコード（Wire1のI3C経路・Wire2のLPI2C経路）が他ペリフェラルとの同時稼働下でも安定動作することの確認になった**
 - `CHANGELOG.md`の`[Unreleased]`に両方追記
 
 ---
