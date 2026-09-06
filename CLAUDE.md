@@ -1486,6 +1486,50 @@ Windowsで`Blink`スケッチをビルドしたところ、`variants/*/src/fsl_*
 - **残るのは`23`（Waveshare LCD/SD、両ボード共通）のみ**——ユーザー判断で後日まとめて実施することとし、いったん保留
 - **`23`も後日実施し、両ボードとも実機確認完了**: `Waveshare_TFT_Touch`の`SDBitmapViewer`をそのまま両ボードでコンパイル・書き込み（`--library`で外部ライブラリを指定、警告ゼロ）。A153・N947とも「全く問題なし」——ビットマップの表示に斜めノイズ等は無く、描画速度も体感で異常なし。**これで`examples/release_check/`全グループ（`01`〜`05`, `11`〜`13`, `21`〜`23`）の両ボード実機検証が完了**
 
+
+---
+
+## v0.6.0 で作業中の内容（`0.6.0-dev` ブランチ・未リリース）
+
+v0.5.0リリース完了後、`0.6.0-dev`ブランチを作成して次の開発サイクルを開始。`platform.txt`の`version`/`version.minor`、`Doxyfile`の`PROJECT_NUMBER`、ローカル開発用symlink（`0.5.0-dev`→`0.6.0-dev`）を更新。
+
+**`mcxPinState`の照合警告への対応**（バージョンを上げるたびに必ず出るので毎回この手順を踏む）: `MCXPINSTATE_VERIFIED_AGAINST`を`0, 5, 0`にしたコミット（`d1c63ec`）以降、`arduino_io.h`が一度も変更されていないことを`git log d1c63ec..HEAD -- .../arduino_io.h`が空であることで確認したうえで`0, 6, 0`へ更新。バンドル側と開発本拠地の`mcxPinState`リポジトリ本体（`358112e`、push済み）の両方に反映。両ボードで`--warnings all`ビルド警告ゼロ、バージョンマクロが`MAJOR=0`/`MINOR=6`/`PATCH=0`に展開されることも確認済み。
+
+### 0.6.0で予定している内容（v0.5.0リリース直後に策定）
+「0.5以降のロードマップ方針」で決めた0.6の方針（先回りの監査＋ポーティング手順の明文化）に、v0.5.0のリリース作業中に判明した具体的な項目を加えたもの。
+
+**1. 0.5で落ちた「機械的ミスの検出」をCIに追加**: 0.5のCI設計時に予定していたが、I2Cバグの調査に時間を取られて実装されなかった。現状の`regression_check.yml`はコンパイルスイープのみ。追加するチェック:
+- `platform.txt`の`version`/`version.major`/`version.minor`/`version.patch`と`Doxyfile`の`PROJECT_NUMBER`・CHANGELOGの最新見出しの整合（v0.4.1でユーザーが気づいて指摘した）
+- ブロックコメント内の`*/`による早期終了（4〜5回踏んでいる）
+- リリース時に`package_nxp_mcx_index.json`へ対象バージョンのエントリがあるか（v0.4.0・v0.4.1で2回踏んだ）
+- `mcxPinState`のテーブルと`arduino_io.h`の乖離（現状は`#warning`＋手作業の突き合わせ）
+
+**2. ペリフェラルのクロック源を全数監査**: 「`clock_config.c`が触れないFlexCommが`mcu.cpp`の初期値のまま残る」という同じパターンが、`SPI`（FlexComm1）・`SPI1`（FlexComm6）で実バグとして出て、`Wire2`（FlexComm3）でも疑われた。0.6.0の起票時点で**さらに2件をコードリーディングで発見済み**（どちらもバグ報告を待たずに見つかったもので、先回り監査という0.6の方針の妥当性を裏づけている）:
+- **`i2c.cpp`の`LPI2C_MASTER_CLOCK_FREQUENCY`がFlexComm2決め打ち**（`CLOCK_GetLPFlexCommClkFreq( 2u )`）。`Wire2`はFlexComm3なのにFlexComm2の周波数でボーレートを計算している。現在はFlexComm2/3とも`FRO12M`で**偶然一致しているだけ**で、FlexComm1/6がSPI用に48MHzへ移されたのと同じことがFlexComm3に起きた瞬間に4倍ずれる。インスタンス別に解決するよう直す
+- **N947のFlexComm5（`Serial1`）に`CLOCK_AttachClk`が無い**。`mcu.cpp`は`CLOCK_SetClkDiv(kCLOCK_DivFlexcom5Clk, 1u)`で分周だけ設定し、クロック源を繋いでいない。`clock_config.c`もFlexCommには一切触れていない（grepで確認済み）ため、リセットデフォルトのまま動いている——実機では115200bpsで正常動作しているが、SPI/SPI1と同じ「半分だけ設定されて偶然動いている」状態
+- 上記2件を含め、両ボードの全ペリフェラルについて「どのクロック源を意図しているか」を洗い出して明文化・修正する
+
+**3. `docs/porting_a_new_board.md`を書く**: N947対応の記憶が新しいうちに。書く過程で「ボード追加時に手で直す箇所」が可視化されるので、それ自体を減らす——`arduino_io.h`のボード分岐（`NUM_ANALOG_INPUTS`等）、`mcxPinState`の`ALIAS_NAMES`/`KNOWN_INSTANCES`、`gdb-bridge`のボード別Windows exe（1ボード1バイナリなので3枚目で破綻する）、`boards.txt`/svd/リンカスクリプト/variant src。
+
+**4.（任意）Logic 2 MCPでrelease_checkの一部を自動化**: v0.5.0リリース後にLogic 2のMCP連携がend-to-endで動くことを実機で確認済み（デバイス検出→キャプチャ→I2Cアナライザ追加→デコード済みCSVエクスポートまで自動実行できた）。目視・ロジアナ判定のグループを機械判定に寄せられる。**ボードが増えるほど効く**投資。詳細は「Logic 2 MCP連携の動作確認」セクション参照。
+
+### 0.7・0.8の方針（同時に策定、0.8は選択が未確定）
+- **0.7: FRDM-MCXA156の追加**。A153の兄弟で最も安く追加でき、かつ**0.6で書いた移植手順書の初めての実地テスト**になる——手順書が漏らしていた箇所がここで判明し、修正される
+- **0.8: 2枚目、以下2案のどちらか（未決定）**
+  - **案A（推奨）: FRDM-MCXN236**。N947の兄弟だがI3C温度センサーが無く**加速度センサ**なので、`Wire1`+`P3T1755`前提のサンプル群（`test_combined_peripherals`、`release_check/01`・`21`）の作り直しが要る。ただしその作り直しは**どのみち必要な一般化**で、移植手順書が新しいうちにやる価値が高い
+  - **案B: USB MSCブリッジ（A153ネイティブUSB）**。目に見える目玉機能で調査済み・実現可能性は確認済みだが、`platform.txt`/`mcu.cpp`というビルドの根幹に触るのでボード追加と混ぜない方が安全
+- **明示的に後回し**: FRDM-MCXC444（Kinetis系・Cortex-M0+・FPU無し・ADC16/TPM・`fsl_i2c`——兄弟ではなく別物の新規移植、`analogRead`/`analogWrite`/`tone`が全て未実装）、I2Cスレーブモード（r01libにスレーブドライバが存在せず低レベルから新規開発）、`Wire1`のアドレスNAK時にSTOPが出ない件（コントローラ由来の既存挙動と確定済み・ドキュメント化済み）
+
+### Logic 2 MCP連携の動作確認（v0.5.0リリース後）
+ユーザーから「MCPのLogic2の動作状況を確認したい。N947にP3T1035xUKを接続、そのI²CをLogic2のD0=SDA, D1=SCLに繋いだ」と依頼。**一通り正常に動作することを確認**。
+
+- **使えた機能**: `get_devices`（Logic16を検出）→`start_capture`→`wait_capture`→`add_analyzer`（I2C、SDA=ch0/SCL=ch1）→`export_data_table_csv`（デコード済み）／`export_raw_data_csv`（生のエッジ遷移リスト）→`close_capture`
+- **ハマりどころ**: `digitalThresholdVolts`は`1.2`/`1.8`/`3.3`しか受け付けないとツール側は言うが、Logic16実機は「1.8V〜3.6V」「3.6V〜5.0V」というレンジ選択方式のため、**どの値を渡してもバックエンドエラーになる**。**このフィールドを省略すればアプリ側の現在設定が使われて通る**
+- **デコード結果が今回のI2C修正の裏づけになった**: `release_check/22`相当のスケッチ（`stop=false`と`stop=true`のreadを毎ループ連続実行）を走らせたところ、1ループ分が`START→addr[W]→0x00→rSTART→addr[R]→data→data[NAK]`（`stop=false`、**STOPなしで次のSTARTへ直結**）→同じ列がもう1回（`stop=true`）→**そこで初めてSTOP**、という並びで3ループとも完全に一致。`stop`フラグの扱いが実バスで正しいことを、波形ではなくデコード列で確認できた
+- **できないこと**: **波形画像そのものは取得できない**（スクリーンショット系のツールが無い）。取れるのはデコード済みテーブルと生のサンプルデータのみ。**アプリの表示ズームを操作するツールも無い**——`export_data_table_csv`から該当区間の時刻を割り出してユーザーに伝え、手動でズームしてもらう形になる
+- 生データ（`export_raw_data_csv`は遷移時刻のリスト）から自前でSVGを描いてPNG化すれば波形の見た目は再現できる（`matplotlib`はこの環境に無いので素のSVG生成＋`qlmanage -t`でPNG化した）
+- **キャプチャを開いたままにしたい場合は`close_capture`を呼ばない**こと。閉じるとアプリ側からも消える
+
 ---
 
 ## 0.5以降のロードマップ方針（v0.4.2開発中に策定）

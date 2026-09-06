@@ -1,5 +1,5 @@
 name=NXP FRDM MCX Series
-version=0.5.0
+version=0.6.0
 # version.major/minor/patch mirror the version= line above (split by hand,
 # since platform.txt's {} substitution can't parse a dot-separated string
 # itself) -- keep these three in lockstep with version= at every release.
@@ -7,7 +7,7 @@ version=0.5.0
 # MCX_ARDUINO_CORE_VERSION_MAJOR/_MINOR/_PATCH macros a sketch/library
 # sees via mcx_arduino_core_version.h (included from Arduino.h).
 version.major=0
-version.minor=5
+version.minor=6
 version.patch=0
 
 compiler.path={runtime.tools.arm-none-eabi-gcc.path}/bin/
