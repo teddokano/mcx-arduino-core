@@ -21,6 +21,9 @@ Arduino API対応状況の一覧は[API_COMPATIBILITY.md](API_COMPATIBILITY.md)�
 [r01libによるネイティブI3C](docs/advanced_r01lib_i3c.md)（`Wire`形式のAPIでは扱えない機能向け）、
 [mcxPinStateによるピン所有状況のデバッグ](docs/mcxpinstate_guide.md)（そのためのライブラリ、本パッケージに同梱済み）。
 
+このコアにFRDM-MCXボードを追加する作業は、コアを使う作業とは別物なので専用の手順書があります:
+[新しいボードの移植](docs/porting_a_new_board.md)（英語のみ）。
+
 [![youtube](img/youtube.png) セットアップガイド動画](https://youtu.be/g_rDAxnVnro)もあります。
 
 ## 対応ボード

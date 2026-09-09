@@ -23,6 +23,10 @@ functionality `Wire`-shaped APIs can't expose, and
 [debugging pin ownership with mcxPinState](docs/mcxpinstate_guide.md), a
 bundled companion library for exactly that.
 
+Adding another FRDM-MCX board to this core is a different job from using
+it, and has its own guide:
+[porting a new board](docs/porting_a_new_board.md).
+
 [![youtube](img/youtube.png) Setup guide video](https://youtu.be/g_rDAxnVnro) is available. 
 
 ## Supported Boards

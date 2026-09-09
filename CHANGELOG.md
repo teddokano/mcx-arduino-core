@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- `docs/porting_a_new_board.md` — what it actually takes to add another FRDM-MCX board, written from the FRDM-MCXN947 port. Covers the variant tree and `boards.txt`, the twenty shared files under `cores/arduino/` that grow a branch per board, and the traps that each cost real debugging time the first time round (ALT mux values that position-counting gets wrong, pins that only reach a test point, peripheral clocks set in two places or neither)
+- CI now runs static checks for the release-prep mistakes this project has repeatedly made by hand: `platform.txt`'s version fields drifting apart or away from `Doxyfile`, a stray `*/` closing a block comment early, `mcxPinState`'s pin-name table falling out of step with `arduino_io.h`, an unconfirmed CHANGELOG heading, and a missing `package_nxp_mcx_index.json` entry. The `mcxPinState` check covers a gap the library's own `static_assert` cannot reach — it compares the two tables entry by entry, so a reordering (same length, wrong labels) is caught rather than left to a manual diff
+
 ## [0.5.0] - 2026-08-28
 
 ### Added
