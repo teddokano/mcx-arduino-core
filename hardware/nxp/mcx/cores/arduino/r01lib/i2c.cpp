@@ -121,18 +121,35 @@ I2C::I2C( int sda, int scl, bool no_hw ) : Obj( true ), _sda( sda ), _scl( scl )
 		panic( "FRDM-MCXA156 supports I3C_SDA/I3C_SCL, I2C_SDA(D18)/I2C_SCL(D19), MB_SDA/MB_SCL or MB_MOSI/MB_SCK pins for I2C" );
 
 #elif	CPU_MCXA153VLH
+	/* LPI2C0 is reachable from all four pin pairs below, but it does not
+	 * sit on the same ALT for all of them -- P1_8/P1_9 and P1_0/P1_1 carry
+	 * it on ALT3, while P0_16/P0_17 and P3_28/P3_27 carry it on ALT2.
+	 * This used to be one constexpr ALT3 for every pair, which is right
+	 * only for the first two: on P0_16/P0_17 ALT3 is LPSPI0_PCS2/PCS3,
+	 * and on P3_28/P3_27 nothing is assigned to ALT3 at all. Only the
+	 * D18/D19 pair is reached through the Arduino layer (Wire), so the
+	 * other two were wrong without anything noticing. Values verified
+	 * against Zephyr's MCXA153VLH-pinctrl.h, generated from NXP's own
+	 * data -- see docs/porting_a_new_board.md on why position-counting
+	 * pin_mux.c is not trustworthy for this.
+	 */
+	/* Every branch below assigns this; the initializer is only here
+	 * because panic() is not declared noreturn, so the compiler cannot
+	 * see that the else arm never falls through. Same shape as the
+	 * MCXA156 branch above. */
+	int	mux_setting	= kPORT_MuxAlt3;
+
 	if ( (sda == I3C_SDA) && (scl == I3C_SCL) )
-		;
+		mux_setting	= kPORT_MuxAlt2;
 	else if ( (sda == I2C_SDA) && (scl == I2C_SCL) )
-		;
+		mux_setting	= kPORT_MuxAlt3;
 	else if ( (sda == MB_SDA) && (scl == MB_SCL) )
-		;
+		mux_setting	= kPORT_MuxAlt2;
 	else if ( (sda == MB_MOSI) && (scl == MB_SCK) )
-		;
+		mux_setting	= kPORT_MuxAlt3;
 	else
 		panic( "FRDM-MCXA153 supports I3C_SDA/I3C_SCL, I2C_SDA(D18)/I2C_SCL(D19), MB_SDA/MB_SCL or MB_MOSI/MB_SCK pins for I2C" );
 
-	constexpr int	mux_setting	= kPORT_MuxAlt3;
 	unit_base	= EXAMPLE_I2C_MASTER;
 	
 	RESET_ReleasePeripheralReset( kLPI2C0_RST_SHIFT_RSTn );
@@ -145,7 +162,7 @@ I2C::I2C( int sda, int scl, bool no_hw ) : Obj( true ), _sda( sda ), _scl( scl )
 	else if ( (sda == A4) && (scl == A5) )
 		mux_setting	= kPORT_MuxAlt2;
 	else
-		panic( "FRDM-MCXA153 supports I3C_SDA/I3C_SCL, I2C_SDA(D18)/I2C_SCL(D19), MB_SDA/MB_SCL or MB_MOSI/MB_SCK pins for I2C" );
+		panic( "FRDM-MCXC444 supports D18/D19 or A4/A5 pins for I2C" );
 
 	unit_base	= I2C1;
 	repeated_start_required_flag	= false;

@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `docs/porting_a_new_board.md` — what it actually takes to add another FRDM-MCX board, written from the FRDM-MCXN947 port. Covers the variant tree and `boards.txt`, the twenty shared files under `cores/arduino/` that grow a branch per board, and the traps that each cost real debugging time the first time round (ALT mux values that position-counting gets wrong, pins that only reach a test point, peripheral clocks set in two places or neither)
 - CI now runs static checks for the release-prep mistakes this project has repeatedly made by hand: `platform.txt`'s version fields drifting apart or away from `Doxyfile`, a stray `*/` closing a block comment early, `mcxPinState`'s pin-name table falling out of step with `arduino_io.h`, an unconfirmed CHANGELOG heading, and a missing `package_nxp_mcx_index.json` entry. The `mcxPinState` check covers a gap the library's own `static_assert` cannot reach — it compares the two tables entry by entry, so a reordering (same length, wrong labels) is caught rather than left to a manual diff
 
+### Fixed
+- FRDM-MCXA153's `I2C` constructor programmed the same ALT mux value for all four supported pin pairs. Two of them were wrong: `I3C_SDA`/`I3C_SCL` (P0_16/P0_17) and `MB_SDA`/`MB_SCL` (P3_28/P3_27) carry LPI2C0 on ALT2, not ALT3 — ALT3 on the first pair is `LPSPI0_PCS2`/`PCS3`, and on the second nothing is assigned to ALT3 at all. The pin-validation chain was there but every branch was empty, so the ALT was a single `constexpr` rather than a per-pair value; every other board's branch already assigned one per pair. Only the D18/D19 pair is reached through `Wire`, which is why this went unnoticed. Found by auditing every ALT value in the codebase against Zephyr's pinctrl headers rather than waiting for a report — FRDM-MCXN947's 26 pins, FRDM-MCXC444's and FRDM-MCXA156's I2C pins all checked out correct
+
 ## [0.5.0] - 2026-08-28
 
 ### Added
