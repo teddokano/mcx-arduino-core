@@ -16,6 +16,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # This workflow only rewrites the checksum/size of a platforms[]
+      # entry that already exists -- it never creates one. Releasing
+      # without adding the placeholder entry first made it fail twice
+      # (v0.4.0, v0.4.1) with an error that said nothing about the real
+      # cause, so check for it up front and say so plainly.
+      - name: Verify the release's package index entry exists
+        run: python3 .github/scripts/check_repo_hygiene.py --release
+
       - name: Update tool sizes via HEAD request (no download)
         run: |
           python3 << 'PYEOF'
