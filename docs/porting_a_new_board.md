@@ -184,12 +184,38 @@ rows.
 
 **A peripheral's clock may be set in two places, or neither.** Both
 `mcu.cpp`'s `init_mcu()` and the variant's `clock_config.c` can attach
-clocks, and `clock_config.c` runs later, so it wins. On A153 it
-re-attaches the FlexComms to 48MHz; on N947 it does not touch them at
-all, leaving `mcu.cpp`'s 12MHz default. That asymmetry produced the same
-bug three times (default `SPI`, then `SPI1`, then suspected on `Wire2`)
-and each time it surfaced as "requested 24MHz, measured 31kHz". For
-every peripheral you enable, check both files and **measure the result**.
+clocks. `init_mcu()` calls `BOARD_InitBootClocks()` — and therefore
+`clock_config.c` — *after* its own setup, so `clock_config.c` wins on
+anything it touches. The two existing boards do opposite things:
+
+| | A153 | N947 |
+|---|---|---|
+| Boot clock | `BOARD_BootClockFRO96M()` | `BOARD_BootClockPLL150M()` |
+| `clock_config.c` peripheral attaches | **re-attaches all of them** to FRO_HF_DIV | **touches none** |
+| `mcu.cpp`'s attaches | all overridden — **dead code** | the only thing setting them |
+| Per-peripheral dividers | `mcu.cpp`'s survive (`clock_config.c` sets none) | same |
+
+So the effective sources are:
+
+| Peripheral | A153 | N947 |
+|---|---|---|
+| `Wire` | LPI2C0 @ 96MHz | FlexComm2 @ 12MHz |
+| `Wire1` | I3C0 @ 48MHz (96/2) | I3C1 @ 25MHz (PLL0 150/6) |
+| `Wire2` | — | FlexComm3 @ 12MHz |
+| `SPI` | LPSPI1 @ 96MHz | FlexComm1 @ 48MHz |
+| `SPI1` | LPSPI0 @ 96MHz | FlexComm6 @ 48MHz |
+| `Serial1` | LPUART2 @ 96MHz | FlexComm5 @ **reset default — no attach exists** |
+
+That asymmetry produced the same bug three times on N947 (default `SPI`,
+then `SPI1`, then suspected on `Wire2`), each time surfacing as
+"requested 24MHz, measured 31kHz". For every peripheral you enable,
+check both files and **measure the result** — `CLOCK_Get…ClkFreq()`
+printed once over `Serial` is enough to see what you actually got.
+
+Note also that a driver which *queries* its clock
+(`CLOCK_GetLpi2cClkFreq()`) survives all of this, while one that assumes
+a fixed instance does not. A153's I2C queries; N947's asks for FlexComm2
+unconditionally even when the instance in use is FlexComm3.
 
 **Aggregate initialization of SDK config structs is not portable.**
 `port_pin_config_t` is a bitfield whose members depend on

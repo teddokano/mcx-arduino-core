@@ -1550,6 +1550,39 @@ v0.5.0リリース完了後、`0.6.0-dev`ブランチを作成して次の開発
 
 **この手順書の真の検証は0.7（A156追加）**——書いた時点では未検証のまま残る。これは当初の計画どおりで、0.7で漏れが判明したらそこで直す。
 
+### 項目2（監査部分）完了: ペリフェラルのクロック源を全数監査——記録の誤り2件を訂正
+方針どおり**洗い出しと明文化まで**を実施。修正コミットは実機が触れるときにまとめる。
+
+**構造的な発見: 2ボードは正反対の設定になっている**。`init_mcu()`は自前のクロック設定の**後**に`BOARD_InitBootClocks()`（＝`clock_config.c`）を呼ぶので、`clock_config.c`が触れたものは全て上書きされる。
+
+| | A153 | N947 |
+|---|---|---|
+| ブートクロック | `BOARD_BootClockFRO96M()` | `BOARD_BootClockPLL150M()` |
+| `clock_config.c`のペリフェラルattach | **全て再アタッチ**（FRO_HF_DIVへ） | **一切触れない** |
+| `mcu.cpp`のattach | 全て上書きされる＝**デッドコード** | これだけが効いている |
+| per-peripheral分周器 | `mcu.cpp`の値が生き残る（`clock_config.c`は設定しない） | 同じ |
+
+**実効クロック源**（全て実ファイルから導出・検証済み）:
+
+| ペリフェラル | A153 | N947 |
+|---|---|---|
+| `Wire` | LPI2C0 @ 96MHz | FlexComm2 @ 12MHz |
+| `Wire1` | I3C0 @ 48MHz (96/2) | I3C1 @ 25MHz (PLL0 150/6) |
+| `Wire2` | — | FlexComm3 @ 12MHz |
+| `SPI` | LPSPI1 @ 96MHz | FlexComm1 @ 48MHz |
+| `SPI1` | LPSPI0 @ 96MHz | FlexComm6 @ 48MHz |
+| `Serial1` | LPUART2 @ 96MHz | FlexComm5 @ **リセットデフォルト（attachが無い）** |
+
+**記録の誤り2件を訂正**（どちらも実害は無いが、今後の判断を誤らせるもの）:
+1. **CLAUDE.mdの「A153の`clock_config.c`が`FRO_HF_DIV`（48MHz）へ上書き」は誤り——実際は96MHz**。48MHzは実際には呼ばれない`BOARD_BootClockFROHF48M`系の値だった。確定手順: `BOARD_InitBootClocks()`→`BOARD_BootClockFRO96M()`（`CLOCK_SetupFROHFClocking(96000000U)`）、`CLOCK_SetClockDiv(kCLOCK_DivFRO_HF_DIV, 1U)`。**`CLOCK_SetClockDiv(name, value)`は`value - 1`をレジスタに書き、読み出し側は`(field & 0xf) + 1`で割る**ため、`1U`は分周1＝96MHzのまま（この意味論を`fsl_clock.c`の実装で確認してから確定させた）
+2. **`mcu.cpp`のA153分岐のコメント`/* Attach clock to I3C 24MHZ */`が陳腐化**——`kCLOCK_DivI3C0_FCLK, 2U`＋FRO_HF_DIV 96MHzなので**実際は48MHz**。FRO_HFが48MHzだった頃に書かれたまま残ったもの
+
+**なぜ実害が出ていないか**: A153のI2Cは`CLOCK_GetLpi2cClkFreq()`と**実行時クエリ**なので、源が96MHzでも正しいボーレートを計算する。**クエリするドライバはこの手の食い違いを生き延び、インスタンスを決め打ちするドライバは生き延びない**——これが下記2件の潜在バグの分かれ目でもある。
+
+**残る2件（修正は実機が必要、未着手）**:
+- **`LPI2C_MASTER_CLOCK_FREQUENCY`がFlexComm2決め打ち**（N947）: `Wire2`はFlexComm3。**今は両方12MHzなので数値が一致しており、修正しても値が変わらないことを机上で証明できる**——実機確認は通常の`release_check`スイープに畳み込めば足りる
+- **N947 FlexComm5に`CLOCK_AttachClk`が無い**（分周設定のみ）: 他の全FlexCommはdiv＋attachの対になっているのにここだけ欠けている。**直す前に`CLOCK_GetLPFlexCommClkFreq(5u)`を実機で1行出力させ、今リセットデフォルトで何が供給されているかを確定させること**——確認せずにattachを足すと「直したつもりで別の値に変える」ことになる。115200bpsで正常動作している実績があるので、現状の源でも十分な精度は出ている
+
 ### 0.7・0.8の方針（同時に策定、0.8は選択が未確定）
 - **0.7: FRDM-MCXA156の追加**。A153の兄弟で最も安く追加でき、かつ**0.6で書いた移植手順書の初めての実地テスト**になる——手順書が漏らしていた箇所がここで判明し、修正される
 - **0.8: 2枚目、以下2案のどちらか（未決定）**

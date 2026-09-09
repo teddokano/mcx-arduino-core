@@ -185,7 +185,12 @@ void init_mcu( void )
 
 
 #elif	CPU_MCXA153VLH
-	/* Attach clock to I3C 24MHZ */
+	/* Attach I3C0 to FRO_HF_DIV / 2. Note the attach below is overridden
+	 * anyway: clock_config.c's BOARD_BootClockFRO96M() re-attaches every
+	 * peripheral to FRO_HF_DIV, and init_mcu() calls it after this block.
+	 * With FRO_HF at 96MHz that leaves I3C0 at 48MHz -- this comment used
+	 * to say 24MHz, from back when FRO_HF was 48MHz. Only the divider set
+	 * here survives; clock_config.c sets no per-peripheral dividers. */
 	CLOCK_SetClockDiv( kCLOCK_DivI3C0_FCLK, 2U );
 	CLOCK_AttachClk( kFRO_HF_DIV_to_I3C0FCLK );
 
