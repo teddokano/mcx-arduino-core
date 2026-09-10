@@ -81,24 +81,61 @@ func deviceFromScripts(args []string) (string, error) {
 		return "", fmt.Errorf("no OpenOCD script argument (-f/--file) to read the board from")
 	}
 	for _, script := range scripts {
-		path := script
-		if !filepath.IsAbs(path) && scriptsDir != "" {
-			path = filepath.Join(scriptsDir, script)
-		}
-		data, err := os.ReadFile(path)
-		if err != nil {
-			continue
-		}
-		for _, line := range strings.Split(string(data), "\n") {
-			if idx := strings.Index(line, deviceDirective); idx >= 0 {
-				device := strings.TrimSpace(line[idx+len(deviceDirective):])
-				if device != "" {
-					return device, nil
+		for _, path := range scriptCandidates(script, scriptsDir) {
+			data, err := os.ReadFile(path)
+			if err != nil {
+				continue
+			}
+			for _, line := range strings.Split(string(data), "\n") {
+				if idx := strings.Index(line, deviceDirective); idx >= 0 {
+					device := strings.TrimSpace(line[idx+len(deviceDirective):])
+					if device != "" {
+						return device, nil
+					}
 				}
 			}
 		}
 	}
-	return "", fmt.Errorf("no %q line in %s", deviceDirective, strings.Join(scripts, ", "))
+	return "", fmt.Errorf("no %q line in %s (searched -s %q and %s)",
+		deviceDirective, strings.Join(scripts, ", "), scriptsDir, exeDir())
+}
+
+// exeDir is where this binary lives, which is also where the board .cfg
+// files sit. Returns "" if it cannot be determined.
+func exeDir() string {
+	exe, err := os.Executable()
+	if err != nil {
+		return ""
+	}
+	if resolved, err := filepath.EvalSymlinks(exe); err == nil {
+		exe = resolved
+	}
+	return filepath.Dir(exe)
+}
+
+// scriptCandidates lists where to look for an OpenOCD script named on the
+// command line, in the order to try.
+//
+// Looking next to this binary is what makes the Arduino IDE work. Its
+// cortex-debug points -s at the *sketch build* directory and prepends its
+// own helper script, so the board .cfg that boards.txt names arrives as a
+// bare filename that -s cannot resolve -- boards.txt's own scripts_dir is
+// never passed through. The .cfg does sit beside this binary, and that is
+// a layout this repository controls. arduino-cli, by contrast, passes our
+// scripts_dir as -s, so that case resolves on the first candidate.
+func scriptCandidates(script, scriptsDir string) []string {
+	if filepath.IsAbs(script) {
+		return []string{script}
+	}
+	var paths []string
+	if scriptsDir != "" {
+		paths = append(paths, filepath.Join(scriptsDir, script))
+	}
+	paths = append(paths, script)
+	if dir := exeDir(); dir != "" {
+		paths = append(paths, filepath.Join(dir, script))
+	}
+	return paths
 }
 
 func main() {
