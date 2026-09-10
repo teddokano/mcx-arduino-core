@@ -1819,7 +1819,7 @@ CLAUDE.mdには以前「並列化した`xargs -P 4`版で実施——逐次実�
 
 **同一の共有バイナリが両経路を自動判別し、デバイス文字列は`a153.cfg`から読めている**——ボード別exe・ボード別ランチャーを廃止した設計が実機で成立していることの確認になった。
 
-**残り**: **LinuxとWindowsは従来どおりリリース前ステージングで**——ユーザーの運用上そちらの方がファイル移動が要らず楽なため。
+**残り**: **Windowsは`0.6.0-rc2`のステージングで実機確認完了**（下記参照）。**Linuxのみ未実施**——従来どおりリリース前ステージングで行う。
 
 **手動でgdb-bridgeを起動したあとはプロセスを掃除すること**: `crt_emu_cm_redlink`（セッションごと）と`redlinkserv`（LinkServerの常駐デーモン）が残る。0.4.0でも`crt_emu_cm_redlink`の残留に詰まった記録がある。`pkill -f crt_emu_cm_redlink; pkill -f redlinkserv`で戻せる。
 
@@ -1913,7 +1913,7 @@ STEP5 break loop + continue       → Breakpoint 1, loop () at hello_world.ino:1
 
 **なぜ毎ステップ出ていたか**: 停止のたびにcortex-debugがbacktraceを取り、それが`ResetISR`まで巻き戻って`0x318`を引くため。
 
-**検証**: 両ボードで**text/data/bssがバイト単位で同一**（フラッシュに載る内容は不変）、`.debug_rnglists`使用を確認、fast tier回帰スイープ両ボードAll OK、**実機N947でload→reset→ブレークポイント→backtrace→ステップ5回が警告ゼロ**。**その後ユーザーがmacOSのArduino IDEで改善を確認**。
+**検証**: 両ボードで**text/data/bssがバイト単位で同一**（フラッシュに載る内容は不変）、`.debug_rnglists`使用を確認、fast tier回帰スイープ両ボードAll OK、**実機N947でload→reset→ブレークポイント→backtrace→ステップ5回が警告ゼロ**。**その後ユーザーがmacOSのArduino IDEで改善を確認、続いてWindowsでも「解決済み」と確認**（`0.6.0-rc2`のステージング経由）。
 
 ### ステージング: `0.6.0-rc1`→`0.6.0-rc2`に作り直し
 Windows/Linuxのデバッガ確認用に**サイクル途中でステージングを行った初めての回**。通常のリリース手順と1点だけ変え、**タグは`0.6.0`ではなく`0.6.0-rc*`のprerelease**とした——0.6.0は未完成（CHANGELOGは`[Unreleased]`、実機残り2件）で、`0.6.0`タグを今切ると未完成の状態にそのタグが恒久的に固定されGitHub上でLatestとして出てしまうため。`staging-0.6.0`ブランチのindexはrcのzipを指し、**version表記は`0.6.0`のまま**（IDE上は本番と同じ見え方で検証できる）。`main`のindexは無傷。
@@ -1923,6 +1923,10 @@ Windows/Linuxのデバッガ確認用に**サイクル途中でステージン�
 **毎回の公開前チェック**: zipに**Windows exeが入っている**こと（`.gitignore`の否定が効いている＝`platform-paths`が守っている箇所そのもの）、実行ビット保持、実インストール相当での`debug --info`解決とコンパイル、**zip内の`compiler.opt_flags`が実際に`-gdwarf-5`であること**（コメント中に履歴として`-gdwarf-4`の語が出るので、grepは実際に効く行に対して行う）、ダウンロード後のchecksum再計算一致。
 
 **タグpushでCIが1つ赤くなるのは想定内**: `regression_check.yml`は`push:`にフィルタが無くタグでも走り、hygieneはタグrefなら無条件に`--release`。`changelog-heading`/`package-index-entry`/`doxygen-freshness`の3件が落ちる——**内容としては正しい報告**。ローカルで`--release`を再現して**この3件だけ**が落ちることも確認済み。`update_package_index.yml`はタグパターンが`-rc*`に一致しないため発火しない。
+
+**Windows実機確認完了**（`0.6.0-rc2`）: ユーザーから「Windowsで問題なく動作」と報告。見るべき2点とも良好——**(1) IDEがgdb-bridgeをspawnできる**（0.4.0で`ECONNRESET`で壊れたのはまさにここ。ボード別exe・ボード別`.bat`を廃止し共有exeを直接起動する新方式が、壊れた当の経路で通った）、**(2) 毎ステップの`warning: pc 0x318 ...`が解消**。
+
+**これでmacOS・Windowsの2プラットフォームで、IDE経由のフルデバッグセッションが検証済み。残るはLinuxのみ**——`findLinkServer()`のLinux分岐（`/usr/local/LinkServer/LinkServer`→`/usr/local/LinkServer_<ver>`→PATHの3段）が一度も実行されていない。
 
 **確認が済んだらrcリリースと`staging-0.6.0`ブランチは削除する。**
 
