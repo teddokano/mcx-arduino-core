@@ -20,6 +20,7 @@
 
 #include <Arduino.h>
 #include <cstring>
+#include "fsl_clock.h"
 
 // A minimal Print-derived class that can simulate a failing write(), used
 // by the Print::*WriteError() section below. File-scope, not declared
@@ -48,12 +49,83 @@ void check(const char *label, bool ok) {
     failCount++;
 }
 
+// Source-clock check. Compared exactly rather than with a tolerance: these
+// are integer dividers off a fixed oscillator or a PLL, so any difference is
+// a real configuration difference and never measurement noise.
+void checkClock(const char *label, uint32_t actual, uint32_t expect) {
+  Serial.print(label);
+  Serial.print(": ");
+  Serial.print(actual);
+  Serial.print(" Hz (expect ");
+  Serial.print(expect);
+  Serial.print(") -> ");
+  Serial.println(actual == expect ? "OK" : "FAIL");
+  if (actual != expect)
+    failCount++;
+}
+
+// For a clock nobody has established the right value for yet -- print it,
+// don't judge it.
+void reportClock(const char *label, uint32_t actual) {
+  Serial.print(label);
+  Serial.print(": ");
+  Serial.print(actual);
+  Serial.println(" Hz (not asserted -- see comment)");
+}
+
 void setup() {
   Serial.begin(115200);
   while (!Serial)
     ;
 
   Serial.println("=== Release check 01: no-wiring automatic checks ===");
+
+  // ---- peripheral source clocks ----
+  // Placed first because everything after it sits downstream: the
+  // delayMicroseconds() accuracy check here, and on real hardware every bit
+  // rate the other release_check sketches produce. A wrong source clock is
+  // how N947's default SPI came to ask for 24MHz and put out 31kHz, and how
+  // SPI1 ran at half rate -- both were peripherals that mcu.cpp attached and
+  // clock_config.c never re-attached, and both were found only once someone
+  // put a logic analyser on the pin. Reading the numbers back catches that
+  // class of fault without any instrument.
+  //
+  // The expected values are the ones the 0.6 clock audit derived by reading
+  // mcu.cpp and clock_config.c; this is the first time they are checked
+  // against a running board. So a FAIL here may well mean the audit was
+  // wrong rather than the hardware -- read the printed value before
+  // calling it a regression.
+  Serial.println("--- peripheral source clocks ---");
+  {
+#if defined(FRDM_MCXA153)
+    // clock_config.c re-attaches every peripheral here, so mcu.cpp's own
+    // attach calls are overwritten and all of these land on FRO_HF_DIV.
+    checkClock("core", CLOCK_GetCoreSysClkFreq(), 96000000u);
+    checkClock("Wire    (LPI2C0) ", CLOCK_GetLpi2cClkFreq(), 96000000u);
+    checkClock("Wire1   (I3C0)   ", CLOCK_GetI3CFClkFreq(), 48000000u);
+    checkClock("SPI     (LPSPI1) ", CLOCK_GetLpspiClkFreq(1u), 96000000u);
+    checkClock("SPI1    (LPSPI0) ", CLOCK_GetLpspiClkFreq(0u), 96000000u);
+    checkClock("Serial1 (LPUART2)", CLOCK_GetLpuartClkFreq(2u), 96000000u);
+#elif defined(FRDM_MCXN947)
+    // The mirror image: clock_config.c touches no peripheral clock at all,
+    // so mcu.cpp's attach calls are the only thing that decides these.
+    checkClock("core", CLOCK_GetCoreSysClkFreq(), 150000000u);
+    checkClock("Wire  (FlexComm2)", CLOCK_GetLPFlexCommClkFreq(2u), 12000000u);
+    checkClock("Wire1 (I3C1)     ", CLOCK_GetI3cClkFreq(1u), 25000000u);
+    checkClock("Wire2 (FlexComm3)", CLOCK_GetLPFlexCommClkFreq(3u), 12000000u);
+    checkClock("SPI   (FlexComm1)", CLOCK_GetLPFlexCommClkFreq(1u), 48000000u);
+    checkClock("SPI1  (FlexComm6)", CLOCK_GetLPFlexCommClkFreq(6u), 48000000u);
+    // FlexComm5 is the one gap the audit found and could not close: mcu.cpp
+    // sets its divider but never calls CLOCK_AttachClk for it, so it runs on
+    // whatever the reset default leaves. Serial1 works at 115200 today, so
+    // the source is evidently good enough -- but the number has never been
+    // read. Printed, not asserted: adding an attach before measuring would
+    // only swap one unverified value for another. Once this prints a figure,
+    // decide the intended source and turn this into a checkClock().
+    reportClock("Serial1 (FlexComm5, no CLOCK_AttachClk)",
+                CLOCK_GetLPFlexCommClkFreq(5u));
+#endif
+  }
 
   // ---- math constants / trig (was test_math_constants) ----
   Serial.println("--- math constants ---");
