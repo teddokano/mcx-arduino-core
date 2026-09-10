@@ -20,8 +20,10 @@ name: Regression check
 # A separate `hygiene` job runs static checks for the mistakes this
 # project has repeatedly made by hand (version fields drifting apart, a
 # stray `*/` closing a doc comment early, mcxPinState's pin-name table
-# falling out of step with arduino_io.h). It needs no toolchain, so it
-# finishes in seconds and reports independently of the compile matrix.
+# falling out of step with arduino_io.h, and -- at release time --
+# shipping a docs/api/ that predates the sources Doxygen reads). It needs
+# no toolchain, so it finishes in seconds and reports independently of
+# the compile matrix.
 #
 # Caching (the single biggest lever found while measuring this locally):
 # arduino-cli's own build cache persists core.a across sketches within a
@@ -47,15 +49,26 @@ jobs:
   hygiene:
     runs-on: ubuntu-latest
     steps:
+      # Full history only where the release set runs. One of its checks
+      # (doxygen-freshness) asks git which commits touched Doxygen's
+      # inputs after docs/api/ was last regenerated, which a shallow
+      # clone cannot answer -- and this repo's history is ~145MB, so
+      # fetching it on every dev push would be paying that for nothing.
+      # Note the quoted '0'/'1': GitHub expressions treat bare 0 as
+      # falsy, so `cond && 0 || 1` would always yield 1.
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: ${{ (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) && '0' || '1' }}
 
-      # --release adds the two checks that only mean anything once a
-      # version is actually being released: the CHANGELOG heading has to
-      # name it, and package_nxp_mcx_index.json has to already carry an
-      # entry for it (update_package_index.yml only rewrites an existing
-      # entry, it never creates one). On a dev branch both are expected
-      # to be unset, so asking for them there would fail every push.
+      # --release adds the checks that only mean anything once a version
+      # is actually being released: the CHANGELOG heading has to name it,
+      # package_nxp_mcx_index.json has to already carry an entry for it
+      # (update_package_index.yml only rewrites an existing entry, it
+      # never creates one), and docs/api/ has to have been regenerated
+      # since the sources Doxygen reads last changed. On a dev branch all
+      # three are legitimately unmet, so asking for them there would fail
+      # every push.
       - name: Repo hygiene checks
         run: |
           if [ "${{ github.ref }}" = "refs/heads/main" ] || [ "${{ startsWith(github.ref, 'refs/tags/') }}" = "true" ]; then

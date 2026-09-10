@@ -13,8 +13,14 @@ jobs:
       contents: write
 
     steps:
+      # Full history: the release check set below includes
+      # doxygen-freshness, which compares commits and so cannot run
+      # against a shallow clone. This workflow is hand-dispatched once
+      # per release, so the extra fetch costs nothing that matters.
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       # This workflow only rewrites the checksum/size of a platforms[]
       # entry that already exists -- it never creates one. Releasing

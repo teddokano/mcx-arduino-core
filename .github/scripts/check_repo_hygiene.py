@@ -14,6 +14,7 @@ import argparse
 import json
 import os
 import re
+import subprocess
 import sys
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -151,6 +152,81 @@ def check_package_index_entry():
             "(newest is %s) -- add a placeholder entry before running "
             "update_package_index.yml" % (version, versions[0] if versions else "none"),
         )
+
+
+def git(*args):
+    """Run git in the repo and return stdout, or None if it fails."""
+    try:
+        out = subprocess.run(
+            ("git",) + args, cwd=REPO, capture_output=True, text=True, check=True
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return None
+    return out.stdout.strip()
+
+
+def doxygen_inputs():
+    """Return the paths Doxygen reads, from the Doxyfile's own INPUT tag.
+
+    Read rather than hardcoded so that pointing Doxygen at another
+    directory doesn't quietly leave this check watching the old one.
+    """
+    m = re.search(r"^INPUT\s*=\s*((?:.*\\\n)*.*)$", read(DOXYFILE), re.MULTILINE)
+    if not m:
+        return None
+    return [p for p in m.group(1).replace("\\\n", " ").split() if p]
+
+
+def check_doxygen_freshness():
+    """At release time docs/api/ must be newer than what Doxygen reads.
+
+    Only meaningful with --release: during a development cycle the
+    generated output is legitimately behind, because it is regenerated
+    once, as a release step. Forgetting that step shipped stale output
+    twice -- in v0.4.0 (mcxPinState/version-macro additions missing
+    entirely) and v0.4.1 (mcu.cpp's cross-reference line numbers pointing
+    at the wrong lines, since SOURCE_BROWSER renders the sources too, so
+    even a comment-only edit moves the output).
+
+    Compares commits rather than file timestamps: a fresh checkout gives
+    every file the same mtime, so mtimes would say nothing here.
+    """
+    inputs = doxygen_inputs()
+    if inputs is None:
+        fail("doxygen-freshness", "could not read INPUT from Doxyfile")
+        return
+
+    if git("rev-parse", "--is-shallow-repository") == "true":
+        fail(
+            "doxygen-freshness",
+            "cannot compare commits in a shallow clone -- check out with "
+            "fetch-depth: 0 when running the release set",
+        )
+        return
+
+    docs_commit = git("log", "-1", "--format=%H", "--", "docs/api")
+    if not docs_commit:
+        fail("doxygen-freshness", "docs/api/ has never been committed")
+        return
+
+    # Doxyfile itself counts: changing a setting changes the output just
+    # as surely as changing a source file does.
+    watched = inputs + ["Doxyfile"]
+    changed = git("log", "--oneline", "%s..HEAD" % docs_commit, "--", *watched)
+    if changed is None:
+        fail("doxygen-freshness", "git log failed while comparing against %s" % docs_commit[:8])
+        return
+    if changed:
+        lines = changed.splitlines()
+        shown = "; ".join(lines[:3]) + (" ..." if len(lines) > 3 else "")
+        fail(
+            "doxygen-freshness",
+            "docs/api/ was last regenerated in %s, but %d later commit(s) "
+            "changed what Doxygen reads (%s) -- run `doxygen Doxyfile` and "
+            "commit the result" % (docs_commit[:8], len(lines), shown),
+        )
+        return
+    notes.append("doxygen-freshness: docs/api/ is current with %s" % ", ".join(watched))
 
 
 def scan_comment_terminators(path):
@@ -296,6 +372,7 @@ def main():
     if args.release:
         check_changelog_heading()
         check_package_index_entry()
+        check_doxygen_freshness()
 
     for note in notes:
         print("ok: %s" % note)
