@@ -1722,7 +1722,41 @@ serverCmd.WriteString(` -c "gdb_port pipe"`)
 4. **`value == 0` / `max` をdigitalWriteへ短絡させるAVRの最適化は採用しない**——`PWM0`〜`PWM5`の既存挙動（FlexPWMでduty 0.0/1.0）を変えてしまい、実機検証済みの部分に回帰リスクが出る。**変更は非PWMピンの経路だけに閉じた**
 5. 判定には`PwmOut::is_pwm_pin()`を新設（`s_pins[]`を引くだけの静的関数、両ボードのクラス定義に各1つ）。既存の`digitalPinHasPWM()`マクロは**リナンバリング後**の番号で判定するため、この位置では使えない
 
-**`analogWriteFrequency()`**はフォールバック先が無い（GPIOに周期の意味がない）ので**黙って戻る**。
+**`analogWriteFrequency()`は panic のまま残す**——ここは一度「黙って戻る」にしたが、**誤りだったので直した**（下記）。
+
+### 続き: `mcx_RCServo` との干渉が判明し、`analogWriteFrequency()` を panic に戻した
+ユーザーから「Servoは現在の名前は `mcx_RCServo` だと思ったが？」と指摘され、**`/Users/tedd/dev/Arduino/libraries/mcx_RCServo/` に既に存在する**ことが判明（v1.0.0、`teddokano/mcx_RCServo`として公開済み、MIT、`architectures=mcx`、`SG90`/`FS90R`を`PositionServo`/`RotationServo`経由で提供、READMEに`PWM0`〜`PWM5`制約も明記済み）。**私が「ゼロから作る候補」として扱っていたのが誤り**——同梱の検討だけが残っている状態だった。
+
+**そして上の変更がこのライブラリを壊す方向に効くと分かった**。このライブラリは`analogWriteFrequency()`→`analogWrite()`で駆動している:
+
+```c
+mcx_RCServo::mcx_RCServo(...) {
+    analogWriteFrequency( pin, pwm_frequency_hz );   // 50Hz
+    analogWriteResolution( resolution );             // 既定16bit
+}
+void mcx_RCServo::position( double p ) {
+    analogWrite( pin, lround( pos * pwm_duty_range + pwm_duty_min ) );
+}
+```
+
+`SG90 servo(D9);`のようにPWM非対応ピンを渡すと、**変更前はpanic（SOS）で即座に分かった**のが、**変更後は`analogWriteFrequency`が黙って無視され、`analogWrite`のduty値（16bitで50Hz・パルス0.5〜2.4msなら1600〜7900程度）が中点32768を大きく下回るため常にLOW**——サーボが何も言わずに一切動かない状態になる。**「即座に原因が分かるSOS」を「無言で動かない」に置き換えてしまっていた。**
+
+**修正**: `analogWriteFrequency()`だけpanicに戻した。判断の分かれ目は:
+- `analogWrite()`は**標準API**で、AVRに「タイマーが無ければ`digitalWrite`」という確立した挙動がある。移植スケッチは任意のピンを渡してくるのでフォールバックが正しい
+- `analogWriteFrequency()`は**このコア独自の拡張**（Teensy由来）。移植コードが偶然呼ぶことはなく、呼ぶ人は明確にPWMを要求している。しかもこのコアの既存の作法（`AnalogIn`/`PwmOut`/`Serial`/`I2C`/`I3C`はいずれも非対応ピンでpanic）とも一致する
+
+**「フォールバックしない」ことは「黙る」ことを要求しない**——ここを混同していた。
+
+**あわせてファイル構造を整理した**（ユーザー指示「ツギハギのコードにならないように」）。同じ「リナンバリング→範囲チェック→遅延生成」が3関数に散らばっていたのを、`raw_pin()`（Arduino番号→生ピン、範囲外は`-1`）と`pwm_for()`（PwmOutを取得、FlexPWMが届かなければ`nullptr`）の2つに集約。結果:
+- `analogWrite()`の`arduino_pin`退避用シャドウ変数が不要になった——**二重リナンバリングの罠が構造的に消えた**（生の値を同じ変数に入れ直さないため）
+- `raw_pin()`に範囲チェックを入れたことで、`arduino_pin_by_number[]`への**範囲外読み出し（既存のUB）も解消**
+- 154行→144行
+
+**`mcx_RCServo`側にはガードを足していない**。コアのpanicメッセージが`"analogWriteFrequency: pin has no PWM -- use PWM0-PWM5"`と既に具体的で、ライブラリ側に二重の検査を置くのはまさに避けたい継ぎ足しになるため。
+
+**回帰スイープの方法について（重要な訂正）**: この作業中、`xargs -P 4`による並列スイープが**偽の失敗を出す**と判明した。コアのソースを変えた直後に走らせると、4プロセスが同じ`core.a`ビルドキャッシュを同時に作り合って競合する——`hello_world`のような確実に通るスケッチまでFAILになり、**実行のたびに失敗する顔ぶれが変わる**（1回目3件→2回目9件→3回目11件、しかも全てA153側）。キャッシュを温めてから再実行しても解消しなかった。**単体で実行すれば全て通る**ことを個別に確認して切り分けた。
+
+CLAUDE.mdには以前「並列化した`xargs -P 4`版で実施——逐次実行より大幅に高速」と記録していたが、**結果を信用してはいけない**。CI の`compile_examples.sh`が逐次なのは正しい。逐次で走らせ直したところ**129 OK / 3 FAIL**（既知の`_N947`専用サンプルをA153でコンパイルした分のみ）と、期待どおりの結果になった。**今後の回帰スイープは逐次で行うこと。**
 
 **検証**: `release_check/01`（配線不要・自動判定）に7項目を追加。**そこへ到達できること自体がpanicしない証明**になり、さらにD2を出力に駆動して`digitalRead()`で読み戻すことで「本当に駆動されたか」まで自動で確認する。12bit時のしきい値追随も含む。両ボード`--warnings all`で警告ゼロ。
 

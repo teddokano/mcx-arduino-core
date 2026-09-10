@@ -265,9 +265,9 @@ void setup() {
     check("12-bit: analogWrite(D2, 3000) drives HIGH", digitalRead(PIN) == HIGH);
     analogWriteResolution(8);         // restore the default for later checks
 
-    // Same guard, nothing to fall back to -- must simply be ignored.
-    analogWriteFrequency(PIN, 1000);
-    check("analogWriteFrequency(D2, ...) ignored, not fatal", true);
+    // analogWriteFrequency() deliberately still panics on such a pin --
+    // it has no fallback (a GPIO has no period) and no ported sketch calls
+    // it by accident -- so there is nothing to check for here.
   }
 
   // ---- Wire1 on-board I3C-in-I2C-mode sensor, raw registers
