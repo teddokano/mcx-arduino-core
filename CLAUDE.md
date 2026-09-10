@@ -1781,6 +1781,33 @@ CLAUDE.mdには以前「並列化した`xargs -P 4`版で実施——逐次実�
 
 **リリース前チェックには入れない**（実物のサーボが要る）。`examples/release_check/README.md`の「Not covered here」に理由付きで記載——「CIは毎pushでコンパイルするが、軸が回るのを見ることはできない」。
 
+### hygieneチェックを2件追加（`platform-paths`・`mcxpinstate-verified`）
+0.6のCI候補として残っていた2件。どちらも実機不要。
+
+**`platform-paths`（毎push）**: `boards.txt`/`platform.txt`がプラットフォーム内に名指ししているファイルが**実在し、かつgit追跡下にある**ことを確認する。
+
+**追跡下であることが本題**。リリースzipは`git archive HEAD:hardware/nxp/mcx`なので、**追跡外のファイルは黙ってzipから消える**。しかもローカル開発用symlinkは作業ツリーを指しているのでファイルはそこにあり、**ローカル検証は全部通る**——壊れているのは配布物だけ、という気づきにくい形になる。gdb-bridgeのボード非依存化のときに実際にこれが起きかけた（新しい`gdb-bridge-windows-amd64.exe`がユーザーのグローバル`~/.config/git/ignore`の`*.exe`で追跡外になっていた）。気づかなければ**Windowsユーザーだけデバッガが起動しないzip**が出ていた。
+
+**パスの集め方はハードコードしていない**——各プロパティ値をビルドシステムと同じようにトークン分割し、`{runtime.platform.path}`/`{build.variant.path}`/`{build.core.path}`を解決して、**プラットフォームディレクトリ配下に着地したトークンだけ**を拾う。`{build.path}`や`{compiler.path}`のようにビルド時にしか決まらないものは**未解決の`{`が残るので自動的に落ちる**——除外リストを持たずに済んでいる。実際に11件を検出:
+
+| 出どころ | 拾ったパス |
+|---|---|
+| `debug.server.openocd.path` / `.windows` | `tools/gdb-bridge/launch.sh` / `gdb-bridge-windows-amd64.exe` |
+| `scripts_dir` ＋ `.script` | `tools/gdb-bridge/`・`a153.cfg`・`n947.cfg` |
+| `debug.svd_file` | `variants/<board>/svd/*.svd` |
+| `tools.linkserver.upload.pattern` / `.windows` | `tools/upload.sh` / `upload.bat` |
+| `recipe.c.combine.pattern`の`-T`引数 | `variants/<board>/linker/MCXxxx.ld` |
+
+最後の1件は**名指ししていないのに拾えた**——リンカスクリプトはレシピ文字列の中に埋まっているが、トークン分割方式なので自然に出てくる。ボードを増やしても`frdm_*.`プレフィックスで自動追随する。
+
+**`scripts_dir`＋`script`だけは特別扱い**（cortex-debugもarduino-cliも`-s DIR -f FILE`と別々に渡すので、どちらのプロパティ単体でも完全なパスにならないため、明示的に結合している）。
+
+**`mcxpinstate-verified`（リリース時のみ）**: `PinState.cpp`の`MCXPINSTATE_VERIFIED_AGAINST`が`platform.txt`のバージョンと一致することを要求する。効く理由が2つある:
+1. **この`#warning`はユーザーのビルドでも出る**。定数が古いまま出荷すると、mcxPinStateのサンプルをコンパイルした全員に警告が見える。CIは`--warnings all`なのでログには出るが、**警告なのでジョブは緑のまま**通ってしまう
+2. **`KNOWN_INSTANCES`はどこからも機械チェックされていない**。既存の`mcxpinstate-aliases`が毎push照合しているのは`ALIAS_NAMES`だけで、各ペリフェラルのピン集合を持つ`KNOWN_INSTANCES`は対象外——**定数を上げた記録が「人が見た」唯一の証拠**になる
+
+**検証（4件とも実際に壊して確認）**: (1) `a153.cfg`を一時退避→「存在しない」で発火、(2) `.exe`を`git rm --cached`（実際に踏んだケースの再現）→「存在するが追跡外」で発火、(3) 定数を`0.5.0`に戻す→発火、(4) 正しい状態では両方とも通る。**workflowの変更は不要**——既存の`check_repo_hygiene.py`／`--release`の呼び出しにそのまま乗る。`platform-paths`は`git ls-files`（indexを読むだけ）なので`doxygen-freshness`と違い**shallow cloneでも動く**ことも確認済み。
+
 ### 0.7・0.8の方針（同時に策定、0.8は選択が未確定）
 - **0.7: FRDM-MCXA156の追加**。A153の兄弟で最も安く追加でき、かつ**0.6で書いた移植手順書の初めての実地テスト**になる——手順書が漏らしていた箇所がここで判明し、修正される
 - **0.8: 2枚目、以下2案のどちらか（未決定）**

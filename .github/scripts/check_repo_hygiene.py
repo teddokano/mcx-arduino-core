@@ -14,12 +14,15 @@ import argparse
 import json
 import os
 import re
+import shlex
 import subprocess
 import sys
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+PLATFORM_DIR = os.path.join(REPO, "hardware/nxp/mcx")
 PLATFORM_TXT = os.path.join(REPO, "hardware/nxp/mcx/platform.txt")
+BOARDS_TXT = os.path.join(REPO, "hardware/nxp/mcx/boards.txt")
 DOXYFILE = os.path.join(REPO, "Doxyfile")
 CHANGELOG = os.path.join(REPO, "CHANGELOG.md")
 PACKAGE_INDEX = os.path.join(REPO, "package_nxp_mcx_index.json")
@@ -229,6 +232,133 @@ def check_doxygen_freshness():
     notes.append("doxygen-freshness: docs/api/ is current with %s" % ", ".join(watched))
 
 
+def parse_properties(path):
+    """Return the key=value pairs of an Arduino .txt property file."""
+    props = {}
+    for line in read(path).splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        props[key.strip()] = value.strip()
+    return props
+
+
+def board_properties():
+    """Return {board_id: {property: value}} from boards.txt."""
+    boards = {}
+    for key, value in parse_properties(BOARDS_TXT).items():
+        board, _, prop = key.partition(".")
+        if not prop or board == "menu":
+            continue
+        boards.setdefault(board, {})[prop] = value
+    return boards
+
+
+def expand(value, props, depth=0):
+    """Expand {placeholders} from props, or return None if any cannot be resolved."""
+    for _ in range(depth, 8):
+        expanded = re.sub(r"\{([^{}]+)\}", lambda m: props.get(m.group(1), m.group(0)), value)
+        if expanded == value:
+            break
+        value = expanded
+    return None if "{" in value else value
+
+
+def platform_path_references():
+    """Return {repo-relative path: [where it is written]} for everything the
+    platform's own .txt files name inside the platform directory.
+
+    Values are tokenised the way the build system splits them, and a token
+    counts only once it expands with no placeholder left -- so build-time
+    ones ({build.path}, {compiler.path}) drop out on their own rather than
+    needing a list of exceptions here.
+    """
+    platform_props = parse_properties(PLATFORM_TXT)
+    found = {}
+
+    def note(raw, props, origin):
+        try:
+            tokens = shlex.split(raw, posix=False)
+        except ValueError:
+            return
+        for token in tokens:
+            token = token.strip('"')
+            resolved = expand(token, props)
+            if resolved is None:
+                continue
+            # Windows overrides are written with backslashes.
+            resolved = resolved.replace("\\", "/")
+            if not resolved.startswith(PLATFORM_DIR + "/"):
+                continue
+            rel = os.path.relpath(resolved, REPO)
+            found.setdefault(rel, []).append(origin)
+
+    for board, board_props in sorted(board_properties().items()):
+        props = dict(platform_props)
+        props.update(board_props)
+        props["runtime.platform.path"] = PLATFORM_DIR
+        for name, sub in (("build.variant", "variants"), ("build.core", "cores")):
+            if props.get(name):
+                props["%s.path" % name] = os.path.join(PLATFORM_DIR, sub, props[name])
+
+        for key, value in sorted(list(platform_props.items()) + list(board_props.items())):
+            note(value, props, "%s: %s" % (board, key))
+
+        # cortex-debug and arduino-cli both pass the scripts directory and
+        # the script name separately (-s DIR -f FILE), so neither property
+        # names a complete path on its own.
+        scripts_dir = expand(props.get("debug.server.openocd.scripts_dir", ""), props)
+        script = props.get("debug.server.openocd.script")
+        if scripts_dir and script:
+            note(os.path.join(scripts_dir, script), props, "%s: debug.server.openocd.script" % board)
+
+    return found
+
+
+def check_platform_paths():
+    """Every file boards.txt/platform.txt names inside the platform must exist and be tracked.
+
+    Tracked is the half that matters. The release zip is built by
+    `git archive HEAD:hardware/nxp/mcx`, so an untracked file is simply
+    absent from it -- while the local development symlink points at the
+    working tree and still finds it. Local verification passes and only the
+    shipped package is broken. That very nearly happened to
+    gdb-bridge-windows-amd64.exe, which the user's global `*.exe` ignore
+    rule kept out of the index; had it gone unnoticed, Windows users would
+    have got a release whose debugger could not start.
+    """
+    listing = git("ls-files", "hardware/nxp/mcx")
+    if listing is None:
+        fail("platform-paths", "git ls-files failed")
+        return
+    tracked = set(listing.splitlines())
+
+    references = platform_path_references()
+    if not references:
+        fail("platform-paths", "found no platform paths to check -- has the property syntax changed?")
+        return
+
+    for rel, origins in sorted(references.items()):
+        where = ", ".join(sorted(set(origins)))
+        absolute = os.path.join(REPO, rel)
+        is_dir = os.path.isdir(absolute)
+        if not os.path.exists(absolute):
+            fail("platform-paths", "%s does not exist (named by %s)" % (rel, where))
+            continue
+        if is_dir:
+            if not any(t.startswith(rel.rstrip("/") + "/") for t in tracked):
+                fail("platform-paths", "%s holds no tracked files (named by %s)" % (rel, where))
+        elif rel not in tracked:
+            fail(
+                "platform-paths",
+                "%s exists but is not tracked by git, so it will be missing from the "
+                "release zip (named by %s)" % (rel, where),
+            )
+    notes.append("platform-paths: %d path(s) named by boards.txt/platform.txt exist and are tracked"
+                 % len(references))
+
+
 def scan_comment_terminators(path):
     """Yield (line_no, line) where a block comment ends mid-line on a continuation line.
 
@@ -355,6 +485,45 @@ def check_mcxpinstate_aliases():
     notes.append("mcxpinstate-aliases: %d pin names match in order" % len(pins))
 
 
+def check_mcxpinstate_verified_against():
+    """At release time mcxPinState's verified-against constant must name this version.
+
+    Only meaningful with --release: mid-cycle the constant is legitimately
+    behind until someone re-checks the tables.
+
+    Two things ride on it. The #warning PinState.cpp raises when the core
+    outruns the constant does not fail a build, and it is emitted in
+    *users'* builds too -- shipping a stale constant means everyone who
+    compiles an mcxPinState example sees it. And bumping it is the only
+    record that KNOWN_INSTANCES was looked at: ALIAS_NAMES is compared
+    mechanically on every push (check_mcxpinstate_aliases), but the
+    instance table -- which peripheral owns which pins -- is checked
+    nowhere else.
+    """
+    _, major, minor, patch = platform_version()
+    m = re.search(
+        r"#define\s+MCXPINSTATE_VERIFIED_AGAINST\s+MCX_ARDUINO_CORE_VERSION_VAL"
+        r"\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)",
+        read(PIN_STATE_CPP),
+    )
+    if not m:
+        fail("mcxpinstate-verified", "could not find MCXPINSTATE_VERIFIED_AGAINST in PinState.cpp")
+        return
+
+    found = ".".join(m.groups())
+    expected = "%s.%s.%s" % (major, minor, patch)
+    if found != expected:
+        fail(
+            "mcxpinstate-verified",
+            "PinState.cpp was last verified against %s but this release is %s -- re-check "
+            "ALIAS_NAMES/KNOWN_INSTANCES against the current arduino_io.h and bump "
+            "MCXPINSTATE_VERIFIED_AGAINST, in the bundled copy and in the mcxPinState "
+            "repository both" % (found, expected),
+        )
+        return
+    notes.append("mcxpinstate-verified: tables recorded as verified against %s" % found)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -366,6 +535,7 @@ def main():
 
     check_version_fields()
     check_doxyfile_version()
+    check_platform_paths()
     check_comment_terminators()
     check_mcxpinstate_aliases()
 
@@ -373,6 +543,7 @@ def main():
         check_changelog_heading()
         check_package_index_entry()
         check_doxygen_freshness()
+        check_mcxpinstate_verified_against()
 
     for note in notes:
         print("ok: %s" % note)
