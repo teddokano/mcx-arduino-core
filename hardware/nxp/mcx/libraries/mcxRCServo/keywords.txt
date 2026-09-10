@@ -1,0 +1,29 @@
+#######################################
+# Syntax Coloring Map for mcxRCServo
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+mcxRCServo	KEYWORD1
+PositionServo	KEYWORD1
+RotationServo	KEYWORD1
+SG90	KEYWORD1
+FS90R	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+position	KEYWORD2
+range	KEYWORD2
+speed	KEYWORD2
+stop	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+NO_ERROR	LITERAL1
+RANGE_SETTING	LITERAL1

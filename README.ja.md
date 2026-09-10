@@ -20,6 +20,7 @@ Arduino API対応状況の一覧は[API_COMPATIBILITY.md](API_COMPATIBILITY.md)�
 [MCUXpresso SDKを直接呼び出す](docs/advanced_sdk_tuning.md)（GPIO速度チューニング）、
 [r01libによるネイティブI3C](docs/advanced_r01lib_i3c.md)（`Wire`形式のAPIでは扱えない機能向け）、
 [mcxPinStateによるピン所有状況のデバッグ](docs/mcxpinstate_guide.md)（そのためのライブラリ、本パッケージに同梱済み）。
+同梱ライブラリはもう1つあります——[mcxRCServo](https://github.com/teddokano/mcxRCServo)は`PWM0`〜`PWM5`ピンからRCサーボを駆動します。
 
 このコアにFRDM-MCXボードを追加する作業は、コアを使う作業とは別物なので専用の手順書があります:
 [新しいボードの移植](docs/porting_a_new_board.md)（英語のみ）。
@@ -89,9 +90,10 @@ mcx-arduino-core/
 │   │   ├── r01lib/           #   r01libハードウェアドライバコア（Serial、I2C/I3C、SPI、GPIO、
 │   │   │                     #   AnalogIn、PwmOut、InterruptIn、Ticker等）
 │   │   └── sdk/               #   対応する全チップ共通のNXP MCX SDKドライバファイル
-│   ├── libraries/
-│   │   └── mcxPinState/       # 同梱の専用ライブラリ（docs/mcxpinstate_guide.md参照）。
-│   │                          #   開発は本体のリポジトリで行い、リリース時にここへ同期
+│   ├── libraries/            # 同梱ライブラリ。いずれも開発は各自のリポジトリで行い、
+│   │   │                      #   リリース時にここへ同期
+│   │   ├── mcxPinState/       #   ピン所有状況のデバッグ（docs/mcxpinstate_guide.md参照）
+│   │   └── mcxRCServo/        #   PWM0〜PWM5ピンからRCサーボを駆動
 │   ├── tools/
 │   │   ├── upload.sh         # アップロードスクリプト（LinkServer自動検出）、Windows用はupload.bat
 │   │   └── gdb-bridge/       # Arduino IDE 2のcortex-debug（OpenOCDを想定）をLinkServer自身の

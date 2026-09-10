@@ -41,7 +41,10 @@ check can't assume are on hand, and stay as individual examples instead:
 `test_Wire_end_find_availForWrite_pullmodes`,
 `onboard_temperature_sensor` (all need the external `P3T1755.h`
 library), `test_analogRead_precision_N947` (needs an external voltage
-source on A2).
+source on A2), and the bundled `mcxRCServo` library's own examples
+(`SG90_basic`, `SG90_moves`, `FS90R_rotate` — each needs a real servo
+and its own supply). CI still compiles all of those on every push; what
+it cannot do is watch a shaft turn.
 
 Also intentionally not folded in: `test_GPIO_D0_to_D7` and
 `test_analogWrite_duty` (superseded by the more complete `_all_pins`/

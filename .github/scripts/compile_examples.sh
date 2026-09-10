@@ -4,10 +4,13 @@
 # Usage: compile_examples.sh <board> <mode>
 #   board: frdm_mcxa153 | frdm_mcxn947
 #   mode:  fast | full
-#     fast - examples/release_check/** + hello_world + mcxPinState examples
-#            (runs on every push/PR; a few minutes)
-#     full - every .ino under examples/ and mcxPinState/examples/
+#     fast - examples/release_check/** + hello_world + the bundled
+#            libraries' examples (runs on every push/PR; a few minutes)
+#     full - every .ino under examples/ and under libraries/*/examples/
 #            (runs on push to main, workflow_dispatch, and release tags)
+#
+# The bundled libraries are globbed rather than named, so adding one to
+# hardware/nxp/mcx/libraries/ puts its examples in the sweep by itself.
 #
 # Board-exclusive sketches (directory name ends in _N947, currently the
 # only such suffix in use) are skipped on the other board -- that's
@@ -26,13 +29,13 @@ SKETCH_LIST="$(mktemp)"
 if [[ "$MODE" == "fast" ]]; then
   find "${REPO_ROOT}/examples/release_check" \
        "${REPO_ROOT}/examples/Arduino_compatible_API/hello_world" \
-       "${REPO_ROOT}/hardware/nxp/mcx/libraries/mcxPinState/examples" \
+       "${REPO_ROOT}"/hardware/nxp/mcx/libraries/*/examples \
        -name "*.ino" 2>/dev/null | sort > "$SKETCH_LIST"
 elif [[ "$MODE" == "full" ]]; then
   find "${REPO_ROOT}/examples/Arduino_compatible_API" \
        "${REPO_ROOT}/examples/Arduino_incompatible_API" \
        "${REPO_ROOT}/examples/release_check" \
-       "${REPO_ROOT}/hardware/nxp/mcx/libraries/mcxPinState/examples" \
+       "${REPO_ROOT}"/hardware/nxp/mcx/libraries/*/examples \
        -name "*.ino" 2>/dev/null | sort > "$SKETCH_LIST"
 else
   echo "Unknown mode: $MODE (expected 'fast' or 'full')" >&2

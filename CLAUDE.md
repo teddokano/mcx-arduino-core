@@ -1762,6 +1762,23 @@ CLAUDE.mdには以前「並列化した`xargs -P 4`版で実施——逐次実�
 
 `API_COMPATIBILITY.md`も更新——従来「専用ピン`PWM0`-`PWM5`」としか書いておらず、**他のピンに渡したときどうなるかを一切述べていなかった**。フォールバックは黙って効くので、明記しないと「動いているつもりでPWMになっていない」という別種の混乱を生む。
 
+### `mcx_RCServo` を `mcxRCServo` にリネームして同梱
+ユーザーの指摘で**既存ライブラリの存在を見落としていた**ことが判明した経緯（上記`analogWrite`の項参照）を受け、「クラス名も一緒に変える．同梱する」との判断で実施。
+
+**リネーム（上流リポジトリ側の作業）**: `mcx_RCServo` → `mcxRCServo`。**今が最も安いタイミング**だった:
+- `arduino/library-registry`の`repositories.txt`を確認したところ、**`mcx_RCServo`も`mcxPinState`もArduino Library Managerに未登録**——登録が壊れる心配が無い
+- GitHubは旧URLのリダイレクトを維持する。v1.0.0のみで利用者も実質いない
+
+方向は「`mcxPinState`が既に同梱・公開済みで動かしにくいので、動かしやすい方を揃える」。**基底クラス名`mcx_RCServo`自体**も一緒に変えた（ライブラリ名だけ変えてクラスを残すと不整合が移動するだけなので）。波及: リポジトリ名・ディレクトリ名・`library.properties`の`name=`/`url=`・`src/mcx_RCServo.h`/`.cpp`のファイル名・インクルードガード`MCX_RCSERVO_H`・README×2・`keywords.txt`。全ファイルLFであることを確認してから一括置換、残存0件。上流リポジトリで`5feea29`としてコミット（**push・GitHubリポジトリ名変更は未実施**）。
+
+**同梱**: `mcxPinState`と同じ前例に従い、`.gitignore`以外の追跡ファイル全部を`hardware/nxp/mcx/libraries/mcxRCServo/`へrsync（996KB、うち912KBは`img/`——`wiring.png`は配線図なので実用的価値が高いと判断して除外しなかった）。上流と一致することをdiffで確認済み。`--library`指定なしで両ボードともコンパイルできることを確認＝**プラットフォーム同梱ライブラリとして正しく解決されている**。
+
+**同梱の最大の理由は配布ではなくCIの回帰検出**。このライブラリは`analogWriteFrequency()`→`analogWrite()`で駆動しているので、同梱すれば`examples/`（`SG90_basic`/`SG90_moves`/`FS90R_rotate`）が毎pushでコンパイルされる。**今回の干渉を見つけたのはユーザーの指摘であってCIではなかった**——同じことが二度起きないようにする投資。
+
+**`compile_examples.sh`を一般化した**: 従来`libraries/mcxPinState/examples`を名指ししていたのを`libraries/*/examples`のglobに変更。**同梱ライブラリを増やすだけでCIに載る**ようになり、名前の追加漏れという新しい失敗経路を作らずに済む。fast tierの検出数15→19本を確認。
+
+**リリース前チェックには入れない**（実物のサーボが要る）。`examples/release_check/README.md`の「Not covered here」に理由付きで記載——「CIは毎pushでコンパイルするが、軸が回るのを見ることはできない」。
+
 ### 0.7・0.8の方針（同時に策定、0.8は選択が未確定）
 - **0.7: FRDM-MCXA156の追加**。A153の兄弟で最も安く追加でき、かつ**0.6で書いた移植手順書の初めての実地テスト**になる——手順書が漏らしていた箇所がここで判明し、修正される
 - **0.8: 2枚目、以下2案のどちらか（未決定）**

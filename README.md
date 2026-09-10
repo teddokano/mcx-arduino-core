@@ -21,7 +21,9 @@ Past the standard Arduino API, a few advanced guides go deeper:
 GPIO speed, [native I3C via r01lib](docs/advanced_r01lib_i3c.md) for
 functionality `Wire`-shaped APIs can't expose, and
 [debugging pin ownership with mcxPinState](docs/mcxpinstate_guide.md), a
-bundled companion library for exactly that.
+bundled companion library for exactly that. A second bundled library,
+[mcxRCServo](https://github.com/teddokano/mcxRCServo), drives hobby RC
+servos from the `PWM0`-`PWM5` pins.
 
 Adding another FRDM-MCX board to this core is a different job from using
 it, and has its own guide:
@@ -93,9 +95,10 @@ mcx-arduino-core/
 │   │   ├── r01lib/           #   r01lib hardware driver core (Serial, I2C/I3C, SPI, GPIO,
 │   │   │                     #   AnalogIn, PwmOut, InterruptIn, Ticker, ...)
 │   │   └── sdk/               #   NXP MCX SDK driver files common to all supported chips
-│   ├── libraries/
-│   │   └── mcxPinState/       # Bundled companion library (see docs/mcxpinstate_guide.md);
-│   │                          #   developed in its own repo, synced here at release time
+│   ├── libraries/            # Bundled companion libraries, each developed in its
+│   │   │                      #   own repo and synced here at release time
+│   │   ├── mcxPinState/       #   Pin-ownership debugging (see docs/mcxpinstate_guide.md)
+│   │   └── mcxRCServo/        #   RC servo driver for the PWM0-PWM5 pins
 │   ├── tools/
 │   │   ├── upload.sh         # Upload script (auto-detects LinkServer), upload.bat for Windows
 │   │   └── gdb-bridge/       # Bridges Arduino IDE 2's cortex-debug (expects OpenOCD) to
