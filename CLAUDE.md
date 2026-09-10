@@ -1845,6 +1845,45 @@ launch.sh -c "gdb_port 50000" -c "tcl_port 50001" -c "telnet_port 50002"
 
 **検証（5経路、実機A153接続下）**: IDE形式（`-s`=一時ディレクトリ・helper先頭）でa153/n947とも`Selected device`まで到達、arduino-cli形式も従来どおり、手動診断用の明示的上書きも、スクリプト無しのエラーも期待どおり。**修正後、ユーザーがArduino IDEの「デバッグ」ボタンからA153・N947の両方で実際に動作することを確認**——`main.go`にボード固有の分岐は一切無く（grepで0件）、ボード差は`boards.txt`の`script=<board>.cfg`と`.cfg`内のデバイス文字列だけなので、これで**macOSはIDE経由のフルセッションまで両ボード検証済み**。
 
+### Debug Consoleに出る4つのメッセージは全て無害と確定（実機で再現・切り分け済み）
+ユーザーがmacOSのIDEデバッグセッションのDebug Consoleにエラーが出ているのを見つけ、「見逃していた」と報告（N947、`0.6.0-dev` symlink経由）。**セッション自体は正常**と実機で確定させた。
+
+**切り分け方法**: cortex-debugと同じ引数形・同じコマンド順（**load より前に`monitor reset halt`**）をヘッドレスで再現:
+
+```
+STEP1 monitor reset halt (load前) → Failed to reset ... Ec(06)   ← 報告と同じ
+STEP2 load                        → Start address 0x00000318, 46956 bytes 書き込み成功
+STEP3 monitor reset halt (load後) → Processor connection reset    ← 今度は成功
+STEP4 info symbol $pc             → ResetISR in section .text     ← リセットベクタに着地
+STEP5 break loop + continue       → Breakpoint 1, loop () at hello_world.ino:18
+```
+
+| 表示 | 正体 |
+|---|---|
+| `0x20018040 in ?? ()` | **load前のアタッチ時点のPC**。ELFを一切指定せずに実行しても同じ行が出るので、プログラムとは無関係 |
+| `Failed to reset to initial execution state - Ec(06)` | **cortex-debugがloadより前に`monitor reset halt`を送る**（OpenOCDの作法）。LinkServerはイメージアドレスを知らないのでsoft resetできない。**load後の同じコマンドは成功する** |
+| `warning: (Internal error: pc 0x318 in read in CU, but not in symtab.)` | **0x318は`ResetISR`**（`info symbol $pc`で確認）。PCがリセットベクタに居る間gdbのDWARF参照が毎回出す。**A153でも`pc 0x1d4`で同じものが出ており、そのときもブレークポイントは正常に当たっていた** |
+| `Processor connection reset` | **load後のリセットが成功した**ときのLinkServerのメッセージ。失敗ではない |
+
+**つまりcortex-debugが「相手はOpenOCDだ」と思って喋っている順序の副作用**で、実害はない。Debug Consoleの色（青/赤）は重要度と対応していないため、見た目では判断できない。
+
+**本物の失敗との見分け方**——このノイズが実際の障害を隠しうるので明記しておく: **load後のリセットまで失敗していればPCは`ResetISR`にならず、ブレークポイントも当たらない**。`Processor connection reset`が出て、その後ブレークポイントで止まっていれば正常。
+
+**修正は入れない**。`monitor reset halt`をgdb-bridgeで握り潰すことは理屈上できるが、**現に動いている経路にバイト中継以上の介入を入れるリスクに見合わない**。
+
+**この調査中に再確認した既知の挙動**: LinkServerのgdbserverは**最初のTCPクライアントが切断した時点でセッションごと終了する**（0.4.0で記録済み）。失敗したgdb接続のあとは`gdb-bridge`から起動し直す必要がある。
+
+### ステージング: Windows/Linuxのデバッガ確認用に`0.6.0-rc1`をプレリリース
+ユーザーから「Windowsでのデバッガ確認を行うのでステージングを行なって」と依頼。**サイクル途中でのステージングは初めて**なので、通常のリリース手順と1点だけ変えた。
+
+**タグは`0.6.0`ではなく`0.6.0-rc1`、prereleaseとして作成**——0.6.0はまだ未完成（CHANGELOGは`[Unreleased]`、実機残り2件）で、`0.6.0`タグを今切ると未完成の状態にそのタグが恒久的に固定され、GitHub上でLatestとして出てしまうため。`staging-0.6.0`ブランチのindexはこのrcのzipを指し、**version表記は`0.6.0`のまま**（IDE上は本番と同じ見え方で検証できる）。`main`のindexは無傷。
+
+**公開前に確認したこと**: zipに**Windows exeが入っている**こと（`.gitignore`の否定が効いている＝`platform-paths`が守っている箇所そのもの）、`launch.sh`/`upload.sh`の実行ビット保持、実インストール相当での`debug --info`解決、設置済みコピーの`.cfg`からデバイス文字列が読めること、両ボードのコンパイル（`--warnings all`警告ゼロ）、ダウンロード後のchecksum再計算一致（`57e3c0a5…`、9018936 bytes）。
+
+**タグpushでCIが1つ赤くなるのは想定内**: `regression_check.yml`は`push:`にフィルタが無くタグでも走り、hygieneはタグrefなら無条件に`--release`。0.6.0は未確定なので`changelog-heading`/`package-index-entry`/`doxygen-freshness`の3件が落ちる——**内容としては正しい報告**（「まだリリースできる状態ではない」）。ローカルで`--release`を再現して**この3件だけが落ちる**ことも確認済み。`update_package_index.yml`はタグパターン`[0-9]+.[0-9]+.[0-9]+`が`-rc1`に一致しないため発火しない。
+
+**確認が済んだらrcリリースと`staging-0.6.0`ブランチは削除する。**
+
 ### 0.7・0.8の方針（同時に策定、0.8は選択が未確定）
 - **0.7: FRDM-MCXA156の追加**。A153の兄弟で最も安く追加でき、かつ**0.6で書いた移植手順書の初めての実地テスト**になる——手順書が漏らしていた箇所がここで判明し、修正される
 - **0.8: 2枚目、以下2案のどちらか（未決定）**
