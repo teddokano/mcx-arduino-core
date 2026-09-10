@@ -1,4 +1,4 @@
-/** Release check 1/N: automatic OK/FAIL checks, no physical wiring needed.
+/** Release check 01: automatic OK/FAIL checks, no physical wiring needed.
  *
  *  Consolidates (from examples/Arduino_compatible_API/): test_math_constants,
  *  test_arduino_compat_macros, test_MOSI_MISO_SCK_macros,
@@ -53,7 +53,7 @@ void setup() {
   while (!Serial)
     ;
 
-  Serial.println("=== Release check 1/N: no-wiring automatic checks ===");
+  Serial.println("=== Release check 01: no-wiring automatic checks ===");
 
   // ---- math constants / trig (was test_math_constants) ----
   Serial.println("--- math constants ---");

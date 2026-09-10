@@ -1,4 +1,4 @@
-/** Release check 4/N: automatic OK/FAIL checks needing a Serial1 TX/RX
+/** Release check 11: automatic OK/FAIL checks needing a Serial1 TX/RX
  *  loopback jumper and a D2-D3 (fast-GPIO) jumper -- both can stay
  *  installed at once, one flash covers everything here.
  *
@@ -75,7 +75,7 @@ void setup() {
   while (!Serial)
     ;
 
-  Serial.println("=== Release check 4/N: Serial1 + fast-GPIO checks (D0-D1, D2-D3 jumpers) ===");
+  Serial.println("=== Release check 11: Serial1 + fast-GPIO checks (D0-D1, D2-D3 jumpers) ===");
 
   Serial1.begin(9600);
   Serial1.setTimeout(500);

@@ -1,4 +1,4 @@
-/** Release check 2/N: no physical wiring needed, but a human has to
+/** Release check 02: no physical wiring needed, but a human has to
  *  watch/listen (logic analyzer, scope, multimeter, or just eyes/ears) --
  *  no automatic OK/FAIL here.
  *
@@ -32,7 +32,7 @@ void setup() {
   while (!Serial)
     ;
 
-  Serial.println("=== Release check 2/N: manual observation (no wiring) ===");
+  Serial.println("=== Release check 02: manual observation (no wiring) ===");
 
   // ---- digitalWrite() pin walk: D-pins + analog pins + MikroBus pins
   //      (was test_digitalWrite_all_pins + _analog_pins + _mikrobus_pins) ----

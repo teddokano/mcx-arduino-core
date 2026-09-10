@@ -1,4 +1,4 @@
-/** Release check 5/N: automatic OK/FAIL checks needing MOSI-MISO loopback
+/** Release check 12: automatic OK/FAIL checks needing MOSI-MISO loopback
  *  wires on both the default SPI (D11-D12) and SPI1 (MikroBus) -- they're
  *  independent peripherals (see PIN_MAPPING_*.md) and can be used in the
  *  same sketch, so both jumpers can stay installed at once for one flash.
@@ -38,7 +38,7 @@ void setup() {
   while (!Serial)
     ;
 
-  Serial.println("=== Release check 5/N: SPI loopback checks (D11-D12 jumper) ===");
+  Serial.println("=== Release check 12: SPI loopback checks (D11-D12 jumper) ===");
 
   pinMode(SS, OUTPUT);
   digitalWrite(SS, HIGH);

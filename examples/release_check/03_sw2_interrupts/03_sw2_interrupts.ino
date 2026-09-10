@@ -1,4 +1,4 @@
-/** Release check 3/N: SW2-interactive interrupt checks -- no wiring, but
+/** Release check 03: SW2-interactive interrupt checks -- no wiring, but
  *  you have to actually press the on-board SW2 button as prompted. No
  *  automatic OK/FAIL; the running counts/prints are for you to judge.
  *
@@ -24,7 +24,7 @@ void setup() {
   while (!Serial)
     ;
 
-  Serial.println("=== Release check 3/N: SW2 interactive checks ===");
+  Serial.println("=== Release check 03: SW2 interactive checks ===");
 
   pinMode(BLUE, OUTPUT);
   pinMode(SW2, INPUT_PULLUP);
