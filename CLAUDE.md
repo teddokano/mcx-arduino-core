@@ -1777,6 +1777,8 @@ CLAUDE.mdには以前「並列化した`xargs -P 4`版で実施——逐次実�
 
 **`compile_examples.sh`を一般化した**: 従来`libraries/mcxPinState/examples`を名指ししていたのを`libraries/*/examples`のglobに変更。**同梱ライブラリを増やすだけでCIに載る**ようになり、名前の追加漏れという新しい失敗経路を作らずに済む。fast tierの検出数15→19本を確認。
 
+**リネーム・同梱とも完了**: GitHubリポジトリを`teddokano/mcxRCServo`へリネーム（旧URLは301でリダイレクトすることを確認）、上流コミット`5feea29`をpush、同梱側`library.properties`の`url=`が200を返すことを確認。**ユーザーがArduino IDEで同梱版のサンプルが表示されることも確認済み**（`mcxPinState`同梱時と同じ確認）。
+
 **リリース前チェックには入れない**（実物のサーボが要る）。`examples/release_check/README.md`の「Not covered here」に理由付きで記載——「CIは毎pushでコンパイルするが、軸が回るのを見ることはできない」。
 
 ### 0.7・0.8の方針（同時に策定、0.8は選択が未確定）
