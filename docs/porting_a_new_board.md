@@ -90,8 +90,9 @@ Every property below is required. The ones that bite hardest are marked.
 <board>.upload.tool=linkserver
 <board>.vid.0=0x1FC9
 <board>.pid.0=0x0143                # ! same for every FRDM board
-<board>.debug.server.openocd.path=…/tools/gdb-bridge/launch-<board>.sh
-<board>.debug.server.openocd.path.windows=…\tools\gdb-bridge\gdb-bridge-<board>-windows-amd64.exe
+<board>.debug.server.openocd.path=…/tools/gdb-bridge/launch.sh
+<board>.debug.server.openocd.path.windows=…\tools\gdb-bridge\gdb-bridge-windows-amd64.exe
+<board>.debug.server.openocd.script=<board>.cfg   # ! carries the LinkServer device
 <board>.debug.svd_file=…/variants/<board>/svd/<chip>.svd
 ```
 
@@ -146,14 +147,16 @@ independent — that is why N947 has no `Serial1` on D0/D1.
 
 ## 4. Update the things outside `hardware/nxp/mcx/`
 
-- **`gdb-bridge`**: add `launch-<board>.sh`, and cross-compile a
-  Windows exe with the device string baked in
-  (`-ldflags "-X main.defaultDevice=MCXxxxx:FRDM-MCXxxxx"`). Windows
-  cannot use a shared binary plus a `.bat` wrapper — the IDE's bundled
-  cortex-debug fails to spawn `.bat` files with quoted arguments.
-  **This is one binary per board and does not scale**; at the third or
-  fourth board, replace it with a single exe that reads the device
-  string from somewhere else.
+- **`gdb-bridge`**: add `tools/gdb-bridge/<board>.cfg` carrying one
+  `# gdb-bridge-device: MCXxxxx:FRDM-MCXxxxx` line, and point
+  `debug.server.openocd.script` at it. **No new binary and no new
+  launcher**: the launcher and all five cross-compiled binaries are
+  board-agnostic, and gdb-bridge reads the board out of that file,
+  which both launch paths already pass it (cortex-debug as `-f`,
+  arduino-cli as `--file`). Note that Windows cannot use a `.bat`
+  wrapper — the IDE's bundled cortex-debug fails to spawn `.bat` files
+  with quoted arguments — which is why boards.txt names the `.exe`
+  directly rather than a script.
 - **`mcxPinState`**: `ALIAS_NAMES[]` and `KNOWN_INSTANCES` in
   `PinState.cpp`, in the upstream repo *and* the bundled copy. CI checks
   these against `arduino_io.h`, so a mismatch fails fast.

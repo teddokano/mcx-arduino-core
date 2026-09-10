@@ -9,3 +9,10 @@ examples/tests/TempSensor_NXP_Arduino/
 # Reference materials (NXP demos, datasheets, etc.) -- not part of this
 # repo's history
 ref/
+
+# gdb-bridge ships prebuilt binaries, and the Windows one is a .exe. A
+# global core.excludesFile with "*.exe" in it (a common setting) would
+# otherwise drop it from the release zip silently -- a repo .gitignore
+# outranks the global one, so re-include it here rather than relying on
+# everyone remembering `git add -f`.
+!hardware/nxp/mcx/tools/gdb-bridge/*.exe

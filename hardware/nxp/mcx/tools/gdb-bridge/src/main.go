@@ -7,20 +7,30 @@
 // maintained support for the MCX chips this core targets, unlike upstream
 // OpenOCD, which has none) and relays gdb's traffic to it.
 //
-// Usage: gdb-bridge <LinkServer DEVICE> [openocd-style args...]
+// Usage: gdb-bridge [<LinkServer DEVICE>] [openocd-style args...]
 //
-// The first argument is supplied by this project's own per-board launcher
-// scripts (launch-a153.sh/.bat, launch-n947.sh/.bat), not by whichever tool
-// invoked us. Everything after it comes from that tool and is real
-// OpenOCD command-line syntax we don't implement -- almost all of it is
-// ignored, except one detail that matters: cortex-debug (Arduino IDE 2's
-// debug UI) picks its own GDB port and passes it as `-c "gdb_port N"`,
-// then waits for a log line matching `Listening on port N for gdb
-// connections` before it will connect. So in that mode we must bind
-// exactly the port it chose and print a matching line -- see run() below.
-// arduino-cli's own `debug` CLI command works differently: it pipes gdb
-// directly to our stdin/stdout instead of dialing a port, which needs no
-// such announcement (see relayPiped()).
+// Everything but the optional leading DEVICE comes from whichever tool
+// invoked us, and is real OpenOCD command-line syntax we don't implement.
+// Almost all of it is ignored, except two details that matter.
+//
+// First, the board. Both launch paths pass the configured OpenOCD script
+// -- cortex-debug as `-s <dir> -f <script>`, arduino-cli as `-s "<dir>"
+// --file "<script>"` (verified in arduino-cli's own service_debug.go) --
+// and boards.txt gives each board its own script file carrying a
+// `gdb-bridge-device:` line. Reading the board out of there is what keeps
+// this one binary board-agnostic: adding a board means a new .cfg and two
+// boards.txt lines, with no new executable and no new launcher script.
+// A DEVICE given as the first argument overrides it, which is only useful
+// when running this by hand to diagnose something.
+//
+// Second, the port. cortex-debug (Arduino IDE 2's debug UI) picks its own
+// GDB port and passes it as `-c "gdb_port N"`, then waits for a log line
+// matching `Listening on port N for gdb connections` before it will
+// connect. So in that mode we must bind exactly the port it chose and
+// print a matching line -- see run() below. arduino-cli's own `debug` CLI
+// command works differently: it pipes gdb directly to our stdin/stdout
+// instead of dialing a port, which needs no such announcement (see
+// relayPiped()).
 package main
 
 import (
@@ -41,34 +51,73 @@ import (
 	"time"
 )
 
-// defaultDevice is empty in the generic binary (gdb-bridge-<os>-<arch>,
-// launched via launch-<board>.sh/.bat, which prepend the LinkServer DEVICE
-// string as argv[1] -- see the usage comment above). It's baked in via
-// `go build -ldflags "-X main.defaultDevice=..."` for the per-board Windows
-// binaries (gdb-bridge-<board>-windows-amd64.exe), which boards.txt points
-// debug.server.openocd.path.windows at directly -- no .bat wrapper, and so
-// no argv[1] prepending needed. That sidesteps a Windows-only bug where
-// Arduino IDE 2's bundled cortex-debug (Node.js-based) spawning a .bat file
-// with argv containing double-quoted, space-containing paths (e.g. "C:/
-// Program Files/Arduino IDE/...") produced instant, silent process failure
-// -- reproducible only through the IDE, not via a direct command-prompt
-// invocation of the exact same command, nor via `arduino-cli debug`, which
-// doesn't go through a shell the same way.
-var defaultDevice string
+// deviceDirective is the key gdb-bridge looks for in the OpenOCD script
+// boards.txt points each board at. It sits behind a `#` so the file stays
+// a valid (and inert) OpenOCD script, which matters only because Arduino
+// IDE 2 refuses to start a debug session unless one is configured.
+const deviceDirective = "gdb-bridge-device:"
+
+// deviceFromScripts digs the LinkServer DEVICE string out of the OpenOCD
+// script the invoking tool passed. Accepts both spellings of each flag:
+// cortex-debug uses -s/-f, arduino-cli uses -s/--file.
+func deviceFromScripts(args []string) (string, error) {
+	var scriptsDir string
+	var scripts []string
+	for i := 0; i < len(args); i++ {
+		switch args[i] {
+		case "-s", "--search":
+			if i+1 < len(args) {
+				scriptsDir = args[i+1]
+				i++
+			}
+		case "-f", "--file":
+			if i+1 < len(args) {
+				scripts = append(scripts, args[i+1])
+				i++
+			}
+		}
+	}
+	if len(scripts) == 0 {
+		return "", fmt.Errorf("no OpenOCD script argument (-f/--file) to read the board from")
+	}
+	for _, script := range scripts {
+		path := script
+		if !filepath.IsAbs(path) && scriptsDir != "" {
+			path = filepath.Join(scriptsDir, script)
+		}
+		data, err := os.ReadFile(path)
+		if err != nil {
+			continue
+		}
+		for _, line := range strings.Split(string(data), "\n") {
+			if idx := strings.Index(line, deviceDirective); idx >= 0 {
+				device := strings.TrimSpace(line[idx+len(deviceDirective):])
+				if device != "" {
+					return device, nil
+				}
+			}
+		}
+	}
+	return "", fmt.Errorf("no %q line in %s", deviceDirective, strings.Join(scripts, ", "))
+}
 
 func main() {
+	// A leading argument that isn't a flag is an explicit DEVICE override,
+	// for running this by hand. Otherwise the board comes from the script
+	// the invoking tool named -- see the usage comment above.
 	var device string
-	var toolArgs []string
-	if defaultDevice != "" {
-		device = defaultDevice
-		toolArgs = os.Args[1:]
+	toolArgs := os.Args[1:]
+	if len(toolArgs) > 0 && !strings.HasPrefix(toolArgs[0], "-") {
+		device = toolArgs[0]
+		toolArgs = toolArgs[1:]
 	} else {
-		if len(os.Args) < 2 {
-			fmt.Fprintln(os.Stderr, "gdb-bridge: usage: gdb-bridge <LinkServer DEVICE> [openocd-style args...]")
+		var err error
+		device, err = deviceFromScripts(toolArgs)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "gdb-bridge: could not determine which board to debug:", err)
+			fmt.Fprintln(os.Stderr, "gdb-bridge: usage: gdb-bridge [<LinkServer DEVICE>] [openocd-style args...]")
 			os.Exit(1)
 		}
-		device = os.Args[1]
-		toolArgs = os.Args[2:]
 	}
 
 	linkserver, err := findLinkServer()

@@ -1664,6 +1664,37 @@ git log --oneline <docs_commit>..HEAD -- <DoxygenのINPUT> Doxyfile
 - **`0.5.0`タグの状態をworktreeに出して現行スクリプトを実行→`doxygen-freshness`は通る**——「常に落ちるだけのチェック」ではないことの裏付け
 - `--depth 1`のcloneでshallowガードが発火、通常セット（非release）はshallowでも通ることも確認
 
+### 追加項目完了: `gdb-bridge`のボード別バイナリ・ボード別ランチャーを廃止
+移植手順書に「**1ボード1バイナリなので3〜4枚目で破綻する**」と書いた項目。0.7でA156が3枚目になるので、その前に片付けた。
+
+**鍵になった一次情報**: arduino-cliの`service_debug.go`を実際に読み、pipeモードのコマンド組み立てが
+
+```go
+fmt.Fprintf(&serverCmd, ` -s "%s"`, cfg)          // scripts_dir
+fmt.Fprintf(&serverCmd, ` --file "%s"`, script)   // 各script
+serverCmd.WriteString(` -c "gdb_port pipe"`)
+```
+
+と、**`-s`と`--file`も渡している**ことを確認した——CLAUDE.mdの過去の記録（v0.4.0のgdb-bridge実装時）はこの2つを書き落としており、「pipeモードにはスクリプト引数が来ない」と読める状態だった。cortex-debug側は`-s <dir> -f <script>`。つまり**両経路ともスクリプトのパスを持っている**ので、そこにデバイス文字列を置けば1バイナリで足りる。
+
+**新しい構成**:
+- `tools/gdb-bridge/<board>.cfg`（`a153.cfg`/`n947.cfg`）に`# gdb-bridge-device: MCXxxxx:FRDM-MCXxxxx`の1行。`boards.txt`が`debug.server.openocd.script`でボードごとに指す（従来は`platform.txt`で共有の`dummy-openocd.cfg`）
+- `main.go`は`-s`/`-f`/`--file`（cortex-debugとarduino-cliで綴りが違うので**両方受ける**）を拾ってそのファイルを読む。`-ldflags -X main.defaultDevice=...`の焼き込み機構は廃止
+- ランチャーも**ボード非依存の`launch.sh`1本**に（`launch-a153.sh`/`launch-n947.sh`を廃止）。`boards.txt`のWindowsは共有の`gdb-bridge-windows-amd64.exe`を直接指す（`.bat`を経由しない理由＝cortex-debugのspawn問題は従来どおり有効）
+- 先頭引数が`-`で始まらなければ**デバイス指定の明示的な上書き**として扱う——手動でのコマンドプロンプト診断（Windowsのデバッガ不具合を切り分けたときに実際に役立った手段）を残すため
+
+**これで、ボード追加時に触るのは`.cfg`1つと`boards.txt`2行だけ**。クロスコンパイルもスクリプト追加も不要になった。移植手順書の該当節も書き換えた。
+
+**踏みかけた罠（今後のために）**: ユーザーのグローバル`~/.config/git/ignore`に`*.exe`があり、新しい`gdb-bridge-windows-amd64.exe`が**黙って追跡対象外**になっていた（旧exeは`git add -f`で入れられていたと推測）。気づかなければ**リリースzipからWindowsバイナリだけが消える**。リポジトリの`.gitignore`に`!hardware/nxp/mcx/tools/gdb-bridge/*.exe`を追加して打ち消した——**リポジトリの`.gitignore`はグローバルの`core.excludesFile`より優先される**ので、これで誰の環境でも取りこぼさない。
+
+**検証（実機なしで確認できる範囲）**:
+- `arduino-cli debug --info`が両ボードとも`launch.sh` + 正しい`<board>.cfg`を解決
+- バイナリを**arduino-cli形式**（`-s DIR --file a153.cfg -c "gdb_port pipe"`）・**cortex-debug形式**（`-c "gdb_port 50000" ... -s DIR -f n947.cfg`）の両方で起動し、LinkServer自身が`Selected device MCXA153:FRDM-MCXA153`/`MCXN947:FRDM-MCXN947`と正しいボードを選ぶことを確認（実機未接続なのでその先で停止するのは想定どおり）
+- スクリプト引数なしでは明示的なエラー、先頭引数での上書きも動作
+- 5構成すべて再ビルド（`gofmt`差分なし・`go vet`クリーン）
+
+**未実施＝実機が要る**: IDEの「デバッグ」ボタンからのフルセッションを**macOSとWindowsで1回ずつ**。ここは起動経路そのものを変えたので、リリース前に必ず通すこと（`.sh`の経路・`.exe`の経路がそれぞれ別物なので、両方）。
+
 ### 0.7・0.8の方針（同時に策定、0.8は選択が未確定）
 - **0.7: FRDM-MCXA156の追加**。A153の兄弟で最も安く追加でき、かつ**0.6で書いた移植手順書の初めての実地テスト**になる——手順書が漏らしていた箇所がここで判明し、修正される
 - **0.8: 2枚目、以下2案のどちらか（未決定）**

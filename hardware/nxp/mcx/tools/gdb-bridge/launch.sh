@@ -1,6 +1,8 @@
 #!/bin/sh
-# Picks the right gdb-bridge binary for this OS/arch and hands it FRDM-MCXN947's
-# LinkServer device string. See gdb-bridge/src/main.go for what this does and why.
+# Picks the right gdb-bridge binary for this OS/arch and passes everything
+# through untouched. Board-agnostic: gdb-bridge reads which board to debug
+# from the OpenOCD script boards.txt names for it (see gdb-bridge/src/main.go),
+# so adding a board needs no change here.
 DIR=$(cd "$(dirname "$0")" && pwd)
 
 case "$(uname -s)" in
@@ -22,4 +24,4 @@ case "$(uname -s)" in
         ;;
 esac
 
-exec "$BIN" "MCXN947:FRDM-MCXN947" "$@"
+exec "$BIN" "$@"
