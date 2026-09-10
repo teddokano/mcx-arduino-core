@@ -1810,6 +1810,21 @@ CLAUDE.mdには以前「並列化した`xargs -P 4`版で実施——逐次実�
 
 **検証（4件とも実際に壊して確認）**: (1) `a153.cfg`を一時退避→「存在しない」で発火、(2) `.exe`を`git rm --cached`（実際に踏んだケースの再現）→「存在するが追跡外」で発火、(3) 定数を`0.5.0`に戻す→発火、(4) 正しい状態では両方とも通る。**workflowの変更は不要**——既存の`check_repo_hygiene.py`／`--release`の呼び出しにそのまま乗る。`platform-paths`は`git ls-files`（indexを読むだけ）なので`doxygen-freshness`と違い**shallow cloneでも動く**ことも確認済み。
 
+### gdb-bridge board-agnostic化の実機検証（macOS、両起動経路とも完了）
+ボード非依存化のあと未検証だった項目。**macOSはIDEのボタンを押す前の部分まで、実機A153で両経路とも通した**（開発用symlink`0.6.0-dev`が作業ツリーを指しているので、リリースzipを作らずにそのまま検証できる）。
+
+- **プロパティ解決**: `arduino-cli debug --info`が`tools/gdb-bridge/launch.sh` ＋ Script `a153.cfg` ＋ SVDを正しく解決（新方式のボード別`.cfg`が効いている）
+- **pipeモード**（`arduino-cli debug`の経路）: `load`で44000バイト書き込み→リセット→`break loop`→`continue`→**`loop()`のブレークポイントに到達、`hello_world.ino:18`とソース行まで解決**
+- **TCPサーバーモード**（Arduino IDE 2 / cortex-debugの経路）: `-c "gdb_port 50077" -c "tcl_port 0" -c "telnet_port 0" -s DIR -f a153.cfg`というIDEと同じ引数の並びで起動→**cortex-debugの正規表現が待つ`Info : Listening on port 50077 for gdb connections`を出力**→gdbを`target extended-remote localhost:50077`で接続→`load`→ブレークポイント到達まで確認
+
+**同一の共有バイナリが両経路を自動判別し、デバイス文字列は`a153.cfg`から読めている**——ボード別exe・ボード別ランチャーを廃止した設計が実機で成立していることの確認になった。
+
+**残り**: macOSはIDEの「デバッグ」ボタンを1回押すだけ（0.4.0でも同じ検証を通したあとIDEは問題なく動いたので、リスクは低い）。**LinuxとWindowsは従来どおりリリース前ステージングで**——ユーザーの運用上そちらの方がファイル移動が要らず楽なため。
+
+**手動でgdb-bridgeを起動したあとはプロセスを掃除すること**: `crt_emu_cm_redlink`（セッションごと）と`redlinkserv`（LinkServerの常駐デーモン）が残る。0.4.0でも`crt_emu_cm_redlink`の残留に詰まった記録がある。`pkill -f crt_emu_cm_redlink; pkill -f redlinkserv`で戻せる。
+
+**Linux向けの事前チェック（インストール不要）**: `gdb-bridge-linux-amd64`と`a153.cfg`を同じフォルダに置いて`./gdb-bridge-linux-amd64 -c "gdb_port 50055" -c "telnet_port 0" -s "$PWD" -f a153.cfg`を実行するだけで、**一度も実行されていない`findLinkServer()`のLinux分岐**（`/usr/local/LinkServer/LinkServer`→`/usr/local/LinkServer_<ver>`→PATHの3段）が通るかを、IDEもzipも使わずに確認できる。見つからなければ`gdb-bridge: LinkServer not found`と明示的に言う。ただし**IDEがspawnできるかまでは分からない**——Windowsで壊れたのはまさにそこ（ECONNRESET）だった。
+
 ### 0.7・0.8の方針（同時に策定、0.8は選択が未確定）
 - **0.7: FRDM-MCXA156の追加**。A153の兄弟で最も安く追加でき、かつ**0.6で書いた移植手順書の初めての実地テスト**になる——手順書が漏らしていた箇所がここで判明し、修正される
 - **0.8: 2枚目、以下2案のどちらか（未決定）**
