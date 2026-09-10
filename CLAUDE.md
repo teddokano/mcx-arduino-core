@@ -1869,7 +1869,9 @@ STEP5 break loop + continue       → Breakpoint 1, loop () at hello_world.ino:1
 
 **本物の失敗との見分け方**——このノイズが実際の障害を隠しうるので明記しておく: **load後のリセットまで失敗していればPCは`ResetISR`にならず、ブレークポイントも当たらない**。`Processor connection reset`が出て、その後ブレークポイントで止まっていれば正常。
 
-**修正は入れない**。`monitor reset halt`をgdb-bridgeで握り潰すことは理屈上できるが、**現に動いている経路にバイト中継以上の介入を入れるリスクに見合わない**。
+**`monitor reset halt`側の修正は入れない**。gdb-bridgeで握り潰すことは理屈上できるが、**現に動いている経路にバイト中継以上の介入を入れるリスクに見合わない**。
+
+**ただし`warning: pc 0x318 ...`だけは後日ユーザーの「ステップ実行ごとに出るのは気持ちが悪い．潰しておけない？」を受けて根治した**——下記「DWARF 5に切り替えて…」節参照。**上の「無害だが消せない」という当初の結論は、消せる方を調べ切っていなかった**という点で不十分だった。
 
 **この調査中に再確認した既知の挙動**: LinkServerのgdbserverは**最初のTCPクライアントが切断した時点でセッションごと終了する**（0.4.0で記録済み）。失敗したgdb接続のあとは`gdb-bridge`から起動し直す必要がある。
 
@@ -1881,6 +1883,46 @@ STEP5 break loop + continue       → Breakpoint 1, loop () at hello_world.ino:1
 **公開前に確認したこと**: zipに**Windows exeが入っている**こと（`.gitignore`の否定が効いている＝`platform-paths`が守っている箇所そのもの）、`launch.sh`/`upload.sh`の実行ビット保持、実インストール相当での`debug --info`解決、設置済みコピーの`.cfg`からデバイス文字列が読めること、両ボードのコンパイル（`--warnings all`警告ゼロ）、ダウンロード後のchecksum再計算一致（`57e3c0a5…`、9018936 bytes）。
 
 **タグpushでCIが1つ赤くなるのは想定内**: `regression_check.yml`は`push:`にフィルタが無くタグでも走り、hygieneはタグrefなら無条件に`--release`。0.6.0は未確定なので`changelog-heading`/`package-index-entry`/`doxygen-freshness`の3件が落ちる——**内容としては正しい報告**（「まだリリースできる状態ではない」）。ローカルで`--release`を再現して**この3件だけが落ちる**ことも確認済み。`update_package_index.yml`はタグパターン`[0-9]+.[0-9]+.[0-9]+`が`-rc1`に一致しないため発火しない。
+
+**確認が済んだらrcリリースと`staging-0.6.0`ブランチは削除する。**
+
+### DWARF 5に切り替えて、ステップ実行ごとの`warning: pc 0x318 ...`を根治
+ユーザーから「ステップ実行ごとに出るのは気持ちが悪い．潰しておけない？」、続けて「デバッガ側でwarningを出さない方法はない？」と依頼。**デバッガ側では消せない**が、**出させない**ことはできた。
+
+**まずデバッガ側を潰した**: gdbの`set complaints`は既に`0`。それでも出るのは、この行が`find_pc_sect_compunit_symtab()`の**条件なしの`warning()`**だから——設定で黙らせる余地は無い。
+
+**原因の特定（実測の連鎖）**:
+
+| 調べたこと | 結果 |
+|---|---|
+| `nm` と `addr2line` が同じアドレスに何と答えるか | **食い違う**。`nm`=`ResetISR`、`addr2line`=`CLOCK_SetupPLLData (fsl_clock.c:2849)` |
+| `--gc-sections`を外すと？ | **`addr2line`が正しく`ResetISR`を返す**——原因が確定（ただし46,948→165,116バイトなので外せない） |
+| `.debug_ranges`の残骸 | `start == end == 1`の**空レンジに正しく畳まれている**（1,512個） |
+| `.debug_aranges`の残骸 | **アドレスだけ0にされ長さが残る**——`[0x0, 0x414)`等が`0x318`を覆う |
+| `.debug_aranges`を`objcopy`で落とすと？ | **変化なし**（gdb 15はこれを見ていない） |
+| `-gdwarf-5`にすると？ | **警告が消える** |
+
+**修正**: `platform.txt`の`compiler.opt_flags`を`-gdwarf-4`→**`-gdwarf-5`**（1語）。`-gdwarf-4`は**初期コミット由来で理由の記録なし**（MCUXpressoのプロジェクト既定`-g3 -gdwarf-4`をそのまま引き継いだもの）で、**GCC 14の既定はそもそもDWARF 5**——独自の値を選んだのではなくコンパイラの既定に戻した形。
+
+**DWARF 4と5で何が違うか（この実ELFで確認）**:
+- セクションが変わる: `.debug_ranges`→**`.debug_rnglists`**、`.debug_loc`→**`.debug_loclists`**
+- DWARF 4は**絶対アドレスの対を並べた平坦なリスト**。DWARF 5は**基準アドレス＋オフセット**の型付きエントリ（`base address` / `start == end` / offset pair）で、捨てられた分が絶対0番地に落ちてこない
+- gdbにとっての違いは**正しさではなく整合性**: DWARF 4では「索引はこのCUだと言うのに行テーブルには無い」という自己矛盾を検出して警告する。DWARF 5では両者が一致するので警告しない
+
+**正直に記録しておくべき点——DWARF 5は行テーブルを正しくしたわけではない**。`addr2line`は**どちらでも**`0x318`を`fsl_clock.c:2849`と誤答する（本当は`ResetISR`）。`--gc-sections`が残す古いデバッグ情報という根本は両方に残っていて、消えたのはgdbが検出していた矛盾の方。実用上は表に出ない——**backtraceは`main()`で止まり`ResetISR`を参照しない**（実機で確認）。起動直後（`main`到達前）で止めた場合だけ誤ったファイル/行が出うる。
+
+**なぜ毎ステップ出ていたか**: 停止のたびにcortex-debugがbacktraceを取り、それが`ResetISR`まで巻き戻って`0x318`を引くため。
+
+**検証**: 両ボードで**text/data/bssがバイト単位で同一**（フラッシュに載る内容は不変）、`.debug_rnglists`使用を確認、fast tier回帰スイープ両ボードAll OK、**実機N947でload→reset→ブレークポイント→backtrace→ステップ5回が警告ゼロ**。**その後ユーザーがmacOSのArduino IDEで改善を確認**。
+
+### ステージング: `0.6.0-rc1`→`0.6.0-rc2`に作り直し
+Windows/Linuxのデバッガ確認用に**サイクル途中でステージングを行った初めての回**。通常のリリース手順と1点だけ変え、**タグは`0.6.0`ではなく`0.6.0-rc*`のprerelease**とした——0.6.0は未完成（CHANGELOGは`[Unreleased]`、実機残り2件）で、`0.6.0`タグを今切ると未完成の状態にそのタグが恒久的に固定されGitHub上でLatestとして出てしまうため。`staging-0.6.0`ブランチのindexはrcのzipを指し、**version表記は`0.6.0`のまま**（IDE上は本番と同じ見え方で検証できる）。`main`のindexは無傷。
+
+**rc1はDWARF 5修正の前に切ったため、rc2に作り直した**（rc1のままだとWindowsで「毎ステップ警告が出るビルド」を検証してしまう）。rc1はzipと中身がずれて紛らわしいので削除。**タグとzipの中身を一致させるため、タグを強制移動せず別タグを切る形にした**。
+
+**毎回の公開前チェック**: zipに**Windows exeが入っている**こと（`.gitignore`の否定が効いている＝`platform-paths`が守っている箇所そのもの）、実行ビット保持、実インストール相当での`debug --info`解決とコンパイル、**zip内の`compiler.opt_flags`が実際に`-gdwarf-5`であること**（コメント中に履歴として`-gdwarf-4`の語が出るので、grepは実際に効く行に対して行う）、ダウンロード後のchecksum再計算一致。
+
+**タグpushでCIが1つ赤くなるのは想定内**: `regression_check.yml`は`push:`にフィルタが無くタグでも走り、hygieneはタグrefなら無条件に`--release`。`changelog-heading`/`package-index-entry`/`doxygen-freshness`の3件が落ちる——**内容としては正しい報告**。ローカルで`--release`を再現して**この3件だけ**が落ちることも確認済み。`update_package_index.yml`はタグパターンが`-rc*`に一致しないため発火しない。
 
 **確認が済んだらrcリリースと`staging-0.6.0`ブランチは削除する。**
 
