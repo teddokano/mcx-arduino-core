@@ -87,6 +87,54 @@ JIG = {
 # one fails 12 outright. Any of the other 18 also admits a solution.
 ORPHAN = {"A153": [], "N947": ["MB_SCK"]}
 
+# ---------------------------------------------------------------------------
+# Two boards, not one. JIG above is board A; the I2C/I3C devices live on a
+# separate board B that is swapped in, never stacked with A.
+#
+# That split is what keeps JIG above valid. A device sitting on a bus makes
+# that bus live in every sketch that touches it, so a bus pin's partner would
+# have to be a pin no sketch ever drives *or reads*. Solving under that rule
+# costs N947 at least three more unpaired pins. Keeping the devices on their
+# own board costs nothing and loses no coverage.
+#
+# The logic analyser taps are split the same way, by which sketches actually
+# run with each board fitted, so neither needs more than eight channels.
+LA_TAPS = {
+    "A": [  # fitted for 12 (SPI/SPI1 loopback) -- protocol and clock rate
+        ("SPI SCLK", "D13"), ("SPI MOSI", "D11"),
+        ("SPI MISO", "D12"), ("SPI CS", "D10"),
+        ("SPI1 SCK", "MB_SCK"), ("SPI1 MOSI", "MB_MOSI"),
+        ("SPI1 MISO", "MB_MISO"), ("SPI1 CS", "MB_CS"),
+    ],
+    "B": [  # fitted for 22 / 01 / 05 -- I2C and I3C protocol and clock rate
+        ("Wire SDA", "D18"), ("Wire SCL", "D19"),
+        ("Wire2 SDA", "MB_SDA"), ("Wire2 SCL", "MB_SCL"),
+        ("Wire1 SDA", "MB_RX"), ("Wire1 SCL", "MB_TX"),
+    ],
+}
+
+# A tap is only meaningful where that peripheral is actually on that pin.
+# A153 has no Wire2 at all (one LPI2C), and its Wire1 is not on the MikroBus
+# pins even though those names resolve there -- see LA_OFF_HEADER.
+TAP_NA = {"A153": {"Wire2 SDA": "no Wire2 on this board (one LPI2C)",
+                   "Wire2 SCL": "no Wire2 on this board (one LPI2C)",
+                   "Wire1 SDA": "not on this pin here -- see below",
+                   "Wire1 SCL": "not on this pin here -- see below"},
+          "N947": {}}
+
+# Board B carries one real device: the on-board P3T1755 (Wire1) and the Wire2
+# scan need no external part, so the LM75-family sensor sketch 22 wants is the
+# only thing to mount.
+DEVICES = {"B": [("LM75-family sensor", "D18", "D19")]}
+
+# Wire1 taps do not reach the same way on both boards. On N947 Wire1 is
+# MB_RX/MB_TX, straight off the MikroBus connector. On A153 it is P0_16/P0_17,
+# which the schematic (ref/FRDM-MCXA153.pdf p7, the I3C sensor sheet) brings
+# out to J20/J21 -- separate points, not part of the Arduino header footprint,
+# so board B needs flying leads there rather than a stacked connection.
+LA_OFF_HEADER = {"A153": ["Wire1 via J20/J21 (P0_16/P0_17) -- flying leads"],
+                 "N947": []}
+
 
 def load_board(board):
     """Return (net -> [arduino names], arduino name -> net) for one board."""
@@ -238,9 +286,22 @@ def main():
               % (board, len(nets), len(JIG[board]),
                  ", ".join(orphans) if orphans else "none"))
         if args.table:
+            fmt = lambda n: "=".join(nets[by_name[n]]) if n in by_name else n + "(?)"
+            print("  board A -- loopback wiring:")
             for i, (a, b) in enumerate(JIG[board], 1):
-                fmt = lambda n: "=".join(nets[by_name[n]]) if n in by_name else n + "(?)"
-                print("  %2d  %-20s - %s" % (i, fmt(a), fmt(b)))
+                print("    %2d  %-20s - %s" % (i, fmt(a), fmt(b)))
+            for tag in ("A", "B"):
+                print("  board %s -- logic analyser taps:" % tag)
+                for ch, (role, pin) in enumerate(LA_TAPS[tag]):
+                    note = TAP_NA[board].get(role, "")
+                    if pin not in by_name:
+                        note = "not on this board"
+                    print("    CH%-2d %-11s %-16s%s"
+                          % (ch, role, fmt(pin), "  (%s)" % note if note else ""))
+                for extra in (LA_OFF_HEADER[board] if tag == "B" else []):
+                    print("    +    %s" % extra)
+                for name, sda, scl in DEVICES.get(tag, []):
+                    print("    dev  %s on %s / %s" % (name, fmt(sda), fmt(scl)))
         for p in problems:
             print("  ! " + p)
         if problems:
