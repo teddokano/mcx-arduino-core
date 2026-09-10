@@ -1693,7 +1693,9 @@ serverCmd.WriteString(` -c "gdb_port pipe"`)
 - スクリプト引数なしでは明示的なエラー、先頭引数での上書きも動作
 - 5構成すべて再ビルド（`gofmt`差分なし・`go vet`クリーン）
 
-**未実施＝実機が要る**: IDEの「デバッグ」ボタンからのフルセッションを**macOSとWindowsで1回ずつ**。ここは起動経路そのものを変えたので、リリース前に必ず通すこと（`.sh`の経路・`.exe`の経路がそれぞれ別物なので、両方）。
+**未実施＝実機が要る**: IDEの「デバッグ」ボタンからのフルセッションを**macOS・Linux・Windowsで1回ずつ**。ここは起動経路そのものを変えたので、リリース前に必ず通すこと。
+
+**【2026-09-10訂正】当初ここに「macOSとWindowsで1回ずつ」と書いたが誤り——Linuxも要る**。`boards.txt`に`.linux`の上書きが無いためmacOSとLinuxは同じ`launch.sh`を起動するが、**共通なのはその1層だけ**で、`launch.sh`は`uname -s`で別バイナリ（`gdb-bridge-linux-amd64`）を選び、`findLinkServer()`の探索も別分岐（macOS=`/Applications/LinkServer*`最新版、Linux=`/usr/local/LinkServer/LinkServer`→`/usr/local/LinkServer_<ver>`→PATHの3段）を通る。**分かれているのは、いちばん外しやすいファイルシステム配置依存の部分**。0.4.0でLinuxのデバッガ確認は取れているが、あれは`launch-a153.sh`/`launch-n947.sh`（現在は削除済み）時代のものなので持ち越せない。
 
 ### 機能追加: `analogWrite()` を非PWMピンでSOSにしない（AVR流フォールバック）
 「0.6で機能追加をするなら何が候補か」という問いから、対応表と実コードを洗って出てきた項目。**互換性の実バグ**だった。
