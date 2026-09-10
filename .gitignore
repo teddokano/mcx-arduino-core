@@ -16,3 +16,8 @@ ref/
 # outranks the global one, so re-include it here rather than relying on
 # everyone remembering `git add -f`.
 !hardware/nxp/mcx/tools/gdb-bridge/*.exe
+
+# Editor/agent-local configuration. This repo deliberately carries no
+# tool-specific settings -- .claude/launch.json slipped in once via
+# `git add -A` and was removed again.
+.claude/
