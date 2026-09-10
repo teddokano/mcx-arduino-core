@@ -99,7 +99,8 @@ public:
 	 *
 	 *  Switches the CS pin's mux between plain GPIO (so the sketch can
 	 *  drive it directly via the returned DigitalOut*) and the LPSPI
-	 *  peripheral's own hardware PCS function.
+	 *  peripheral's own hardware PCS function. The hardware-PCS ALT is
+	 *  whichever one this instance's pin set needs -- see peripheral_mux.
 	 *
 	 * @param flag manual setting = true, auto (hardware PCS) control = false
 	 * @return pointer to the CS pin's DigitalOut, for manual drive when flag is true
@@ -123,6 +124,16 @@ private:
 	
 	uint32_t				master_clk_freq;
 	uint32_t				master_pcs_4_xfer;
+
+	/** ALT that reaches the SPI peripheral on this instance's pins.
+	 *
+	 *  Not a constant across instances: on FRDM-MCXN947 the Arduino header
+	 *  pins reach FlexComm1 on ALT2 while the MikroBus pins reach FlexComm6
+	 *  on ALT3. The constructor records whichever one it used so that
+	 *  cs_manual_control() can hand the CS pin back to the *right*
+	 *  peripheral, rather than to whatever ALT2 happens to be on that pin.
+	 */
+	uint8_t					peripheral_mux;
 };
 
 #endif // R01LIB_SPI_H

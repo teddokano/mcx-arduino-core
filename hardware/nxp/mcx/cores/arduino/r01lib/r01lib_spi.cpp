@@ -57,6 +57,8 @@ SPI::SPI( int mosi, int miso, int sclk, int cs ) : Obj( true ), chip_select( cs 
 
 	constexpr uint8_t	mux_setting	= 2;
 
+	peripheral_mux	= mux_setting;
+
 	_mosi.pin_mux( mux_setting );
 	_sclk.pin_mux( mux_setting );
 	_miso.pin_mux( mux_setting );
@@ -285,6 +287,8 @@ SPI::SPI( int mosi, int miso, int sclk, int cs ) : Obj( true ), chip_select( cs,
 	DigitalInOut	_miso( miso );
 	DigitalInOut	_sclk( sclk );
 
+	peripheral_mux	= mux_setting;
+
 	_mosi.pin_mux( mux_setting );
 	_sclk.pin_mux( mux_setting );
 	_miso.pin_mux( mux_setting );
@@ -461,9 +465,17 @@ uint8_t SPI::transfer_byte( uint8_t out )
 
 DigitalOut* SPI::cs_manual_control( bool flag )
 {
-	chip_select.pin_mux( flag ? 0 : 2 );
+	// ALT0 is plain GPIO on every pin, but the hardware-PCS ALT is not a
+	// constant: it is whichever one reaches *this* instance's peripheral,
+	// recorded by the constructor. This used to be a literal 2, which is
+	// right only for the Arduino-header pin set -- on FRDM-MCXN947's
+	// MikroBus pins the SPI is FlexComm6 on ALT3 (P3_23 = FC6_P3), so the
+	// literal would have handed CS to whatever else sits on ALT3 there.
+	// Nothing reaches this today with flag == false (the constructor is the
+	// only caller and passes true), so the literal never actually misfired.
+	chip_select.pin_mux( flag ? 0 : peripheral_mux );
 	chip_select	= true;
-	
+
 	return &chip_select;
 }
 
