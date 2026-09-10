@@ -1506,7 +1506,7 @@ v0.5.0リリース完了後、`0.6.0-dev`ブランチを作成して次の開発
 
 **2. ペリフェラルのクロック源を全数監査**: 「`clock_config.c`が触れないFlexCommが`mcu.cpp`の初期値のまま残る」という同じパターンが、`SPI`（FlexComm1）・`SPI1`（FlexComm6）で実バグとして出て、`Wire2`（FlexComm3）でも疑われた。0.6.0の起票時点で**さらに2件をコードリーディングで発見済み**（どちらもバグ報告を待たずに見つかったもので、先回り監査という0.6の方針の妥当性を裏づけている）:
 - **`i2c.cpp`の`LPI2C_MASTER_CLOCK_FREQUENCY`がFlexComm2決め打ち**（`CLOCK_GetLPFlexCommClkFreq( 2u )`）。`Wire2`はFlexComm3なのにFlexComm2の周波数でボーレートを計算している。現在はFlexComm2/3とも`FRO12M`で**偶然一致しているだけ**で、FlexComm1/6がSPI用に48MHzへ移されたのと同じことがFlexComm3に起きた瞬間に4倍ずれる。インスタンス別に解決するよう直す
-- **N947のFlexComm5（`Serial1`）に`CLOCK_AttachClk`が無い**。`mcu.cpp`は`CLOCK_SetClkDiv(kCLOCK_DivFlexcom5Clk, 1u)`で分周だけ設定し、クロック源を繋いでいない。`clock_config.c`もFlexCommには一切触れていない（grepで確認済み）ため、リセットデフォルトのまま動いている——実機では115200bpsで正常動作しているが、SPI/SPI1と同じ「半分だけ設定されて偶然動いている」状態
+- ~~**N947のFlexComm5（`Serial1`）に`CLOCK_AttachClk`が無い**~~ **【2026-09-11訂正: この指摘は誤りだった】** `mcu.cpp`が分周だけ設定しているのは事実だが、**attachは`Serial.cpp`側で行われている**——N947の`s_pinMap[]`の`MB_TX`/`MB_RX`エントリが`kFRO12M_to_FLEXCOMM5`を持ち、`Serial`のコンストラクタが`_setup_clock()`経由で適用する。`mcu.cpp`の該当行のすぐ上のコメントにもそう書いてある。**`mcu.cpp`だけをgrepして「無い」と結論し、隣のコメントを読まなかった**のが原因。実測（12MHz）で確定・下記参照
 - 上記2件を含め、両ボードの全ペリフェラルについて「どのクロック源を意図しているか」を洗い出して明文化・修正する
 
 **3. `docs/porting_a_new_board.md`を書く**: N947対応の記憶が新しいうちに。書く過程で「ボード追加時に手で直す箇所」が可視化されるので、それ自体を減らす——`arduino_io.h`のボード分岐（`NUM_ANALOG_INPUTS`等）、`mcxPinState`の`ALIAS_NAMES`/`KNOWN_INSTANCES`、`gdb-bridge`のボード別Windows exe（1ボード1バイナリなので3枚目で破綻する）、`boards.txt`/svd/リンカスクリプト/variant src。
@@ -1571,7 +1571,7 @@ v0.5.0リリース完了後、`0.6.0-dev`ブランチを作成して次の開発
 | `Wire2` | — | FlexComm3 @ 12MHz |
 | `SPI` | LPSPI1 @ 96MHz | FlexComm1 @ 48MHz |
 | `SPI1` | LPSPI0 @ 96MHz | FlexComm6 @ 48MHz |
-| `Serial1` | LPUART2 @ 96MHz | FlexComm5 @ **リセットデフォルト（attachが無い）** |
+| `Serial1` | LPUART2 @ 96MHz | FlexComm5 @ 12MHz（**`Serial.cpp`側でattach**、実測確認済み） |
 
 **記録の誤り2件を訂正**（どちらも実害は無いが、今後の判断を誤らせるもの）:
 1. **CLAUDE.mdの「A153の`clock_config.c`が`FRO_HF_DIV`（48MHz）へ上書き」は誤り——実際は96MHz**。48MHzは実際には呼ばれない`BOARD_BootClockFROHF48M`系の値だった。確定手順: `BOARD_InitBootClocks()`→`BOARD_BootClockFRO96M()`（`CLOCK_SetupFROHFClocking(96000000U)`）、`CLOCK_SetClockDiv(kCLOCK_DivFRO_HF_DIV, 1U)`。**`CLOCK_SetClockDiv(name, value)`は`value - 1`をレジスタに書き、読み出し側は`(field & 0xf) + 1`で割る**ため、`1U`は分周1＝96MHzのまま（この意味論を`fsl_clock.c`の実装で確認してから確定させた）
@@ -1581,7 +1581,9 @@ v0.5.0リリース完了後、`0.6.0-dev`ブランチを作成して次の開発
 
 **残る2件（修正は実機が必要、未着手）**:
 - **`LPI2C_MASTER_CLOCK_FREQUENCY`がFlexComm2決め打ち**（N947）: `Wire2`はFlexComm3。**今は両方12MHzなので数値が一致しており、修正しても値が変わらないことを机上で証明できる**——実機確認は通常の`release_check`スイープに畳み込めば足りる
-- **N947 FlexComm5に`CLOCK_AttachClk`が無い**（分周設定のみ）: 他の全FlexCommはdiv＋attachの対になっているのにここだけ欠けている。**直す前に`CLOCK_GetLPFlexCommClkFreq(5u)`を実機で1行出力させ、今リセットデフォルトで何が供給されているかを確定させること**——確認せずにattachを足すと「直したつもりで別の値に変える」ことになる。115200bpsで正常動作している実績があるので、現状の源でも十分な精度は出ている
+- ~~N947 FlexComm5に`CLOCK_AttachClk`が無い~~ **【2026-09-11・実機で解決、指摘自体が誤りだった】** 実測すると**12MHz**で、これは`Serial.cpp`の`s_pinMap[]`が持つ`kFRO12M_to_FLEXCOMM5`が効いた値だった。`_setup_clock()`は`Serial`のコンストラクタ（静的初期化時）で走るので、`01`が印字する時点で既に適用済み。**修正は不要**——`mcu.cpp`にattachを足そうとしていたが、それをやると同じクロックの設定が2ファイルに分かれ、移植手順書が罠として挙げているパターンそのものになるところだった。`01`の該当行は`checkClock(..., 12000000)`に変更して固定済み。
+
+  **この誤りから得た教訓**: 監査で「設定が無い」と結論する前に、**そのペリフェラルを実際に使っているドライバ側を見ること**。クロックの設定場所は`mcu.cpp`と`clock_config.c`の2箇所とは限らず、**インスタンス単位の設定はドライバが持っている**ことがある。今回は`mcu.cpp`の該当行の真上に「attach itself is also done lazily by `Serial::_setup_clock()`」と書いてあったのに読み落とした
 
 ### 追加項目完了: ALT値の先回り全数監査——A153のI2Cに潜在バグ1件を発見・修正
 「0.6でこのほかにやっておくべきことは？」というユーザーの問いに対し、**項目2（クロック源監査）と同じ「先回りで一括して洗う」パターンをALT値に適用する**ことを提案し、「1を実行．ref/MCXA1x2-1x3-RM.pdf参照」と指示を受けて実施。ALT値の誤りはこのプロジェクトが**3回踏んで**いる（N947のPWM `P2_2`/`P2_3`、A153のSerial1 D0/D1、N947のI3C1_SDA）。
@@ -2014,6 +2016,29 @@ Windows/Linuxのデバッガ確認用に**サイクル途中でステージン�
 - `31_gpio_loopback`のスケッチ本体、`02`→`02_manual_observe`＋`09_gpio_walk_no_jig`の分割、`3n`グループの新設、README/チェックリスト更新
 - **実機検証は「`31`が通ること」だけでは足りない**——検証器の中心的な主張「どのペアも他のスケッチを乱さない」は机上のもので、実機では一度も確かめていない。**ジグAを装着したまま`11`/`12`/`13`/`21`が通ること**、ジグBで`01`/`05`/`22`が通ることまで含めて確認する
 - I2C/I3CラインにつくGPIOスタブ（A153の`D18`-`A0`/`D19`-`A1`、N947の`D13`-`D18`/`D19`-`MB_CS`/`MB_PWM`-`MB_SCL`/`MB_INT`-`MB_SDA`）は、400kHz I2Cなら無視できるがI3Cのプッシュプル12.5MHzでは基板上のスタブ長を短くしておきたい
+
+### クロック監査を実行時検証に変えた（B1）、LPI2Cのクロックをインスタンス単位に（B2）、FlexComm5を実測（A3・実機確認済み）
+0.6の項目2は**監査（紙の上での導出）で止まっていた**——`mcu.cpp`と`clock_config.c`を読んで各ペリフェラルの源を割り出しただけで、走っている基板と突き合わせたことは一度もなかった。**それがN947の`SPI`が24MHz要求で実測31kHz、`SPI1`が半速という2件を出荷まで許した構造**そのものなので、読み戻す側を用意した。
+
+**B1**: `01_no_wiring_checks`の**先頭**に`CLOCK_Get*Freq()`の読み戻しを追加。先頭に置いたのは、直下の`delayMicroseconds()`精度チェックも、他スケッチが実機で出す全ビットレートも、この値の下流だから——クロックが壊れていれば下の失敗の**説明**になる。**許容誤差なしの厳密比較**（固定発振器やPLLからの整数分周なので、差があれば設定の差でノイズではない）。A153のフラッシュ増加は+608バイト。
+
+**実機結果（N947、`ALL OK`）——監査は全項目正しかった**:
+
+| | 実測 | 期待（監査由来） |
+|---|---|---|
+| core | 150MHz | ✓ |
+| `Wire`(FlexComm2) / `Wire2`(FlexComm3) | 12MHz | ✓ |
+| `Wire1`(I3C1) | 25MHz | ✓ |
+| `SPI`(FlexComm1) / `SPI1`(FlexComm6) | 48MHz | ✓ |
+| `Serial1`(FlexComm5) | **12MHz** | A3で確定 |
+
+**A3の結論——監査の「FlexComm5にattachが無い」は誤りだった**。実測12MHzは`Serial.cpp`の`s_pinMap[]`が持つ`kFRO12M_to_FLEXCOMM5`が効いた値で、`_setup_clock()`が`Serial`のコンストラクタ（静的初期化時）で走るため`01`の印字時点で既に適用済み。**`mcu.cpp`にattachを足す修正は不要**——やっていたら同じクロックの設定が2ファイルに分かれ、`docs/porting_a_new_board.md`が罠として挙げているパターンを自分で作るところだった。`01`は`checkClock(..., 12000000)`に変更して固定。
+
+**教訓（`docs/porting_a_new_board.md`に反映すべき）**: 監査で「設定が無い」と結論する前に、**そのペリフェラルを実際に使っているドライバ側を見ること**。クロックの設定場所は`mcu.cpp`と`clock_config.c`の2箇所とは限らず、**インスタンス単位の設定はドライバが持っていることがある**。今回は`mcu.cpp`の該当行の**真上のコメントに「attach itself is also done lazily by `Serial::_setup_clock()`」と書いてあったのに読み落とした**——grepで「無い」を示すのは、探す場所を間違えていれば何も示さない。
+
+**B2**: `LPI2C_MASTER_CLOCK_FREQUENCY`（インスタンス番号を埋め込んだマクロ）を`lpi2c_source_clock(unit_base)`に置換。`CLOCK_GetLPFlexCommClkFreq(2u)`固定は`Wire`(LPI2C2)には正しく`Wire2`(LPI2C3)には誤り、**A156はさらに悪く`LPI2C0`/`1`/`3`の3インスタンスに対して`0`固定**だった（0.7のボードなので同時に直したが、`boards.txt`に無いためコンパイル検証はできていない）。知らないインスタンスは`panic()`——別ペリフェラルのもっともらしい数字を返すのが、この修正が消そうとしている故障そのものなので。
+
+**今日は挙動が変わらないが、それが今やる理由**: FlexComm2と3はどちらもFRO12Mなので`Wire2`のボーレートは同じ値になる。**危険性の実例は既にある**——FlexComm1と6はSPIのクロック修正で12MHz→48MHzに動かされ、2と3は据え置かれた。動かされたのがI2C側だったら、`Wire2`の全ボーレートが実クロックと違う数字から計算され、`LPI2C_MasterSetBaudRate()`には気づく手段がない。**そしてB1のおかげで「no-opである」根拠が机上でなくなった**（`01`がFlexComm2/3の両方を12MHzとassertする）。
 
 ### 0.7・0.8の方針（同時に策定、0.8は選択が未確定）
 - **0.7: FRDM-MCXA156の追加**。A153の兄弟で最も安く追加でき、かつ**0.6で書いた移植手順書の初めての実地テスト**になる——手順書が漏らしていた箇所がここで判明し、修正される

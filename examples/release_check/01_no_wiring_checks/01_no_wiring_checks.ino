@@ -64,15 +64,6 @@ void checkClock(const char *label, uint32_t actual, uint32_t expect) {
     failCount++;
 }
 
-// For a clock nobody has established the right value for yet -- print it,
-// don't judge it.
-void reportClock(const char *label, uint32_t actual) {
-  Serial.print(label);
-  Serial.print(": ");
-  Serial.print(actual);
-  Serial.println(" Hz (not asserted -- see comment)");
-}
-
 void setup() {
   Serial.begin(115200);
   while (!Serial)
@@ -115,15 +106,16 @@ void setup() {
     checkClock("Wire2 (FlexComm3)", CLOCK_GetLPFlexCommClkFreq(3u), 12000000u);
     checkClock("SPI   (FlexComm1)", CLOCK_GetLPFlexCommClkFreq(1u), 48000000u);
     checkClock("SPI1  (FlexComm6)", CLOCK_GetLPFlexCommClkFreq(6u), 48000000u);
-    // FlexComm5 is the one gap the audit found and could not close: mcu.cpp
-    // sets its divider but never calls CLOCK_AttachClk for it, so it runs on
-    // whatever the reset default leaves. Serial1 works at 115200 today, so
-    // the source is evidently good enough -- but the number has never been
-    // read. Printed, not asserted: adding an attach before measuring would
-    // only swap one unverified value for another. Once this prints a figure,
-    // decide the intended source and turn this into a checkClock().
-    reportClock("Serial1 (FlexComm5, no CLOCK_AttachClk)",
-                CLOCK_GetLPFlexCommClkFreq(5u));
+    // FlexComm5 is attached, just not from mcu.cpp. Serial.cpp's N947 pin map
+    // carries kFRO12M_to_FLEXCOMM5 for the MB_TX/MB_RX entry, and the Serial
+    // constructor applies it through _setup_clock() during static init -- so
+    // it is already in effect by the time this line runs. mcu.cpp sets only
+    // the divider, and says so in a comment right there. The 0.6 audit read
+    // mcu.cpp alone, concluded the attach was missing, and filed it as a bug
+    // to fix after measuring; the measurement is what showed there was
+    // nothing to fix. Asserted like the rest now that the value is known and
+    // traceable to a line of code rather than to a reset default.
+    checkClock("Serial1 (FlexComm5)", CLOCK_GetLPFlexCommClkFreq(5u), 12000000u);
 #endif
   }
 
