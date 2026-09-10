@@ -106,6 +106,19 @@ public:
     /** @brief  Mbed-style implicit conversion, equivalent to read(). */
     operator float();
 
+    /** @brief  Is this pin one FlexPWM can actually drive?
+     *
+     *  Asks the same table the constructor resolves against, without
+     *  constructing anything -- the constructor panic()s on a pin it
+     *  cannot drive, so callers that want to handle that case themselves
+     *  (analogWrite() falls back to digitalWrite, as AVR's core does)
+     *  have to ask first.
+     *
+     * @param pin raw r01lib pin number, *not* an Arduino-renumbered one
+     * @return true if FlexPWM reaches this pin
+     */
+    static bool is_pwm_pin( int pin );
+
 private:
     void resolve_pin( int pin );
     void apply( void );  // push _period_us / _pulse_us to hardware
@@ -237,6 +250,19 @@ public:
     PwmOut &operator=( float duty );
     /** @brief  Implicit conversion, equivalent to read(). */
     operator float();
+
+    /** @brief  Is this pin one FlexPWM can actually drive?
+     *
+     *  Asks the same table the constructor resolves against, without
+     *  constructing anything -- the constructor panic()s on a pin it
+     *  cannot drive, so callers that want to handle that case themselves
+     *  (analogWrite() falls back to digitalWrite, as AVR's core does)
+     *  have to ask first.
+     *
+     * @param pin raw r01lib pin number, *not* an Arduino-renumbered one
+     * @return true if FlexPWM reaches this pin
+     */
+    static bool is_pwm_pin( int pin );
 
 private:
     void resolve_pin( int pin );

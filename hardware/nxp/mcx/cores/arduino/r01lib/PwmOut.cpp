@@ -66,6 +66,16 @@ inline pwm_channels_t sdk_channel( uint8_t channel )
 
 } // namespace
 
+bool PwmOut::is_pwm_pin( int pin )
+{
+    for ( size_t i = 0; i < sizeof( s_pins ) / sizeof( s_pins[0] ); i++ )
+    {
+        if ( s_pins[ i ].pin == pin )
+            return true;
+    }
+    return false;
+}
+
 void PwmOut::resolve_pin( int pin )
 {
     for ( size_t i = 0; i < sizeof( s_pins ) / sizeof( s_pins[0] ); i++ )
@@ -340,6 +350,16 @@ inline pwm_channels_t sdk_channel( uint8_t channel )
 }
 
 } // namespace
+
+bool PwmOut::is_pwm_pin( int pin )
+{
+    for ( size_t i = 0; i < sizeof( s_pins ) / sizeof( s_pins[0] ); i++ )
+    {
+        if ( s_pins[ i ].pin == pin )
+            return true;
+    }
+    return false;
+}
 
 void PwmOut::resolve_pin( int pin )
 {

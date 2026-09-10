@@ -41,12 +41,49 @@ int analogRead( int pin_num )
 
 void analogWrite( int pin_num, int value )
 {
+	// Keep the pin as the sketch wrote it: pinMode()/digitalWrite() do
+	// their own renumbering, so handing them the raw value below would
+	// renumber it a second time.
+	const int	arduino_pin	= pin_num;
+
 #ifdef	ARDUINO_PIN_RENUMBERING
 	pin_num	= arduino_pin_by_number[ pin_num ];
 #endif
 
 	if ( pin_num < 0 || pin_num >= MAX_ANALOG_PINS )
 		return;
+
+	int	max_value	= ( 1 << pwm_resolution_bits ) - 1;
+
+	if ( value < 0 )
+		value	= 0;
+	else if ( value > max_value )
+		value	= max_value;
+
+	// FlexPWM reaches only the six dedicated PWM0-PWM5 pins on either
+	// board -- no D-pin on N947 has a FlexPWM alternate function at all,
+	// and on A153 only D3/D7 do, on channels PWM5/PWM4 already use. So
+	// analogWrite() on a pin a sketch written for a classic Arduino would
+	// expect to work (analogWrite(9, ...) and friends) cannot produce
+	// PWM here, and used to reach PwmOut's constructor, which panic()s --
+	// turning a routine porting mistake into a dead sketch flashing SOS.
+	//
+	// Fall back to digitalWrite instead, which is what AVR's own core
+	// does for a pin with no timer behind it (wiring_analog.c: `case
+	// NOT_ON_TIMER: if (val < 128) digitalWrite(pin, LOW) else HIGH`).
+	// The threshold is the midpoint of the *current* write resolution,
+	// not a hardcoded 128, so it still means "half" after
+	// analogWriteResolution() has changed the scale.
+	//
+	// (The other reference core, UNO R4's renesas, silently does nothing
+	// in this situation. Either beats panicking; something observable was
+	// chosen over silence because it tells you PWM isn't happening.)
+	if ( !PwmOut::is_pwm_pin( pin_num ) )
+	{
+		pinMode( arduino_pin, OUTPUT );	// this core needs it before digitalWrite
+		digitalWrite( arduino_pin, value >= ( ( max_value + 1 ) / 2 ) );
+		return;
+	}
 
 	if ( pwm_out_pins[ pin_num ] == nullptr )
 	{
@@ -57,13 +94,6 @@ void analogWrite( int pin_num, int value )
 
 		pwm_out_pins[ pin_num ]->period_us( PWM_PERIOD_US );
 	}
-
-	int	max_value	= ( 1 << pwm_resolution_bits ) - 1;
-
-	if ( value < 0 )
-		value	= 0;
-	else if ( value > max_value )
-		value	= max_value;
 
 	pwm_out_pins[ pin_num ]->write( (float)value / (float)max_value );
 }
@@ -79,6 +109,12 @@ void analogWriteFrequency( int pin_num, uint32_t frequency )
 
 	if ( frequency < 1 )
 		frequency	= 1;
+
+	// Same guard as analogWrite()'s, but with nothing to fall back to:
+	// "period" has no meaning for a plain GPIO, so a pin FlexPWM can't
+	// reach is simply ignored rather than panicking in PwmOut.
+	if ( !PwmOut::is_pwm_pin( pin_num ) )
+		return;
 
 	if ( pwm_out_pins[ pin_num ] == nullptr )
 	{

@@ -231,6 +231,45 @@ void setup() {
     check("analogWrite(PWM0, ...) (reached here without crashing)", true);
   }
 
+  // ---- analogWrite on a pin FlexPWM cannot reach ----
+  // Neither board routes FlexPWM to any of D0-D13 (N947: none at all;
+  // A153: only D3/D7, on channels PWM5/PWM4 already own), so a sketch
+  // written for a classic Arduino -- analogWrite(9, 128) -- can never get
+  // real PWM here. It used to reach PwmOut's constructor and panic(),
+  // killing the sketch with an SOS blink. It now falls back to
+  // digitalWrite the way AVR's core does for a pin with no timer.
+  // Reaching the checks below at all is itself the test that it no longer
+  // panics; the pin is read back to confirm it really was driven.
+  Serial.println("--- analogWrite fallback on a non-PWM pin ---");
+  {
+    const int PIN = D2;   // plain GPIO on both boards, nothing wired to it
+
+    analogWrite(PIN, 0);
+    check("analogWrite(D2, 0) drives LOW", digitalRead(PIN) == LOW);
+
+    analogWrite(PIN, 255);
+    check("analogWrite(D2, 255) drives HIGH", digitalRead(PIN) == HIGH);
+
+    analogWrite(PIN, 200);            // above the 8-bit midpoint
+    check("analogWrite(D2, 200) drives HIGH", digitalRead(PIN) == HIGH);
+
+    analogWrite(PIN, 50);             // below it
+    check("analogWrite(D2, 50) drives LOW", digitalRead(PIN) == LOW);
+
+    // The midpoint has to follow analogWriteResolution(), not a hardcoded
+    // 128: at 12-bit, 2000 is below half of 4095 and must read LOW.
+    analogWriteResolution(12);
+    analogWrite(PIN, 2000);
+    check("12-bit: analogWrite(D2, 2000) drives LOW", digitalRead(PIN) == LOW);
+    analogWrite(PIN, 3000);
+    check("12-bit: analogWrite(D2, 3000) drives HIGH", digitalRead(PIN) == HIGH);
+    analogWriteResolution(8);         // restore the default for later checks
+
+    // Same guard, nothing to fall back to -- must simply be ignored.
+    analogWriteFrequency(PIN, 1000);
+    check("analogWriteFrequency(D2, ...) ignored, not fatal", true);
+  }
+
   // ---- Wire1 on-board I3C-in-I2C-mode sensor, raw registers
   //      (was test_Wire1_onboard_sensor_raw) ----
   Serial.println("--- Wire1 on-board temperature sensor (raw registers) ---");
