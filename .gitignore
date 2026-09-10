@@ -21,3 +21,7 @@ ref/
 # tool-specific settings -- .claude/launch.json slipped in once via
 # `git add -A` and was removed again.
 .claude/
+
+# Python bytecode from running the scripts in .github/scripts/
+__pycache__/
+*.pyc
