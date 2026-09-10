@@ -13,7 +13,19 @@ version.patch=0
 compiler.path={runtime.tools.arm-none-eabi-gcc.path}/bin/
 compiler.cpu_flags=-mcpu={build.mcu} {build.fpu_flags} -mthumb
 compiler.defines=-DPRINTF_FLOAT_ENABLE=1 -DSCANF_FLOAT_ENABLE=1 -DPRINTF_ADVANCED_ENABLE=1 -DSCANF_ADVANCED_ENABLE=1 -D__NEWLIB__ -DSDK_OS_BAREMETAL -DSERIAL_PORT_TYPE_UART=1 -DSDK_DEBUGCONSOLE=0 -D__USE_CMSIS -DARDUINO=10819 -DARDUINO_ARCH_MCX -DARDUINO_{build.board} -DF_CPU={build.f_cpu} -DMCX_ARDUINO_CORE_VERSION_MAJOR={version.major} -DMCX_ARDUINO_CORE_VERSION_MINOR={version.minor} -DMCX_ARDUINO_CORE_VERSION_PATCH={version.patch} -DSDK_DELAY_USE_DWT {build.board_defines}
-compiler.opt_flags={build.opt_flags} -fno-common -g3 -gdwarf-4 -ffunction-sections -fdata-sections -fno-builtin -fmerge-constants -specs=nano.specs
+# -gdwarf-5 (GCC 14's own default; the -gdwarf-4 here came from the initial
+# commit, inherited from an MCUXpresso project template with no reason
+# recorded). Under DWARF 4 the debugger printed
+#   warning: (Internal error: pc 0x318 in read in CU, but not in symtab.)
+# on every stop and step. --gc-sections leaves stale debug info behind for
+# the code it discards, and in DWARF 4 that left gdb's per-CU index claiming
+# an address its own line table did not cover -- an inconsistency gdb
+# reports through an unconditional warning() no setting can silence.
+# DWARF 5's .debug_rnglists encodes ranges against a base address rather
+# than as flat absolute pairs, and the two agree again. Verified on both
+# boards: text/data/bss byte-identical, and a session on real N947 hardware
+# runs clean through load, reset, breakpoint, backtrace and stepping.
+compiler.opt_flags={build.opt_flags} -fno-common -g3 -gdwarf-5 -ffunction-sections -fdata-sections -fno-builtin -fmerge-constants -specs=nano.specs
 compiler.warning_flags.none=
 compiler.warning_flags.default=-Wall
 compiler.warning_flags.more=-Wall
