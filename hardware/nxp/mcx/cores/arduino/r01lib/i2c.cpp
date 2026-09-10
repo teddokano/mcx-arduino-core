@@ -26,17 +26,14 @@ extern "C" {
 
 #ifdef	CPU_MCXN947VDF
 	#define EXAMPLE_I2C_MASTER_BASE			(LPI2C2_BASE)
-	#define LPI2C_MASTER_CLOCK_FREQUENCY 	CLOCK_GetLPFlexCommClkFreq( 2u )
 	#define EXAMPLE_I2C_MASTER				((LPI2C_Type *)EXAMPLE_I2C_MASTER_BASE)
 #elif	CPU_MCXN236VDF
 	#define EXAMPLE_I2C_MASTER_BASE			(LPI2C2_BASE)
-	#define LPI2C_MASTER_CLOCK_FREQUENCY	CLOCK_GetLPFlexCommClkFreq( 2u )
 	#define EXAMPLE_I2C_MASTER				((LPI2C_Type *)EXAMPLE_I2C_MASTER_BASE)
 #elif	CPU_MCXA156VLL
-	#define LPI2C_MASTER_CLOCK_FREQUENCY	CLOCK_GetLpi2cClkFreq( 0u )
+	/* every pin combination picks its own instance -- see the constructor */
 #elif	CPU_MCXA153VLH
 	#define EXAMPLE_I2C_MASTER_BASE			LPI2C0
-	#define LPI2C_MASTER_CLOCK_FREQUENCY	CLOCK_GetLpi2cClkFreq()
 	#define EXAMPLE_I2C_MASTER				((LPI2C_Type *)EXAMPLE_I2C_MASTER_BASE)
 #elif	CPU_MCXC444VLH
 	#define I2C_MASTER_CLK_SRC				I2C0_CLK_SRC
@@ -45,6 +42,50 @@ extern "C" {
 #else
 	#error Not supported CPU
 #endif
+
+#ifndef	CPU_MCXC444VLH
+/** Source clock feeding one LPI2C instance.
+ *
+ *  Asked per instance, not per board. This used to be a single macro with the
+ *  instance number written into it -- CLOCK_GetLPFlexCommClkFreq( 2u ) -- which
+ *  is right for Wire (LPI2C2) and wrong for Wire2 (LPI2C3), and wrong three
+ *  ways on A156, where LPI2C0, LPI2C1 and LPI2C3 are all reachable and the
+ *  macro named 0 for all of them.
+ *
+ *  Nothing keeps sibling instances on the same source. FlexComm1 and FlexComm6
+ *  were both moved from 12MHz to 48MHz to fix SPI's clock, while FlexComm2 and
+ *  3 stayed where they were; had I2C been the peripheral moved, a fixed index
+ *  here would have computed every baud rate from the wrong number, and done it
+ *  silently -- LPI2C_MasterSetBaudRate() has no way to tell it was handed a
+ *  frequency the hardware is not running at.
+ *
+ *  This is why the fix is worth making even though it changes no behaviour
+ *  today: FlexComm2 and FlexComm3 currently both run at 12MHz, so the value
+ *  produced is identical either way. It stops being identical the moment
+ *  someone re-attaches one of them.
+ */
+static uint32_t lpi2c_source_clock( LPI2C_Type *base )
+{
+#if defined( CPU_MCXN947VDF ) || defined( CPU_MCXN236VDF )
+	if ( base == LPI2C2 )	return CLOCK_GetLPFlexCommClkFreq( 2u );
+	if ( base == LPI2C3 )	return CLOCK_GetLPFlexCommClkFreq( 3u );
+#elif defined( CPU_MCXA156VLL )
+	if ( base == LPI2C0 )	return CLOCK_GetLpi2cClkFreq( 0u );
+	if ( base == LPI2C1 )	return CLOCK_GetLpi2cClkFreq( 1u );
+	if ( base == LPI2C3 )	return CLOCK_GetLpi2cClkFreq( 3u );
+#elif defined( CPU_MCXA153VLH )
+	(void)base;		/* one LPI2C on this chip, and no index to give */
+	return CLOCK_GetLpi2cClkFreq();
+#endif
+
+	/*  Reached only if the constructor started using an instance this
+	 *  function was never told about. Failing loudly beats returning a
+	 *  plausible number for the wrong peripheral.
+	 */
+	panic( "I2C: no source clock known for this LPI2C instance" );
+	return 0;
+}
+#endif	// CPU_MCXC444VLH
 
 
 I2C::I2C( int sda, int scl, bool no_hw ) : Obj( true ), _sda( sda ), _scl( scl ), err_cb( nullptr ), _no_hw( no_hw )
@@ -176,7 +217,7 @@ I2C::I2C( int sda, int scl, bool no_hw ) : Obj( true ), _sda( sda ), _scl( scl )
 	I2C_MasterInit( unit_base, &masterConfig, I2C_MASTER_CLOCK_FREQUENCY );
 #else
 	LPI2C_MasterGetDefaultConfig( &masterConfig );
-	LPI2C_MasterInit( unit_base, &masterConfig, LPI2C_MASTER_CLOCK_FREQUENCY );
+	LPI2C_MasterInit( unit_base, &masterConfig, lpi2c_source_clock( unit_base ) );
 #endif
 	
 //	frequency( I2C_FREQ );
@@ -250,7 +291,7 @@ void I2C::frequency( uint32_t frequency )
 	unit_base->MCFGR2	&= ~( LPI2C_MCFGR2_FILTSDA_MASK | LPI2C_MCFGR2_FILTSCL_MASK );
 	LPI2C_MasterEnable( unit_base, was_enabled );
 
-	LPI2C_MasterSetBaudRate( unit_base, LPI2C_MASTER_CLOCK_FREQUENCY, frequency );
+	LPI2C_MasterSetBaudRate( unit_base, lpi2c_source_clock( unit_base ), frequency );
 #endif
 }
 
