@@ -1821,7 +1821,7 @@ CLAUDE.mdには以前「並列化した`xargs -P 4`版で実施——逐次実�
 
 **同一の共有バイナリが両経路を自動判別し、デバイス文字列は`a153.cfg`から読めている**——ボード別exe・ボード別ランチャーを廃止した設計が実機で成立していることの確認になった。
 
-**残り**: **Windowsは`0.6.0-rc2`のステージングで実機確認完了**（下記参照）。**Linuxのみ未実施**——従来どおりリリース前ステージングで行う。
+**残り**: **Windowsは`0.6.0-rc2`のステージングで実機確認完了**（下記参照）。**Linuxも2026-09-12にA153・N947両方で確認完了**——`findLinkServer()`のLinux分岐（`/usr/local/LinkServer/LinkServer`→`/usr/local/LinkServer_<ver>`→PATHの3段）が実機を通った初回。これで**macOS・Windows・Linuxの3プラットフォームすべてでIDE内蔵デバッガの動作確認が完了**。
 
 **手動でgdb-bridgeを起動したあとはプロセスを掃除すること**: `crt_emu_cm_redlink`（セッションごと）と`redlinkserv`（LinkServerの常駐デーモン）が残る。0.4.0でも`crt_emu_cm_redlink`の残留に詰まった記録がある。`pkill -f crt_emu_cm_redlink; pkill -f redlinkserv`で戻せる。
 
@@ -1928,7 +1928,7 @@ Windows/Linuxのデバッガ確認用に**サイクル途中でステージン�
 
 **Windows実機確認完了**（`0.6.0-rc2`）: ユーザーから「Windowsで問題なく動作」と報告。見るべき2点とも良好——**(1) IDEがgdb-bridgeをspawnできる**（0.4.0で`ECONNRESET`で壊れたのはまさにここ。ボード別exe・ボード別`.bat`を廃止し共有exeを直接起動する新方式が、壊れた当の経路で通った）、**(2) 毎ステップの`warning: pc 0x318 ...`が解消**。
 
-**これでmacOS・Windowsの2プラットフォームで、IDE経由のフルデバッグセッションが検証済み。残るはLinuxのみ**——`findLinkServer()`のLinux分岐（`/usr/local/LinkServer/LinkServer`→`/usr/local/LinkServer_<ver>`→PATHの3段）が一度も実行されていない。
+**これでmacOS・Windowsの2プラットフォームで、IDE経由のフルデバッグセッションが検証済み。** Linuxは後日`0.6.0-rc2`ステージングで確認完了（下記「gdb-bridge board-agnostic化の実機検証」節参照）——これで**0.6.0のIDEデバッガ検証（A153・N947 × macOS・Windows・Linux）が全て完了**。
 
 **確認が済んだらrcリリースと`staging-0.6.0`ブランチは削除する。**
 
@@ -2051,6 +2051,14 @@ Windows/Linuxのデバッガ確認用に**サイクル途中でステージン�
 **B2**: `LPI2C_MASTER_CLOCK_FREQUENCY`（インスタンス番号を埋め込んだマクロ）を`lpi2c_source_clock(unit_base)`に置換。`CLOCK_GetLPFlexCommClkFreq(2u)`固定は`Wire`(LPI2C2)には正しく`Wire2`(LPI2C3)には誤り、**A156はさらに悪く`LPI2C0`/`1`/`3`の3インスタンスに対して`0`固定**だった（0.7のボードなので同時に直したが、`boards.txt`に無いためコンパイル検証はできていない）。知らないインスタンスは`panic()`——別ペリフェラルのもっともらしい数字を返すのが、この修正が消そうとしている故障そのものなので。
 
 **今日は挙動が変わらないが、それが今やる理由**: FlexComm2と3はどちらもFRO12Mなので`Wire2`のボーレートは同じ値になる。**危険性の実例は既にある**——FlexComm1と6はSPIのクロック修正で12MHz→48MHzに動かされ、2と3は据え置かれた。動かされたのがI2C側だったら、`Wire2`の全ボーレートが実クロックと違う数字から計算され、`LPI2C_MasterSetBaudRate()`には気づく手段がない。**そしてB1のおかげで「no-opである」根拠が机上でなくなった**（`01`がFlexComm2/3の両方を12MHzとassertする）。
+
+### 0.6.0 実機検証、全完了
+2026-09-12、Linuxで A153・N947 両ボードともIDE内蔵デバッガの動作を確認（`0.6.0-rc2`ステージング経由）。これで0.6.0の実機残件は全て片付いた:
+
+- **A1 Linuxデバッガ確認**: `findLinkServer()`のLinux分岐（`/usr/local/LinkServer/LinkServer`→`/usr/local/LinkServer_<ver>`→PATHの3段）が実機を通った初回。macOS（`gdb-bridge board-agnostic化の実機検証`節）・Windows（`0.6.0-rc2`のステージング）と合わせ、**3プラットフォーム×2ボードでIDE内蔵デバッガの動作確認が全て完了**
+- **A2 `13`のmcxRCServoパルス幅** / **A3 FlexComm5実測** / **B1クロック監査の実行時検証化** / **B2 LPI2Cインスタンス別クロック**: いずれも既に完了済み（各節参照）
+
+**残るのはリリース作業のみ**（`--release`が現に落としている3件——CHANGELOG確定・`package_nxp_mcx_index.json`のプレースホルダー・Doxygen再生成——とチェックリストの残り、`main`マージ以降の一連）。`0.6.0-rc2`プレリリースと`staging-0.6.0`ブランチは役目を終えたので削除する。
 
 ### 0.7・0.8の方針（同時に策定、0.8は選択が未確定）
 - **0.7: FRDM-MCXA156の追加**。A153の兄弟で最も安く追加でき、かつ**0.6で書いた移植手順書の初めての実地テスト**になる——手順書が漏らしていた箇所がここで判明し、修正される
