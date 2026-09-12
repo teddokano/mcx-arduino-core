@@ -2091,6 +2091,21 @@ Windows/Linuxのデバッガ確認用に**サイクル途中でステージン�
 - 生データ（`export_raw_data_csv`は遷移時刻のリスト）から自前でSVGを描いてPNG化すれば波形の見た目は再現できる（`matplotlib`はこの環境に無いので素のSVG生成＋`qlmanage -t`でPNG化した）
 - **キャプチャを開いたままにしたい場合は`close_capture`を呼ばない**こと。閉じるとアプリ側からも消える
 
+### v0.6.0リリース完了
+- **リリース準備チェックリスト項目1〜7を全て実施**: CHANGELOG補完・`[Unreleased]`→`[0.6.0] - 2026-09-12`確定（DWARF5切替・LPI2Cインスタンス別クロック・A153/N947のクロック期待値修正・`13`のサーボチェック・hygieneチェック2件追加を含め、この開発サイクル後半の分を追記）、ドキュメント全体の再監査（Explore agent、8観点で問題なし）、`docs/api/`のDoxygen再生成（260ファイル差分）、ライセンスチェック（LICENSE参照パス全て実在、`mcxRCServo`は`mcxPinState`と同じ作者自身のMITライブラリなので追記不要）、全サンプル×両ボードのfast/full回帰スイープ（新規失敗なし）、`examples/release_check/`の全グループ（`01`〜`04`・`11`〜`13`・`21`〜`23`）を両ボード実機で確認
+- **`13`のmcxRCServoパルス幅チェックはユーザーの疑義で再検証**: 「PWM0とD8のショートを本当にやったか」という指摘を受け、両ボードともPWM0-D8ジャンパの接続をユーザーに明示的に確認してもらった上で再度実機フラッシュ・確認——N947 499/1449/2399us・A153 498/1449/2399usと前回とほぼ同一の値を再現、疑義は解消（前回の記録も正しかったと確定）
+- **`0.6.0-dev`→`main`fast-forwardマージ**（`196f686`→`b6da817`、39コミット）・push
+- **リリースzip作成**: `git archive --format=zip --prefix=mcx/ HEAD:hardware/nxp/mcx`（v0.4.0以降のソース配布方式のため手動追加は不要）。SHA-256 `16df304dff621f467c2f8b2b26a36574e5a95ff7848e6bef2d43661913727382`、9020111 bytes
+- **リリース前ローカル検証**: zipを展開し、開発用symlinkを一時退避したうえで実ディレクトリ`0.6.0`としてBoards Manager相当の設置をして両ボードのコンパイル確認・`arduino-cli debug --info`でSVD/gdb-bridgeのパス解決を確認
+- `gh release create 0.6.0`でGitHub Release作成、ダウンロードして再計算したchecksumがローカルと完全一致することを確認
+- **ステージングブランチ**: rc1/rc2検証時に作られた古い`staging-0.6.0`ブランチ（削除漏れ）を一度削除してから作り直し、`package_nxp_mcx_index.json`に0.6.0エントリを新規追加してpush
+- **macOS・Windows・Linuxの3プラットフォームでの検証完了**: ユーザーが`staging-0.6.0`URL経由でBoards Managerインストールを試し、全プラットフォームで異常なし（macOSは一度「A153が出てこない」というトラブルが出たが、手順の誤りと判明——ローカルキャッシュ・データ自体は正しく`0.6.0`を含んでいた）。**Windows・Linuxはこのタイミングでもう一度IDE内蔵デバッガの動作まで確認済み**（rc2時点で既に確認済みではあったが、追加の確証として）
+- **`main`のchecksum確定作業**: 前回（v0.4.0・v0.4.1）の教訓を踏まえ、`update_package_index.yml`実行前に`package_nxp_mcx_index.json`へ0.6.0のプレースホルダーエントリを追加してからpush（`77ebef1`）。`workflow_dispatch`を`main`に対して実行し一発成功、確定値（SHA-256 `16df304dff621f467c2f8b2b26a36574e5a95ff7848e6bef2d43661913727382`、9020111 bytes）がローカル計算値と完全一致することを確認
+- `python3 .github/scripts/check_repo_hygiene.py --release`を`main`上で実行、9項目全てpass（`changelog-heading`/`package-index-entry`/`doxygen-freshness`含む）
+- `staging-0.6.0`・`0.6.0-dev`ブランチともマージ済み・役目終了のためリモート・ローカルとも削除。ローカル開発用symlinkも復元済み
+
+これでv0.6.0のリリース作業が全て完了。macOS・Windows・Linuxの3プラットフォームで、インストール〜ビルド〜アップロード〜動作確認〜IDE内蔵デバッガまで検証済み
+
 ---
 
 ## 0.5以降のロードマップ方針（v0.4.2開発中に策定）
