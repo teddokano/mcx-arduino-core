@@ -8,7 +8,7 @@ var searchData=
   ['low_5',['LOW',['../arduino__io_8h.html#a7d13ec9e69e059440678c128f1a29708',1,'arduino_io.h']]],
   ['low_6',['low',['../class_interrupt_in.html#a46b284cebdb15a0826e9316ac0ed805c',1,'InterruptIn']]],
   ['lowbyte_7',['lowByte',['../_arduino_8h.html#a57600234f6e26049357fbecfbdca9537',1,'Arduino.h']]],
-  ['lpi2c_5fmaster_5fclock_5ffrequency_8',['LPI2C_MASTER_CLOCK_FREQUENCY',['../i2c_8cpp.html#aa2ae34e7e8d10c9d78c288704bec093c',1,'i2c.cpp']]],
+  ['lpi2c_5fsource_5fclock_8',['lpi2c_source_clock',['../i2c_8cpp.html#ae2747b37394408bccec62b58499d4ec1',1,'i2c.cpp']]],
   ['lpspi_5fmaster_5fclk_5ffreq_9',['LPSPI_MASTER_CLK_FREQ',['../r01lib__spi_8cpp.html#a967c69428e6a7ea82d2bf6d13113c018',1,'r01lib_spi.cpp']]],
   ['lpspi_5fmb_5fclk_5ffreq_10',['LPSPI_MB_CLK_FREQ',['../r01lib__spi_8cpp.html#a398e5b21dc1267b4cf05a8f4aa9519dd',1,'r01lib_spi.cpp']]],
   ['lpuart0_5firqhandler_11',['LPUART0_IRQHandler',['../_serial_8cpp.html#a483a109a68120f629df6d28faf117e3a',1,'Serial.cpp']]],

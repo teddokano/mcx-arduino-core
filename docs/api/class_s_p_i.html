@@ -27,7 +27,7 @@ mermaid.initialize({ startOnLoad: true, theme: theme });
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.5.0</span>
+   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.6.0</span>
    </div>
    <div id="projectbrief">Arduino board support package for NXP FRDM MCX Series boards</div>
   </td>
@@ -150,6 +150,7 @@ Private Attributes</h2></td></tr>
 <tr class="memitem:ab7d5a6739e756c916e7c0d92e0d2a346" id="r_ab7d5a6739e756c916e7c0d92e0d2a346"><td class="memItemLeft">LPSPI_Type *&#160;</td><td class="memItemRight"><a class="el" href="#ab7d5a6739e756c916e7c0d92e0d2a346">unit_base</a></td></tr>
 <tr class="memitem:a1db76776302a20b94f8a867825b440c3" id="r_a1db76776302a20b94f8a867825b440c3"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#a1db76776302a20b94f8a867825b440c3">master_clk_freq</a></td></tr>
 <tr class="memitem:a710870266e70e6f258dd15b172c0d9b6" id="r_a710870266e70e6f258dd15b172c0d9b6"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#a710870266e70e6f258dd15b172c0d9b6">master_pcs_4_xfer</a></td></tr>
+<tr class="memitem:ad564f82f98c623e23040cf0a94f4c1aa" id="r_ad564f82f98c623e23040cf0a94f4c1aa"><td class="memItemLeft">uint8_t&#160;</td><td class="memItemRight"><a class="el" href="#ad564f82f98c623e23040cf0a94f4c1aa">peripheral_mux</a></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p><a class="el" href="class_s_p_i.html">SPI</a> class</p>
@@ -196,7 +197,7 @@ Private Attributes</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="r01lib__spi_8cpp_source.html#l00194">194</a> of file <a class="el" href="r01lib__spi_8cpp_source.html">r01lib_spi.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="r01lib__spi_8cpp_source.html#l00196">196</a> of file <a class="el" href="r01lib__spi_8cpp_source.html">r01lib_spi.cpp</a>.</p>
 
 </div>
 </div>
@@ -224,7 +225,7 @@ Private Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>Destructor to free <a class="el" href="class_s_p_i.html">SPI</a> resource </p>
 
-<p class="definition">Definition at line <a class="el" href="r01lib__spi_8cpp_source.html#l00329">329</a> of file <a class="el" href="r01lib__spi_8cpp_source.html">r01lib_spi.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="r01lib__spi_8cpp_source.html#l00333">333</a> of file <a class="el" href="r01lib__spi_8cpp_source.html">r01lib_spi.cpp</a>.</p>
 
 </div>
 </div>
@@ -259,7 +260,7 @@ Private Attributes</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="r01lib__spi_8cpp_source.html#l00402">402</a> of file <a class="el" href="r01lib__spi_8cpp_source.html">r01lib_spi.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="r01lib__spi_8cpp_source.html#l00406">406</a> of file <a class="el" href="r01lib__spi_8cpp_source.html">r01lib_spi.cpp</a>.</p>
 
 </div>
 </div>
@@ -314,7 +315,7 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 <p>Manual CS control setting</p>
-<p>Switches the CS pin's mux between plain GPIO (so the sketch can drive it directly via the returned DigitalOut*) and the LPSPI peripheral's own hardware PCS function.</p>
+<p>Switches the CS pin's mux between plain GPIO (so the sketch can drive it directly via the returned DigitalOut*) and the LPSPI peripheral's own hardware PCS function. The hardware-PCS ALT is whichever one this instance's pin set needs &ndash; see peripheral_mux.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">flag</td><td>manual setting = true, auto (hardware PCS) control = false </td></tr>
@@ -323,7 +324,7 @@ Private Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>pointer to the CS pin's <a class="el" href="class_digital_out.html">DigitalOut</a>, for manual drive when flag is true </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="r01lib__spi_8cpp_source.html#l00462">462</a> of file <a class="el" href="r01lib__spi_8cpp_source.html">r01lib_spi.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="r01lib__spi_8cpp_source.html#l00466">466</a> of file <a class="el" href="r01lib__spi_8cpp_source.html">r01lib_spi.cpp</a>.</p>
 
 </div>
 </div>
@@ -357,7 +358,7 @@ Private Attributes</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="r01lib__spi_8cpp_source.html#l00345">345</a> of file <a class="el" href="r01lib__spi_8cpp_source.html">r01lib_spi.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="r01lib__spi_8cpp_source.html#l00349">349</a> of file <a class="el" href="r01lib__spi_8cpp_source.html">r01lib_spi.cpp</a>.</p>
 
 </div>
 </div>
@@ -391,7 +392,7 @@ Private Attributes</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="r01lib__spi_8cpp_source.html#l00391">391</a> of file <a class="el" href="r01lib__spi_8cpp_source.html">r01lib_spi.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="r01lib__spi_8cpp_source.html#l00395">395</a> of file <a class="el" href="r01lib__spi_8cpp_source.html">r01lib_spi.cpp</a>.</p>
 
 </div>
 </div>
@@ -427,7 +428,7 @@ Private Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>byte received </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="r01lib__spi_8cpp_source.html#l00423">423</a> of file <a class="el" href="r01lib__spi_8cpp_source.html">r01lib_spi.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="r01lib__spi_8cpp_source.html#l00427">427</a> of file <a class="el" href="r01lib__spi_8cpp_source.html">r01lib_spi.cpp</a>.</p>
 
 </div>
 </div>
@@ -472,7 +473,7 @@ Private Attributes</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="r01lib__spi_8cpp_source.html#l00411">411</a> of file <a class="el" href="r01lib__spi_8cpp_source.html">r01lib_spi.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="r01lib__spi_8cpp_source.html#l00415">415</a> of file <a class="el" href="r01lib__spi_8cpp_source.html">r01lib_spi.cpp</a>.</p>
 
 </div>
 </div>
@@ -497,7 +498,7 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="r01lib__spi_8h_source.html#l00113">113</a> of file <a class="el" href="r01lib__spi_8h_source.html">r01lib_spi.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="r01lib__spi_8h_source.html#l00114">114</a> of file <a class="el" href="r01lib__spi_8h_source.html">r01lib_spi.h</a>.</p>
 
 </div>
 </div>
@@ -514,7 +515,7 @@ Private Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>variable for reporting last state </p>
 
-<p class="definition">Definition at line <a class="el" href="r01lib__spi_8h_source.html#l00110">110</a> of file <a class="el" href="r01lib__spi_8h_source.html">r01lib_spi.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="r01lib__spi_8h_source.html#l00111">111</a> of file <a class="el" href="r01lib__spi_8h_source.html">r01lib_spi.h</a>.</p>
 
 </div>
 </div>
@@ -538,7 +539,7 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="r01lib__spi_8h_source.html#l00114">114</a> of file <a class="el" href="r01lib__spi_8h_source.html">r01lib_spi.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="r01lib__spi_8h_source.html#l00115">115</a> of file <a class="el" href="r01lib__spi_8h_source.html">r01lib_spi.h</a>.</p>
 
 </div>
 </div>
@@ -562,7 +563,7 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="r01lib__spi_8h_source.html#l00124">124</a> of file <a class="el" href="r01lib__spi_8h_source.html">r01lib_spi.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="r01lib__spi_8h_source.html#l00125">125</a> of file <a class="el" href="r01lib__spi_8h_source.html">r01lib_spi.h</a>.</p>
 
 </div>
 </div>
@@ -586,7 +587,7 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="r01lib__spi_8h_source.html#l00125">125</a> of file <a class="el" href="r01lib__spi_8h_source.html">r01lib_spi.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="r01lib__spi_8h_source.html#l00126">126</a> of file <a class="el" href="r01lib__spi_8h_source.html">r01lib_spi.h</a>.</p>
 
 </div>
 </div>
@@ -610,7 +611,33 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="r01lib__spi_8h_source.html#l00120">120</a> of file <a class="el" href="r01lib__spi_8h_source.html">r01lib_spi.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="r01lib__spi_8h_source.html#l00121">121</a> of file <a class="el" href="r01lib__spi_8h_source.html">r01lib_spi.h</a>.</p>
+
+</div>
+</div>
+<a id="ad564f82f98c623e23040cf0a94f4c1aa" name="ad564f82f98c623e23040cf0a94f4c1aa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad564f82f98c623e23040cf0a94f4c1aa">&#9670;&#160;</a></span>peripheral_mux</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint8_t SPI::peripheral_mux</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>ALT that reaches the <a class="el" href="class_s_p_i.html">SPI</a> peripheral on this instance's pins.</p>
+<p>Not a constant across instances: on FRDM-MCXN947 the Arduino header pins reach FlexComm1 on ALT2 while the MikroBus pins reach FlexComm6 on ALT3. The constructor records whichever one it used so that <a class="el" href="#abd22b1c3f108c079385a0872daaada56">cs_manual_control()</a> can hand the CS pin back to the <em>right</em> peripheral, rather than to whatever ALT2 happens to be on that pin. </p>
+
+<p class="definition">Definition at line <a class="el" href="r01lib__spi_8h_source.html#l00136">136</a> of file <a class="el" href="r01lib__spi_8h_source.html">r01lib_spi.h</a>.</p>
 
 </div>
 </div>
@@ -634,7 +661,7 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="r01lib__spi_8h_source.html#l00121">121</a> of file <a class="el" href="r01lib__spi_8h_source.html">r01lib_spi.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="r01lib__spi_8h_source.html#l00122">122</a> of file <a class="el" href="r01lib__spi_8h_source.html">r01lib_spi.h</a>.</p>
 
 </div>
 </div>

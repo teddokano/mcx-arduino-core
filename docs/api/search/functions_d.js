@@ -31,5 +31,6 @@ var searchData=
   ['pulsewidth_5fms_28',['pulsewidth_ms',['../class_pwm_out.html#ad821e98b82bab332a3e53499f44fb188',1,'PwmOut']]],
   ['pulsewidth_5fus_29',['pulsewidth_us',['../class_pwm_out.html#a862bf72b654374398ac730b4940d41ed',1,'PwmOut']]],
   ['putc_30',['putc',['../class_serial.html#a90f987428ac188fb6114b913010206fc',1,'Serial']]],
-  ['pwmout_31',['PwmOut',['../class_pwm_out.html#ab9e14adc0a7c64520f9c647cdbeabcec',1,'PwmOut']]]
+  ['pwm_5ffor_31',['pwm_for',['../arduino__analog_8cpp.html#aee66f4e676e7f6efa2595fa2ce47ba3d',1,'arduino_analog.cpp']]],
+  ['pwmout_32',['PwmOut',['../class_pwm_out.html#ab9e14adc0a7c64520f9c647cdbeabcec',1,'PwmOut']]]
 ];
