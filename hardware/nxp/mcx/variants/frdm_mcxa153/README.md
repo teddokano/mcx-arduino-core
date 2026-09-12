@@ -1,8 +1,8 @@
 # variants/frdm_mcxa153/
 
 `v0.4.0`より、このボードはプリビルド`.a`ライブラリ方式を廃止し、フルソース
-配布に移行済み（詳細はCHANGELOG.mdの`[0.4.0]`エントリ、CLAUDE.mdの
-「`cores/arduino/`一本化・`platform.txt`書き換え完了」セクション参照）。
+配布に移行済み（詳細はCHANGELOG.mdの`[0.4.0]`エントリ、docs/DEVELOPMENT_LOG.mdの
+「`cores/arduino/`一本化・`platform.txt`書き換え完了」節を参照）。
 
 ```
 variants/frdm_mcxa153/

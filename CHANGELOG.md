@@ -42,7 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 - `test_combined_peripherals` (and its `release_check/21` mirror) now also exercises `SPI1` on FRDM-MCXN947 (previously A153-only) and adds a `Wire2` bus probe on FRDM-MCXN947 in place of `Serial1` (which N947 can't run alongside `Wire1`/I3C — see `variants/frdm_mcxn947/README.md`), closing a gap the sketch's own comment had flagged since v0.4.0
-- `examples/release_check/` renumbered so the number says what a check needs rather than just its position in an ad-hoc sequence: `0n` = nothing at all, `1n` = jumper wires only, `2n` = an external library, module, or board. See `examples/release_check/README.md` for the full table (and CLAUDE.md for the old→new mapping, since this shuffles what several past hardware-verification notes point at)
+- `examples/release_check/` renumbered so the number says what a check needs rather than just its position in an ad-hoc sequence: `0n` = nothing at all, `1n` = jumper wires only, `2n` = an external library, module, or board. See `examples/release_check/README.md` for the full table (and docs/DEVELOPMENT_LOG.md for the old→new mapping, since this shuffles what several past hardware-verification notes point at)
 
 ## [0.4.1] - 2026-08-23
 
