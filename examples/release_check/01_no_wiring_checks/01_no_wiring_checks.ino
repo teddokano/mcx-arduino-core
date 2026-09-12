@@ -90,13 +90,18 @@ void setup() {
   {
 #if defined(FRDM_MCXA153)
     // clock_config.c re-attaches every peripheral here, so mcu.cpp's own
-    // attach calls are overwritten and all of these land on FRO_HF_DIV.
+    // attach calls are overwritten and all of these land on FRO_HF_DIV --
+    // except Serial1 (LPUART2), whose clock is attached lazily by
+    // Serial::_setup_clock() (Serial.cpp's s_pinMap[], kFRO12M_to_LPUART2)
+    // at the constructor's static-init time, not by mcu.cpp or
+    // clock_config.c. clock_config.c never touches LPUART2, so that 12MHz
+    // attach is the one that survives.
     checkClock("core", CLOCK_GetCoreSysClkFreq(), 96000000u);
     checkClock("Wire    (LPI2C0) ", CLOCK_GetLpi2cClkFreq(), 96000000u);
     checkClock("Wire1   (I3C0)   ", CLOCK_GetI3CFClkFreq(), 48000000u);
     checkClock("SPI     (LPSPI1) ", CLOCK_GetLpspiClkFreq(1u), 96000000u);
     checkClock("SPI1    (LPSPI0) ", CLOCK_GetLpspiClkFreq(0u), 96000000u);
-    checkClock("Serial1 (LPUART2)", CLOCK_GetLpuartClkFreq(2u), 96000000u);
+    checkClock("Serial1 (LPUART2)", CLOCK_GetLpuartClkFreq(2u), 12000000u);
 #elif defined(FRDM_MCXN947)
     // The mirror image: clock_config.c touches no peripheral clock at all,
     // so mcu.cpp's attach calls are the only thing that decides these.

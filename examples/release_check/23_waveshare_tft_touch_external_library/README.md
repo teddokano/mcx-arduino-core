@@ -1,4 +1,4 @@
-# 0C: Waveshare_TFT_Touch (external library, real-world SPI-bus-sharing check)
+# 23: Waveshare_TFT_Touch (external library, real-world SPI-bus-sharing check)
 
 No `.ino` here on purpose -- this isn't a self-contained sketch, it's a
 pointer to run an external library's own example against this core.
@@ -16,8 +16,10 @@ loopback-only sketch here can get.
    `github.com/teddokano/Waveshare_TFT_Touch`) into your Arduino
    libraries folder, alongside the LCD + SD card hardware it expects
    (SPI bus shared between the two, separate CS pins).
-2. Open and run the library's own `SDBitmapViewer` example against
-   FRDM-MCXA153 and/or FRDM-MCXN947.
+2. Open and run the library's own `SDBitmapViewerDemo` example against
+   FRDM-MCXA153 and/or FRDM-MCXN947 (the SD card content used for this
+   check is prepared to match `SDBitmapViewerDemo`, not the plainer
+   `SDBitmapViewer` example).
 3. Check:
    - The bitmap renders correctly, with no diagonal streaking/noise
      (that was the CS-forced-to-PCS symptom -- the LCD's CS pin

@@ -1571,7 +1571,7 @@ v0.5.0リリース完了後、`0.6.0-dev`ブランチを作成して次の開発
 | `Wire2` | — | FlexComm3 @ 12MHz |
 | `SPI` | LPSPI1 @ 96MHz | FlexComm1 @ 48MHz |
 | `SPI1` | LPSPI0 @ 96MHz | FlexComm6 @ 48MHz |
-| `Serial1` | LPUART2 @ 96MHz | FlexComm5 @ 12MHz（**`Serial.cpp`側でattach**、実測確認済み） |
+| `Serial1` | LPUART2 @ 12MHz（**`Serial.cpp`側でattach**、実測確認済み。【2026-09-12訂正】当初96MHzと記載していたが誤り——後述参照） | FlexComm5 @ 12MHz（**`Serial.cpp`側でattach**、実測確認済み） |
 
 **記録の誤り2件を訂正**（どちらも実害は無いが、今後の判断を誤らせるもの）:
 1. **CLAUDE.mdの「A153の`clock_config.c`が`FRO_HF_DIV`（48MHz）へ上書き」は誤り——実際は96MHz**。48MHzは実際には呼ばれない`BOARD_BootClockFROHF48M`系の値だった。確定手順: `BOARD_InitBootClocks()`→`BOARD_BootClockFRO96M()`（`CLOCK_SetupFROHFClocking(96000000U)`）、`CLOCK_SetClockDiv(kCLOCK_DivFRO_HF_DIV, 1U)`。**`CLOCK_SetClockDiv(name, value)`は`value - 1`をレジスタに書き、読み出し側は`(field & 0xf) + 1`で割る**ため、`1U`は分周1＝96MHzのまま（この意味論を`fsl_clock.c`の実装で確認してから確定させた）
@@ -2050,6 +2050,10 @@ Windows/Linuxのデバッガ確認用に**サイクル途中でステージン�
 
 **B2**: `LPI2C_MASTER_CLOCK_FREQUENCY`（インスタンス番号を埋め込んだマクロ）を`lpi2c_source_clock(unit_base)`に置換。`CLOCK_GetLPFlexCommClkFreq(2u)`固定は`Wire`(LPI2C2)には正しく`Wire2`(LPI2C3)には誤り、**A156はさらに悪く`LPI2C0`/`1`/`3`の3インスタンスに対して`0`固定**だった（0.7のボードなので同時に直したが、`boards.txt`に無いためコンパイル検証はできていない）。知らないインスタンスは`panic()`——別ペリフェラルのもっともらしい数字を返すのが、この修正が消そうとしている故障そのものなので。
 
+**A153でも同型のクロック監査ミスが再発、実機で確認・修正済み**: `01`をA153で実機実行したところ`Serial1 (LPUART2): 12000000 Hz (expect 96000000) -> FAIL`（他は全項目OK）。`mcu.cpp`にLPUART2のattach記述が無いことを確認して「攻略していない」と結論しかけたが、これは**N947のFlexComm5で一度やった誤り（`mcu.cpp`だけを見て「無い」と判断する）と全く同じ形**だと気づき、`Serial.cpp`側を確認——A153の`s_pinMap[]`にも`MB_TX`/`MB_RX`→`LPUART2`エントリと並んで**Arduino D0/D1→`LPUART2`エントリ自体が`kFRO12M_to_LPUART2`（12MHz）を持ち**、`Serial::_setup_clock()`がコンストラクタ（静的初期化時）で適用している。`Serial`/`Serial1`はグローバルインスタンスなので、`01`のprint時点でこの12MHzは既に確定済み。**`clock_config.c`はLPUART2を一切再アタッチしない**（A153のクロックまとめ表の「`clock_config.c`が全て再アタッチ」という説明はLPUART2には当てはまらない、上表に追記が必要）ため、この12MHzが実際の設定値であり監査の期待値（96MHz）の方が誤りだった。`01`のA153分岐を`checkClock("Serial1 (LPUART2)", ..., 12000000u)`に修正、コメントも「clock_config.cが全て再アタッチする」から「LPUART2は例外——`Serial.cpp`が独自にattachする」という説明に更新。**実機再検証: A153の`01`が`ALL OK`に復帰**——これで両ボードとも監査の期待値が実測と一致した。
+
+**この繰り返しから確定した一般原則**: このコードベースでは「`Serial1`（あるいは他の名前付きグローバルペリフェラルインスタンス）のクロックが`mcu.cpp`に見当たらない」は**常に**「そのペリフェラルのドライバファイル自身（`Serial.cpp`の`s_pinMap[]`等）が構築時に自分でattachしている」を意味し、「本当にattachが漏れている」を意味したことは一度もない（N947 FlexComm5・A153 LPUART2の2件とも）。今後同じ状況に遭遇したら、`mcu.cpp`にattachを追加する前に必ず該当ドライバのコンストラクタ／`_setup_clock()`相当を先に確認すること。
+
 **今日は挙動が変わらないが、それが今やる理由**: FlexComm2と3はどちらもFRO12Mなので`Wire2`のボーレートは同じ値になる。**危険性の実例は既にある**——FlexComm1と6はSPIのクロック修正で12MHz→48MHzに動かされ、2と3は据え置かれた。動かされたのがI2C側だったら、`Wire2`の全ボーレートが実クロックと違う数字から計算され、`LPI2C_MasterSetBaudRate()`には気づく手段がない。**そしてB1のおかげで「no-opである」根拠が机上でなくなった**（`01`がFlexComm2/3の両方を12MHzとassertする）。
 
 ### 0.6.0 実機検証: IDEデバッガとサンプル追加分は完了、**チェックリスト項目7（release_check全グループ）はまだ**
@@ -2063,6 +2067,10 @@ Windows/Linuxのデバッガ確認用に**サイクル途中でステージン�
 **今回0.6.0でコアの共有ファイルに手を入れている**——`i2c.cpp`（B2のLPI2Cインスタンス化、A153のI3C ALT値修正、`I2C::scan()`のstart無視修正等）・`r01lib_spi.cpp`（`cs_manual_control()`のALT値バグ修正）。これらは`Wire`/`Wire1`/`Wire2`/`SPI`/`SPI1`を使う`01`・`05`・`09`・`12`・`21`・`22`に影響し得るが、**今回実機で通したのは`01`のクロック監査部分と`13`のサーボ部分だけ**——`02`〜`05`・`11`・`12`・`21`〜`23`は0.6.0では一度も実機を通していない。
 
 **項目7は未実施のまま**。`main`マージより前に、両ボードで`01`〜`05`（`05`はN947限定）・`11`〜`13`・`21`〜`23`（`21`/`22`は実物のライブラリで、CIスタブではなく）を通すこと。
+
+**進捗（2026-09-12更新）——項目7完了**: **両ボードとも全グループ実機`ALL OK`**。A153: `01`〜`04`・`11`〜`13`・`21`〜`23`（`23`は当初`SDBitmapViewer`で試したが、ユーザーからSDカードの内容が`SDBitmapViewerDemo`向けに用意されていると指摘があり`SDBitmapViewerDemo`に切り替えて確認——`23`のREADMEも古い`0C`表記・`SDBitmapViewer`表記の両方を修正済み）。N947: `01`（A3の際に確認済み）・`02`〜`05`・`11`〜`13`（`13`はmcxRCServo追加時に確認済み）・`21`（`Wire2`バスプローブ経路、`wire2Err=134`は期待どおりのNAK）・`22`（外部LM75系センサー、27.375℃で安定）・`23`（`SDBitmapViewerDemo`）。`22`の書き込み中に一度USB切断でアップロード失敗（`No flash configured at the specified address`）があったが、再接続後の再試行で解消——コード側の問題ではなかった。**これでリリースチェックリスト項目7（`examples/release_check/`の全グループを両ボードで実機通し）が完了**。0.6.0の`main`マージ前提条件がこれで満たされた。
+
+**`23`で一時的にUNO互換性の崩れを疑った件——原因はカード内容とサンプルの不一致、コア側の回帰ではないと確定**: `SDBitmapViewer`（ポータブル版）で画像が出ず、ユーザーから「UNO R3/R4とコンパチが崩れてるということかもしれない」と懸念が出た。両サンプルのソースを読み比べたところ、物理SDカードの`PLAYLIST.JSN`は`SDBitmapViewerDemo`用の入れ子オブジェクト形式（`{"playlist": [...], "saver": [...], "idle_ms": ..., ...}`）だが、`SDBitmapViewer`の`parsePlaylist()`はJSON構造を一切理解せず**ファイル内の全ダブルクォート文字列を順番に拾うだけ**の素朴なパーサーで、キー名（`"playlist"`等）まで`bmpName[]`に積んでしまう。結果`bmpName[0]`が`"playlist"`という文字列になり、`SD.open("playlist")`は当然失敗して意図的な失敗表示（`tft.fillScreen(ST7789_RED)`）に落ちる——コード読解による説明どおり実機でも再現し、**PLAYLIST.JSNを無効化すれば`SDBitmapViewer`でも正常に画像が表示された**ことをユーザーが確認。**これはコアのSPI/SD周りの回帰ではなく、「サンプルが期待するファイル形式」と「カードに置かれている実際の内容」の不一致**——`23`は今後`SDBitmapViewer`ではなく`SDBitmapViewerDemo`を使う方針で確定（上記のREADME修正はこの結論に基づく）。
 
 ### 0.7・0.8の方針（同時に策定、0.8は選択が未確定）
 - **0.7: FRDM-MCXA156の追加**。A153の兄弟で最も安く追加でき、かつ**0.6で書いた移植手順書の初めての実地テスト**になる——手順書が漏らしていた箇所がここで判明し、修正される
