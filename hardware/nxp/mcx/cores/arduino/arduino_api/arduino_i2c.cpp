@@ -14,13 +14,20 @@ TwoWire	Wire1( I3C_SDA, I3C_SCL );
 TwoWire	Wire2( MB_SDA,  MB_SCL );
 #endif
 
-TwoWire::TwoWire( int sda_pin, int scl_pin ) : _sda( sda_pin ), _scl( scl_pin ), i2c( nullptr ){}
+TwoWire::TwoWire( int sda_pin, int scl_pin )
+	: _sda( sda_pin ), _scl( scl_pin ), i2c( nullptr ),
+	  timeout_us( 0 ), reset_on_timeout( false ), timed_out( false ){}
+
+bool TwoWire::on_i3c_pins( void ) const
+{
+	return ( I3C_SDA == _sda ) && ( I3C_SCL == _scl );
+}
 
 void TwoWire::begin( int baud )
 {
 	baudrate	= baud;
 
-	bool	is_i3c	= ( I3C_SDA == _sda ) && ( I3C_SCL == _scl );
+	bool	is_i3c	= on_i3c_pins();
 
 	if ( !i2c )
 	{
@@ -85,7 +92,10 @@ void TwoWire::begin( int baud )
 	if ( is_i3c )
 		static_cast<I3C *>( i2c )->frequency( baudrate, 0, 0 );
 	else
+	{
+		i2c->pin_low_timeout( timeout_us );
 		i2c->frequency( baudrate );
+	}
 
 	i2c->err_callback( nullptr );
 }
@@ -103,9 +113,7 @@ void TwoWire::setClock( uint32_t freq )
 
 	baudrate	= (int)freq;
 
-	bool	is_i3c	= ( I3C_SDA == _sda ) && ( I3C_SCL == _scl );
-
-	if ( is_i3c )
+	if ( on_i3c_pins() )
 		static_cast<I3C *>( i2c )->frequency( baudrate, 0, 0 );
 	else
 		i2c->frequency( baudrate );
@@ -134,7 +142,10 @@ size_t TwoWire::write( const uint8_t *data, size_t length )
 
 uint8_t TwoWire::endTransmission( bool stop )
 {
-	return	i2c->write( targ_addr, data_buf, data_buf_index, stop );
+	status_t	r	= i2c->write( targ_addr, data_buf, data_buf_index, stop );
+
+	check_timeout( r );
+	return	r;
 }
 
 uint8_t	TwoWire::requestFrom( const uint8_t address, const size_t length, bool stop )
@@ -142,7 +153,52 @@ uint8_t	TwoWire::requestFrom( const uint8_t address, const size_t length, bool s
 	data_buf_index	= 0;
 	read_size		= length;
 
-	return	(i2c->read( address, data_buf, length, stop )) ? 0 : length;
+	status_t	r	= i2c->read( address, data_buf, length, stop );
+
+	check_timeout( r );
+	if ( r )
+	{
+		read_size	= 0;
+		return	0;
+	}
+	return	length;
+}
+
+void TwoWire::setWireTimeout( uint32_t timeout, bool reset_with_timeout )
+{
+	timeout_us			= timeout;
+	reset_on_timeout	= reset_with_timeout;
+	timed_out			= false;
+
+	if ( i2c && !on_i3c_pins() )
+		i2c->pin_low_timeout( timeout_us );
+}
+
+bool TwoWire::getWireTimeoutFlag( void )
+{
+	return	timed_out;
+}
+
+void TwoWire::clearWireTimeoutFlag( void )
+{
+	timed_out	= false;
+}
+
+void TwoWire::check_timeout( int status )
+{
+	if ( status != kStatus_LPI2C_PinLowTimeout )
+		return;
+
+	timed_out	= true;
+
+	if ( reset_on_timeout )
+	{
+		//	A fresh I2C object runs LPI2C_MasterInit(), whose software reset
+		//	drops whatever half-finished transfer the module was stuck in.
+		delete i2c;
+		i2c	= nullptr;
+		begin( baudrate );
+	}
 }
 
 int TwoWire::available( void )

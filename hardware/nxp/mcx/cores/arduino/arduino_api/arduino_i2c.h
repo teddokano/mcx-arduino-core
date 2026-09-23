@@ -13,6 +13,10 @@
 class I2C;	// full definition: i2c.h (r01lib), pulled in by whichever
 			// translation unit actually implements TwoWire's methods
 
+/** Same feature macro as ArduinoCore-avr, so libraries that guard their
+ *  setWireTimeout() calls with it pick it up here too. */
+#define	WIRE_HAS_TIMEOUT
+
 /** Arduino-compatible I2C (Wire) class.
  *
  *  Wraps an r01lib I2C (or, when sda_pin/scl_pin are this board's I3C
@@ -86,7 +90,37 @@ public:
 	/** @return next byte from the last requestFrom(), or -1 if none remain */
 	int		read( void );
 
+	/** Abort a transfer instead of hanging when a target holds the bus.
+	 *
+	 *  Same signature and defaults as ArduinoCore-avr. Disabled until
+	 *  called, as on AVR. Can be called before or after begin().
+	 *
+	 *  What is timed is how long SCL or SDA stays low in one stretch (the
+	 *  LPI2C's hardware pin-low timeout), not the whole transaction: a
+	 *  target clock-stretching or holding SDA past the limit trips it; a
+	 *  long transfer that keeps the bus moving does not. The hardware
+	 *  counter caps the limit: ~87ms on FRDM-MCXN947 at any speed, but on
+	 *  FRDM-MCXA153 ~87ms at 100kHz and only ~21.8ms at 400kHz, so even the
+	 *  25ms default is clamped there. Longer values are clamped to the cap.
+	 *
+	 *  No effect on Wire1: that bus runs on the I3C peripheral rather than
+	 *  LPI2C, and is not covered, so getWireTimeoutFlag() stays false there.
+	 *
+	 * @param timeout limit in microseconds, 0 to disable (default 25ms)
+	 * @param reset_with_timeout re-initialize the bus hardware after a timeout
+	 */
+	void	setWireTimeout( uint32_t timeout = 25000, bool reset_with_timeout = false );
+
+	/** @return true if a transfer has timed out since the flag was last cleared */
+	bool	getWireTimeoutFlag( void );
+
+	/** Clear the flag getWireTimeoutFlag() reports. */
+	void	clearWireTimeoutFlag( void );
+
 private:
+	bool	on_i3c_pins( void ) const;
+	void	check_timeout( int status );
+
 	const int	_sda;
 	const int	_scl;
 	I2C			*i2c;
@@ -95,6 +129,9 @@ private:
 	uint8_t		data_buf[ 128 ];
 	size_t		data_buf_index;
 	size_t		read_size;
+	uint32_t	timeout_us;
+	bool		reset_on_timeout;
+	bool		timed_out;
 };
 
 /** Global TwoWire instance on this board's general-purpose I2C pins (I2C_SDA/I2C_SCL). */

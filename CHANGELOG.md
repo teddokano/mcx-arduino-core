@@ -5,6 +5,18 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- `Wire.setWireTimeout()` / `getWireTimeoutFlag()` / `clearWireTimeoutFlag()` and the `WIRE_HAS_TIMEOUT` macro, with the same signature and defaults as ArduinoCore-avr (disabled until called). A target that holds the bus used to hang the sketch forever inside `endTransmission()`/`requestFrom()`; with a timeout set, the transfer now gives up and returns an error. Built on the LPI2C's hardware pin-low timeout, so what is timed is how long SCL or SDA stays low in one stretch, not the whole transaction. The hardware caps the limit: ~87ms on FRDM-MCXN947 at any bus speed, but on FRDM-MCXA153 ~87ms at 100kHz and ~21.8ms at 400kHz, where even the 25ms default gets clamped. Three things were needed beyond switching the counter on, each found on hardware:
+  - This core's own wait for the address to leave the TX FIFO never checked for errors. It was the one loop a stuck bus could still spin in forever, timeout or not
+  - A line held low while no transfer is running latched the LPI2C's bus-busy flag, and only a STOP cleared it. Releasing the line is not a STOP, so every later transfer failed as busy, even after a reset. With a timeout set, the bus-idle timeout (`BUSIDLE`) is now enabled too, so a bus that stays high for a moment counts as free again
+  - After a timeout, the LPI2C finished the byte it was in once the target let go, then went on holding the bus itself, waiting for a command that never came, so every later transfer timed out at once. A STOP is now queued on a timeout, so the transfer ends cleanly whenever the line is released, with or without `reset_with_timeout`
+- The timeout works on the LPI2C buses: `Wire`, and `Wire2` on FRDM-MCXN947. `Wire1` runs on I3C, and `setWireTimeout()` has no effect there. On a timeout `endTransmission()` returns `138` (`kStatus_LPI2C_PinLowTimeout` truncated to `uint8_t`), not AVR's `5`, in line with this core's other non-AVR codes. `Wire` was verified on hardware, both boards, by `examples/Arduino_compatible_API/test_Wire_setWireTimeout`. It needs only two jumper wires: the sketch holds SCL low from a spare pin in the middle of a transfer. `Wire2` runs the same code but has not been exercised on hardware
+
+### Fixed
+- `Wire.available()` after a failed `requestFrom()` (a NAK, for instance) reported the full requested length, so a sketch that checked `available()` rather than `requestFrom()`'s return value went on to `read()` whatever the buffer held from before. It now reports 0, as on AVR
+
 ## [0.6.0] - 2026-09-12
 
 ### Added

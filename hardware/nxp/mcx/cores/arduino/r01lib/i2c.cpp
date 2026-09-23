@@ -88,7 +88,7 @@ static uint32_t lpi2c_source_clock( LPI2C_Type *base )
 #endif	// CPU_MCXC444VLH
 
 
-I2C::I2C( int sda, int scl, bool no_hw ) : Obj( true ), _sda( sda ), _scl( scl ), err_cb( nullptr ), _no_hw( no_hw )
+I2C::I2C( int sda, int scl, bool no_hw ) : Obj( true ), _sda( sda ), _scl( scl ), err_cb( nullptr ), _no_hw( no_hw ), _pin_low_timeout_us( 0 )
 {
 	if ( no_hw )
 		return;
@@ -292,8 +292,61 @@ void I2C::frequency( uint32_t frequency )
 	LPI2C_MasterEnable( unit_base, was_enabled );
 
 	LPI2C_MasterSetBaudRate( unit_base, lpi2c_source_clock( unit_base ), frequency );
+
+	//	PINLOW counts in prescaled cycles, and the baud rate may just have
+	//	picked a different prescaler.
+	apply_pin_low_timeout();
 #endif
 }
+
+#ifndef	CPU_MCXC444VLH
+void I2C::pin_low_timeout( uint32_t timeout_us )
+{
+	if ( _no_hw )
+		return;
+
+	_pin_low_timeout_us	= timeout_us;
+	apply_pin_low_timeout();
+}
+
+void I2C::apply_pin_low_timeout( void )
+{
+	uint32_t	prescale	= ( unit_base->MCFGR1 & LPI2C_MCFGR1_PRESCALE_MASK ) >> LPI2C_MCFGR1_PRESCALE_SHIFT;
+	uint64_t	unit		= ( 256ULL << prescale ) * 1000000ULL;	// functional-clock cycles per count, times 1e6 for us
+	uint32_t	max_count	= LPI2C_MCFGR3_PINLOW_MASK >> LPI2C_MCFGR3_PINLOW_SHIFT;
+	uint32_t	count		= 0;
+
+	if ( _pin_low_timeout_us )
+	{
+		uint64_t	c	= ( (uint64_t)_pin_low_timeout_us * lpi2c_source_clock( unit_base ) + unit - 1 ) / unit;
+		count	= ( c < 1 ) ? 1 : ( c > max_count ) ? max_count : (uint32_t)c;
+	}
+	else if ( !( unit_base->MCFGR3 & LPI2C_MCFGR3_PINLOW_MASK ) )
+		return;		// never enabled: leave the module untouched
+
+	//	TIMECFG=1 watches SDA as well as SCL: a target that lost sync and
+	//	holds SDA low leaves SCL idle-high, so SCL alone would never trip.
+	//
+	//	BUSIDLE goes with it. A line held low when no transfer is running --
+	//	including right after a timeout, while the target still holds it --
+	//	latches the bus-busy flag, and without BUSIDLE only a STOP clears it:
+	//	releasing SCL alone is not a STOP, so every later transfer failed with
+	//	kStatus_LPI2C_Busy, reset or not. With it, both lines staying high for
+	//	BUSIDLE prescaled cycles counts as idle. The maximum is used: at every
+	//	rate it is still longer than one SCL period, and only a bus-wide pause
+	//	this long, not a gap within our own transfer, has any effect.
+	//
+	//	MCFGR1/2/3 are only writable with the master disabled.
+	uint32_t	idle		= count ? ( LPI2C_MCFGR2_BUSIDLE_MASK >> LPI2C_MCFGR2_BUSIDLE_SHIFT ) : 0;
+	bool		was_enabled	= ( unit_base->MCR & LPI2C_MCR_MEN_MASK ) != 0U;
+
+	LPI2C_MasterEnable( unit_base, false );
+	unit_base->MCFGR1	|= LPI2C_MCFGR1_TIMECFG_MASK;
+	unit_base->MCFGR2	= ( unit_base->MCFGR2 & ~LPI2C_MCFGR2_BUSIDLE_MASK ) | LPI2C_MCFGR2_BUSIDLE( idle );
+	unit_base->MCFGR3	= ( unit_base->MCFGR3 & ~LPI2C_MCFGR3_PINLOW_MASK ) | LPI2C_MCFGR3_PINLOW( count );
+	LPI2C_MasterEnable( unit_base, was_enabled );
+}
+#endif
 
 void I2C::pullup( bool enable )
 {
@@ -404,7 +457,35 @@ static status_t stop_with_nak_recovery( LPI2C_Type *unit_base )
 	return r;
 }
 
+/*	End a transfer that a pin-low timeout cut short.
+ *
+ *	LPI2C_MasterCheckAndClearError() flushes the FIFOs on the way out, so once
+ *	the target lets go of the line, the master finishes the byte it was in
+ *	and then stalls -- holding the bus itself, waiting for a command that
+ *	never comes. Seen on hardware as every later transfer timing out at once
+ *	(MSR: master busy, pin-low timeout) long after the target had released
+ *	the bus. A queued STOP, not waited for, lets it finish cleanly whenever
+ *	that happens.
+ */
+static status_t stop_after_timeout( LPI2C_Type *unit_base, status_t r )
+{
+	if ( r == kStatus_LPI2C_PinLowTimeout )
+		unit_base->MTDR	= LPI2C_MTDR_CMD( 2U );		// STOP
+
+	return r;
+}
+
 status_t I2C::write_core( uint8_t address, const uint8_t *dp, int length, bool stop )
+{
+	return stop_after_timeout( unit_base, write_lpi2c( address, dp, length, stop ) );
+}
+
+status_t I2C::read_core( uint8_t address, uint8_t *dp, int length, bool stop )
+{
+	return stop_after_timeout( unit_base, read_lpi2c( address, dp, length, stop ) );
+}
+
+status_t I2C::write_lpi2c( uint8_t address, const uint8_t *dp, int length, bool stop )
 {
 	status_t reVal        = kStatus_Fail;
 	size_t txCount        = 0xFFU;
@@ -414,6 +495,13 @@ status_t I2C::write_core( uint8_t address, const uint8_t *dp, int length, bool s
 		LPI2C_MasterGetFifoCounts( unit_base, NULL, &txCount );
 		while ( txCount )
 		{
+			//	The FIFO never drains while a target holds the bus, so this
+			//	is where a stuck bus would otherwise spin forever.
+			uint32_t	status	= LPI2C_MasterGetStatusFlags( unit_base );
+
+			if ( status & kLPI2C_MasterPinLowTimeoutFlag )
+				return LPI2C_MasterCheckAndClearError( unit_base, status );
+
 			LPI2C_MasterGetFifoCounts( unit_base, NULL, &txCount );
 		}
 
@@ -454,10 +542,10 @@ status_t I2C::write_core( uint8_t address, const uint8_t *dp, int length, bool s
 	return reVal;
 }
 
-status_t I2C::read_core( uint8_t address, uint8_t *dp, int length, bool stop )
+status_t I2C::read_lpi2c( uint8_t address, uint8_t *dp, int length, bool stop )
 {
 	status_t reVal        = kStatus_Fail;
-		
+
 	if ( kStatus_Success == (reVal = LPI2C_MasterRepeatedStart( unit_base, address, kLPI2C_Read )) )
 	{
 		reVal = LPI2C_MasterReceive( unit_base,  (uint8_t *)dp, length );

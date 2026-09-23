@@ -77,6 +77,22 @@ public:
 	 */
 	virtual void		pullup( bool enable );
 
+#ifndef	CPU_MCXC444VLH
+	/** Pin-low timeout: fail a transfer with kStatus_LPI2C_PinLowTimeout
+	 *  when SCL or SDA stays low longer than this, instead of blocking
+	 *  forever on a target that holds the bus.
+	 *
+	 *  Uses LPI2C's own PINLOW counter, whose unit depends on the prescaler
+	 *  the baud rate chose -- so frequency() re-applies it. Rounded up to
+	 *  the counter's resolution and clamped to its range, which is
+	 *  4095 x 256 x prescaler / source clock and so shrinks as the bus gets
+	 *  faster: on FRDM-MCXA153 (96MHz), ~87ms at 100kHz but ~21.8ms at 400kHz.
+	 *
+	 * @param timeout_us timeout in microseconds, 0 to disable
+	 */
+	void				pin_low_timeout( uint32_t timeout_us );
+#endif
+
 	/** Register write (multiple byte data)
 	 *	provideds interface for register write
 	 *	
@@ -284,9 +300,14 @@ private:
 #else
 	lpi2c_master_config_t	masterConfig;
 	LPI2C_Type				*unit_base;
+
+	void					apply_pin_low_timeout( void );
+	status_t				write_lpi2c( uint8_t address, const uint8_t *dp, int length, bool stop );
+	status_t				read_lpi2c( uint8_t address, uint8_t *dp, int length, bool stop );
 #endif
 	err_cb_ptr				err_cb;
 	bool					_no_hw;
+	uint32_t				_pin_low_timeout_us;
 };
 
 #endif // R01LIB_I2C_H
