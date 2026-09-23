@@ -1,4 +1,9 @@
-/** Wire.setWireTimeout() / getWireTimeoutFlag() / clearWireTimeoutFlag() test
+/** Release check 14: Wire.setWireTimeout() -- jumper wires only, so it
+ *  sits in the 1n group (see examples/release_check/README.md for the
+ *  numbering).
+ *
+ *  Mirrors examples/Arduino_compatible_API/test_Wire_setWireTimeout
+ *  exactly -- edit that one, then copy it here.
  *
  *  Wiring (same on FRDM-MCXA153 and FRDM-MCXN947):
  *    D19 (Wire SCL) -- D8
@@ -15,9 +20,6 @@
  *
  *  If the sketch stops printing after a "running:" line, that transfer hung
  *  -- the very thing a timeout is supposed to prevent.
- *
- *  Mirrored as examples/release_check/14_wire_timeout -- copy any change
- *  there too.
  */
 
 #include <Wire.h>

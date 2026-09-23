@@ -229,7 +229,7 @@ v0.4.0の`main`マージ直前、ユーザーから「今回のリリース準�
 6. **全サンプル×両ボードの回帰コンパイルスイープ**（`examples/Arduino_compatible_API`・`Arduino_incompatible_API`・`release_check`配下の全`.ino`）を、上記1〜5の変更後に最終確認として実行し、新規リグレッションがないことを確認する
 7. **`examples/release_check/`を実機で通す（両ボード）**——**コンパイルが通ったことを動作の証拠にしない**。項目6はコンパイルだけで、実行時にしか出ない不具合は一切見ていない（v0.4.0のソース配布移行では114サンプル×2ボードが通ったあと実機初回でハングした）。グループは`examples/release_check/README.md`の表に従い、番号体系は**`0n`=配線も外部部品も不要／`1n`=ジャンパ配線のみ／`2n`=外部ライブラリ・モジュール・ボードが必要**:
    - **`0n`**（`01`〜`05`）: 配線不要。`05`はN947限定
-   - **`1n`**（`11`〜`13`）: ジャンパのみ。`11`のSerial1配線は**ボードで違う**（A153=D0-D1、N947=MikroBus `MB_TX`-`MB_RX`）
+   - **`1n`**（`11`〜`14`）: ジャンパのみ。`11`のSerial1配線は**ボードで違う**（A153=D0-D1、N947=MikroBus `MB_TX`-`MB_RX`）。`14`（`setWireTimeout`）は両ボード共通で`D19`-`D8`＋`D18`-`D7`
    - **`2n`**（`21`〜`23`）: 外部`P3T1755.h`＋MikroBus配線／外部LM75系センサー／`Waveshare_TFT_Touch`の`SDBitmapViewer`。`21`/`22`は**CIスタブではなく実物のライブラリ**を`--library`で指定すること
    - **IDE内蔵デバッガも各プラットフォームで1回**（`gdb-bridge`の起動経路はOSごとに別物——macOS/Linuxは`launch.sh`から`uname -s`で選ぶ別バイナリ＋別の`findLinkServer()`分岐、Windowsは共有exeを直接起動）
 

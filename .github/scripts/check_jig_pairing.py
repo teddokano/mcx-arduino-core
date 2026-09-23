@@ -207,6 +207,11 @@ def sketch_model(board):
     s["13"] = ({"D0", "D2", "D5", "D6"}, {"D1", "D3", "D4", "D7", "D8"},
                {frozenset(p) for p in (("D0", "D1"), ("D2", "D3"),
                                        ("D4", "D5"), ("D6", "D7"))})
+    # D7/D8 hold SDA/SCL low (open-drain), and D8 also takes an interrupt
+    # on SCL's falling edge. Wire1 reads the on-board sensor at the end.
+    s["14"] = (bus(["D7", "D8", "D18", "D19"], wire1),
+               bus(["D7", "D8", "D18", "D19"], wire1),
+               {frozenset(("D19", "D8")), frozenset(("D18", "D7"))})
     s["21"] = (bus(spi1, ["D13"], serial1, wire1, wire2),
                bus(["MB_MISO", "A2"], serial1, wire1, wire2),
                {frozenset(serial1), spi1_lb})
