@@ -85,6 +85,10 @@ public:
 	inline operator bool( void ) { return true; }
 };
 
+/** The class name other cores give Serial/Serial1, for libraries that take
+ *  a `HardwareSerial&` (GPS, modem and similar drivers). */
+typedef	SerialClass	HardwareSerial;
+
 /** Global Serial instance, USB-CDC-bridged (USBTX/USBRX). */
 extern SerialClass	Serial;
 

@@ -13,6 +13,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   - A line held low while no transfer is running latched the LPI2C's bus-busy flag, and only a STOP cleared it. Releasing the line is not a STOP, so every later transfer failed as busy, even after a reset. With a timeout set, the bus-idle timeout (`BUSIDLE`) is now enabled too, so a bus that stays high for a moment counts as free again
   - After a timeout, the LPI2C finished the byte it was in once the target let go, then went on holding the bus itself, waiting for a command that never came, so every later transfer timed out at once. A STOP is now queued on a timeout, so the transfer ends cleanly whenever the line is released, with or without `reset_with_timeout`
 - The timeout works on the LPI2C buses: `Wire`, and `Wire2` on FRDM-MCXN947. `Wire1` runs on I3C, and `setWireTimeout()` has no effect there. On a timeout `endTransmission()` returns `138` (`kStatus_LPI2C_PinLowTimeout` truncated to `uint8_t`), not AVR's `5`, in line with this core's other non-AVR codes. `Wire` was verified on hardware, both boards, by `examples/Arduino_compatible_API/test_Wire_setWireTimeout`. It needs only two jumper wires: the sketch holds SCL low from a spare pin in the middle of a transfer. `Wire2` runs the same code but has not been exercised on hardware
+- AVR-era helpers that sketches and libraries use without including anything, each of which used to be a compile error:
+  - `itoa()`/`utoa()`/`ltoa()`/`ultoa()`. `itoa()`/`utoa()` are newlib's own, which `-std=c++20` had hidden; `ltoa()`/`ultoa()` are new. `int` is 32 bits here, so `itoa(-1, s, 16)` gives `"ffffffff"`, not AVR's `"ffff"`
+  - `dtostrf()`, rounded and padded as on AVR
+  - `word(h, l)` and `makeWord()` (the `word` type was already there), and `_BV()`
+  - `DEFAULT`/`INTERNAL`/`EXTERNAL` and `AR_DEFAULT`/`AR_INTERNAL`/`AR_EXTERNAL` for `analogReference()`, which stays a no-op. Until now a sketch's `analogReference(DEFAULT)` failed to build
+  - `HardwareSerial` as another name for `Serial`'s class, for libraries that take a `HardwareSerial&`
+
+  Checked on hardware by `examples/Arduino_compatible_API/test_avr_compat_helpers`, and by a new section in `examples/release_check/01`
 
 ### Fixed
 - `Wire.available()` after a failed `requestFrom()` (a NAK, for instance) reported the full requested length, so a sketch that checked `available()` rather than `requestFrom()`'s return value went on to `read()` whatever the buffer held from before. It now reports 0, as on AVR

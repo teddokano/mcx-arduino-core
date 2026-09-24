@@ -1,7 +1,8 @@
 /** Release check 01: automatic OK/FAIL checks, no physical wiring needed.
  *
  *  Consolidates (from examples/Arduino_compatible_API/): test_math_constants,
- *  test_arduino_compat_macros, test_MOSI_MISO_SCK_macros,
+ *  test_arduino_compat_macros, test_avr_compat_helpers,
+ *  test_MOSI_MISO_SCK_macros,
  *  test_Print_writeError, test_String, test_String_64bit,
  *  test_Serial_print_time_t, test_millis_micros, test_delayMicroseconds,
  *  test_analog_resolution_and_misc, test_Analog_read_write,
@@ -161,6 +162,27 @@ void setup() {
   word w = 5000;
   boolean flag = true;
   check("byte/word/boolean types", b == 200 && w == 5000 && flag == true);
+
+  // ---- AVR-era helpers (was test_avr_compat_helpers) ----
+  Serial.println("--- AVR-era helpers ---");
+  {
+    char s[40];
+    check("itoa(-123, 10)", strcmp(itoa(-123, s, 10), "-123") == 0);
+    check("itoa(-1, 16) (32-bit int)", strcmp(itoa(-1, s, 16), "ffffffff") == 0);
+    check("utoa(255, 2)", strcmp(utoa(255, s, 2), "11111111") == 0);
+    check("ltoa(-2147483648, 10)", strcmp(ltoa(-2147483647L - 1, s, 10), "-2147483648") == 0);
+    check("ultoa(4294967295, 16)", strcmp(ultoa(4294967295UL, s, 16), "ffffffff") == 0);
+    check("dtostrf(3.14159, 7, 2)", strcmp(dtostrf(3.14159, 7, 2, s), "   3.14") == 0);
+    check("dtostrf(1.999, 1, 2) rounds", strcmp(dtostrf(1.999, 1, 2, s), "2.00") == 0);
+    check("dtostrf(-0.26, -7, 1) left-aligned", strcmp(dtostrf(-0.26, -7, 1, s), "-0.3   ") == 0);
+    check("word(0x12, 0x34)", word(0x12, 0x34) == 0x1234);
+    check("_BV(5)", _BV(5) == 32);
+    analogReference(DEFAULT);
+    analogReference(AR_DEFAULT);
+    check("analogReference(DEFAULT/AR_DEFAULT) accepted", true);
+    HardwareSerial &port = Serial;
+    check("HardwareSerial& refers to Serial", &port == &Serial);
+  }
 
   // ---- MOSI/MISO/SCK bare macros (was test_MOSI_MISO_SCK_macros) ----
   Serial.println("--- MOSI/MISO/SCK macros ---");

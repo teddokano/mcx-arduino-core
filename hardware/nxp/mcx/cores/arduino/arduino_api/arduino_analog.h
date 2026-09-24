@@ -58,6 +58,21 @@ void	analogWriteFrequency( int pin_num, uint32_t frequency );
  */
 void	analogReference( uint8_t mode );
 
+/** @name analogReference() mode names
+ *  Accepted and ignored (see above), so sketches that pass them compile.
+ *  DEFAULT/INTERNAL/EXTERNAL take ArduinoCore-avr's values; AR_DEFAULT/
+ *  AR_INTERNAL/AR_EXTERNAL are the names the UNO R4 and other 32-bit cores
+ *  use instead.
+ */
+///@{
+#define	DEFAULT		1
+#define	INTERNAL	3
+#define	EXTERNAL	0
+#define	AR_DEFAULT	DEFAULT
+#define	AR_INTERNAL	INTERNAL
+#define	AR_EXTERNAL	EXTERNAL
+///@}
+
 /** Change analogRead()'s return value scaling.
  * @param bits result resolution, clamped to 1..16
  */

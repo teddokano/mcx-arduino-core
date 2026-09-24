@@ -33,6 +33,7 @@ surface except where a row below notes a difference. See the main
 | `Serial.setTimeout` / `readBytes` / `readBytesUntil` / `readString` / `readStringUntil` / `parseInt` / `parseFloat` / `find` | ✅ | Polled, `millis()`-based timeout (default 1000ms) |
 | `Serial.find(target, length)` / `findUntil(target, terminator)` | ✅ | Added in v0.2.1 |
 | `Serial.availableForWrite` | ✅ | Added in v0.2.1 — free bytes in the TX ring buffer (max 255) |
+| `HardwareSerial` type name | ✅ | Added in v0.7.0. Another name for `SerialClass`, the class of `Serial`/`Serial1`, for libraries that take a `HardwareSerial&`. It is a `typedef`, so a library that forward-declares `class HardwareSerial;` itself still won't compile |
 | `Serial1` | ✅ A153 / ❌ N947 | Hardware UART on `D0`/`D1`, separate from USB-bridged `Serial`. **Not available on FRDM-MCXN947**: on that board `D0`/`D1`'s only UART-capable peripheral is the same FlexComm instance `Wire` uses for I2C, and a FlexComm can only be one peripheral mode at a time -- `Serial1` and `Wire` can't coexist in one sketch there, so it isn't wired up at all (referencing `Serial1` fails to compile) |
 
 ## Wire (I2C / I3C)
@@ -73,7 +74,7 @@ surface except where a row below notes a difference. See the main
 | `analogRead` | ✅ | LPADC. `A0`-`A3` on A153; `A2`-`A5` on N947 (`A0`/`A1` aren't wired to an ADC channel on that board). 10bit (0-1023) default |
 | `analogWrite` (PWM) | ✅ | FlexPWM0 on A153 / FlexPWM1 on N947, 1kHz period by default (see `analogWriteFrequency` below to change it). **Real PWM only on the dedicated `PWM0`-`PWM5` pins** — no `D0`-`D13` pin has a FlexPWM alternate function on N947, and on A153 only `D3`/`D7` do, on the channels `PWM5`/`PWM4` already use, so there is no classic-Arduino `analogWrite(9, ...)` PWM pin on either board. On any other pin `analogWrite()` falls back to `digitalWrite()` — LOW below the midpoint of the current `analogWriteResolution()`, HIGH at or above it — which is what AVR's core does for a pin with no timer behind it. It does **not** produce PWM there, and does not fail either. Dedicated pins named `PWM0`-`PWM5` on both boards -- on N947, `PWM0`/`PWM1` also collide with the chip's own SDK macros for the FlexPWM peripheral instances themselves, so `io.h` explicitly reclaims those two names (`#undef`) before redefining them as pin numbers |
 | `analogWriteFrequency(pin, hz)` | ✅ | Fails loudly (`panic()`) on a pin that isn't `PWM0`-`PWM5`: a plain GPIO has no period to set, and unlike `analogWrite()` this is not a call a sketch ported from another board makes by accident. Non-standard extension, not part of the official Arduino API — modeled on Teensy's function of the same name (official Arduino never standardized PWM frequency control). Sets a pin's PWM period; the pin's duty is preserved as an absolute pulse width across the change, not as a ratio, so call this *before* `analogWrite()` to set duty at the new rate. `PWM0`-`PWM5` pair up two-to-a-submodule and share the period register within each pair — see `PIN_MAPPING_A153.md`/`PIN_MAPPING_N947.md` |
-| `analogReference` | ✅ | No-op — this board's ADC reference voltage is fixed in hardware |
+| `analogReference` | ✅ | No-op — this board's ADC reference voltage is fixed in hardware. Accepts AVR's `DEFAULT`/`INTERNAL`/`EXTERNAL` and the 32-bit cores' `AR_DEFAULT`/`AR_INTERNAL`/`AR_EXTERNAL` (added in v0.7.0) |
 | `analogReadResolution` / `analogWriteResolution` | ✅ | 1-16 bit; defaults match classic Arduino (10bit read / 8bit write) |
 
 ## Other Digital I/O Helpers
@@ -100,6 +101,8 @@ surface except where a row below notes a difference. See the main
 | API | Status | Notes |
 |-----|--------|-------|
 | Math constants / compat macros | ✅ | `PI`, `min`/`max`, `bitRead`/`bitWrite`, `map`, etc. (UNO R3/R4 compatible) |
+| `word(h, l)` / `makeWord` / `_BV` | ✅ | Added in v0.7.0. `word(...)` is a function-like macro, as on AVR, so `word` still works as a type name |
+| `itoa` / `utoa` / `ltoa` / `ultoa` / `dtostrf` | ✅ | Added in v0.7.0, with avr-libc's signatures. `int` and `long` are both 32 bits here, so negative values in a non-decimal base come out 32 bits wide (`itoa(-1, s, 16)` is `"ffffffff"`, not AVR's `"ffff"`). `dtostrf` rounds, and a negative width left-aligns, as on AVR |
 | `yield` | ✅ | No-op — no cooperative scheduler on this core |
 | Character functions (`isAlpha`, `isDigit`, `isSpace`, etc.) | ✅ | Thin wrappers over `<cctype>` |
 | `ARDUINO` version macro | ✅ | Defined as `10819` via `platform.txt`, for libraries that gate on `#if ARDUINO >= 100` etc. |

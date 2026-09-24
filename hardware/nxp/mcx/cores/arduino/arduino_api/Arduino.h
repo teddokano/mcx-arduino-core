@@ -140,6 +140,14 @@ typedef	uint8_t		byte;
 typedef	uint16_t	word;
 ///@}
 
+/** @param w a 16-bit value @return w (the one-argument form of word()) */
+inline word makeWord( uint16_t w )           { return	w; }
+/** @param h high byte @param l low byte @return (h << 8) | l */
+inline word makeWord( uint8_t h, uint8_t l ) { return	(word)( ( h << 8 ) | l ); }
+/** word(h, l) / word(w), as on AVR: a function-like macro, so the plain
+ *  type name `word` above is left alone and only `word(` is rewritten. */
+#define	word( ... )	makeWord( __VA_ARGS__ )
+
 // min()/max() as templates rather than macros — avoids double-evaluation
 // and doesn't shadow std::min/std::max (matches UNO R4's ArduinoCore-API)
 /** @return the smaller of a and b (return type follows whichever operand's type "wins" via decltype) */
@@ -185,6 +193,8 @@ auto max( const T& a, const L& b ) -> decltype( (b < a) ? b : a )
 #define	bitWrite( value, bit, bitvalue )	( (bitvalue) ? bitSet( (value), (bit) ) : bitClear( (value), (bit) ) )
 /** @param b bit index @return 1UL << b */
 #define	bit( b )		( 1UL << (b) )
+/** avr-libc's name for bit(), still common in AVR-era code. @param b bit index @return 1UL << b */
+#define	_BV( b )		( 1UL << (b) )
 ///@}
 
 // interrupts()/noInterrupts() — direct Cortex-M PRIMASK control, no header
@@ -255,6 +265,29 @@ unsigned long	micros( void );
 // call it defensively (many libraries do, in busy-wait loops) still compile.
 /** No-op on this core -- see explanation above. */
 inline void yield( void ) {}
+
+// avr-libc's number-to-string conversions, which AVR-era sketches and
+// libraries call without including anything. itoa()/utoa() are newlib's own
+// (same behavior as avr-libc's: a minus sign only in base 10), just
+// declared here because -std=c++20 hides them in <stdlib.h>. The rest are
+// in arduino_stdlib.cpp.
+extern "C" {
+/** @param value number @param str output buffer @param base 2..36 @return str */
+char	*itoa( int value, char *str, int base );
+/** @param value number @param str output buffer @param base 2..36 @return str */
+char	*utoa( unsigned value, char *str, int base );
+/** @param value number @param str output buffer @param base 2..36 @return str */
+char	*ltoa( long value, char *str, int base );
+/** @param value number @param str output buffer @param base 2..36 @return str */
+char	*ultoa( unsigned long value, char *str, int base );
+/** Format a double with a fixed number of decimals, rounded, as
+ *  sprintf("%*.*f") would: right-aligned in width characters, or
+ *  left-aligned if width is negative.
+ * @param val value @param width minimum field width @param prec digits after the decimal point
+ * @param str output buffer, large enough for the result @return str
+ */
+char	*dtostrf( double val, signed char width, unsigned char prec, char *str );
+}
 
 // ctype.h wrappers (matches UNO R3/R4's Arduino.h "Characters" category) —
 // thin bool-returning renames of the standard <cctype> functions
