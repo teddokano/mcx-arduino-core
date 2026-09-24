@@ -714,3 +714,50 @@ status_t Serial::read( uint8_t *data, size_t length )
 {
     return LPUART_ReadBlocking( _base, data, length );
 }
+
+// ---------------------------------------------------------------------------
+//  panic() output
+// ---------------------------------------------------------------------------
+
+void Serial::panic_write( const char *s )
+{
+    static Serial *made_here = nullptr;
+    Serial        *port      = nullptr;
+
+    for ( size_t i = 0; i < sizeof(s_pinMap)/sizeof(s_pinMap[0]); i++ )
+        if ( s_pinMap[i].tx_pin == USBTX && s_pinMap[i].rx_pin == USBRX )
+            port = s_instances[ s_pinMap[i].instance ];
+
+    if ( !port )
+    {
+        if ( !made_here )
+            made_here = new Serial( USBTX, USBRX );
+        port = made_here;
+    }
+
+    port->write_polled( s );
+}
+
+void Serial::write_polled( const char *s )
+{
+    if ( !_base )
+        return;
+
+    DisableIRQ( _irqn );
+    LPUART_DisableInterrupts( _base, kLPUART_TxDataRegEmptyInterruptEnable );
+
+    // What the sketch printed just before the panic is still in the ring
+    // buffer, and it's usually what explains the panic
+    while ( _tx_tail != _tx_head )
+    {
+        uint8_t b = _tx_buf[ _tx_tail ];
+        LPUART_WriteBlocking( _base, &b, 1 );
+        _tx_tail = (uint16_t)(( _tx_tail + 1U ) & ( TX_RING_BUF_SIZE - 1U ));
+    }
+
+    if ( !_pins_muxed )
+        apply_pin_mux();
+    _base->CTRL |= LPUART_CTRL_TE_MASK;
+
+    LPUART_WriteBlocking( _base, (const uint8_t *)s, strlen( s ) );
+}

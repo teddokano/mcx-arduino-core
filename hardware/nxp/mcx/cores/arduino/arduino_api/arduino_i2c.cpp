@@ -24,7 +24,27 @@ bool TwoWire::on_i3c_pins( void ) const
 	return ( I3C_SDA == _sda ) && ( I3C_SCL == _scl );
 }
 
-void TwoWire::begin( int baud )
+void TwoWire::begin( void )
+{
+	start( 100000 );
+}
+
+void TwoWire::begin( uint8_t )
+{
+	panic( "Wire: begin(address) makes the board an I2C target (slave), which this core doesn't support yet. For a controller, call begin() with no argument" );
+}
+
+void TwoWire::begin( int address )
+{
+	if ( address >= 0 && address <= 127 )
+		begin( (uint8_t)address );
+	else if ( address < 0 )
+		panic( "Wire: begin() given a negative address" );
+	else
+		start( address );	// the pre-0.7.0 begin(frequency)
+}
+
+void TwoWire::start( int baud )
 {
 	baudrate	= baud;
 
@@ -229,7 +249,7 @@ void TwoWire::check_timeout( int status )
 		//	drops whatever half-finished transfer the module was stuck in.
 		delete i2c;
 		i2c	= nullptr;
-		begin( baudrate );
+		start( baudrate );
 	}
 }
 

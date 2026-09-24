@@ -297,6 +297,22 @@ public:
     void     attach( func_ptr callback, IrqType type = RxIrq );
 
     /**
+     * @brief  Internal: write a message out of the USB serial port
+     *         (USBTX/USBRX) for panic(), without interrupts.
+     *
+     * Uses the port's Serial object if one exists, first sending out what
+     * is still waiting in its TX buffer so earlier output isn't lost, or
+     * makes one at 115200 if none does yet (a panic during static
+     * initialization, before the global one is constructed). Polls the
+     * hardware rather than going through the TX buffer and its interrupt,
+     * so it works from an interrupt handler or with interrupts off, and
+     * whether or not the port was ever begun.
+     *
+     * @param s  NUL-terminated message.
+     */
+    static void panic_write( const char *s );
+
+    /**
      * @brief  Internal: called from the global LPUART IRQ handler.
      *
      * Not intended for direct use by application code.
@@ -316,6 +332,7 @@ private:
     void tx_enqueue( uint8_t b );
     void update_irq_enables( void );
     void reinit( void );
+    void write_polled( const char *s );
 
     // ---- hardware ----
     LPUART_Type    *_base;

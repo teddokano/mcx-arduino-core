@@ -26,6 +26,7 @@ extern "C" {
 #include "mcu.h"
 #include "obj.h"
 #include "io.h"
+#include "Serial.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wprio-ctor-dtor"
@@ -261,9 +262,34 @@ void wait_us( unsigned int microseconds )
 	wait( (double)microseconds * 1e-6 );
 }
 
+/*
+ *  The message goes out of the USB serial port, where the Serial Monitor
+ *  is. PRINTF only reaches it when the SDK debug console owns that port
+ *  (SDK_DEBUGCONSOLE == DEBUGCONSOLE_REDIRECT_TO_SDK, as in a plain r01lib
+ *  project); the Arduino core builds with SDK_DEBUGCONSOLE=0, where
+ *  PRINTF is printf and printf's output goes nowhere, so every panic there
+ *  used to show only the blinking LED. Serial::panic_write() polls the
+ *  UART itself instead. The message is sent again on every round of the
+ *  blink, so a Serial Monitor opened after the panic still gets it.
+ */
+static void panic_message( const char *s )
+{
+#if (defined(SDK_DEBUGCONSOLE) && (SDK_DEBUGCONSOLE == DEBUGCONSOLE_REDIRECT_TO_SDK))
+	PRINTF( "\r\nerror: %s\r\n", s );
+#else
+	Serial::panic_write( "\r\nerror: " );
+	Serial::panic_write( s );
+	Serial::panic_write( "\r\n" );
+#endif
+}
+
 void panic( const char *s )
 {
-	PRINTF( "error: %s", s );
+	// A panic raised while sending the message (it builds a Serial if
+	// none exists yet) must not recurse; it just blinks
+	static bool	in_panic	= false;
+	bool		can_print	= !in_panic;
+	in_panic	= true;
 
 	typedef struct			{ int on; int off; }	single_code_t;
 	static single_code_t	code[]	= { { 1, 1 }, { 1, 1 }, { 1, 3 }, { 3, 1 },  { 3, 1 }, { 3, 3 }, { 1, 1 }, { 1, 1 }, { 1, 7 } };
@@ -276,6 +302,9 @@ void panic( const char *s )
 	
 	while ( true )
 	{
+		if ( can_print )
+			panic_message( s );
+
 		for ( unsigned long i = 0; i < sizeof( code ) / sizeof( single_code_t ); i++ )
 		{
 			leds[ 0 ]	= 0;

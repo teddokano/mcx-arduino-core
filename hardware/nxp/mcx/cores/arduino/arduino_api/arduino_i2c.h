@@ -48,12 +48,31 @@ public:
 	 */
 	TwoWire( int sda_pin, int scl_pin );
 
-	/** Initialize the bus. Lazily creates the underlying I2C or I3C
-	 *  instance (I3C, in I2C_MODE, if sda_pin/scl_pin are this board's
-	 *  I3C_SDA/I3C_SCL) and sets the bus frequency.
-	 * @param baud SCL frequency in Hz (default 100kHz)
+	/** Join the bus as the controller (master), at 100kHz; setClock()
+	 *  changes that. Lazily creates the underlying I2C or I3C instance
+	 *  (I3C, in I2C_MODE, if sda_pin/scl_pin are this board's
+	 *  I3C_SDA/I3C_SCL).
 	 */
-	void	begin( int baud = 100000 );
+	void	begin( void );
+
+	/** Join the bus as a target (slave) at the given address: what
+	 *  begin(address) means in every official core. Not supported yet,
+	 *  so this calls panic() with a message saying so, rather than
+	 *  letting a sketch written for a target run as something else.
+	 * @param address the target's own 7-bit address
+	 */
+	void	begin( uint8_t address );
+
+	/** Same as begin(uint8_t) for 0 to 127.
+	 *
+	 *  Before v0.7.0 this core's only begin() took the SCL frequency here,
+	 *  so a larger value is still taken as one, for sketches written that
+	 *  way; no I2C address is that large. Deprecated: call begin() and
+	 *  then setClock() instead, which works on every core.
+	 * @param address the target's own 7-bit address, or (deprecated) an
+	 *        SCL frequency in Hz
+	 */
+	void	begin( int address );
 
 	/** Deinitialize the bus and free the underlying I2C/I3C instance. */
 	void	end( void );
@@ -168,6 +187,7 @@ public:
 	void	clearWireTimeoutFlag( void );
 
 private:
+	void	start( int baud );
 	bool	on_i3c_pins( void ) const;
 	void	check_timeout( int status );
 
