@@ -233,7 +233,9 @@ v0.4.0の`main`マージ直前、ユーザーから「今回のリリース準�
    - **`2n`**（`21`〜`23`）: 外部`P3T1755.h`＋MikroBus配線／外部LM75系センサー／`Waveshare_TFT_Touch`の`SDBitmapViewer`。`21`/`22`は**CIスタブではなく実物のライブラリ**を`--library`で指定すること
    - **2枚同時接続での書き込みも各プラットフォームで1回**: A153とN947を両方つなぎ、ポートを切り替えて両方に書き込めること。
      `upload.sh`/`upload.bat`はポートのUSBシリアル番号（`{upload.port.properties.serialNumber}`）を
-     LinkServerの`--probe`に渡すので、**Windows/Linuxのポート検出がこの番号を同じ形で返すか**が肝。0.7.0ではmacOSでしか確認していない
+     LinkServerの`--probe`に渡すので、**Windows/Linuxのポート検出がこの番号を同じ形で返すか**が肝。0.7.0ではmacOSでしか確認していない。
+     **デバッグも同じく2枚つないで両ボードで1回ずつ**（IDEのDebugボタンで）。IDEはデバッグ時にポートを渡さないので、
+     gdb-bridgeは`LinkServer probes`の`Device`列のチップ名でプローブを選ぶ。種類の違う2枚は区別できるが、同じ種類の2枚は区別できない（エラーで止まるのが正しい動作）
    - **IDE内蔵デバッガも各プラットフォームで1回**（`gdb-bridge`の起動経路はOSごとに別物——macOS/Linuxは`launch.sh`から`uname -s`で選ぶ別バイナリ＋別の`findLinkServer()`分岐、Windowsは共有exeを直接起動）
 
 この7項目が終わってはじめて「`main`へのマージ」以降の既存のリリース手順に進む: `main`マージ→リリースzip作成→GitHub Release作成→**ステージングブランチ（`staging-<version>`）でのmacOS/Windows/Linux 3プラットフォーム検証**（v0.3.1から採用、「リリース前クロスプラットフォーム検証」節参照）→問題なければ`main`に対して`update_package_index.yml`を手動実行しchecksum確定。**このステージングブランチでの検証は必ず実施する——スキップしてよい状況は無い**。今回（v0.4.0）は新規追加のIDE内蔵デバッガ（`gdb-bridge`）がmacOSでしか実機確認できていないため、ステージング検証時に「インストール→ビルド→アップロード」の従来チェックに加えて「Windows/LinuxでもIDEのDebugボタン→ブレークポイント→ステップ実行を試す」を追加すること

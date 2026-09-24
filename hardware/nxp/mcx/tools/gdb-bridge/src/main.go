@@ -11,7 +11,9 @@
 //
 // Everything but the optional leading DEVICE comes from whichever tool
 // invoked us, and is real OpenOCD command-line syntax we don't implement.
-// Almost all of it is ignored, except two details that matter.
+// Almost all of it is ignored, except two details that matter. (A third
+// thing, which probe to use when several boards are plugged in, comes from
+// LinkServer rather than from the arguments; see probeFor().)
 //
 // First, the board. Both launch paths pass the configured OpenOCD script
 // -- cortex-debug as `-s <dir> -f <script>`, arduino-cli as `-s "<dir>"
@@ -163,6 +165,12 @@ func main() {
 		os.Exit(1)
 	}
 
+	probe, err := probeFor(linkserver, device)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "gdb-bridge:", err)
+		os.Exit(1)
+	}
+
 	lsPort, lsListener, err := reserveFreePort()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "gdb-bridge: could not reserve a local TCP port:", err)
@@ -170,10 +178,15 @@ func main() {
 	}
 	lsListener.Close() // released for LinkServer to bind -- see reserveFreePort's doc comment
 
-	cmd := exec.Command(linkserver, "gdbserver", device,
+	lsArgs := []string{"gdbserver"}
+	if probe != "" {
+		lsArgs = append(lsArgs, "--probe", probe)
+	}
+	lsArgs = append(lsArgs, device,
 		"--gdb-port", strconv.Itoa(lsPort),
 		"--semihost-port", "-1", // this core's I/O goes over Serial, not semihosting
 	)
+	cmd := exec.Command(linkserver, lsArgs...)
 	// LinkServer's gdbserver ends its whole session -- not just the
 	// connection -- the moment its first TCP client disconnects, so
 	// readiness can't be checked by connect-then-close (that disconnect
@@ -224,6 +237,96 @@ func main() {
 	}
 	defer lsConn.Close()
 	relay(os.Stdin, os.Stdout, lsConn)
+}
+
+// probeFor picks the debug probe to hand LinkServer when more than one is
+// connected, since LinkServer then refuses to start without --probe.
+//
+// The upload scripts pick it from the selected port's USB serial number,
+// but that is not available here: Arduino IDE 2 asks arduino-cli for the
+// debug configuration without passing the port at all (vscode-arduino-
+// tools' buildDebugInfoArgs() sends only the FQBN, programmer and sketch),
+// so {debug.port} never expands on that path. What is known is the chip,
+// from the board's DEVICE string, and LinkServer lists the chip each probe
+// is wired to. That tells an FRDM-MCXA153 from an FRDM-MCXN947, not two
+// boards of the same kind; for those, this says so instead of leaving
+// LinkServer's own error, whose advice (pass --probe) no IDE user can take.
+//
+// Returns "" when there is at most one probe, which LinkServer picks by
+// itself.
+func probeFor(linkserver, device string) (string, error) {
+	probes := listProbes(linkserver)
+	if len(probes) < 2 {
+		return "", nil
+	}
+
+	chip := device
+	if i := strings.Index(device, ":"); i >= 0 {
+		chip = device[:i]
+	}
+	var matches []string
+	for _, p := range probes {
+		if p.chip == chip {
+			matches = append(matches, p.serial)
+		}
+	}
+
+	switch len(matches) {
+	case 1:
+		fmt.Fprintf(os.Stderr, "gdb-bridge: %d probes connected; using %s, the one on the %s\n", len(probes), matches[0], chip)
+		return matches[0], nil
+	case 0:
+		return "", fmt.Errorf("%d debug probes are connected, but none of them reports an %s on it. "+
+			"Leave only the board to debug connected", len(probes), chip)
+	default:
+		return "", fmt.Errorf("%d boards with an %s are connected (probes %s), and the debugger cannot tell "+
+			"which one is meant: Arduino IDE does not pass it the selected port. Leave only the board to debug connected",
+			len(matches), chip, strings.Join(matches, ", "))
+	}
+}
+
+type linkProbe struct {
+	serial string
+	chip   string
+}
+
+// listProbes runs `LinkServer probes` and reads each probe's serial number
+// and the chip it reports from the table it prints. The table is fixed-
+// width, so the columns are cut where the header's "Serial", "Device" and
+// "Board" titles start. Output that isn't in that shape gives an empty list,
+// which leaves the choice to LinkServer, as before this existed.
+//
+// LinkServer's output is taken from stdout and stderr together, since which
+// one the table goes to wasn't consistent when checked, and rows are kept
+// once per serial number in case it shows up on both.
+func listProbes(linkserver string) []linkProbe {
+	out, err := exec.Command(linkserver, "probes").CombinedOutput()
+	if err != nil {
+		return nil
+	}
+
+	serialCol, deviceCol, boardCol := -1, -1, -1
+	seen := map[string]bool{}
+	var probes []linkProbe
+	for _, line := range strings.Split(string(out), "\n") {
+		line = strings.TrimRight(line, "\r")
+		s, d, b := strings.Index(line, "Serial"), strings.Index(line, "Device"), strings.Index(line, "Board")
+		if s >= 0 && d > s && b > d {
+			serialCol, deviceCol, boardCol = s, d, b
+			continue
+		}
+		if serialCol < 0 || len(line) <= deviceCol || strings.HasPrefix(strings.TrimSpace(line), "---") {
+			continue
+		}
+		serial := strings.TrimSpace(line[serialCol:deviceCol])
+		chip := strings.TrimSpace(line[deviceCol:min(boardCol, len(line))])
+		if serial == "" || seen[serial] {
+			continue
+		}
+		seen[serial] = true
+		probes = append(probes, linkProbe{serial, chip})
+	}
+	return probes
 }
 
 // watchForReady copies r's lines to echo (so they still surface in whatever

@@ -156,7 +156,11 @@ independent — that is why N947 has no `Serial1` on D0/D1.
   arduino-cli as `--file`). Note that Windows cannot use a `.bat`
   wrapper — the IDE's bundled cortex-debug fails to spawn `.bat` files
   with quoted arguments — which is why boards.txt names the `.exe`
-  directly rather than a script.
+  directly rather than a script. The part of that line before the `:`
+  must be the chip name exactly as `LinkServer probes` prints it in its
+  `Device` column: with several boards plugged in, that is how
+  gdb-bridge picks the probe to debug through. Check it with the new
+  board and another one attached, `arduino-cli debug` on each.
 - **`mcxPinState`**: `ALIAS_NAMES[]` and `KNOWN_INSTANCES` in
   `PinState.cpp`, in the upstream repo *and* the bundled copy. CI checks
   these against `arduino_io.h`, so a mismatch fails fast.
