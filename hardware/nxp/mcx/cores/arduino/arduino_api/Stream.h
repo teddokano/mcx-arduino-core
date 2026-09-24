@@ -36,6 +36,8 @@ public:
 	 * @return number of bytes actually read
 	 */
 	size_t	readBytes( char *buffer, size_t length );
+	/** The same, into a byte buffer, as in ArduinoCore-API */
+	size_t	readBytes( uint8_t *buffer, size_t length ) { return readBytes( (char *)buffer, length ); }
 
 	/** Read up to length bytes, stopping early on timeout or when
 	 *  terminator is read (terminator itself is consumed but not stored).
@@ -45,6 +47,8 @@ public:
 	 * @return number of bytes actually read
 	 */
 	size_t	readBytesUntil( char terminator, char *buffer, size_t length );
+	/** The same, into a byte buffer, as in ArduinoCore-API */
+	size_t	readBytesUntil( char terminator, uint8_t *buffer, size_t length ) { return readBytesUntil( terminator, (char *)buffer, length ); }
 
 	/** Read bytes into a String until timeout (no explicit length limit).
 	 * @return the bytes read (possibly empty, if nothing arrived before timeout)

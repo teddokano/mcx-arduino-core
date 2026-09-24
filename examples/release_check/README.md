@@ -18,7 +18,7 @@ with one setup each:
 
 | # | Sketch | Wiring | Judgment |
 |---|--------|--------|----------|
-| 01 | `01_no_wiring_checks` | none | automatic (reads "ALL OK"/"N FAILED") |
+| 01 | `01_no_wiring_checks` | none (on N947, #11's MB_TX-MB_RX jumper must be off: those pins are `Wire1`'s SDA/SCL there) | automatic (reads "ALL OK"/"N FAILED") |
 | 02 | `02_no_wiring_manual_observe` | none | manual (watch/listen -- scope, LA, multimeter, ears) |
 | 03 | `03_sw2_interrupts` | none (press the on-board SW2 button as prompted) | manual |
 | 04 | `04_mcxpinstate_audit` | none | manual (no `*** CONFLICT ***` / `*** MISMATCH ***` in the tables) |

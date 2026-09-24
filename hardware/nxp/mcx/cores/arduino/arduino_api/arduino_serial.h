@@ -11,6 +11,44 @@
 #include	"Serial.h"
 #include	"Stream.h"
 
+/** @name Frame formats for Serial.begin()'s second argument
+ *
+ *  Same encoding as ArduinoCore-API (the UNO R4, Zephyr and Mbed cores),
+ *  so code that builds a format from the SERIAL_DATA_/SERIAL_PARITY_/
+ *  SERIAL_STOP_BIT_ parts works too. Only formats the LPUART can produce
+ *  are defined: 7 or 8 data bits, no/even/odd parity, 1 or 2 stop bits.
+ *  SERIAL_5N1 and friends, mark/space parity and 1.5 stop bits are left
+ *  out on purpose, so a sketch asking for one fails to build, naming it,
+ *  rather than talking to its device in the wrong format.
+ */
+///@{
+#define	SERIAL_PARITY_EVEN		(0x1ul)
+#define	SERIAL_PARITY_ODD		(0x2ul)
+#define	SERIAL_PARITY_NONE		(0x3ul)
+#define	SERIAL_PARITY_MASK		(0xFul)
+
+#define	SERIAL_STOP_BIT_1		(0x10ul)
+#define	SERIAL_STOP_BIT_2		(0x30ul)
+#define	SERIAL_STOP_BIT_MASK	(0xF0ul)
+
+#define	SERIAL_DATA_7			(0x300ul)
+#define	SERIAL_DATA_8			(0x400ul)
+#define	SERIAL_DATA_MASK		(0xF00ul)
+
+#define	SERIAL_7N1				(SERIAL_STOP_BIT_1 | SERIAL_PARITY_NONE | SERIAL_DATA_7)
+#define	SERIAL_8N1				(SERIAL_STOP_BIT_1 | SERIAL_PARITY_NONE | SERIAL_DATA_8)
+#define	SERIAL_7N2				(SERIAL_STOP_BIT_2 | SERIAL_PARITY_NONE | SERIAL_DATA_7)
+#define	SERIAL_8N2				(SERIAL_STOP_BIT_2 | SERIAL_PARITY_NONE | SERIAL_DATA_8)
+#define	SERIAL_7E1				(SERIAL_STOP_BIT_1 | SERIAL_PARITY_EVEN | SERIAL_DATA_7)
+#define	SERIAL_8E1				(SERIAL_STOP_BIT_1 | SERIAL_PARITY_EVEN | SERIAL_DATA_8)
+#define	SERIAL_7E2				(SERIAL_STOP_BIT_2 | SERIAL_PARITY_EVEN | SERIAL_DATA_7)
+#define	SERIAL_8E2				(SERIAL_STOP_BIT_2 | SERIAL_PARITY_EVEN | SERIAL_DATA_8)
+#define	SERIAL_7O1				(SERIAL_STOP_BIT_1 | SERIAL_PARITY_ODD  | SERIAL_DATA_7)
+#define	SERIAL_8O1				(SERIAL_STOP_BIT_1 | SERIAL_PARITY_ODD  | SERIAL_DATA_8)
+#define	SERIAL_7O2				(SERIAL_STOP_BIT_2 | SERIAL_PARITY_ODD  | SERIAL_DATA_7)
+#define	SERIAL_8O2				(SERIAL_STOP_BIT_2 | SERIAL_PARITY_ODD  | SERIAL_DATA_8)
+///@}
+
 /**
  * @brief Arduino-compatible Serial class for NXP MCX BSP.
  *
@@ -46,9 +84,22 @@ public:
 	 *  arriving faster than the sketch calls read() get silently
 	 *  overwritten in the 1-deep hardware receive register.
 	 *
+	 *  A second begin() without end() in between just changes the
+	 *  settings. begin() without a format goes back to SERIAL_8N1.
+	 *
 	 * @param baud baud rate in bps
+	 * @param config frame format, one of the SERIAL_8N1-style constants
+	 *        above (default SERIAL_8N1). Calls panic() for any other value.
 	 */
-	void	begin( int baud ) { apply_pin_mux(); this->baud( baud ); attach( []{}, RxIrq ); }
+	void	begin( unsigned long baud, uint16_t config = SERIAL_8N1 );
+
+	/** Wait for pending output to go out, then stop the port: received
+	 *  bytes not yet read are dropped, and the TX/RX pins go back to plain
+	 *  GPIO inputs, free for pinMode() or another peripheral. begin()
+	 *  starts it again. After end(), available() is 0 and read() is -1;
+	 *  anything written is discarded.
+	 */
+	void	end( void ) { Serial::end(); }
 
 	// ---- Print/Stream required overrides (hardware primitives only --
 	//      everything else (print/println/find/parseInt/...) is inherited
@@ -70,6 +121,16 @@ public:
 	/** Print::write() override: send a buffer. @param buffer bytes to send @param size buffer length @return size */
 	size_t	write( const uint8_t *buffer, size_t size ) override{ Serial::write( buffer, size ); return size; }
 
+	/** @name write() of an integer sends its low byte
+	 *  As on AVR's HardwareSerial. Without these, `Serial.write(0)` is
+	 *  ambiguous: 0 converts to uint8_t and to a const char* equally well. */
+	///@{
+	size_t	write( unsigned long n ) { return write( (uint8_t)n ); }
+	size_t	write( long n )          { return write( (uint8_t)n ); }
+	size_t	write( unsigned int n )  { return write( (uint8_t)n ); }
+	size_t	write( int n )           { return write( (uint8_t)n ); }
+	///@}
+
 	/** Stream::available() override. @return number of bytes waiting to be read */
 	int		available( void ) override { return (int)Serial::available(); }
 	/** Stream::read() override. @return next byte, or -1 if none available */
@@ -77,7 +138,7 @@ public:
 	/** Stream::peek() override. @return next byte without consuming it, or -1 if none available */
 	int		peek( void ) override      { return Serial::peek(); }
 	/** Block until all outgoing data has actually finished transmitting. */
-	void	flush( void )              { Serial::flush(); }
+	void	flush( void ) override     { Serial::flush(); }
 	/** Stream::availableForWrite() override. @return free space in the TX buffer, in bytes */
 	int		availableForWrite( void ) override { return (int)Serial::availableForWrite(); }
 

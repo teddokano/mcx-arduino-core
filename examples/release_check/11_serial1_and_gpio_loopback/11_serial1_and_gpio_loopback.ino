@@ -4,7 +4,8 @@
  *
  *  Consolidates (from examples/Arduino_compatible_API/):
  *  test_Print_Stream_hierarchy, test_Serial1, test_Serial_BIN_and_write,
- *  test_Serial_stream_helpers, test_String_plus_numeric_Printable_fastGPIO.
+ *  test_Serial_stream_helpers, test_String_plus_numeric_Printable_fastGPIO,
+ *  test_Serial1_format_end_serialEvent.
  *
  *  Wiring needed: a Serial1 TX/RX loopback jumper -- on FRDM-MCXA153
  *  that's D0-D1, but on FRDM-MCXN947 Serial1 lives on the MikroBus
@@ -16,6 +17,37 @@
 #include <Arduino.h>
 #include <cstring>
 #include "fsl_gpio.h"
+#include "pin_registry.h"
+
+#if defined(FRDM_MCXN947)
+const int S1_TX = MB_TX;
+const int S1_RX = MB_RX;
+#else
+const int S1_TX = D1;
+const int S1_RX = D0;
+#endif
+
+// Serial1 frame formats, checked bit by bit off the RX pin at 1200 baud
+// (was test_Serial1_format_end_serialEvent -- see that sketch for how)
+const unsigned long FMT_BAUD = 1200;
+const unsigned long FMT_BIT_US = 1000000UL / FMT_BAUD;
+
+struct Format {
+  const char *name;
+  uint16_t config;
+  int bits;    // data bits
+  int parity;  // 0 none, 1 even, 2 odd
+  int stop;
+};
+
+const Format formats[] = {
+  { "7N1", SERIAL_7N1, 7, 0, 1 }, { "8N1", SERIAL_8N1, 8, 0, 1 },
+  { "7N2", SERIAL_7N2, 7, 0, 2 }, { "8N2", SERIAL_8N2, 8, 0, 2 },
+  { "7E1", SERIAL_7E1, 7, 1, 1 }, { "8E1", SERIAL_8E1, 8, 1, 1 },
+  { "7E2", SERIAL_7E2, 7, 1, 2 }, { "8E2", SERIAL_8E2, 8, 1, 2 },
+  { "7O1", SERIAL_7O1, 7, 2, 1 }, { "8O1", SERIAL_8O1, 8, 2, 1 },
+  { "7O2", SERIAL_7O2, 7, 2, 2 }, { "8O2", SERIAL_8O2, 8, 2, 2 },
+};
 
 int failCount = 0;
 
@@ -68,6 +100,105 @@ private:
 
 bool findViaStreamRef(Stream &s, const char *target) {
   return s.find(target);
+}
+
+GPIO_Type *rxPort;
+uint32_t rxMask;
+
+bool rxLevel() {
+  return (*portInputRegister(rxPort) & rxMask) != 0;
+}
+
+uint8_t muxOf(int pin) {
+  return pin_registry_read_pcr(arduino_pin_by_number[pin]).mux;
+}
+
+void drainSerial1() {
+  delay(30);
+  while (Serial1.available())
+    Serial1.read();
+}
+
+// Send b and a second byte straight after it, and sample the RX pin in the
+// middle of each bit cell of b's frame, plus the second byte's start bit
+bool captureFrame(uint8_t b, uint8_t *cells, int n) {
+  drainSerial1();
+  uint8_t pair[2] = { b, 0xFF };
+  Serial1.write(pair, 2);
+
+  unsigned long t = micros();
+  while (rxLevel())
+    if (micros() - t > 50000)
+      return false;
+
+  unsigned long t0 = micros();
+  for (int i = 0; i < n; i++) {
+    unsigned long at = t0 + FMT_BIT_US * i + FMT_BIT_US / 2;
+    while ((long)(micros() - at) < 0)
+      ;
+    cells[i] = rxLevel();
+  }
+  return true;
+}
+
+bool checkFormat(const Format &f, uint8_t b) {
+  uint8_t cells[16];
+  int len = 1 + f.bits + (f.parity ? 1 : 0) + f.stop;
+  if (!captureFrame(b, cells, len + 1))
+    return false;
+
+  bool ok = (cells[0] == 0);
+  int ones = 0;
+  for (int i = 0; i < f.bits; i++) {
+    int bit = (b >> i) & 1;
+    ones += bit;
+    ok = ok && (cells[1 + i] == bit);
+  }
+  int pos = 1 + f.bits;
+  if (f.parity) {
+    int want = (f.parity == 1) ? (ones & 1) : !(ones & 1);
+    ok = ok && (cells[pos] == want);
+    pos++;
+  }
+  for (int i = 0; i < f.stop; i++)
+    ok = ok && (cells[pos + i] == 1);
+  ok = ok && (cells[len] == 0);  // next start bit, right after the stop bits
+
+  delay(len * 2 * FMT_BIT_US / 1000 + 10);
+  int r = Serial1.read();
+  uint8_t mask = (f.bits == 7) ? 0x7F : 0xFF;
+  ok = ok && (r == (b & mask));
+
+  if (!ok) {
+    Serial.print("  cells:");
+    for (int i = 0; i <= len; i++)
+      Serial.print(cells[i]);
+    Serial.print("  read back: 0x");
+    Serial.println(r, HEX);
+  }
+  return ok;
+}
+
+// A hand-made 8E1 frame on the TX pin, taken back as a GPIO
+void bitbang8E1(uint8_t b, int parityBit) {
+  uint16_t frame = 0;  // bit 0 first on the wire
+  frame |= (uint16_t)b << 1;
+  frame |= (uint16_t)(parityBit & 1) << 9;
+  frame |= 1u << 10;
+  unsigned long t0 = micros();
+  for (int i = 0; i < 11; i++) {
+    digitalWrite(S1_TX, (frame >> i) & 1);
+    while (micros() - t0 < FMT_BIT_US * (i + 1))
+      ;
+  }
+}
+
+int eventCalls = 0;  // serialEvent1() runs from main(), not an interrupt
+int eventByte = -1;
+
+void serialEvent1() {
+  eventCalls++;
+  eventByte = Serial1.read();
 }
 
 void setup() {
@@ -316,14 +447,126 @@ void setup() {
     check("portInputRegister reflects own pin LOW", self_read_low == false);
   }
 
-  Serial.println();
-  if (failCount == 0)
-    Serial.println("ALL OK");
-  else {
-    Serial.print(failCount);
-    Serial.println(" FAILED");
+  // ---- Serial.begin(baud, config), end(), write(0)
+  //      (was test_Serial1_format_end_serialEvent; serialEvent1() is
+  //      checked in loop(), since it's called after each loop()) ----
+  Serial.println("--- Serial1 frame formats, read off the RX pin at 1200 baud ---");
+  {
+    // The GPIO input register follows the pin while the UART owns it only
+    // once pinMode() has set it up as a GPIO; without this it reads 0
+    pinMode(S1_RX, INPUT);
+    rxPort = digitalPinToPort(S1_RX);
+    rxMask = digitalPinToBitMask(S1_RX);
+
+    for (const Format &f : formats) {
+      Serial1.begin(FMT_BAUD, f.config);
+      uint8_t evenOnes = (f.bits == 7) ? 0x53 : 0xD2;  // 4 ones each
+      uint8_t oddOnes = (f.bits == 7) ? 0x43 : 0xD3;   // 3 and 5
+      String label = String("SERIAL_") + f.name + " frame and loopback";
+      check(label.c_str(), checkFormat(f, evenOnes) && checkFormat(f, oddOnes));
+    }
+
+    Serial1.begin(9600, SERIAL_7N1);
+    drainSerial1();
+    Serial1.write((uint8_t)0xD3);
+    delay(10);
+    check("7N1 reads 0xD3 back as 0x53 (bit 7 is not sent)", Serial1.read() == 0x53);
+
+    Serial1.begin(FMT_BAUD, SERIAL_8E1);
+    drainSerial1();
+    pinMode(S1_TX, OUTPUT);
+    digitalWrite(S1_TX, HIGH);
+    delay(5);
+    bitbang8E1(0x53, 1);  // 4 ones: even parity is 0, so 1 is wrong
+    bitbang8E1(0x43, 1);  // 3 ones: 1 is right
+    delay(10);
+    int n = Serial1.available();
+    int r = Serial1.read();
+    check("hand-made 8E1 frames: bad parity dropped, good one kept", n == 1 && r == 0x43);
+
+    Serial1.begin(FMT_BAUD, SERIAL_7O2);
+    Serial1.begin(FMT_BAUD);
+    check("SERIAL_8N1 again after begin(baud)", checkFormat(formats[1], 0xD3));
   }
+
+  Serial.println("--- Serial1.end() ---");
+  {
+    Serial1.begin(9600);
+    uint8_t alt = muxOf(S1_TX);
+    check("begin() puts TX/RX on the UART", alt != 0 && muxOf(S1_RX) != 0);
+
+    drainSerial1();
+    Serial1.print("abc");
+    Serial1.flush();
+    delay(5);
+    check("3 bytes waiting before end()", Serial1.available() == 3);
+
+    Serial1.end();
+    check("end() hands TX/RX back as GPIO", muxOf(S1_TX) == 0 && muxOf(S1_RX) == 0);
+    check("end() drops what wasn't read", Serial1.available() == 0);
+
+    unsigned long t = millis();
+    int r = Serial1.read();
+    int p = Serial1.peek();
+    check("read()/peek() after end() are -1 at once", r == -1 && p == -1 && millis() - t < 10);
+
+    // ~0.4s at 9600 baud with no pin, but must not stall on a full TX buffer
+    t = millis();
+    for (int i = 0; i < 400; i++)
+      Serial1.write('z');
+    Serial1.flush();
+    check("writing after end() doesn't hang", millis() - t < 1000);
+
+    pinMode(S1_TX, OUTPUT);
+    pinMode(S1_RX, INPUT);
+    digitalWrite(S1_TX, LOW);
+    delay(1);
+    bool low = digitalRead(S1_RX) == LOW;
+    digitalWrite(S1_TX, HIGH);
+    delay(1);
+    bool high = digitalRead(S1_RX) == HIGH;
+    check("TX/RX work as GPIO after end()", low && high);
+
+    Serial1.begin(9600);
+    delay(5);
+    check("nothing written while ended arrives", Serial1.available() == 0);
+    Serial1.print("ok");
+    delay(10);
+    char buf[3] = { 0 };
+    buf[0] = (char)Serial1.read();
+    buf[1] = (char)Serial1.read();
+    check("begin() after end() works again", strcmp(buf, "ok") == 0 && muxOf(S1_TX) == alt);
+
+    drainSerial1();
+    size_t w = Serial1.write(0);  // used to be ambiguous: uint8_t or const char*?
+    delay(10);
+    check("Serial1.write(0) sends one 0x00", w == 1 && Serial1.read() == 0x00);
+  }
+
+  Serial.println("--- serialEvent1(), called after loop() ---");
+  drainSerial1();
 }
 
+int loops = 0;
+
 void loop() {
+  loops++;
+  if (loops == 1) {
+    check("serialEvent1() not called with nothing to read", eventCalls == 0);
+    Serial1.write('E');
+    Serial1.flush();
+    delay(5);
+  } else if (loops == 2) {
+    check("serialEvent1() called once the byte is there", eventCalls == 1 && eventByte == 'E');
+  } else if (loops == 3) {
+    check("serialEvent1() not called again once it's read", eventCalls == 1);
+
+    Serial.println();
+    if (failCount == 0)
+      Serial.println("ALL OK");
+    else {
+      Serial.print(failCount);
+      Serial.println(" FAILED");
+    }
+  }
 }

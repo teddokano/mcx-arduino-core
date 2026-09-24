@@ -13,12 +13,26 @@ extern "C" {
 
 int		main() __attribute__((weak));
 
+//	Defined by the sketch or not at all; when not, the weak reference
+//	stays null and the check below costs one comparison per loop().
+void	serialEvent( void ) __attribute__((weak));
+void	serialEvent1( void ) __attribute__((weak));
+
 int main( void )
 {
 	setup();
 
 	while ( true )
+	{
 		loop();
+
+		//	Same as AVR's serialEventRun(): once per loop(), and only while
+		//	there is something to read
+		if ( serialEvent && Serial.available() )
+			serialEvent();
+		if ( serialEvent1 && Serial1.available() )
+			serialEvent1();
+	}
 
 	return 0;
 }

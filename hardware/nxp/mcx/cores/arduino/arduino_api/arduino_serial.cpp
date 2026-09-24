@@ -20,6 +20,35 @@ constexpr int	SERIAL1_RX_PIN	= MB_RX;
 
 #include	"arduino_io.h"
 
+void SerialClass::begin( unsigned long baud, uint16_t config )
+{
+	int		bits	= 0;
+	Parity	parity	= Forced0;	// anything format() refuses
+	int		stop	= 0;
+
+	switch ( config & SERIAL_DATA_MASK )
+	{
+		case SERIAL_DATA_7:	bits	= 7;	break;
+		case SERIAL_DATA_8:	bits	= 8;	break;
+	}
+	switch ( config & SERIAL_PARITY_MASK )
+	{
+		case SERIAL_PARITY_NONE:	parity	= None;	break;
+		case SERIAL_PARITY_EVEN:	parity	= Even;	break;
+		case SERIAL_PARITY_ODD:		parity	= Odd;	break;
+	}
+	switch ( config & SERIAL_STOP_BIT_MASK )
+	{
+		case SERIAL_STOP_BIT_1:	stop	= 1;	break;
+		case SERIAL_STOP_BIT_2:	stop	= 2;	break;
+	}
+
+	apply_pin_mux();
+	format( bits, parity, stop );	// panic()s on anything left unset above
+	this->baud( (int)baud );
+	attach( []{}, RxIrq );
+}
+
 // Global Arduino-compatible Serial instance(s) (no heap, directly inherit
 // r01lib Serial)
 // Serial:  USB-bridged UART (USBTX/USBRX, not part of the pin-renumbering table)

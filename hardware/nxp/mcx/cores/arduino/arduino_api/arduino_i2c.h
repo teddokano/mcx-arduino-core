@@ -10,12 +10,18 @@
 #include <cstdint>
 #include <cstddef>
 
+#include "Stream.h"
+
 class I2C;	// full definition: i2c.h (r01lib), pulled in by whichever
 			// translation unit actually implements TwoWire's methods
 
 /** Same feature macro as ArduinoCore-avr, so libraries that guard their
  *  setWireTimeout() calls with it pick it up here too. */
 #define	WIRE_HAS_TIMEOUT
+
+/** Size of each of TwoWire's two buffers: the most one endTransmission()
+ *  sends or one requestFrom() reads. AVR's is 32. */
+#define	WIRE_BUFFER_SIZE	128
 
 /** Arduino-compatible I2C (Wire) class.
  *
@@ -25,8 +31,14 @@ class I2C;	// full definition: i2c.h (r01lib), pulled in by whichever
  *  endTransmission() buffer up a transaction locally, sent as one write()
  *  to the target on endTransmission(); requestFrom()/available()/read()
  *  work the same way for reads.
+ *
+ *  A Stream, as in every official core: print() goes into the transaction
+ *  being built, and the parse/find/readBytes helpers read what the last
+ *  requestFrom() got, so a Wire can be handed to code that takes a Print&
+ *  or Stream&. The outgoing and incoming data have separate buffers, so
+ *  starting a transaction does not throw away bytes not yet read.
  */
-class TwoWire
+class TwoWire : public Stream
 {
 public:
 	/** Construct on the given SDA/SCL pin pair. Hardware isn't touched
@@ -58,16 +70,31 @@ public:
 
 	/** Queue one byte into the current transaction's write buffer.
 	 * @param data byte to queue
-	 * @return number of bytes now queued
+	 * @return 1, or 0 if the buffer (WIRE_BUFFER_SIZE bytes) is already
+	 *         full, in which case the byte is dropped and getWriteError()
+	 *         is set, as on AVR
 	 */
-	size_t	write( uint8_t data );
+	size_t	write( uint8_t data ) override;
 
 	/** Queue multiple bytes into the current transaction's write buffer.
 	 * @param data bytes to queue
 	 * @param length number of bytes
-	 * @return number of bytes now queued
+	 * @return number of bytes queued, less than length if the buffer filled up
 	 */
-	size_t	write( const uint8_t *data, size_t length );
+	size_t	write( const uint8_t *data, size_t length ) override;
+
+	/** @name write() of an integer queues its low byte
+	 *  As on AVR. Without these, `Wire.write(0)` is ambiguous: 0 converts
+	 *  to uint8_t and to a const char* equally well. */
+	///@{
+	size_t	write( unsigned long n ) { return write( (uint8_t)n ); }
+	size_t	write( long n )          { return write( (uint8_t)n ); }
+	size_t	write( unsigned int n )  { return write( (uint8_t)n ); }
+	size_t	write( int n )           { return write( (uint8_t)n ); }
+	///@}
+
+	/** Print's write( const char * ) and friends, hidden by the overloads above */
+	using	Print::write;
 
 	/** Send the buffered write transaction started by beginTransmission().
 	 * @param stop generate a STOP condition (true, default) or a repeated start (false)
@@ -78,17 +105,40 @@ public:
 	/** Read a block of data from a target address into an internal buffer,
 	 *  to be consumed with available()/read().
 	 * @param address target 7-bit I2C address
-	 * @param length number of bytes to read
+	 * @param length number of bytes to read, at most WIRE_BUFFER_SIZE (more
+	 *        is cut down to that, as AVR cuts down to its 32)
 	 * @param stop generate a STOP condition (true, default) or a repeated start (false)
 	 * @return number of bytes actually read (0 on failure)
 	 */
 	uint8_t	requestFrom( const uint8_t address, const size_t length, bool stop = true );
 
+	/** Write a register address, then read from the target after a repeated
+	 *  start: AVR's five-argument form, for the usual "select a register,
+	 *  read it" transfer in one call.
+	 * @param address target 7-bit I2C address
+	 * @param quantity number of bytes to read
+	 * @param iaddress register address, sent most significant byte first
+	 * @param isize number of bytes of iaddress to send, 0 to 3 (more is cut
+	 *        down to 3, as on AVR). 0 sends nothing and just reads
+	 * @param sendStop generate a STOP condition after the read (true) or not
+	 * @return number of bytes actually read; 0 if the target did not
+	 *         acknowledge the register address, where AVR goes on to
+	 *         attempt the read anyway
+	 */
+	uint8_t	requestFrom( uint8_t address, uint8_t quantity, uint32_t iaddress, uint8_t isize, uint8_t sendStop );
+
 	/** @return number of bytes remaining to be read() from the last requestFrom() */
-	int		available( void );
+	int		available( void ) override;
 
 	/** @return next byte from the last requestFrom(), or -1 if none remain */
-	int		read( void );
+	int		read( void ) override;
+
+	/** @return next byte from the last requestFrom() without consuming it, or -1 if none remain */
+	int		peek( void ) override;
+
+	/** Does nothing: every transfer has finished by the time
+	 *  endTransmission() or requestFrom() returns. The same as AVR's. */
+	void	flush( void ) override {}
 
 	/** Abort a transfer instead of hanging when a target holds the bus.
 	 *
@@ -126,9 +176,11 @@ private:
 	I2C			*i2c;
 	uint8_t		targ_addr;
 	int			baudrate;
-	uint8_t		data_buf[ 128 ];
-	size_t		data_buf_index;
-	size_t		read_size;
+	uint8_t		tx_buf[ WIRE_BUFFER_SIZE ];
+	size_t		tx_size;
+	uint8_t		rx_buf[ WIRE_BUFFER_SIZE ];
+	size_t		rx_index;
+	size_t		rx_size;
 	uint32_t	timeout_us;
 	bool		reset_on_timeout;
 	bool		timed_out;

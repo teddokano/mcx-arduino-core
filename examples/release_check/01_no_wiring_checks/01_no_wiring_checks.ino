@@ -6,8 +6,12 @@
  *  test_Print_writeError, test_String, test_String_64bit,
  *  test_Serial_print_time_t, test_millis_micros, test_delayMicroseconds,
  *  test_analog_resolution_and_misc, test_Analog_read_write,
- *  test_Wire1_onboard_sensor_raw, and (FRDM-MCXN947 only)
- *  test_Wire2_MikroBus_N947.
+ *  test_Wire1_onboard_sensor_raw, test_Wire_Stream_requestFrom5, and
+ *  (FRDM-MCXN947 only) test_Wire2_MikroBus_N947.
+ *
+ *  On FRDM-MCXN947, take release_check/11's Serial1 loopback jumper
+ *  (MB_TX-MB_RX) off before running this: those are Wire1's SDA/SCL pins
+ *  there, and the jumper shorts them together.
  *
  *  Every check here is fully automatic -- read the final "ALL OK"/
  *  "N FAILED" line, no jumpers, no scope, no button presses. Sketches
@@ -63,6 +67,27 @@ void checkClock(const char *label, uint32_t actual, uint32_t expect) {
   Serial.println(actual == expect ? "OK" : "FAIL");
   if (actual != expect)
     failCount++;
+}
+
+// For the Wire-as-a-Stream section: the classic three-step register read
+// on Wire1's on-board sensor, to compare the new forms against.
+// 0xFFFFFFFF if the read failed, which no 16-bit register value can be.
+uint32_t readSensorReg16(uint8_t reg) {
+  Wire1.beginTransmission(0x48);
+  Wire1.write(reg);
+  if (Wire1.endTransmission(false) != 0 || Wire1.requestFrom((uint8_t)0x48, (size_t)2) != 2)
+    return 0xFFFFFFFF;
+  uint16_t v = Wire1.read() << 8;
+  return v | Wire1.read();
+}
+
+size_t printThroughPrint(Print &p, const char *s) {
+  return p.print(s);
+}
+
+int readThroughStream(Stream &s) {
+  s.flush();
+  return s.read();
 }
 
 void setup() {
@@ -391,6 +416,85 @@ void setup() {
       Serial.print("temp = "); Serial.print(celsius, 3); Serial.println(" degC");
       check("on-board sensor reads a sane temperature", celsius > -20.0f && celsius < 60.0f);
     }
+  }
+
+  // ---- Wire as a Stream, five-argument requestFrom(), buffer limits
+  //      (was test_Wire_Stream_requestFrom5). Writes the sensor's T_LOW
+  //      register, which nothing else depends on, and puts it back ----
+  Serial.println("--- Wire as a Stream / five-argument requestFrom() ---");
+  {
+    const uint8_t SENSOR = 0x48;
+    const uint8_t T_LOW = 0x02;
+
+    uint32_t saved = readSensorReg16(T_LOW);
+    check("T_LOW readable", saved <= 0xFFFF);
+
+    Wire1.beginTransmission(SENSOR);
+    Wire1.write(T_LOW);
+    size_t n = printThroughPrint(Wire1, "P");  // 0x50
+    Wire1.write(0);                            // used to be ambiguous once Wire is a Print
+    uint8_t err = Wire1.endTransmission();
+    check("Wire print() through a Print& queues 1 byte", n == 1);
+    check("T_LOW written with print() + write(0)", err == 0 && readSensorReg16(T_LOW) == 0x5000);
+
+    uint8_t got = Wire1.requestFrom(SENSOR, (uint8_t)2, (uint32_t)T_LOW, (uint8_t)1, (uint8_t)true);
+    int msb = Wire1.read();
+    int lsb = Wire1.read();
+    check("requestFrom(addr, 2, T_LOW, 1, true) reads the register", got == 2 && msb == 0x50 && lsb == 0x00);
+
+    got = Wire1.requestFrom(0x48, 2, 0x02, 1, 1);
+    check("the same with int arguments", got == 2 && Wire1.read() == 0x50);
+
+    got = Wire1.requestFrom(SENSOR, (uint8_t)2, (uint32_t)0, (uint8_t)0, (uint8_t)true);
+    check("isize 0 just reads (pointer still at T_LOW)", got == 2 && Wire1.read() == 0x50);
+
+    got = Wire1.requestFrom((uint8_t)0x2A, (uint8_t)2, (uint32_t)T_LOW, (uint8_t)1, (uint8_t)true);
+    check("absent target: returns 0, available() 0", got == 0 && Wire1.available() == 0);
+
+    Wire1.requestFrom(SENSOR, (uint8_t)2, (uint32_t)T_LOW, (uint8_t)1, (uint8_t)true);
+    int a = Wire1.available();
+    int p1 = Wire1.peek();
+    int p2 = Wire1.peek();
+    check("Wire peek() doesn't consume", a == 2 && p1 == 0x50 && p2 == 0x50 && Wire1.available() == 2);
+    check("Wire read() through a Stream&", readThroughStream(Wire1) == 0x50);
+
+    Wire1.beginTransmission(SENSOR);
+    Wire1.write(T_LOW);
+    check("beginTransmission() keeps unread bytes", Wire1.available() == 1 && Wire1.read() == 0x00);
+    Wire1.endTransmission();
+    check("Wire peek()/read() -1 once empty", Wire1.peek() == -1 && Wire1.read() == -1);
+
+    uint8_t buf[2] = { 0 };
+    Wire1.requestFrom(SENSOR, (uint8_t)2, (uint32_t)T_LOW, (uint8_t)1, (uint8_t)true);
+    size_t rb = Wire1.readBytes(buf, 2);
+    check("Wire readBytes()", rb == 2 && buf[0] == 0x50 && buf[1] == 0x00);
+
+    Wire1.clearWriteError();
+    Wire1.beginTransmission(SENSOR);
+    size_t total = 0;
+    for (int i = 0; i < WIRE_BUFFER_SIZE; i++)
+      total += Wire1.write((uint8_t)i);
+    size_t over = Wire1.write((uint8_t)0);
+    uint8_t more[4] = { 1, 2, 3, 4 };
+    size_t overBulk = Wire1.write(more, 4);
+    check("Wire write() returns 1 per byte up to WIRE_BUFFER_SIZE", total == WIRE_BUFFER_SIZE);
+    check("Wire write() past the end returns 0 and sets the write error",
+          over == 0 && overBulk == 0 && Wire1.getWriteError() != 0);
+    Wire1.clearWriteError();
+    Wire1.beginTransmission(SENSOR);  // never sent: throw the 128 bytes away
+
+    got = Wire1.requestFrom(SENSOR, (size_t)200);
+    check("requestFrom(200) is cut down to WIRE_BUFFER_SIZE",
+          got == WIRE_BUFFER_SIZE && Wire1.available() == WIRE_BUFFER_SIZE);
+    while (Wire1.available())
+      Wire1.read();
+
+    Wire1.beginTransmission(SENSOR);
+    Wire1.write(T_LOW);
+    Wire1.write((uint8_t)(saved >> 8));
+    Wire1.write((uint8_t)saved);
+    Wire1.endTransmission();
+    check("T_LOW restored", readSensorReg16(T_LOW) == saved);
   }
 
 #if defined(FRDM_MCXN947)

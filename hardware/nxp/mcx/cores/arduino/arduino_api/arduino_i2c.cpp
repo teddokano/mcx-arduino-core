@@ -16,6 +16,7 @@ TwoWire	Wire2( MB_SDA,  MB_SCL );
 
 TwoWire::TwoWire( int sda_pin, int scl_pin )
 	: _sda( sda_pin ), _scl( scl_pin ), i2c( nullptr ),
+	  tx_size( 0 ), rx_index( 0 ), rx_size( 0 ),
 	  timeout_us( 0 ), reset_on_timeout( false ), timed_out( false ){}
 
 bool TwoWire::on_i3c_pins( void ) const
@@ -121,28 +122,36 @@ void TwoWire::setClock( uint32_t freq )
 
 void TwoWire::beginTransmission( const uint8_t address )
 {
-	targ_addr		= address;
-	data_buf_index	= 0;
+	targ_addr	= address;
+	tx_size		= 0;
 }
 
 size_t TwoWire::write( uint8_t data )
 {
-	data_buf[ data_buf_index++ ]	= data;
+	if ( tx_size >= sizeof( tx_buf ) )
+	{
+		setWriteError();
+		return	0;
+	}
 
-	return	data_buf_index;
+	tx_buf[ tx_size++ ]	= data;
+
+	return	1;
 }
 
 size_t TwoWire::write( const uint8_t *data, size_t length )
 {
-    memcpy( &data_buf[ data_buf_index ], data, length );
-	data_buf_index += length;
+	size_t	n	= 0;
 
-	return	data_buf_index;
+	while ( n < length && write( data[ n ] ) )
+		n++;
+
+	return	n;
 }
 
 uint8_t TwoWire::endTransmission( bool stop )
 {
-	status_t	r	= i2c->write( targ_addr, data_buf, data_buf_index, stop );
+	status_t	r	= i2c->write( targ_addr, tx_buf, tx_size, stop );
 
 	check_timeout( r );
 	return	r;
@@ -150,18 +159,41 @@ uint8_t TwoWire::endTransmission( bool stop )
 
 uint8_t	TwoWire::requestFrom( const uint8_t address, const size_t length, bool stop )
 {
-	data_buf_index	= 0;
-	read_size		= length;
+	size_t	n	= ( length < sizeof( rx_buf ) ) ? length : sizeof( rx_buf );
 
-	status_t	r	= i2c->read( address, data_buf, length, stop );
+	rx_index	= 0;
+	rx_size		= 0;
+
+	status_t	r	= i2c->read( address, rx_buf, n, stop );
 
 	check_timeout( r );
 	if ( r )
-	{
-		read_size	= 0;
 		return	0;
+
+	rx_size	= n;
+	return	n;
+}
+
+uint8_t	TwoWire::requestFrom( uint8_t address, uint8_t quantity, uint32_t iaddress, uint8_t isize, uint8_t sendStop )
+{
+	if ( isize > 0 )
+	{
+		if ( isize > 3 )
+			isize	= 3;
+
+		beginTransmission( address );
+		while ( isize-- > 0 )
+			write( (uint8_t)( iaddress >> ( isize * 8 ) ) );
+
+		if ( endTransmission( false ) )
+		{
+			rx_index	= 0;
+			rx_size		= 0;
+			return	0;
+		}
 	}
-	return	length;
+
+	return	requestFrom( address, (size_t)quantity, (bool)sendStop );
 }
 
 void TwoWire::setWireTimeout( uint32_t timeout, bool reset_with_timeout )
@@ -203,12 +235,19 @@ void TwoWire::check_timeout( int status )
 
 int TwoWire::available( void )
 {
-	return (int)(read_size - data_buf_index);
+	return (int)( rx_size - rx_index );
 }
 
 int TwoWire::read( void )
 {
-	if ( data_buf_index >= read_size )
+	if ( rx_index >= rx_size )
 		return -1;
-	return	data_buf[ data_buf_index++ ];
+	return	rx_buf[ rx_index++ ];
+}
+
+int TwoWire::peek( void )
+{
+	if ( rx_index >= rx_size )
+		return -1;
+	return	rx_buf[ rx_index ];
 }

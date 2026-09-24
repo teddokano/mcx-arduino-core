@@ -78,6 +78,19 @@ public:
         TxIrq = 1,  /**< Transmit data register empty (TX buffer drained). */
     };
 
+    /**
+     * @brief Parity selector passed to format(). Same names as Mbed's
+     *        SerialBase::Parity; the LPUART has no forced parity, so
+     *        Forced1/Forced0 are accepted by the type but not by format().
+     */
+    enum Parity {
+        None = 0,
+        Odd,
+        Even,
+        Forced1,
+        Forced0,
+    };
+
     /** Size of the software receive ring buffer (bytes). */
     static constexpr size_t RX_RING_BUF_SIZE = 64U;
     /** Size of the software transmit ring buffer (bytes). */
@@ -131,6 +144,34 @@ public:
      * @param baudrate  New baud rate in bps.
      */
     void     baud( int baudrate );
+
+    /**
+     * @brief  Set the frame format. Same signature as Mbed's.
+     *
+     * Re-initialises the peripheral the same way baud() does. Received
+     * bytes that fail the parity check are dropped, as AVR's core drops
+     * them. With 7 data bits, read bytes have bit 7 cleared.
+     *
+     * Calls `panic()` for a format the LPUART can't produce: other than 7
+     * or 8 data bits, forced parity, or other than 1 or 2 stop bits.
+     *
+     * @param bits       Data bits, 7 or 8 (default 8).
+     * @param parity     `None` (default), `Odd` or `Even`.
+     * @param stop_bits  Stop bits, 1 (default) or 2.
+     */
+    void     format( int bits = 8, Parity parity = None, int stop_bits = 1 );
+
+    /**
+     * @brief  Stop the port and hand its pins back.
+     *
+     * Waits for pending output to go out, stops the receiver, drops any
+     * received bytes not yet read, and returns the TX/RX pins to plain
+     * GPIO inputs. The transmitter is left running, so a write after
+     * end() goes nowhere instead of filling the TX buffer and blocking.
+     * apply_pin_mux() and baud() bring the port back. This is what
+     * Arduino's Serial.end() does.
+     */
+    void     end( void );
 
     /**
      * @brief  Write a single character to the TX ring buffer.
@@ -274,6 +315,7 @@ private:
     // ---- common helpers ----
     void tx_enqueue( uint8_t b );
     void update_irq_enables( void );
+    void reinit( void );
 
     // ---- hardware ----
     LPUART_Type    *_base;
@@ -286,6 +328,9 @@ private:
     IRQn_Type       _irqn;
     int             _tx_pin;
     int             _rx_pin;
+    uint8_t         _rx_data_mask;	// 0x7F with 7 data bits: bit 7 is then the
+    				// parity bit, or undefined
+    bool            _pins_muxed;	// apply_pin_mux() ran and end() hasn't since
 
     // ---- target-specific clock / reset fields ----
 #if defined( CPU_MCXA153VLH ) || defined( CPU_MCXA156VLL )

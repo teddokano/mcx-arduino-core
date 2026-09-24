@@ -62,6 +62,11 @@ public:
 	/** @return free space in the underlying write buffer, in bytes (0 = no headroom / not applicable) */
 	virtual int		availableForWrite( void ) { return 0; }
 
+	/** Wait until everything written so far has gone out. Does nothing
+	 *  unless the derived class overrides it -- as in ArduinoCore-API's
+	 *  Print, so code holding only a Print& or Stream& can still call it. */
+	virtual void	flush( void ) {}
+
 	/** @return the error code last passed to setWriteError() (protected, called by derived classes), or 0 if none */
 	int		getWriteError( void ) { return _write_error; }
 	/** Reset the write-error state to 0. */

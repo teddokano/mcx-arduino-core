@@ -353,7 +353,7 @@ Serial::Serial( int tx, int rx, int baud )
     : Obj( true ),
       _base( nullptr ), _config{}, _clk_freq( 0U ),
       _instance( 0U ), _tx_mux( kPORT_MuxAlt2 ), _rx_mux( kPORT_MuxAlt2 ), _irqn( NotAvail_IRQn ),
-      _tx_pin( tx ), _rx_pin( rx ),
+      _tx_pin( tx ), _rx_pin( rx ), _rx_data_mask( 0xFF ), _pins_muxed( false ),
       _rx_head( 0 ), _rx_tail( 0 ),
       _tx_head( 0 ), _tx_tail( 0 ),
       _rx_callback( nullptr ), _tx_callback( nullptr )
@@ -421,6 +421,8 @@ void Serial::apply_pin_mux( void )
 
     uint8_t pins[ 2 ] = { (uint8_t)_tx_pin, (uint8_t)_rx_pin };
     pin_registry_note( this, "Serial", pins, 2, (uint8_t)_tx_mux );
+
+    _pins_muxed = true;
 }
 
 Serial::~Serial()
@@ -496,10 +498,18 @@ void Serial::_irq_handler( void )
     // ---- RX: one byte received ----
     if ( flags & kLPUART_RxDataRegFullFlag )
     {
-        uint8_t  byte = LPUART_ReadByte( _base );
+        // DATA read whole rather than through LPUART_ReadByte(), for its
+        // per-byte parity-error bit.
+        uint32_t data = _base->DATA;
+        uint8_t  byte = (uint8_t)( data & _rx_data_mask );
         uint16_t next = (uint16_t)(( _rx_head + 1U ) & ( RX_RING_BUF_SIZE - 1U ));
 
-        if ( next != _rx_tail )   // drop silently if ring buffer full
+        if ( flags & kLPUART_ParityErrorFlag )
+            LPUART_ClearStatusFlags( _base, kLPUART_ParityErrorFlag );
+
+        // Drop silently if the ring buffer is full, and drop a byte that
+        // failed the parity check, as AVR's core does
+        if ( next != _rx_tail && !( data & LPUART_DATA_PARITYE_MASK ) )
         {
             _rx_buf[ _rx_head ] = byte;
             _rx_head = next;
@@ -533,11 +543,67 @@ void Serial::_irq_handler( void )
 
 void Serial::baud( int baudrate )
 {
+    _config.baudRate_Bps = (uint32_t)baudrate;
+    reinit();
+}
+
+void Serial::format( int bits, Parity parity, int stop_bits )
+{
+    if ( ( bits != 7 && bits != 8 ) ||
+         ( parity != None && parity != Odd && parity != Even ) ||
+         ( stop_bits != 1 && stop_bits != 2 ) )
+    {
+        panic( "Serial: unsupported format (7 or 8 data bits, no forced parity, 1 or 2 stop bits)" );
+        return;
+    }
+
+    _config.dataBitsCount = ( bits == 7 ) ? kLPUART_SevenDataBits : kLPUART_EightDataBits;
+    _config.parityMode    = ( parity == Odd )  ? kLPUART_ParityOdd
+                          : ( parity == Even ) ? kLPUART_ParityEven
+                          :                      kLPUART_ParityDisabled;
+    _config.stopBitCount  = ( stop_bits == 2 ) ? kLPUART_TwoStopBit : kLPUART_OneStopBit;
+    _rx_data_mask         = ( bits == 7 ) ? 0x7F : 0xFF;
+
+    reinit();
+}
+
+void Serial::end( void )
+{
+    if ( !_base )
+        return;
+
+    flush();
+
+    // Receiver and its interrupt off first, so nothing lands in the ring
+    // buffer behind the reset below. baud() turns both back on.
+    LPUART_DisableInterrupts( _base, kLPUART_RxDataRegFullInterruptEnable );
+    _base->CTRL &= ~LPUART_CTRL_RE_MASK;
+    while ( LPUART_GetStatusFlags( _base ) & kLPUART_RxDataRegFullFlag )
+        (void)_base->DATA;
+    _rx_tail = _rx_head;
+
+    // Only pins this port actually took. On FRDM-MCXN947, Serial1 shares
+    // its pins with Wire1, so ending a Serial1 that was never begun must
+    // not pull them out from under Wire1.
+    if ( !_pins_muxed )
+        return;
+
+    DigitalInOut tx_io( (uint8_t)_tx_pin );
+    DigitalInOut rx_io( (uint8_t)_rx_pin );
+
+    tx_io.pin_mux( 0 );
+    rx_io.pin_mux( 0 );
+
+    pin_registry_forget( this );
+    _pins_muxed = false;
+}
+
+void Serial::reinit( void )
+{
     LPUART_DisableInterrupts( _base,
         kLPUART_RxDataRegFullInterruptEnable |
         kLPUART_TxDataRegEmptyInterruptEnable );
 
-    _config.baudRate_Bps = (uint32_t)baudrate;
     LPUART_Deinit( _base );
     LPUART_Init( _base, &_config, _clk_freq );
 
