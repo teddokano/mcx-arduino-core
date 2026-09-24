@@ -17,8 +17,8 @@ namespace {
 /*
  *  snprintf()/printf() have no format specifier for arbitrary radixes (no
  *  %b for binary, and nothing at all for bases other than 8/10/16) --
- *  matches the identical helper in arduino_serial.cpp (duplicated rather
- *  than shared across the two translation units, same as dtoa() below).
+ *  matches the identical helper in Print.cpp (duplicated rather than
+ *  shared across the two translation units).
  */
 void _utoa_radix( unsigned long long value, int base, char *buf, size_t bufsize )
 {
@@ -45,41 +45,23 @@ void _utoa_radix( unsigned long long value, int base, char *buf, size_t bufsize 
 	buf[ j ]	= '\0';
 }
 
-// Integer-arithmetic double -> decimal string, same technique as
-// SerialClass::_print_double() -- nano.specs' snprintf() doesn't support
-// %f/%e/%g, so this can't just be sprintf("%f", ...).
-void dtoa( double val, unsigned char decimalPlaces, char *out, size_t outsize )
-{
-	char	*p		= out;
-	char	*end	= out + outsize - 1;
-
-	if ( val < 0.0 && p < end )
-	{
-		*p++	= '-';
-		val		= -val;
-	}
-
-	long	integer	= (long)val;
-	double	frac	= val - integer;
-
-	int	n	= snprintf( p, (size_t)(end - p), "%ld", integer );
-	p	+= ( n > 0 ) ? n : 0;
-
-	if ( decimalPlaces > 0 && p < end )
-		*p++	= '.';
-
-	for ( unsigned char i = 0; i < decimalPlaces && p < end; i++ )
-	{
-		frac	*= 10;
-		int	d	= (int)frac;
-		*p++	= (char)( '0' + d );
-		frac	-= d;
-	}
-
-	*p	= '\0';
-}
-
 }	// namespace
+
+// Rounded, as ArduinoCore-avr/ArduinoCore-API's String(double) is: they
+// build it on dtostrf(), and so does this, through the same %f
+// (platform.txt links the full float printf with -u _printf_float). Sized
+// by a first snprintf() pass, so no value is ever cut short. One deliberate
+// difference: they pass dtostrf() a width of decimalPlaces + 2, which pads
+// String(5.0, 0) to " 5". This gives "5".
+void String::_from_double( double value, unsigned char decimalPlaces )
+{
+	int	len	= snprintf( nullptr, 0, "%.*f", (int)decimalPlaces, value );
+	if ( len < 0 )
+		len	= 0;
+
+	_alloc_copy( nullptr, (unsigned int)len );
+	snprintf( _buf, (size_t)len + 1, "%.*f", (int)decimalPlaces, value );
+}
 
 void String::_init( void )
 {
@@ -237,17 +219,13 @@ String::String( unsigned long long value, unsigned char base )
 String::String( float value, unsigned char decimalPlaces )
 {
 	_init();
-	char	buf[ 48 ];
-	dtoa( (double)value, decimalPlaces, buf, sizeof(buf) );
-	_alloc_copy( buf, (unsigned int)strlen( buf ) );
+	_from_double( (double)value, decimalPlaces );
 }
 
 String::String( double value, unsigned char decimalPlaces )
 {
 	_init();
-	char	buf[ 48 ];
-	dtoa( value, decimalPlaces, buf, sizeof(buf) );
-	_alloc_copy( buf, (unsigned int)strlen( buf ) );
+	_from_double( value, decimalPlaces );
 }
 
 String::~String()

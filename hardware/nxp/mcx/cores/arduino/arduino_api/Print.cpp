@@ -6,6 +6,7 @@
 
 #include	"Print.h"
 
+#include	<cmath>
 #include	<cstdio>
 #include	<cstring>
 
@@ -197,17 +198,37 @@ size_t Print::println( const Printable &p )               { size_t n = print(p);
 
 // ---- helpers ----
 
+// Written to give the same output as ArduinoCore-avr/ArduinoCore-API's
+// printFloat(), not copied from it: rounded to `digits` places by adding
+// half of the last place before truncating, no decimal point when digits is
+// 0, and "nan"/"inf"/"ovf" where the integer part won't fit 32 bits.
 size_t Print::_print_double( double val, int digits )
 {
+	if ( std::isnan( val ) )
+		return	print( "nan" );
+	if ( std::isinf( val ) )
+		return	print( "inf" );
+	if ( val > 4294967040.0 || val < -4294967040.0 )
+		return	print( "ovf" );
+
+	if ( digits < 0 )
+		digits	= 0;
+
 	size_t	bytes	= 0;
 
 	if ( val < 0.0 ) { bytes += write( '-' ); val = -val; }
 
-	long	integer	= (long)val;
-	double	frac	= val - integer;
-	char	buf[ 32 ];
-	snprintf( buf, sizeof(buf), "%ld.", integer );
-	bytes	+= print( buf );
+	double	rounding	= 0.5;
+	for ( int i = 0; i < digits; i++ )
+		rounding	/= 10.0;
+	val	+= rounding;
+
+	unsigned long	integer	= (unsigned long)val;
+	double			frac	= val - (double)integer;
+	bytes	+= print( integer );
+
+	if ( digits > 0 )
+		bytes	+= write( '.' );
 
 	for ( int i = 0; i < digits; i++ )
 	{

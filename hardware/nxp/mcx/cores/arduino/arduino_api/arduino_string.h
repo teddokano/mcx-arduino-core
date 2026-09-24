@@ -191,6 +191,7 @@ private:
 
 	void	_init( void );
 	bool	_alloc_copy( const char *src, unsigned int len );
+	void	_from_double( double value, unsigned char decimalPlaces );
 };
 
 /** @name Free operator+ overloads

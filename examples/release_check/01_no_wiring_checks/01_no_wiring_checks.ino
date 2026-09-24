@@ -203,6 +203,10 @@ void setup() {
     flaky.fail = false;
     flaky.print("x");
     check("getWriteError() == 0 after successful write", flaky.getWriteError() == 0);
+    // print(double) rounds (was test_print_float_rounding): "10.00" is 5
+    // bytes where truncating gave "9.99", and "2" is 1 where it gave "1."
+    check("print(9.9999) rounds up to \"10.00\"", flaky.print(9.9999) == 5);
+    check("print(1.999, 0) is \"2\", no decimal point", flaky.print(1.999, 0) == 1);
   }
 
   // ---- String (was test_String) ----
@@ -215,6 +219,7 @@ void setup() {
 
     String num = String(42) + " / " + String(3.14, 2);
     check("numeric concat", num == "42 / 3.14");
+    check("String(1.999) rounds to \"2.00\" (was test_print_float_rounding)", String(1.999) == "2.00");
 
     check("length", c.length() == 13);
     check("charAt", c.charAt(0) == 'H');

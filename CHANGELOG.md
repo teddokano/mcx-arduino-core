@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   Checked on hardware by `examples/Arduino_compatible_API/test_avr_compat_helpers`, and by a new section in `examples/release_check/01`
 
 ### Fixed
+- `Serial.print(double)` (any `Print`) and `String(double)` cut digits off instead of rounding, so `Serial.print(1.999)` printed `1.99` where other Arduino cores print `2.00`, and a sensor reading of 21.996 showed as `21.99`. Both round now. `print()` also matches other cores in the edge cases: no trailing `.` when asked for 0 decimals (it printed `2.` for `print(1.999, 0)`), `nan`/`inf`, and `ovf` past 32 bits. Before, anything past `long` came out as garbage (`5e9` and `INFINITY` printed `2147483647.//`), and `NAN` printed `0.00`. `String(double)` is built on `%f`, as theirs is on `dtostrf()`, so it prints large values in full (it gave `2147483647./` for `1e10`), but without the leading space their `String(5.0, 0)` gets. The old code's comment said newlib-nano's `printf` could not do `%f`, but `platform.txt` links it with `-u _printf_float`. Checked on both boards by `examples/Arduino_compatible_API/test_print_float_rounding`, which fails against the old code
 - `Wire.available()` after a failed `requestFrom()` (a NAK, for instance) reported the full requested length, so a sketch that checked `available()` rather than `requestFrom()`'s return value went on to `read()` whatever the buffer held from before. It now reports 0, as on AVR
 
 ## [0.6.0] - 2026-09-12
