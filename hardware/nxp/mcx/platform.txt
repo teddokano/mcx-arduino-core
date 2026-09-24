@@ -65,8 +65,11 @@ recipe.size.regex.data=^(?:\.data|\.bss)\s+([0-9]+).*
 # Upload
 tools.linkserver.upload.params.verbose=
 tools.linkserver.upload.params.quiet=
-tools.linkserver.upload.pattern={runtime.platform.path}/tools/upload.sh "{build.path}/{build.project_name}.elf" "{build.linkserver_target}"
-tools.linkserver.upload.pattern.windows={runtime.platform.path}/tools/upload.bat "{build.path}/{build.project_name}.elf" "{build.linkserver_target}"
+# The selected port's USB serial number is the probe's own serial number
+# as LinkServer lists it, so it picks the board to flash when more than one
+# is plugged in. vid lets the scripts ignore a port that isn't an NXP probe.
+tools.linkserver.upload.pattern={runtime.platform.path}/tools/upload.sh "{build.path}/{build.project_name}.elf" "{build.linkserver_target}" "{upload.port.properties.serialNumber}" "{upload.port.properties.vid}"
+tools.linkserver.upload.pattern.windows={runtime.platform.path}/tools/upload.bat "{build.path}/{build.project_name}.elf" "{build.linkserver_target}" "{upload.port.properties.serialNumber}" "{upload.port.properties.vid}"
 
 upload.tool=linkserver
 upload.tool.default=linkserver

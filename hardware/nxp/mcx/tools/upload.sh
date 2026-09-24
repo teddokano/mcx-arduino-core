@@ -1,6 +1,24 @@
 #!/bin/sh
 ELF="$1"
 LINKSERVER_TARGET="$2"
+PORT_SERIAL="$3"
+PORT_VID="$4"
+
+# The selected port's USB serial number, which for an NXP probe (MCU-Link,
+# VID 0x1FC9) is the probe serial LinkServer wants. Without it, LinkServer
+# refuses to flash while more than one board is plugged in. Left out for
+# any other port, and when no port was selected (the placeholder then
+# arrives unexpanded, still in braces), so one board keeps working as
+# before.
+PROBE_ARGS=""
+case "$PORT_SERIAL" in
+    ""|"{"*) ;;
+    *)
+        case "$PORT_VID" in
+            0x1FC9|0x1fc9) PROBE_ARGS="--probe $PORT_SERIAL" ;;
+        esac
+        ;;
+esac
 
 # LinkServerを探す（macOS）
 LINKSERVER=""
@@ -40,5 +58,19 @@ if [ -z "$LINKSERVER" ] || [ ! -x "$LINKSERVER" ]; then
 fi
 
 echo "Using: $LINKSERVER"
+if [ -n "$PROBE_ARGS" ]; then
+    echo "Probe: $PORT_SERIAL"
+fi
 
-"$LINKSERVER" flash "$LINKSERVER_TARGET" load "$ELF"
+# PROBE_ARGS unquoted on purpose: empty must vanish, not become "".
+"$LINKSERVER" flash $PROBE_ARGS "$LINKSERVER_TARGET" load "$ELF"
+STATUS=$?
+
+# LinkServer's own message asks for --probe, which an IDE user can't pass.
+if [ $STATUS -ne 0 ] && [ -z "$PROBE_ARGS" ]; then
+    echo "============================================"
+    echo "If more than one board is connected, select the port of the board"
+    echo "to upload to (Arduino IDE: Tools > Port; arduino-cli: -p)."
+    echo "============================================"
+fi
+exit $STATUS
