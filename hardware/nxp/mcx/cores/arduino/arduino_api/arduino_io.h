@@ -418,6 +418,14 @@ enum ArduinoPinNum {
 #define	PIN_SPI_MISO	ARD_MISO
 #define	PIN_SPI_SCK		ARD_SCK
 
+/** The bare SDA/SCL every official core has (AVR's and UNO R4's
+ *  pins_arduino.h), for libraries that pinMode() them directly. Constants
+ *  rather than macros, as there, so a struct field or enum member of the
+ *  same name elsewhere is left alone. SS lives in arduino_spi.h.
+ */
+static const uint8_t	SDA	= PIN_WIRE_SDA;
+static const uint8_t	SCL	= PIN_WIRE_SCL;
+
 /** Total digital pins (D0-D13, D18, D19 -- D14-D17 are simply never
  *  defined, same "gap" as this board's other examples). Same on both
  *  boards: ArduinoPinNum is a single shared enum, not per-board.
