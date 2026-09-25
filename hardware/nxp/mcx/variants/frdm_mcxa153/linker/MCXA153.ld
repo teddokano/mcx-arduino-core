@@ -1,17 +1,24 @@
 /* MCXA153 Linker Script for Arduino Core */
 /* Based on MCUXpresso generated linker script */
 
+/* The last 16K of the 128K flash is the EEPROM library's storage (two
+   8K sectors, used in turn), kept out of PROGRAM_FLASH so no sketch can
+   grow into it. Uploads only erase the sectors the program occupies, so
+   what is stored there survives them. */
 MEMORY {
-  PROGRAM_FLASH (rx) : ORIGIN = 0x0, LENGTH = 0x20000 /* 128K */
+  PROGRAM_FLASH (rx) : ORIGIN = 0x0, LENGTH = 0x1C000 /* 112K */
+  EEPROM_FLASH (r)   : ORIGIN = 0x1C000, LENGTH = 0x4000 /* 16K */
   SRAM (rwx)         : ORIGIN = 0x20000000, LENGTH = 0x6000 /* 24K */
   SRAMX0 (rwx)       : ORIGIN = 0x4000000, LENGTH = 0x2000 /* 8K */
   SRAMX1 (rwx)       : ORIGIN = 0x4002000, LENGTH = 0x1000 /* 4K */
 }
 
 __base_PROGRAM_FLASH = 0x0;
-__top_PROGRAM_FLASH  = 0x0 + 0x20000;
+__top_PROGRAM_FLASH  = 0x0 + 0x1C000;
 __base_Flash = 0x0;
-__top_Flash  = 0x0 + 0x20000;
+__top_Flash  = 0x0 + 0x1C000;
+__base_EEPROM_FLASH = 0x1C000;
+__top_EEPROM_FLASH  = 0x1C000 + 0x4000;
 __base_SRAM  = 0x20000000;
 __top_SRAM   = 0x20000000 + 0x6000;
 __base_RAM   = 0x20000000;

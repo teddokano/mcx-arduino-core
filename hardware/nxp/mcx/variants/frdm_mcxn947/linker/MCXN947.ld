@@ -1,17 +1,26 @@
 /* MCXN947 Linker Script for Arduino Core */
 /* Based on MCUXpresso generated linker script */
 
+/* The last 64K of the 2M flash is the EEPROM library's storage (two
+   32K halves, used in turn), kept out of PROGRAM_FLASH so no sketch can
+   grow into it. It sits in the second flash bank, so the program keeps
+   running from the first while it is erased or written. Uploads only
+   erase the sectors the program occupies, so what is stored there
+   survives them. */
 MEMORY {
-  PROGRAM_FLASH (rx) : ORIGIN = 0x0, LENGTH = 0x200000 /* 2M (PROGRAM_FLASH0 + PROGRAM_FLASH1, contiguous) */
+  PROGRAM_FLASH (rx) : ORIGIN = 0x0, LENGTH = 0x1F0000 /* 2M - 64K (PROGRAM_FLASH0 + PROGRAM_FLASH1, contiguous) */
+  EEPROM_FLASH (r)   : ORIGIN = 0x1F0000, LENGTH = 0x10000 /* 64K */
   SRAM (rwx)         : ORIGIN = 0x20000000, LENGTH = 0x60000 /* 384K */
   SRAMX0 (rwx)       : ORIGIN = 0x4000000, LENGTH = 0x18000 /* 96K (SRAMX) */
   SRAMX1 (rwx)       : ORIGIN = 0x20060000, LENGTH = 0x8000 /* 32K (SRAMH) */
 }
 
 __base_PROGRAM_FLASH = 0x0;
-__top_PROGRAM_FLASH  = 0x0 + 0x200000;
+__top_PROGRAM_FLASH  = 0x0 + 0x1F0000;
 __base_Flash = 0x0;
-__top_Flash  = 0x0 + 0x200000;
+__top_Flash  = 0x0 + 0x1F0000;
+__base_EEPROM_FLASH = 0x1F0000;
+__top_EEPROM_FLASH  = 0x1F0000 + 0x10000;
 __base_SRAM  = 0x20000000;
 __top_SRAM   = 0x20000000 + 0x60000;
 __base_RAM   = 0x20000000;

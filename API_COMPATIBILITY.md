@@ -92,6 +92,12 @@ surface except where a row below notes a difference. See the main
 | `pulseIn` / `pulseInLong` | ✅ | |
 | `random` / `randomSeed` | ✅ | |
 
+## EEPROM
+
+| API | Status | Notes |
+|-----|--------|-------|
+| `EEPROM.read` / `write` / `update` / `EEPROM[i]` / `get` / `put` / `length` / range-for, `E2END` | ✅ | Added in v0.7.0, as a bundled library with the AVR EEPROM library's interface: `#include <EEPROM.h>`. 1024 bytes, as on UNO R3, kept across resets, power cycles and uploads. Neither chip has an EEPROM, so they live in the top of the on-chip flash (16KB on FRDM-MCXA153, 64KB on FRDM-MCXN947), which leaves a sketch 112KB of flash on FRDM-MCXA153. A write takes ~0.1-0.5ms; one every ~440 (FRDM-MCXA153) or ~250 (FRDM-MCXN947) takes up to ~6ms / ~11ms, and serial input arriving at full speed during it can be lost (measured at 115200 baud: ~20 / ~60 bytes). `write()` skips a byte that already holds the value, as `update()` does. Not for use from an interrupt handler |
+
 ## String, Print & Stream
 
 | API | Status | Notes |

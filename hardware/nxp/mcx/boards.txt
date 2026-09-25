@@ -24,7 +24,7 @@ frdm_mcxa153.build.board_defines=-DCPU_MCXA153VLH -DCPU_MCXA153VLH_cm33_nodsp -D
 frdm_mcxa153.build.opt_flags=-O2
 
 # Flash / RAM
-frdm_mcxa153.upload.maximum_size=131072
+frdm_mcxa153.upload.maximum_size=114688
 frdm_mcxa153.upload.maximum_data_size=24576
 
 # Linker script filename (inside variants/frdm_mcxa153/linker/)
@@ -77,7 +77,7 @@ frdm_mcxn947.build.board_defines=-DCPU_MCXN947VDF -DCPU_MCXN947VDF_cm33 -DCPU_MC
 frdm_mcxn947.build.opt_flags=-O2
 
 # Flash / RAM
-frdm_mcxn947.upload.maximum_size=2097152
+frdm_mcxn947.upload.maximum_size=2031616
 frdm_mcxn947.upload.maximum_data_size=393216
 
 # Linker script filename (inside variants/frdm_mcxn947/linker/)
