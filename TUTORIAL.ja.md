@@ -30,6 +30,8 @@ English version → [TUTORIAL.md](TUTORIAL.md)
   - [2.11. 2つ目のシリアルポート: `Serial1`](#211-2つ目のシリアルポート-serial1)
   - [2.12. ソフトウェア実装のヘルパー: `shiftOut` / `shiftIn` / `pulseIn`](#212-ソフトウェア実装のヘルパー-shiftout--shiftin--pulsein)
   - [2.13. UNO R3/R4互換性](#213-uno-r3r4互換性)
+  - [2.14. リセットしても消えないデータ: `EEPROM`](#214-リセットしても消えないデータ-eeprom)
+  - [2.15. 2枚のボードを1本のI2Cバスで: ターゲットモード](#215-2枚のボードを1本のi2cバスで-ターゲットモード)
 - [次に見るべきもの](#次に見るべきもの)
 
 ## 1. インストール
@@ -381,6 +383,24 @@ void loop() {
 [`examples/Arduino_compatible_API/test_Wire_LM75B`](examples/Arduino_compatible_API/test_Wire_LM75B)
 を参照してください。
 
+`Wire.begin()`はAVRやUNO R4と同じく`D18`/`D19`の内部プルアップを有効にするので、短い配線なら抵抗なしで動きます。配線が長い場合や高速で使う場合は、外付けのプルアップも付けてください（例: SDAとSCLそれぞれに3.3Vへ4.7kΩ）。
+
+調子の悪いデバイスがSDAやSCLをLowに保持し続けると、`endTransmission()`や`requestFrom()`が永久に戻らなくなります。`setWireTimeout()`でこの待ち時間に上限を設けられます（シグネチャも既定値もAVRと同じ）:
+
+```cpp
+Wire.begin();
+Wire.setWireTimeout(25000, true);  // 25ms、タイムアウトしたらバスをリセット
+
+// ...転送のあとで:
+if (Wire.getWireTimeoutFlag()) {
+  Wire.clearWireTimeoutFlag();
+  Serial.println("the bus was stuck");
+}
+```
+
+上限にはハードウェアの制約があり、FRDM-MCXA153では100kHzで約87ms、400kHzで約21.8msまでです。`Wire1`にはこのタイムアウトはありません。
+[`examples/Arduino_compatible_API/test_Wire_setWireTimeout`](examples/Arduino_compatible_API/test_Wire_setWireTimeout)を参照してください。
+
 ### 2.10. SPI
 
 `D10`(CS)/`D11`(MOSI)/`D12`(MISO)/`D13`(SCLK)で、標準的な`SPISettings`ベースのAPIが使えます:
@@ -430,6 +450,8 @@ void loop() {
 他の外部ハードウェアなしで単体テストするには、`D1`と`D0`をジャンパー線でつなぎ、送信した内容を読み返してみてください —
 [`examples/Arduino_compatible_API/test_Serial1`](examples/Arduino_compatible_API/test_Serial1)を参照。
 
+8N1以外のデバイスと通信するときは、AVRと同じく2つ目の引数でフレーム形式を指定します: `Serial1.begin(9600, SERIAL_8E1);`。またスケッチに`serialEvent1()`（`Serial`なら`serialEvent()`）を定義しておくと、受信データがある間は`loop()`のたびにそれが呼ばれます。
+
 ### 2.12. ソフトウェア実装のヘルパー: `shiftOut` / `shiftIn` / `pulseIn`
 
 従来のArduinoと同じシグネチャで、`digitalWrite`/`digitalRead`/`micros()`をベースにソフトウェアで実装されています:
@@ -446,6 +468,73 @@ unsigned long width = pulseIn(pin, HIGH);
 ### 2.13. UNO R3/R4互換性
 
 Arduino UNO向けに書かれたスケッチが、追加の`#include`なしでそのままコンパイルできます: `PI`, `HALF_PI`, `TWO_PI`, `DEG_TO_RAD`, `RAD_TO_DEG`, `radians()`, `degrees()`, `min()`/`max()`, `abs()`, `constrain()`, `sq()`, `map()`, `lowByte()`/`highByte()`, `bitRead()` / `bitSet()` / `bitClear()` / `bitToggle()` / `bitWrite()` / `bit()`, `interrupts()` / `noInterrupts()`, `boolean`/`byte`/`word`, `LSBFIRST`/`MSBFIRST`。
+
+スケッチやライブラリが`#include`なしで使うAVR時代のヘルパーも使えます: `itoa()`/`utoa()`/`ltoa()`/`ultoa()`、`dtostrf()`、`word(h, l)`、`_BV()`、`analogReference(DEFAULT)`（このコアでは何もしません）、`HardwareSerial&`型の引数、そしてピン名の`SDA`/`SCL`。1点だけ違いがあり、このコアの`int`は32ビットなので、`itoa(-1, s, 16)`はAVRの`"ffff"`ではなく`"ffffffff"`になります。
+
+### 2.14. リセットしても消えないデータ: `EEPROM`
+
+どちらのボードにもEEPROMチップはありませんが、同梱の`EEPROM`ライブラリがUNO R3と同じ1KB・同じインターフェースを、オンチップのフラッシュの上位に用意します。保存した内容は、リセットしても、電源を切っても、新しいスケッチを書き込んでも残ります。次の例はボードが起動した回数を数えます:
+
+```cpp
+#include <Arduino.h>
+#include <EEPROM.h>
+
+void setup() {
+  Serial.begin(115200);
+  while (!Serial)
+    ;
+
+  uint32_t starts;
+  EEPROM.get(0, starts);
+  if (starts == 0xFFFFFFFF)  // 一度も書いていない: 全バイトが0xFF
+    starts = 0;
+  starts++;
+  EEPROM.put(0, starts);
+
+  Serial.print("started ");
+  Serial.print(starts);
+  Serial.println(" times");
+}
+
+void loop() {
+}
+```
+
+リセットボタンを押すと回数が増えます。読み出しはRAM上のコピーから行うので時間はかかりません。書き込みは0.1〜0.5msですが、数百回に1回は、ライブラリがデータを新しいフラッシュ領域へ移すために最大約6msかかり、その間に届いたシリアル入力は数バイト失われることがあります。すでに同じ値が入っているバイトへの書き込みは何も書きません。一般のEEPROMと同じく、`loop()`のたびに書くのではなく、値が変わったときに書いてください。
+
+ライブラリ付属のサンプル`EEPROM_settings`（IDEの**ファイル → スケッチ例**のEEPROMの下）は、シリアルモニタから入力した設定を保存します。FRDM-MCXA153ではこの保存領域がフラッシュを16KB使うので、スケッチに使えるのは112KBです。
+
+### 2.15. 2枚のボードを1本のI2Cバスで: ターゲットモード
+
+`Wire.begin(address)`で、ボードはそのアドレスのI2C*ターゲット*（スレーブ）になります（AVRと同じ）。もう1枚のボード（コントローラ）が、そこへ書き込んだり読み出したりします。2枚を`D18`-`D18`、`D19`-`D19`、`GND`-`GND`でつなぎます。ターゲット側:
+
+```cpp
+#include <Arduino.h>
+
+volatile int received = 0;
+
+void receiveEvent(int howMany) {  // コントローラがhowManyバイト書いてきた
+  while (Wire.available())
+    received = Wire.read();
+}
+
+void requestEvent() {  // コントローラが読みに来た: 返事を積む
+  Wire.write((uint8_t)(received + 1));
+}
+
+void setup() {
+  Wire.onReceive(receiveEvent);
+  Wire.onRequest(requestEvent);
+  Wire.begin(0x08);
+}
+
+void loop() {
+}
+```
+
+コントローラ側は普通の`Wire`のコードです: 送るときは`beginTransmission(0x08)` / `write()` / `endTransmission()`、返事は`requestFrom(0x08, 1)` / `read()`で受け取ります。2つのハンドラはI2Cの割り込みから呼ばれるので短く保ち、表示などの処理は`loop()`で行ってください。ターゲットモードが使えるのは`Wire`だけで、`Wire1`では使えません。配線して動きを見られる完全な組は
+[`examples/Arduino_compatible_API/Wire_target_demo`](examples/Arduino_compatible_API/Wire_target_demo)と
+[`Wire_controller_demo`](examples/Arduino_compatible_API/Wire_controller_demo)を参照してください。
 
 ## 次に見るべきもの
 

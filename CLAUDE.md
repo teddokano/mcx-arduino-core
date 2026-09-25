@@ -13,7 +13,7 @@
 - **開発中**: **0.7.0**（`0.7.0-dev`ブランチ）
 - **リリースごとの変更点**: [CHANGELOG.md](CHANGELOG.md)
 - **各リリースで何をやり、どこで詰まったかの詳細**: [docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md)
-  （v0.1.5〜v0.6.0の全作業記録。自動では読み込まれないので、経緯が必要なときだけ開く）
+  （v0.1.5〜v0.6.0の全作業記録と、開発中の0.7.0の記録。自動では読み込まれないので、経緯が必要なときだけ開く）
 
 ---
 
@@ -258,3 +258,8 @@ v0.4.0の`main`マージ直前、ユーザーから「今回のリリース準�
 3. ~~`examples/tests/GPIO_NXP_Arduino`の不要なgitlinkエントリの整理~~ **解消済み**: `git ls-files --stage`で`160000`（gitlink）エントリが残っているのに`.gitmodules`が存在しないと判明（外部クローンの誤`git add`の名残）。`git rm --cached`でインデックスから除去し、他4つの外部ライブラリクローンと同様`.gitignore`に追加
 4. ~~v0.3.0リリース~~ **完了**: 2026-08-16リリース。詳細は[docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md)の「リリース前最終チェックとv0.3.0リリース完了」節
 5. ~~SDライブラリビルド時の`-Waddress-of-packed-member`警告~~ **解消済み（v0.3.1で対応）**: `platform.txt`の`compiler.cpp.flags`に`-Wno-address-of-packed-member`を追加して警告クラス自体を抑制。純粋な診断抑制フラグ（`-W`系）でコード生成には一切影響しないため、プリビルド`.a`の再ビルドや実機再検証は不要と判断——両ボードで`SDBitmapViewer`（`SD`ライブラリ使用）をコンパイルし、警告が完全に消えたことを確認
+6. **上流`r01lib`（`~/dev/mcuxpresso/r01lib`、github.com/teddokano/r01lib）への反映は保留**（2026-09-26、ユーザー判断）。
+   コア同梱の`r01lib`は上流と21ファイル・約1,800行ずれている（コア側だけに`pin_registry.*`・`r01lib_spi.*`、上流側だけに`spi.*`・`semihost_hardfault.c`）。
+   上流はA156・N236・C444も対象にしていて、それらはここでは確かめられない。そのため
+   **このコアで他のボード（A156等）の対応が揃った時点でまとめて反映する**。それまで上流リポジトリには手を入れない
+7. **GPIO治具（A156対応を含む）は0.8以降**（0.7.0では保留、ユーザー判断）

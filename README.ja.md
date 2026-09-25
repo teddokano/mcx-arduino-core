@@ -151,7 +151,8 @@ MIT License — [LICENSE](LICENSE)を参照
 GPIO、割り込み、Serial（USB＋ハードウェアUART）、Wire（I2CおよびI3CのI2Cモード）、SPI、
 analogRead/analogWrite、millis/micros、tone/noTone、delay系、String、本物の
 `Print`/`Stream`/`Printable`基底クラス、F()/PROGMEM、UNO R3/R4互換マクロ、いずれも対応済みです。
-I2Cスレーブモードと`Wire.setWireTimeout`が既知の未対応項目です。`Print`を直接継承する、
+I2Cターゲット（スレーブ）モードと`Wire.setWireTimeout`は`Wire`で使えます（I3C上で動く`Wire1`では使えません）。
+同梱の`EEPROM`ライブラリは、リセットや書き込みをまたいで1KBをオンチップのフラッシュに保持します。`Print`を直接継承する、
 または`Stream&`を受け取るサードパーティライブラリ（ArduinoJson、LiquidCrystal、Adafruit系
 センサーライブラリ等）もこのコア上でコンパイルできます。
 
@@ -180,8 +181,8 @@ mcx-arduino-coreはこれとは逆のアプローチを取っています。各�
 一緒に1つのモノリシックなバイナリへコンパイル・静的リンクする方式で、ローダーも
 動的リンクも存在せず、LLEXTに相当するものがRAMに常駐することもありません。この
 仕組みのおかげで、FRDM-MCXA153の実際のリソース（RAM 24KB／フラッシュ128KB）に
-無理なく収まっています（この数値は、このボード自身のビルド出力が実際に報告している
-値そのものです）。
+無理なく収まっています（ビルド出力がスケッチ用として報告するのはこのうち112KBで、
+上位16KBは`EEPROM`ライブラリのデータ用です）。
 
 （Zephyr RTOS自体はFRDM-MCXA153上でも問題なく動作します——LinkServerはmainline
 Zephyrのデフォルトのフラッシュランナーとしても使われています。収まらないのは

@@ -156,8 +156,10 @@ the on-board LEDs/buttons and peripheral pins (`Wire1`, `SPI`, `PWM`, etc.).
 GPIO, interrupts, Serial (USB + hardware UART), Wire (I2C and I3C-as-I2C),
 SPI, analogRead/analogWrite, millis/micros, tone/noTone, delay family,
 String, real `Print`/`Stream`/`Printable` base classes, F()/PROGMEM, and
-UNO R3/R4 compatibility macros are all supported. I2C slave mode and
-`Wire.setWireTimeout` are the two known gaps. Third-party libraries that
+UNO R3/R4 compatibility macros are all supported. I2C target (slave) mode
+and `Wire.setWireTimeout` work on `Wire` (not on `Wire1`, which runs on I3C),
+and the bundled `EEPROM` library keeps 1KB in on-chip flash across resets
+and uploads. Third-party libraries that
 inherit `Print` directly or take `Stream&` (e.g. ArduinoJson, LiquidCrystal,
 Adafruit sensor libraries) compile against this core.
 

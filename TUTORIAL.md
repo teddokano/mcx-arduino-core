@@ -33,6 +33,8 @@ and [CHANGELOG.md](CHANGELOG.md) for version history.
   - [2.11. A second serial port: `Serial1`](#211-a-second-serial-port-serial1)
   - [2.12. Bit-banged helpers: `shiftOut` / `shiftIn` / `pulseIn`](#212-bit-banged-helpers-shiftout--shiftin--pulsein)
   - [2.13. UNO R3/R4 compatibility](#213-uno-r3r4-compatibility)
+  - [2.14. Keeping data across resets: `EEPROM`](#214-keeping-data-across-resets-eeprom)
+  - [2.15. Two boards on one I2C bus: target mode](#215-two-boards-on-one-i2c-bus-target-mode)
 - [Where to go next](#where-to-go-next)
 
 ## 1. Installation
@@ -456,6 +458,29 @@ Arduino. See
 for the same register-access technique against an external LM75-family
 sensor.
 
+`Wire.begin()` turns on the internal pull-ups of `D18`/`D19`, as AVR and
+UNO R4 do, so a short bus works without resistors. A longer or faster bus
+wants external pull-ups as well (e.g. 4.7kΩ to 3.3V on SDA and SCL).
+
+A device that misbehaves can hold SDA or SCL low and leave
+`endTransmission()` or `requestFrom()` waiting forever. `setWireTimeout()`
+puts a limit on that, with the same signature and defaults as on AVR:
+
+```cpp
+Wire.begin();
+Wire.setWireTimeout(25000, true);  // 25ms, and reset the bus on a timeout
+
+// ...after a transfer:
+if (Wire.getWireTimeoutFlag()) {
+  Wire.clearWireTimeoutFlag();
+  Serial.println("the bus was stuck");
+}
+```
+
+The hardware caps the limit: on FRDM-MCXA153 at ~87ms at 100kHz and ~21.8ms
+at 400kHz. `Wire1` doesn't have the timeout. See
+[`examples/Arduino_compatible_API/test_Wire_setWireTimeout`](examples/Arduino_compatible_API/test_Wire_setWireTimeout).
+
 ### 2.10. SPI
 
 Standard `SPISettings`-based API on pins `D10`(CS)/`D11`(MOSI)/`D12`(MISO)/`D13`(SCLK):
@@ -509,6 +534,11 @@ To test it stand-alone with no other hardware, jumper `D1` to `D0` and read
 back what you sent — see
 [`examples/Arduino_compatible_API/test_Serial1`](examples/Arduino_compatible_API/test_Serial1).
 
+For a device that doesn't talk 8N1, give the frame format as a second
+argument, as on AVR: `Serial1.begin(9600, SERIAL_8E1);`. And if the sketch
+defines `serialEvent1()` (or `serialEvent()` for `Serial`), it is called
+after each `loop()` while there is something to read.
+
 ### 2.12. Bit-banged helpers: `shiftOut` / `shiftIn` / `pulseIn`
 
 Same signatures as classic Arduino, implemented in software on top of
@@ -532,6 +562,96 @@ extra `#include`s needed: `PI`, `HALF_PI`, `TWO_PI`, `DEG_TO_RAD`,
 `constrain()`, `sq()`, `map()`, `lowByte()`/`highByte()`, `bitRead()` /
 `bitSet()` / `bitClear()` / `bitToggle()` / `bitWrite()` / `bit()`,
 `interrupts()` / `noInterrupts()`, `boolean`/`byte`/`word`, `LSBFIRST`/`MSBFIRST`.
+
+So do the AVR-era helpers that sketches and libraries use without including
+anything: `itoa()`/`utoa()`/`ltoa()`/`ultoa()`, `dtostrf()`, `word(h, l)`,
+`_BV()`, `analogReference(DEFAULT)` (which does nothing here), a
+`HardwareSerial&` parameter, and the bare pin names `SDA`/`SCL`. One
+difference: `int` is 32 bits here, so `itoa(-1, s, 16)` gives `"ffffffff"`,
+not AVR's `"ffff"`.
+
+### 2.14. Keeping data across resets: `EEPROM`
+
+Neither board has an EEPROM chip, but the bundled `EEPROM` library gives you
+the same 1KB and the same interface as on UNO R3, kept in the top of the
+on-chip flash. What you store survives resets, power cycles and uploading a
+new sketch. This one counts how many times the board has started:
+
+```cpp
+#include <Arduino.h>
+#include <EEPROM.h>
+
+void setup() {
+  Serial.begin(115200);
+  while (!Serial)
+    ;
+
+  uint32_t starts;
+  EEPROM.get(0, starts);
+  if (starts == 0xFFFFFFFF)  // never written: every byte reads 0xFF
+    starts = 0;
+  starts++;
+  EEPROM.put(0, starts);
+
+  Serial.print("started ");
+  Serial.print(starts);
+  Serial.println(" times");
+}
+
+void loop() {
+}
+```
+
+Press the reset button and the count goes up. Reads come from a copy in RAM
+and cost nothing. A write takes 0.1-0.5ms, but every few hundred writes one
+takes up to ~6ms while the library moves its data to fresh flash, and serial
+input arriving during that one can lose a few bytes. Writing a byte the
+value it already holds writes nothing. As with any EEPROM, write when
+something changes, not on every pass through `loop()`.
+
+The library's own example, `EEPROM_settings` (under EEPROM in the IDE's
+**File → Examples** menu), keeps a setting you type into the Serial Monitor. On FRDM-MCXA153 the
+storage takes 16KB of flash, which leaves 112KB for the sketch.
+
+### 2.15. Two boards on one I2C bus: target mode
+
+`Wire.begin(address)` makes the board an I2C *target* (slave) at that
+address, as on AVR: another board, the controller, then writes to it and
+reads from it. Wire two boards `D18`-`D18`, `D19`-`D19` and `GND`-`GND`.
+The target side:
+
+```cpp
+#include <Arduino.h>
+
+volatile int received = 0;
+
+void receiveEvent(int howMany) {  // the controller wrote howMany bytes
+  while (Wire.available())
+    received = Wire.read();
+}
+
+void requestEvent() {  // the controller is reading: queue the reply
+  Wire.write((uint8_t)(received + 1));
+}
+
+void setup() {
+  Wire.onReceive(receiveEvent);
+  Wire.onRequest(requestEvent);
+  Wire.begin(0x08);
+}
+
+void loop() {
+}
+```
+
+The controller side is ordinary `Wire` code: `beginTransmission(0x08)` /
+`write()` / `endTransmission()` to send, `requestFrom(0x08, 1)` / `read()`
+to get the reply. Both handlers run from the I2C interrupt, so keep them
+short, and do the printing and the rest from `loop()`. Target mode works on
+`Wire` only, not `Wire1`. For a complete pair to wire up and watch, see
+[`examples/Arduino_compatible_API/Wire_target_demo`](examples/Arduino_compatible_API/Wire_target_demo)
+and
+[`Wire_controller_demo`](examples/Arduino_compatible_API/Wire_controller_demo).
 
 ## Where to go next
 
