@@ -152,6 +152,7 @@ void TwoWire::target_arm( void )
 		kLPI2C_SlaveRepeatedStartEvent | kLPI2C_SlaveCompletionEvent );
 
 	LPI2C_MasterEnable( base, true );	// A153's SDK turned it off (see top)
+	i2c->wait_bus_idle();
 }
 
 void TwoWire::target_stop( void )

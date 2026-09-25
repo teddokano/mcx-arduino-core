@@ -47,8 +47,10 @@ on:
 permissions:
   contents: read
 
+# Per event as well as per ref, so a hand-run (workflow_dispatch) doesn't
+# cancel the push run on the same branch, as it did when both shared a group
 concurrency:
-  group: regression-check-${{ github.ref }}
+  group: regression-check-${{ github.ref }}-${{ github.event_name }}
   cancel-in-progress: true
 
 jobs:

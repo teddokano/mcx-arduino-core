@@ -350,6 +350,32 @@ void I2C::apply_pin_low_timeout( void )
 	unit_base->MCFGR2	= ( unit_base->MCFGR2 & ~LPI2C_MCFGR2_BUSIDLE_MASK ) | LPI2C_MCFGR2_BUSIDLE( idle );
 	unit_base->MCFGR3	= ( unit_base->MCFGR3 & ~LPI2C_MCFGR3_PINLOW_MASK ) | LPI2C_MCFGR3_PINLOW( count );
 	LPI2C_MasterEnable( unit_base, was_enabled );
+
+	wait_bus_idle();
+}
+
+void I2C::wait_bus_idle( void )
+{
+	if ( _no_hw || !( unit_base->MCR & LPI2C_MCR_MEN_MASK ) )
+		return;
+
+	uint32_t	idle	= ( unit_base->MCFGR2 & LPI2C_MCFGR2_BUSIDLE_MASK ) >> LPI2C_MCFGR2_BUSIDLE_SHIFT;
+
+	if ( !idle )
+		return;
+
+	//	Both on hardware: without this, `begin(); setWireTimeout(...);` and
+	//	a transfer straight after failed with Busy (BBF set), and the same
+	//	transfer 1ms later went through. The period is counted as prescaled
+	//	here, the longer reading, so the wait never falls short of it.
+	uint32_t	prescale	= ( unit_base->MCFGR1 & LPI2C_MCFGR1_PRESCALE_MASK ) >> LPI2C_MCFGR1_PRESCALE_SHIFT;
+	uint32_t	limit_us	= (uint32_t)( ( ( (uint64_t)idle << prescale ) * 1000000ULL ) / lpi2c_source_clock( unit_base ) ) + 2;
+
+	//	A plain wait, not a poll of BBF: BBF may not be set yet this soon
+	//	after the enable, and a bus that stays busy past the period is held
+	//	by someone, which waiting longer here won't change -- that includes
+	//	the reset after a timeout, which runs while the line is still held.
+	wait_us( limit_us );
 }
 #endif
 

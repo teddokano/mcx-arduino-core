@@ -91,6 +91,16 @@ public:
 	 * @param timeout_us timeout in microseconds, 0 to disable
 	 */
 	void				pin_low_timeout( uint32_t timeout_us );
+
+	/** Wait, after the master has been (re-)enabled, for it to see the bus
+	 *  idle. With a pin-low timeout set, BUSIDLE is on too, and a freshly
+	 *  enabled master counts the bus as busy until both lines have been
+	 *  high for the BUSIDLE period (~0.34ms at most): a transfer started
+	 *  in that window fails with kStatus_LPI2C_Busy. Waits that period and
+	 *  returns, whether or not the bus is idle by then; returns at once
+	 *  when no timeout is set.
+	 */
+	void				wait_bus_idle( void );
 #endif
 
 	/** Register write (multiple byte data)

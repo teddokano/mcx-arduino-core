@@ -26,7 +26,7 @@ with one setup each:
 | 11 | `11_serial1_and_gpio_loopback` | Serial1 TX/RX loopback jumper (D0-D1 on A153, MikroBus MB_TX-MB_RX on N947) + D2-D3 jumper | automatic |
 | 12 | `12_spi_loopback` | D11-D12 jumper + MikroBus MOSI-MISO jumper | automatic |
 | 13 | `13_shiftout_pulsein_loopback` | D0-D1, D2-D3, D4-D5, D6-D7 jumpers (4 adjacent pairs) + PWM0-D8 jumper | automatic |
-| 14 | `14_wire_timeout` | D19(SCL)-D8 + D18(SDA)-D7 jumpers, nothing else on `Wire` (same on both boards) | automatic |
+| 14 | `14_wire_timeout` | D19(SCL)-D8 + D18(SDA)-D7 jumpers, nothing else on `Wire`; on FRDM-MCXN947 also MB_SCL-MB_PWM + MB_SDA-MB_INT, for `Wire2` | automatic |
 | 21 | `21_combined_peripherals_external_module` | needs the external `P3T1755.h` library + (A153 only) D1-D0 jumper + MikroBus MOSI-MISO jumper | manual (watch the Serial log for WARNING lines) |
 | 22 | `22_wire_lm75b_external_module` | needs an external LM75-family sensor module on D18(SDA)/D19(SCL)/3V3/GND | manual (read the printed temperature) |
 | 23 | `23_waveshare_tft_touch_external_library` | needs the external `Waveshare_TFT_Touch` library + its LCD/SD hardware (see its own README) | manual (judge the rendered image + draw speed) |
