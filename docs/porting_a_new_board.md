@@ -200,6 +200,12 @@ against it. Without them, the library stops the build with
 Then, on hardware:
 - Run `release_check/06_eeprom` twice: once across its own reset, and
   once after uploading it again.
+- Then `release_check/07_eeprom_reset`, 1000 watchdog resets in the
+  middle of writes. On FRDM-MCXN947 a reset cut an erase short and left
+  flash that faults when read, and every boot after that hung; see
+  `read_flash()` in `EEPROM.cpp`. A new chip's flash may behave either
+  way, and only this finds out. The WWDT0 setup there has an `#if` per
+  board for its clock, which the new board needs too.
 - Dump the area before and after an upload and after an IDE Debug
   launch, e.g. with LinkServer's memory read. The two existing chips'
   flash loaders erase only the sectors the program occupies. A new

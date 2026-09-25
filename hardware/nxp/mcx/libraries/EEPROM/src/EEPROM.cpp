@@ -31,7 +31,9 @@
  *  written there as its image, and its header -- written last -- makes it
  *  current. A reset or power loss part way leaves the old half current,
  *  holding everything up to the last completed write. A record cut short
- *  fails its CRC and is skipped.
+ *  fails its CRC and is skipped. Flash left unreadable by an erase or a
+ *  program cut short (see read_flash()) counts as an invalid header or a
+ *  skipped record in the same way.
  */
 
 #include "EEPROM.h"
@@ -133,10 +135,45 @@ bool erased( const uint8_t *p, size_t n )
 	return true;
 }
 
+//	Copy n bytes (a multiple of 4, word aligned) out of flash, returning
+//	false if any of them could not be read. An erase cut short by a reset
+//	can leave flash whose ECC no longer matches, and reading it is a bus
+//	fault: seen on FRDM-MCXN947, where a reset in the middle of compact()'s
+//	erase left the other half's first sector unreadable, and every start()
+//	after that hung reading its header. With FAULTMASK set, BFHFNMIGN makes
+//	such a load return junk instead of faulting, and the CFSR says it
+//	happened. Interrupts wait for the copy, at most a PAGE
+bool read_flash( void *dst, const void *src, size_t n )
+{
+	const volatile uint32_t	*s	= (const volatile uint32_t *)src;
+	uint32_t				*d	= (uint32_t *)dst;
+
+	SCB->CFSR	= SCB_CFSR_BUSFAULTSR_Msk;
+	__set_FAULTMASK( 1 );
+	SCB->CCR	|= SCB_CCR_BFHFNMIGN_Msk;
+	__DSB();
+	__ISB();
+
+	for ( size_t i = 0; i < n / 4; i++ )
+		d[ i ]	= s[ i ];
+
+	__DSB();
+	SCB->CCR	&= ~SCB_CCR_BFHFNMIGN_Msk;
+	__set_FAULTMASK( 0 );
+	__ISB();
+
+	uint32_t	bfsr	= SCB->CFSR & SCB_CFSR_BUSFAULTSR_Msk;
+
+	SCB->CFSR	= bfsr;
+	return bfsr == 0;
+}
+
 bool header_valid( int h, uint32_t *s )
 {
-	const uint32_t	*w	= (const uint32_t *)half_base( h );
+	uint32_t	w[ 4 ];
 
+	if ( !read_flash( w, (const void *)half_base( h ), sizeof( w ) ) )
+		return false;
 	if ( ( w[ 0 ] != MAGIC ) || ( w[ 1 ] != ~w[ 2 ] ) || ( w[ 3 ] != SIZE ) )
 		return false;
 
@@ -172,12 +209,18 @@ void start( void )
 
 	const uint8_t	*base	= (const uint8_t *)half_base( current );
 
-	memcpy( ram, base + IMAGE_OFF, SIZE );
+	//	The image was all programmed before the header, so this read can
+	//	only fail if the flash itself has gone bad; what came out is the
+	//	best there is
+	for ( uint32_t i = 0; i < SIZE; i += PAGE )
+		read_flash( ram + i, base + IMAGE_OFF + i, PAGE );
+
+	uint8_t	*r	= (uint8_t *)unit_buf;
 
 	for ( log_next = LOG_OFF; log_next + UNIT <= half_size(); log_next += UNIT )
 	{
-		const uint8_t	*r	= base + log_next;
-
+		if ( !read_flash( r, base + log_next, UNIT ) )
+			continue;	// programming cut short by a reset: skip it
 		if ( erased( r, UNIT ) )
 			break;
 
