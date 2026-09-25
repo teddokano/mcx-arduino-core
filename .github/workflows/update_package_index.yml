@@ -18,7 +18,7 @@ jobs:
       # against a shallow clone. This workflow is hand-dispatched once
       # per release, so the extra fetch costs nothing that matters.
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 

@@ -37,6 +37,12 @@ on:
   push:
   pull_request:
   workflow_dispatch:
+    inputs:
+      # To try the next runner image before ubuntu-latest moves to it
+      # (e.g. ubuntu-26.04 ahead of the October 2026 switch)
+      runner:
+        description: 'Runner image'
+        default: 'ubuntu-latest'
 
 permissions:
   contents: read
@@ -47,7 +53,7 @@ concurrency:
 
 jobs:
   hygiene:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
     steps:
       # Full history only where the release set runs. One of its checks
       # (doxygen-freshness) asks git which commits touched Doxygen's
@@ -57,7 +63,7 @@ jobs:
       # Note the quoted '0'/'1': GitHub expressions treat bare 0 as
       # falsy, so `cond && 0 || 1` would always yield 1.
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: ${{ (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) && '0' || '1' }}
 
@@ -82,10 +88,10 @@ jobs:
       fail-fast: false
       matrix:
         board: [frdm_mcxa153, frdm_mcxn947]
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Determine required toolchain version/URL/checksum
         id: toolchain
@@ -115,7 +121,7 @@ jobs:
 
       - name: Cache toolchain
         id: cache-toolchain
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.arduino15/packages/nxp/tools/arm-none-eabi-gcc/${{ steps.toolchain.outputs.version }}
           key: toolchain-linux-x64-${{ steps.toolchain.outputs.version }}
@@ -133,8 +139,25 @@ jobs:
           fi
           tar -xzf /tmp/toolchain.tar.gz -C ~/.arduino15/packages/nxp/tools/arm-none-eabi-gcc/${{ steps.toolchain.outputs.version }} --strip-components=1
 
+      # Straight from arduino-cli's GitHub release rather than through
+      # arduino/setup-arduino-cli: that action's last release (v2, 2024)
+      # still targets Node.js 20, which GitHub has deprecated. Latest
+      # release, as the action's default "1.x" gave, checked against the
+      # release's own checksum file.
       - name: Install arduino-cli
-        uses: arduino/setup-arduino-cli@v2
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG=$(gh release view -R arduino/arduino-cli --json tagName -q .tagName)
+          V="${TAG#v}"
+          TARBALL="arduino-cli_${V}_Linux_64bit.tar.gz"
+          cd /tmp
+          gh release download "$TAG" -R arduino/arduino-cli -p "$TARBALL" -p "${V}-checksums.txt"
+          grep " ${TARBALL}\$" "${V}-checksums.txt" | sha256sum -c -
+          mkdir -p "$HOME/.local/bin"
+          tar -xzf "$TARBALL" -C "$HOME/.local/bin" arduino-cli
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          "$HOME/.local/bin/arduino-cli" version
 
       - name: Install this branch's hardware/nxp/mcx as the board package source
         run: |
@@ -143,7 +166,7 @@ jobs:
           cp -r hardware/nxp/mcx "$HOME/.arduino15/packages/nxp/hardware/mcx/${PLATFORM_VERSION}"
 
       - name: Cache arduino-cli build cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.cache/arduino
           key: build-cache-${{ matrix.board }}-${{ hashFiles('hardware/nxp/mcx/cores/**', 'hardware/nxp/mcx/variants/**', 'hardware/nxp/mcx/platform.txt', 'hardware/nxp/mcx/boards.txt') }}
