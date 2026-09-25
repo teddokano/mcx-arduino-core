@@ -162,7 +162,7 @@ xPack checksums（正しい値）：
 | Wire.end、Serial.find(len)/findUntil、Serial.availableForWrite、INPUT_PULLDOWN、OUTPUT_OPENDRAIN | ✅ | v0.2.1で追加。実機確認済み（`Wire.end()`はI3C使用時のBusFaultバグを修正後に確認） |
 | String operator+数値版/F()、Printable、NOT_AN_INTERRUPT、digitalPinToPort/BitMask+portOutput/Input/ModeRegister | ✅ | v0.2.1で追加。実機確認済み（fast GPIOレジスタ直接操作がD2-D3ジャンパで正しく動作、Printableカスタムクラスの出力を視覚確認） |
 | Print/Stream抽象基底クラス（新設） | ✅ | v0.2.1で追加。実機確認済み——ハードウェア非依存のPrint派生クラス、Stream&への多態性、print()/println()の実バイト数返却、Printableのn+=p.print(x)イディオムすべて動作確認 |
-| サードパーティライブラリ互換性（ArduinoJson/LiquidCrystal/DHT/NeoPixel/OneWire/Adafruit BusIO） | ✅ | Print/Stream新設・BitOrder型・microsecondsToClockCycles追加によりarduino-cli compile成功。Servoのみライブラリ側のアーキテクチャ非対応で不可（既知の限界） |
+| サードパーティライブラリ互換性（ArduinoJson/LiquidCrystal/DHT/NeoPixel/OneWire/Adafruit BusIO/Adafruit Unified Sensor） | ✅ | v0.2.1で最小スケッチのコンパイルを確認。0.7.0で各ライブラリの**同梱サンプル全47本×両ボード**に広げて再確認し、`BitOrder`の本物のenum化とavr-libcの文字列関数・`M_`定数の宣言を追加した。残る失敗8本は、BLE（4本）、ADXL343ドライバ（1本）、Ethernetが要求する`Client.h`（3本、coreにネットワーク基底クラスが無い）。Servoはライブラリ側のアーキテクチャ非対応で不可（既知の限界）。ライブラリはスクラッチパッドに`ARDUINO_DIRECTORIES_USER`で入れたので、`~/Documents/Arduino/libraries`には無い |
 | Wire (I2C) | ✅ | |
 | Wire1 (I3C, I2Cモード) | ✅ | オンボードP3T1755で確認、重大バグ修正済み |
 | SPI | ✅ | |
@@ -263,3 +263,8 @@ v0.4.0の`main`マージ直前、ユーザーから「今回のリリース準�
    上流はA156・N236・C444も対象にしていて、それらはここでは確かめられない。そのため
    **このコアで他のボード（A156等）の対応が揃った時点でまとめて反映する**。それまで上流リポジトリには手を入れない
 7. **GPIO治具（A156対応を含む）は0.8以降**（0.7.0では保留、ユーザー判断）
+8. **ネットワーク基底クラス（`Client`/`Server`/`UDP`/`IPAddress`）は0.8以降**（2026-09-26、ユーザー判断で0.7.0は見送り）。
+   無いため`Ethernet`ライブラリが`Client.h`で止まる（ArduinoJsonのEthernet系サンプル3本もこれで失敗）。
+   入れるときは、ArduinoCore-APIのソースがLGPLなのでコピーせず自前で書く。
+   仮想関数のシグネチャはArduinoCore-APIと完全に一致させる（派生ライブラリがそのままビルドできるように）。
+   W5500系シールドなどで**実際に通信できるまでを確認**すること（コンパイルだけでは対応済みにしない）

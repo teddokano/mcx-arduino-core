@@ -93,10 +93,8 @@ class __FlashStringHelper;
 /** @param rad angle in radians @return angle in degrees */
 #define	degrees( rad )	( (rad) * RAD_TO_DEG )
 
-// Misc constants (matches UNO R3/R4's Arduino.h)
-/** SPI/shiftOut()/shiftIn() bit-order constants. */
-#define	LSBFIRST	0
-#define	MSBFIRST	1	/**< @see LSBFIRST */
+// Misc constants (matches UNO R3/R4's Arduino.h). LSBFIRST/MSBFIRST are
+// enumerators of BitOrder, in arduino_spi.h
 /** Not used anywhere in this core's own implementation -- declared purely
  *  for source compatibility with sketches/libraries that reference them
  *  (matches UNO R3/R4's Arduino.h, which likewise leaves them unused by
@@ -104,20 +102,6 @@ class __FlashStringHelper;
  */
 #define	SERIAL		0x0
 #define	DISPLAY		0x1	/**< @see SERIAL */
-
-/*
- *  Real Arduino declares LSBFIRST/MSBFIRST as enumerators of an actual
- *  `BitOrder` enum type (api/Common.h), so any type named BitOrder is
- *  automatically usable. This project defines LSBFIRST/MSBFIRST as plain
- *  #define macros instead (established earlier -- see arduino_spi.h's
- *  `enum endian`), so a real `enum BitOrder { LSBFIRST, MSBFIRST }` can't
- *  be declared here too: the preprocessor would substitute those tokens
- *  away before the compiler ever saw them as enumerator names. BitOrder
- *  is provided as a plain integer typedef instead, just so the TYPE NAME
- *  exists for libraries (e.g. Adafruit BusIO's `typedef BitOrder
- *  BusIOBitOrder;`) that expect the core to declare it.
- */
-typedef	uint8_t	BitOrder;
 
 // Clock-cycle conversion macros (matches UNO R3/R4's Arduino.h). Each board
 // in this core always runs its core clock at a fixed frequency (no
@@ -288,6 +272,54 @@ char	*ultoa( unsigned long value, char *str, int base );
  */
 char	*dtostrf( double val, signed char width, unsigned char prec, char *str );
 }
+
+// String functions avr-libc's <string.h> has and newlib's hides under
+// -std=c++20, since they are BSD/POSIX rather than ISO C. All are newlib's
+// own, declared here as newlib declares them. Not switching to -std=gnu++20
+// instead is deliberate: that also exposes names such as index() and
+// y0()/y1(), and a sketch's global `int index` or `int x0, y0, x1, y1`,
+// which builds on AVR, fails to build ("redeclared as different kind of
+// entity").
+extern "C" {
+/** Copy at most size-1 chars, always terminated. @return strlen(src) */
+size_t	strlcpy( char *dst, const char *src, size_t size );
+/** Append, keeping the result within size, always terminated. @return the length it tried to make */
+size_t	strlcat( char *dst, const char *src, size_t size );
+/** @return a malloc'd copy of s, or NULL */
+char	*strdup( const char *s );
+/** @return a malloc'd copy of at most n chars of s, terminated, or NULL */
+char	*strndup( const char *s, size_t n );
+/** Reentrant strtok(); saveptr keeps the position between calls */
+char	*strtok_r( char *__restrict str, const char *__restrict delim, char **__restrict saveptr );
+/** @return strlen(s), but at most maxlen */
+size_t	strnlen( const char *s, size_t maxlen );
+/** Split *stringp at the first char in delim; empty fields are returned, unlike strtok() */
+char	*strsep( char **stringp, const char *delim );
+/** Copy up to n bytes, stopping after the first c. @return past the c in dst, or NULL */
+void	*memccpy( void *__restrict dst, const void *__restrict src, int c, size_t n );
+/** @return the first occurrence of needle in haystack, or NULL */
+void	*memmem( const void *haystack, size_t hlen, const void *needle, size_t nlen );
+/** Case-insensitive strstr() */
+char	*strcasestr( const char *haystack, const char *needle );
+}
+
+// The <math.h> constants avr-libc defines and newlib hides under -std=c++20
+// (it defines them only outside strict ISO mode). Same values as newlib's.
+#ifndef M_PI
+#define	M_E			2.7182818284590452354
+#define	M_LOG2E		1.4426950408889634074
+#define	M_LOG10E	0.43429448190325182765
+#define	M_LN2		_M_LN2
+#define	M_LN10		2.30258509299404568402
+#define	M_PI		3.14159265358979323846
+#define	M_PI_2		1.57079632679489661923
+#define	M_PI_4		0.78539816339744830962
+#define	M_1_PI		0.31830988618379067154
+#define	M_2_PI		0.63661977236758134308
+#define	M_2_SQRTPI	1.12837916709551257390
+#define	M_SQRT2		1.41421356237309504880
+#define	M_SQRT1_2	0.70710678118654752440
+#endif
 
 // ctype.h wrappers (matches UNO R3/R4's Arduino.h "Characters" category) —
 // thin bool-returning renames of the standard <cctype> functions

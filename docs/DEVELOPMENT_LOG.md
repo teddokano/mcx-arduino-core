@@ -2285,6 +2285,24 @@ SDKの`LPI2C_Slave*`割り込みAPIの上に実装した。実機で見つかっ
 - 「電源断でも無事」→ 設計上そうなるだけで、書き込み中の電源断は試していない
 - 「他の書き込みでは失われない」→ 欠落を1件ずつ突き合わせて確かめてから書いた
 
+### サードパーティライブラリの再確認、`BitOrder`のenum化、avr-libcの文字列関数
+v0.2.1以来のサードパーティライブラリ確認をやり直した。前回は最小スケッチだったが、今回は7ライブラリ（ArduinoJson・LiquidCrystal・DHT sensor library・Adafruit NeoPixel・OneWire・Adafruit BusIO・Adafruit Unified Sensor）の同梱サンプル全47本を両ボードでビルドした。ライブラリは`ARDUINO_DIRECTORIES_USER`をスクラッチパッドに向けて入れ、ユーザーのスケッチブックには触れていない。
+
+core側の不足が2つ見つかった:
+- **`BitOrder`が`uint8_t`のtypedefだった**: Adafruit BusIOの`spi_modetest`で`Adafruit_SPIDevice`のコンストラクタが曖昧になった。`MSBFIRST`が`int`なので、`BitOrder`（=`uint8_t`）を取る版と`int8_t`を4つ取る版が同順位になる。ArduinoCore-APIと同じく本物のenumにした（`arduino_spi.h`の`enum endian`を`enum BitOrder`に改名し、`Arduino.h`の`#define`を削除）。v0.2.1の時点では「マクロと衝突するのでenumは作れない」としてtypedefで済ませていたが、マクロの方をやめれば済む話だった
+- **`strlcpy()`が未宣言**: ArduinoJsonの`JsonConfigFile`で出た。原因は`-std=c++20`（厳格ISO）で、newlibのBSD/POSIX部分（`__BSD_VISIBLE`等）が0になる。同じ理由で`strdup`・`strtok_r`・`strnlen`・`strsep`・`memccpy`・`M_PI`なども見えなかった
+
+**最初に`-std=gnu++20`へ切り替えたが、取り下げた**。AVR（`gnu++11`）とUNO R4（`gnu++17`）に揃う形で、リポジトリ全サンプルとライブラリのスイープも通った。ところがCHANGELOGに書いた副作用（「グローバル変数`index`が`index()`と衝突する」）を実際に試すと、そのとおりビルドエラーになった。`<math.h>`の`y0()`/`y1()`でも同じで、`int x0, y0, x1, y1;`というグラフィック系の定番の書き方が壊れる。どちらもAVRでは通る。そこで`-std=c++20`は戻し、avr-libcにある範囲（`strlcpy`・`strlcat`・`strdup`・`strndup`・`strtok_r`・`strnlen`・`strsep`・`memccpy`・`memmem`・`strcasestr`と`M_`定数）だけを`Arduino.h`で宣言した。
+
+**教訓: 回帰スイープは「今あるスケッチが壊れないか」しか見ない**。フラグの変更で新たに予約される名前は、それを使うスケッチがリポジトリに無ければ見えない。副作用は書いた時点で試す。
+
+**実機で確かめたこと**: `test_avr_compat_helpers`に文字列関数・`M_`定数・`BitOrder`のオーバーロード・グローバル`index`/`y0`/`y1`の節を足し、`release_check/01`にも縮約版を入れた。両ボードとも`ALL PASS`／`ALL OK`。N947の1回目の実行はシリアルのキャプチャが途中で切れ、同じ手順での再実行では全出力が取れた。
+
+残る失敗8本の内訳: BLE（NeoPixelの4本）、ADXL343ドライバ（Unified Sensorの1本）、ArduinoJsonのEthernet系3本。Ethernet系はEthernetライブラリを入れても`Client.h`で止まる（coreに`Client`/`Server`/`UDP`/`IPAddress`が無い）。SDとEthernetを指定すると`JsonConfigFile`は通る。
+
+### `docs/porting_a_new_board.md`にEEPROMの節
+新しいボードに要るもの4つ（リンカスクリプトの`EEPROM_FLASH`と`__base/__top_EEPROM_FLASH`、`boards.txt`の`upload.maximum_size`、`EEPROM.cpp`のチップ分岐と`UNIT`、SDKのフラッシュドライバ）と、実機で確かめること（`release_check/06`を2回、アップロード前後のダンプ）を書いた。
+
 ### CI（`b47c400`）
 `actions/checkout`をv7、`actions/cache`をv6に上げた（Node.js 20の廃止対応）。`arduino/setup-arduino-cli`はv2（Node.js 20）より新しいリリースが無いので、arduino-cliはGitHubのリリースから直接入れ、チェックサムファイルで照合する。`workflow_dispatch`に`runner`入力を加えた（2026-10-19に`ubuntu-latest`が切り替わる前に`ubuntu-26.04`を試すため）。
 

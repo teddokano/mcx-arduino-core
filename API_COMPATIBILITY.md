@@ -108,6 +108,7 @@ surface except where a row below notes a difference. See the main
 | `Print::setWriteError` / `getWriteError` / `clearWriteError` | ✅ | Matches ArduinoCore-API's placement/signatures (`setWriteError` is `protected`, for a derived class to call internally; `getWriteError`/`clearWriteError` are `public`). Needed by third-party libraries that derive from `Print` and track write failures this way (e.g. the official `SD` library's `SdFile`/`File`) — fixes [#3](https://github.com/teddokano/mcx-arduino-core/issues/3) |
 | `PROGMEM` / `pgm_read_byte`/`_word`/`_dword`/`_float`/`_ptr` / `PSTR` | ✅ | No-ops — flash and RAM share one address space on this Cortex-M target, unlike AVR's Harvard split. Declared for sketch/library compatibility only |
 | `F("...")` / `__FlashStringHelper` | ✅ | Works with `Serial.print`/`println` and `String` (construct/concat) |
+| `Client` / `Server` / `UDP` / `IPAddress` (`Client.h`, `Server.h`, `Udp.h`, `IPAddress.h`) | ❌ | The network base classes of ArduinoCore-API aren't in this core, so libraries built on them don't compile: the official `Ethernet` library (W5x00 shields) stops at `Client.h`, and so does anything using it |
 
 ## Compatibility Macros
 
@@ -116,6 +117,9 @@ surface except where a row below notes a difference. See the main
 | Math constants / compat macros | ✅ | `PI`, `min`/`max`, `bitRead`/`bitWrite`, `map`, etc. (UNO R3/R4 compatible) |
 | `word(h, l)` / `makeWord` / `_BV` | ✅ | Added in v0.7.0. `word(...)` is a function-like macro, as on AVR, so `word` still works as a type name |
 | `itoa` / `utoa` / `ltoa` / `ultoa` / `dtostrf` | ✅ | Added in v0.7.0, with avr-libc's signatures. `int` and `long` are both 32 bits here, so negative values in a non-decimal base come out 32 bits wide (`itoa(-1, s, 16)` is `"ffffffff"`, not AVR's `"ffff"`). `dtostrf` rounds, and a negative width left-aligns, as on AVR |
+| `strlcpy` / `strlcat` / `strdup` / `strndup` / `strtok_r` / `strnlen` / `strsep` / `memccpy` / `memmem` / `strcasestr` | ✅ | Added in v0.7.0: avr-libc has them, and newlib does too but hides them under this core's `-std=c++20`, so `Arduino.h` declares them. Other BSD/POSIX names stay hidden, so a sketch can still have globals named `index` or `y0`/`y1`, as on AVR |
+| `M_PI`, `M_E`, `M_LN2`, `M_SQRT2` and the other `M_` constants | ✅ | Added in v0.7.0, for the same reason. Same values as newlib's |
+| `BitOrder` with `LSBFIRST` / `MSBFIRST` | ✅ | A real enum since v0.7.0, as in ArduinoCore-API, so libraries can overload on it (Adafruit BusIO does). `LSBFIRST`/`MSBFIRST` are no longer macros, so `#ifdef MSBFIRST` is false, as on UNO R4 |
 | `yield` | ✅ | No-op — no cooperative scheduler on this core |
 | Character functions (`isAlpha`, `isDigit`, `isSpace`, etc.) | ✅ | Thin wrappers over `<cctype>` |
 | `ARDUINO` version macro | ✅ | Defined as `10819` via `platform.txt`, for libraries that gate on `#if ARDUINO >= 100` etc. |

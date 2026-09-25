@@ -1,6 +1,8 @@
 /** AVR-era helpers that sketches and libraries use without a second thought:
  *  itoa()/utoa()/ltoa()/ultoa()/dtostrf(), word(h, l)/makeWord(), _BV(),
- *  analogReference()'s mode names, and the HardwareSerial type name.
+ *  analogReference()'s mode names, the HardwareSerial type name, avr-libc's
+ *  BSD/POSIX string functions (strlcpy() and the rest) and M_PI and the
+ *  other M_ constants, and BitOrder as a real enum.
  *
  *  No wiring. Read the final "ALL PASS"/"N FAIL" line.
  *
@@ -10,6 +12,18 @@
 
 #include <Arduino.h>
 #include <cstring>
+
+// Names a sketch may use for its own globals, as on AVR. Building at all is
+// the check: exposing the BSD/XSI parts of newlib's headers wholesale
+// (-std=gnu++20) would clash them with index() and y0()/y1().
+int index = 0;
+int x0 = 1, y0 = 2, x1 = 3, y1 = 4;
+
+// Overloaded on BitOrder, as Adafruit BusIO's Adafruit_SPIDevice
+// constructors are. With BitOrder a plain integer, a call passing MSBFIRST
+// matched both equally well and failed to build.
+int order_kind(BitOrder) { return 1; }
+int order_kind(int8_t) { return 2; }
 
 int fails = 0;
 
@@ -90,6 +104,48 @@ void setup() {
   Serial.println("--- HardwareSerial ---");
   size_t n = greet(Serial);
   check("HardwareSerial& is Serial, print() counts bytes", n == strlen("hello through a HardwareSerial&") + 2);
+
+  Serial.println("--- avr-libc string functions ---");
+  char t[8];
+  check("strlcpy truncates and returns strlen(src)", strlcpy(t, "abcdefghij", sizeof t) == 10 && strcmp(t, "abcdefg") == 0);
+  strlcpy(t, "ab", sizeof t);
+  check("strlcat truncates and returns the length it tried", strlcat(t, "cdefghij", sizeof t) == 10 && strcmp(t, "abcdefg") == 0);
+  char *d = strdup("dup");
+  check("strdup", d != nullptr && strcmp(d, "dup") == 0);
+  free(d);
+  d = strndup("dupdup", 3);
+  check("strndup", d != nullptr && strcmp(d, "dup") == 0);
+  free(d);
+  strlcpy(s, "a,b,,c", sizeof s);
+  char *save;
+  char *t1 = strtok_r(s, ",", &save);
+  char *t2 = strtok_r(nullptr, ",", &save);
+  char *t3 = strtok_r(nullptr, ",", &save);
+  check("strtok_r skips the empty field", strcmp(t1, "a") == 0 && strcmp(t2, "b") == 0 && strcmp(t3, "c") == 0 && strtok_r(nullptr, ",", &save) == nullptr);
+  strlcpy(s, "a,b,,c", sizeof s);
+  char *p = s;
+  char *f1 = strsep(&p, ",");
+  char *f2 = strsep(&p, ",");
+  char *f3 = strsep(&p, ",");
+  check("strsep keeps the empty field", strcmp(f1, "a") == 0 && strcmp(f2, "b") == 0 && strcmp(f3, "") == 0 && strcmp(p, "c") == 0);
+  check("strnlen", strnlen("abcdef", 4) == 4 && strnlen("ab", 4) == 2);
+  char *after = (char *)memccpy(t, "xy:z", ':', sizeof t);
+  check("memccpy stops after the ':'", after == t + 3 && memcmp(t, "xy:", 3) == 0);
+  const char hay[] = "haystack";
+  check("memmem", memmem(hay, 8, "st", 2) == hay + 3);
+  check("strcasestr", strcasestr("Hello World", "WORLD") == strstr("Hello World", "World"));
+
+  Serial.println("--- M_ constants ---");
+  check("M_PI == PI", M_PI == PI);
+  check("M_PI_2, M_2_PI, M_1_PI", fabs(M_PI_2 * 2 - M_PI) < 1e-15 && fabs(M_2_PI * M_PI - 2) < 1e-15 && fabs(M_1_PI * M_PI - 1) < 1e-15);
+  check("M_E, M_LN2, M_LN10", fabs(log(M_E) - 1) < 1e-15 && fabs(exp(M_LN2) - 2) < 1e-14 && fabs(exp(M_LN10) - 10) < 1e-13);
+  check("M_SQRT2, M_SQRT1_2", fabs(M_SQRT2 * M_SQRT2 - 2) < 1e-15 && fabs(M_SQRT1_2 * M_SQRT2 - 1) < 1e-15);
+
+  Serial.println("--- BitOrder, and names left free ---");
+  check("MSBFIRST picks the BitOrder overload", order_kind(MSBFIRST) == 1 && order_kind(LSBFIRST) == 1);
+  check("LSBFIRST == 0, MSBFIRST == 1", LSBFIRST == 0 && MSBFIRST == 1);
+  index++;
+  check("globals index, x0, y0, x1, y1", index == 1 && x0 + y0 + x1 + y1 == 10);
 
   Serial.println();
   if (fails) {

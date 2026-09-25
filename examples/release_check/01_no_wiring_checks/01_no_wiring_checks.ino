@@ -45,6 +45,14 @@ public:
   bool fail = false;
 };
 
+// For the AVR-era helpers section: globals a sketch may name as on AVR
+// (building at all is the check), and an overload on BitOrder, which
+// Adafruit BusIO has and which a plain-integer BitOrder made ambiguous.
+int index = 0;
+int x0 = 1, y0 = 2, x1 = 3, y1 = 4;
+int order_kind(BitOrder) { return 1; }
+int order_kind(int8_t) { return 2; }
+
 int failCount = 0;
 
 void check(const char *label, bool ok) {
@@ -237,6 +245,20 @@ void setup() {
     check("analogReference(DEFAULT/AR_DEFAULT) accepted", true);
     HardwareSerial &port = Serial;
     check("HardwareSerial& refers to Serial", &port == &Serial);
+    char t[8];
+    check("strlcpy truncates", strlcpy(t, "abcdefghij", sizeof t) == 10 && strcmp(t, "abcdefg") == 0);
+    strlcpy(s, "a,b,,c", sizeof s);
+    char *p = s;
+    strsep(&p, ",");
+    strsep(&p, ",");
+    check("strsep keeps the empty field", strcmp(strsep(&p, ","), "") == 0 && strcmp(p, "c") == 0);
+    char *save;
+    check("strtok_r", strcmp(strtok_r(s, ",", &save), "a") == 0);
+    check("strnlen", strnlen("abcdef", 4) == 4);
+    check("M_PI == PI", M_PI == PI);
+    check("MSBFIRST picks the BitOrder overload", order_kind(MSBFIRST) == 1);
+    index++;
+    check("globals index, x0, y0, x1, y1", index == 1 && x0 + y0 + x1 + y1 == 10);
   }
 
   // ---- MOSI/MISO/SCK bare macros (was test_MOSI_MISO_SCK_macros) ----

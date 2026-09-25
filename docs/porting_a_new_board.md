@@ -44,7 +44,7 @@ it is not. `AnalogIn.h`/`PwmOut.h` have no C444 branch at all.
 | Directory | Contents |
 |-----------|----------|
 | `include/` | CMSIS device header, `*_features.h`, `system_*.h`, `board.h`, `pin_mux.h`, `clock_config.h`, and the SDK driver headers whose content differs per chip. **Only files with no same-named counterpart in `cores/arduino/`** — a duplicate there is dead code, since `platform.txt` puts the core's include paths first |
-| `linker/` | One `.ld`. Take the memory map from an MCUXpresso-generated project for the chip and follow the existing scripts' section layout |
+| `linker/` | One `.ld`. Take the memory map from an MCUXpresso-generated project for the chip and follow the existing scripts' section layout, including the `EEPROM_FLASH` region at the top of flash (see "The `EEPROM` library" below) |
 | `src/` | `board/`, `device/`, `startup/`, plus the `fsl_*` drivers that genuinely differ per chip (`fsl_clock`, `fsl_lpadc`, `fsl_lpi2c`, `fsl_lpspi`, `fsl_lpuart`, `fsl_reset`, …) |
 | `svd/` | The CMSIS-SVD file, for the IDE's CORTEX PERIPHERALS panel |
 
@@ -83,7 +83,7 @@ Every property below is required. The ones that bite hardest are marked.
 <board>.build.variant=<board>
 <board>.build.board_defines=-DCPU_… -DTARGET_… -DFRDM_MCXxxxx
 <board>.build.opt_flags=-O2
-<board>.upload.maximum_size=…
+<board>.upload.maximum_size=…       # ! PROGRAM_FLASH's length, not the chip's flash size
 <board>.upload.maximum_data_size=…
 <board>.build.ldscript=<chip>.ld
 <board>.build.linkserver_target=MCXxxxx:FRDM-MCXxxxx   # ! see below
@@ -144,6 +144,67 @@ physically impossible there; its MikroBus I2C pins are just another
 route to the same peripheral. Two UART pin pairs may likewise land on
 the same FlexComm, which makes them mutually exclusive rather than
 independent — that is why N947 has no `Serial1` on D0/D1.
+
+### The `EEPROM` library
+
+The bundled `libraries/EEPROM/` keeps its 1KB in the top of the chip's
+on-chip flash, so a new board needs four things before it compiles
+against it. Without them, the library stops the build with
+`#error EEPROM: this board is not supported`.
+
+1. **An `EEPROM_FLASH` region in the linker script**, at the top of
+   flash, taken out of `PROGRAM_FLASH`, plus the two symbols the library
+   reads its bounds from:
+
+   ```
+   PROGRAM_FLASH (rx) : ORIGIN = 0x0, LENGTH = <flash size - area>
+   EEPROM_FLASH (r)   : ORIGIN = <flash size - area>, LENGTH = <area>
+   __base_EEPROM_FLASH = <flash size - area>;
+   __top_EEPROM_FLASH  = <flash size - area> + <area>;
+   ```
+
+   The area is used as two halves, and each half is erased whole, so
+   each half must be a whole number of erase sectors
+   (`FSL_FEATURE_SYSCON_FLASH_SECTOR_SIZE_BYTES` in the features header;
+   8KB on both existing chips). Each half must also hold the 128-byte
+   header, the 1KB image and a log of at least a few records. A153 uses
+   one 8KB sector per half (16KB); N947 uses 32KB per half (64KB).
+   If the chip has two flash banks, put the area in the bank the program
+   does not run from, as N947 does. Otherwise, interrupts are held off
+   while flash is erased or written, as on A153.
+2. **`upload.maximum_size` in `boards.txt` equal to `PROGRAM_FLASH`'s
+   length.** If it still says the whole flash, the IDE reports room the
+   linker will refuse.
+3. **A branch in `EEPROM.cpp`** under `#if defined( CPU_… )`, next to the
+   A153 and N947 ones. It gives three things:
+   - `UNIT`: the smallest block the flash API programs at any aligned
+     offset. On A153 this is a 16-byte phrase. On N947 it is a 128-byte
+     page, and `FLASH_Program` returns status 101
+     (`kStatus_FLASH_AlignmentError`) at any other alignment. The
+     features header gives the page size but not the phrase, so confirm
+     `UNIT` by programming at a `UNIT`-aligned offset that is not
+     page-aligned.
+   - The flash API header to include.
+   - The init, erase and program calls in `start()`, `erase_half()` and
+     `program()`.
+
+   A153 goes through the boot ROM (`fsl_romapi.h`,
+   `FLASH_API->flash_init`), while N947 links `fsl_flash.c`. The same
+   family can take either route, so check the SDK for the target chip.
+4. **The SDK flash driver files**, from the same SDK zip as the rest
+   (see "Getting the SDK drivers"): headers into `variants/<board>/include/`,
+   and the `.c` if there is one into `variants/<board>/src/`. They are
+   linked only when a sketch uses `EEPROM`, so a mistake here does not
+   show up in `hello_world`.
+
+Then, on hardware:
+- Run `release_check/06_eeprom` twice: once across its own reset, and
+  once after uploading it again.
+- Dump the area before and after an upload and after an IDE Debug
+  launch, e.g. with LinkServer's memory read. The two existing chips'
+  flash loaders erase only the sectors the program occupies. A new
+  chip's loader might mass-erase, and then the data would survive a
+  reset but not an upload.
 
 ## 4. Update the things outside `hardware/nxp/mcx/`
 
