@@ -85,6 +85,11 @@ static uint32_t lpi2c_source_clock( LPI2C_Type *base )
 	panic( "I2C: no source clock known for this LPI2C instance" );
 	return 0;
 }
+
+uint32_t I2C::lpi2c_clock( void ) const
+{
+	return lpi2c_source_clock( unit_base );
+}
 #endif	// CPU_MCXC444VLH
 
 

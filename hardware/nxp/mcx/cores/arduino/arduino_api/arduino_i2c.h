@@ -14,6 +14,8 @@
 
 class I2C;	// full definition: i2c.h (r01lib), pulled in by whichever
 			// translation unit actually implements TwoWire's methods
+struct WireTarget;	// target (slave) mode state, arduino_i2c.cpp; allocated
+					// only by begin(address)
 
 /** Same feature macro as ArduinoCore-avr, so libraries that guard their
  *  setWireTimeout() calls with it pick it up here too. */
@@ -37,6 +39,13 @@ class I2C;	// full definition: i2c.h (r01lib), pulled in by whichever
  *  requestFrom() got, so a Wire can be handed to code that takes a Print&
  *  or Stream&. The outgoing and incoming data have separate buffers, so
  *  starting a transaction does not throw away bytes not yet read.
+ *
+ *  begin(address) also makes it a target (slave), as on AVR: onReceive()
+ *  and onRequest() handlers run, from the interrupt, when a controller
+ *  writes to or reads from that address, and the bus can still be used
+ *  as a controller at the same time. Wire only: Wire1 runs on the I3C
+ *  peripheral, and Wire2's LPI2C on FRDM-MCXN947 doesn't respond as a
+ *  target (see begin(uint8_t)).
  */
 class TwoWire : public Stream
 {
@@ -55,10 +64,14 @@ public:
 	 */
 	void	begin( void );
 
-	/** Join the bus as a target (slave) at the given address: what
-	 *  begin(address) means in every official core. Not supported yet,
-	 *  so this calls panic() with a message saying so, rather than
-	 *  letting a sketch written for a target run as something else.
+	/** Join the bus as a target (slave) at the given address, as well as
+	 *  a controller, as in every official core. Controller transfers keep
+	 *  working alongside. Calls panic() for an address over 127, and on
+	 *  any bus but Wire: Wire1 runs on the I3C peripheral, and FRDM-MCXN947's
+	 *  Wire2 (LPI2C3) never sees the bus as a target, though it works as a
+	 *  controller and is set up the same as Wire's LPI2C2, which does.
+	 *
+	 *  A later begin() with no address goes back to controller only.
 	 * @param address the target's own 7-bit address
 	 */
 	void	begin( uint8_t address );
@@ -74,8 +87,30 @@ public:
 	 */
 	void	begin( int address );
 
-	/** Deinitialize the bus and free the underlying I2C/I3C instance. */
+	/** Deinitialize the bus, target side included, and free the underlying
+	 *  I2C/I3C instance. */
 	void	end( void );
+
+	/** Set the handler called when a controller has written to this
+	 *  target, once the write ends (STOP or repeated start). Inside it,
+	 *  available()/read() give the bytes written, at most
+	 *  WIRE_BUFFER_SIZE; a controller writing more is NAKed from there on.
+	 *
+	 *  Runs from the LPI2C interrupt, as on AVR: keep it short, and keep
+	 *  Serial output in it small, since a full Serial TX buffer waits on
+	 *  an interrupt that can't run until this one returns.
+	 * @param handler function taking the number of bytes received
+	 */
+	void	onReceive( void (*handler)( int ) );
+
+	/** Set the handler called when a controller reads from this target.
+	 *  Inside it, write() queues the reply (up to WIRE_BUFFER_SIZE bytes).
+	 *  A controller that reads more than was queued gets 0xFF for the rest,
+	 *  as on AVR; with no handler set, all of it is 0xFF. Runs from the
+	 *  interrupt, the same as onReceive()'s handler.
+	 * @param handler function taking no arguments
+	 */
+	void	onRequest( void (*handler)( void ) );
 
 	/** Change the bus frequency at runtime (no-op before begin()).
 	 * @param freq SCL frequency in Hz
@@ -87,7 +122,8 @@ public:
 	 */
 	void	beginTransmission( const uint8_t address );
 
-	/** Queue one byte into the current transaction's write buffer.
+	/** Queue one byte into the current transaction's write buffer, or,
+	 *  inside an onRequest() handler, into the reply to the controller.
 	 * @param data byte to queue
 	 * @return 1, or 0 if the buffer (WIRE_BUFFER_SIZE bytes) is already
 	 *         full, in which case the byte is dropped and getWriteError()
@@ -186,8 +222,13 @@ public:
 	/** Clear the flag getWireTimeoutFlag() reports. */
 	void	clearWireTimeoutFlag( void );
 
+	/** Internal: target-side event from the LPI2C slave interrupt. */
+	void	target_event( void *xfer );
+
 private:
 	void	start( int baud );
+	void	target_arm( void );
+	void	target_stop( void );
 	bool	on_i3c_pins( void ) const;
 	void	check_timeout( int status );
 
@@ -198,9 +239,14 @@ private:
 	int			baudrate;
 	uint8_t		tx_buf[ WIRE_BUFFER_SIZE ];
 	size_t		tx_size;
-	uint8_t		rx_buf[ WIRE_BUFFER_SIZE ];
+	uint8_t		rx_buf[ WIRE_BUFFER_SIZE ];	// what requestFrom() read
+	const uint8_t	*rx_data;	// what read() reads: rx_buf, or what a
+								// controller last wrote to this target
 	size_t		rx_index;
 	size_t		rx_size;
+	WireTarget	*target;
+	void		(*user_onReceive)( int );
+	void		(*user_onRequest)( void );
 	uint32_t	timeout_us;
 	bool		reset_on_timeout;
 	bool		timed_out;

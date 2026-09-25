@@ -6,8 +6,9 @@
  *  test_Print_writeError, test_String, test_String_64bit,
  *  test_Serial_print_time_t, test_millis_micros, test_delayMicroseconds,
  *  test_analog_resolution_and_misc, test_Analog_read_write,
- *  test_Wire1_onboard_sensor_raw, test_Wire_Stream_requestFrom5, and
- *  (FRDM-MCXN947 only) test_Wire2_MikroBus_N947.
+ *  test_Wire1_onboard_sensor_raw, test_Wire_Stream_requestFrom5, the core
+ *  of test_Wire_target_self, and (FRDM-MCXN947 only)
+ *  test_Wire2_MikroBus_N947.
  *
  *  On FRDM-MCXN947, take release_check/11's Serial1 loopback jumper
  *  (MB_TX-MB_RX) off before running this: those are Wire1's SDA/SCL pins
@@ -88,6 +89,46 @@ size_t printThroughPrint(Print &p, const char *s) {
 int readThroughStream(Stream &s) {
   s.flush();
   return s.read();
+}
+
+// For the Wire-target section: Wire as a target of its own controller.
+// A register file, as target sketches usually are: a write's first byte
+// sets the pointer, a read returns 4 registers from it.
+uint8_t tgtRegs[16];
+uint8_t tgtPtr = 0;
+int tgtRxCount = -1;
+char tgtOrder[4];
+int tgtNOrder = 0;
+
+void tgtOnReceive(int n) {
+  tgtRxCount = n;
+  if (tgtNOrder < 3)
+    tgtOrder[tgtNOrder++] = 'R';
+  for (int i = 0; i < n && Wire.available(); i++) {
+    uint8_t v = Wire.read();
+    if (i == 0)
+      tgtPtr = v & 15;
+    else
+      tgtRegs[(tgtPtr + i - 1) & 15] = v;
+  }
+}
+
+void tgtOnRequest() {
+  if (tgtNOrder < 3)
+    tgtOrder[tgtNOrder++] = 'Q';
+  for (int i = 0; i < 4; i++)
+    Wire.write(tgtRegs[(tgtPtr + i) & 15]);
+}
+
+// Internal pull-ups on Wire's pins; nothing else pulls the bus up here
+void wirePullUps() {
+#if defined(FRDM_MCXN947)
+  PORT4->PCR[0] |= PORT_PCR_PE_MASK | PORT_PCR_PS_MASK;
+  PORT4->PCR[1] |= PORT_PCR_PE_MASK | PORT_PCR_PS_MASK;
+#else
+  PORT1->PCR[8] |= PORT_PCR_PE_MASK | PORT_PCR_PS_MASK;
+  PORT1->PCR[9] |= PORT_PCR_PE_MASK | PORT_PCR_PS_MASK;
+#endif
 }
 
 void setup() {
@@ -495,6 +536,47 @@ void setup() {
     Wire1.write((uint8_t)saved);
     Wire1.endTransmission();
     check("T_LOW restored", readSensorReg16(T_LOW) == saved);
+  }
+
+  // ---- Wire target (slave) mode, Wire talking to its own target
+  //      (the core of test_Wire_target_self; see that sketch and
+  //      release_check/24 for more). Needs nothing on D18/D19 ----
+  Serial.println("--- Wire as its own target (begin(address)/onReceive/onRequest) ---");
+  {
+    const uint8_t ADDR = 0x42;
+    for (int i = 0; i < 16; i++)
+      tgtRegs[i] = 0xA0 + i;
+
+    Wire.setWireTimeout(25000);  // also clears a bus-busy latched while the pins floated
+    Wire.onReceive(tgtOnReceive);
+    Wire.onRequest(tgtOnRequest);
+    Wire.begin(ADDR);
+    wirePullUps();
+    delay(2);
+    Wire.begin(ADDR);
+
+    Wire.beginTransmission(ADDR);
+    Wire.write(2);
+    Wire.write(0x11);
+    Wire.write(0x22);
+    uint8_t r = Wire.endTransmission();
+    delay(1);  // the target runs onReceive() a moment after the STOP
+    check("write to own target: onReceive(3), registers set",
+          r == 0 && tgtRxCount == 3 && tgtRegs[2] == 0x11 && tgtRegs[3] == 0x22);
+
+    tgtNOrder = 0;
+    memset(tgtOrder, 0, sizeof(tgtOrder));
+    uint8_t n = Wire.requestFrom(ADDR, (uint8_t)6, (uint32_t)2, (uint8_t)1, (uint8_t)true);
+    uint8_t b[6] = { 0 };
+    for (int i = 0; i < 6 && Wire.available(); i++)
+      b[i] = Wire.read();
+    check("register read: onReceive(1) then onRequest, 4 registers then 0xFF",
+          n == 6 && strcmp(tgtOrder, "RQ") == 0 && b[0] == 0x11 && b[1] == 0x22 && b[2] == 0xA4 && b[3] == 0xA5 && b[4] == 0xFF && b[5] == 0xFF);
+
+    Wire.beginTransmission(ADDR + 1);
+    check("another address is NAKed", Wire.endTransmission() == 134);
+
+    Wire.end();
   }
 
 #if defined(FRDM_MCXN947)

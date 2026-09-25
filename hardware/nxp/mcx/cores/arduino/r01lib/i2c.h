@@ -253,6 +253,20 @@ public:
 	 */
 	virtual status_t	ccc_get( uint8_t ccc, uint8_t addr, uint8_t *dp, uint8_t length );
 
+#if	!CPU_MCXC444VLH
+	/** The LPI2C peripheral this bus runs on, for code that drives its
+	 *  target (slave) side through the SDK's LPI2C_Slave* API; the master
+	 *  and target halves of one LPI2C run independently. Not meaningful on
+	 *  an I3C, which is built without a hardware LPI2C.
+	 * @return LPI2C base address
+	 */
+	LPI2C_Type				*lpi2c_base( void ) const { return unit_base; }
+
+	/** @return functional clock of lpi2c_base()'s LPI2C in Hz, what
+	 *  LPI2C_SlaveInit() wants as its source clock */
+	uint32_t				lpi2c_clock( void ) const;
+#endif
+
 	/** variable for reporting last state */
 	status_t				last_status;
 

@@ -224,6 +224,19 @@ Note also that a driver which *queries* its clock
 a fixed instance does not. A153's I2C queries; N947's asks for FlexComm2
 unconditionally even when the instance in use is FlexComm3.
 
+**Check I2C target mode on each LPI2C, not just the controller side.**
+`Wire.begin(address)` rests on the SDK's `LPI2C_Slave*` API, and neither
+existing board gave it for free. A153's `fsl_lpi2c` (2.5.4) switches the
+master off when it arms the slave, while N947's (2.2.4) doesn't, so
+`arduino_i2c.cpp` switches it back on; a board whose SDK is a different
+version again may do something else. And on N947, LPI2C3 (`Wire2`)
+never responds as a target at all, though it works as a controller and
+is set up identically to LPI2C2 (`Wire`), which does; the cause was not
+found, so `begin(address)` refuses that bus by its pins. Run
+`test_Wire_target_self` (the board as its own target, no wiring) on
+every LPI2C the new board exposes, and refuse the ones that fail the same
+way.
+
 **Aggregate initialization of SDK config structs is not portable.**
 `port_pin_config_t` is a bitfield whose members depend on
 `FSL_FEATURE_PORT_HAS_*`. A positional `{a, b, c}` initializer that

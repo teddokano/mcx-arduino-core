@@ -30,6 +30,12 @@ with one setup each:
 | 21 | `21_combined_peripherals_external_module` | needs the external `P3T1755.h` library + (A153 only) D1-D0 jumper + MikroBus MOSI-MISO jumper | manual (watch the Serial log for WARNING lines) |
 | 22 | `22_wire_lm75b_external_module` | needs an external LM75-family sensor module on D18(SDA)/D19(SCL)/3V3/GND | manual (read the printed temperature) |
 | 23 | `23_waveshare_tft_touch_external_library` | needs the external `Waveshare_TFT_Touch` library + its LCD/SD hardware (see its own README) | manual (judge the rendered image + draw speed) |
+| 24 | `24_wire_target_two_boards` | an FRDM-MCXA153 and an FRDM-MCXN947 wired D18-D18, D19-D19, GND-GND, both running this sketch (reset both together if either already was) | automatic, on each board |
+
+`24_wire_target_two_boards` mirrors
+[`Arduino_compatible_API/test_Wire_target_two_boards`](../Arduino_compatible_API/test_Wire_target_two_boards)
+exactly in the same way. `01` also runs a board against its own target
+on `Wire`, which needs nothing on D18/D19.
 
 `14_wire_timeout` mirrors
 [`Arduino_compatible_API/test_Wire_setWireTimeout`](../Arduino_compatible_API/test_Wire_setWireTimeout)
