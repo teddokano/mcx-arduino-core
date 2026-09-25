@@ -41,10 +41,8 @@ on `Wire`, which needs nothing on D18/D19.
 [`Arduino_compatible_API/test_Wire_setWireTimeout`](../Arduino_compatible_API/test_Wire_setWireTimeout)
 exactly -- edit that one, then copy it here. It holds `Wire`'s SCL low
 from D8 in the middle of a transfer, standing in for a target that
-clock-stretches forever. Its jumpers also supply the bus's pull-ups (D7/D8
-run with internal pull-ups while released), which matters on FRDM-MCXA153:
-its D18/D19 have none on board, and a bare floating bus hangs the very
-first transfer.
+clock-stretches forever. D7/D8 run with internal pull-ups while released,
+alongside the ones `Wire.begin()` turns on for D18/D19.
 
 `04_mcxpinstate_audit` is a copy of the bundled `mcxPinState` library's
 own `CombinedPeripheralsAudit` example, kept here so a release check

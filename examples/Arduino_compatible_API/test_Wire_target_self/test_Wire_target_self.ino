@@ -4,7 +4,7 @@
  *  Wire can address itself.
  *
  *  Wiring: none. Nothing may be connected to D18/D19: the bus runs on the
- *  pins' internal pull-ups, which a real I2C bus would have as resistors.
+ *  pins' internal pull-ups, which Wire.begin() turns on.
  *
  *  Automatic: reads "ALL OK" or "N FAILED" at the end.
  */
@@ -80,14 +80,7 @@ void resetLog() {
   memset(got, 0, sizeof(got));
 }
 
-// Internal pull-ups on the bus pins. pinMode() can't do this: it would take
-// the pins back from the I2C peripheral.
-void pullUps(PORT_Type *port, int sda, int scl) {
-  port->PCR[sda] |= PORT_PCR_PE_MASK | PORT_PCR_PS_MASK;
-  port->PCR[scl] |= PORT_PCR_PE_MASK | PORT_PCR_PS_MASK;
-}
-
-void suite(TwoWire &w, const char *name, uint8_t addr, LPI2C_Type *base, PORT_Type *port, int sda, int scl) {
+void suite(TwoWire &w, const char *name, uint8_t addr, LPI2C_Type *base) {
   Serial.print("--- ");
   Serial.print(name);
   Serial.print(" as its own target at 0x");
@@ -95,12 +88,9 @@ void suite(TwoWire &w, const char *name, uint8_t addr, LPI2C_Type *base, PORT_Ty
   Serial.println(" ---");
 
   bus = &w;
-  w.setWireTimeout(25000);  // also clears a bus-busy latched while the pins floated
+  w.setWireTimeout(25000);  // so a failure shows as FAIL rather than a hang
   w.onReceive(onRx);
   w.onRequest(onReq);
-  w.begin(addr);
-  pullUps(port, sda, scl);
-  delay(2);
   w.begin(addr);
   for (int i = 0; i < 16; i++)
     regs[i] = 0xA0 + i;
@@ -193,7 +183,6 @@ void suite(TwoWire &w, const char *name, uint8_t addr, LPI2C_Type *base, PORT_Ty
   check("address-only write (as a bus scan does): onReceive(0), as on AVR", r == 0 && rxCalls == 1 && rxCount == 0);
 
   w.begin();
-  pullUps(port, sda, scl);
   w.beginTransmission(addr);
   w.write(1);
   r = w.endTransmission();
@@ -206,9 +195,6 @@ void suite(TwoWire &w, const char *name, uint8_t addr, LPI2C_Type *base, PORT_Ty
   check("begin() with no address: no longer a target", r == 134);
 
   w.end();
-  w.begin(addr);
-  pullUps(port, sda, scl);
-  delay(2);
   w.begin(addr);
   resetLog();
   w.beginTransmission(addr);
@@ -227,9 +213,9 @@ void setup() {
   Serial.println("=== Wire target mode, against itself (no wiring) ===");
 
 #if defined(FRDM_MCXN947)
-  suite(Wire, "Wire", 0x42, LPI2C2, PORT4, 0, 1);
+  suite(Wire, "Wire", 0x42, LPI2C2);
 #else
-  suite(Wire, "Wire", 0x42, LPI2C0, PORT1, 8, 9);
+  suite(Wire, "Wire", 0x42, LPI2C0);
 #endif
 
   Serial.println();

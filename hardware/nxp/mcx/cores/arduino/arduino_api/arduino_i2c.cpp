@@ -313,6 +313,13 @@ void TwoWire::start( int baud )
 		else
 		{
 			i2c	= new I2C( _sda, _scl );
+
+			//	Internal pull-ups on, as AVR's twi_init() and UNO R4's
+			//	begin() do: FRDM-MCXA153 has no pull-up resistors on D18/D19,
+			//	so without them a bus with nothing else on it floats, reads
+			//	low, and the first transfer hangs or finds the bus busy.
+			//	Harmless next to external pull-ups, which set the rise time.
+			i2c->pullup( true );
 		}
 	}
 
@@ -343,6 +350,10 @@ void TwoWire::start( int baud )
 void TwoWire::end( void )
 {
 	target_stop();
+
+	if ( i2c && !on_i3c_pins() )
+		i2c->pullup( false );	// as AVR's twi_disable()
+
 	delete i2c;
 	i2c	= nullptr;
 }

@@ -17,11 +17,9 @@
 #if defined(FRDM_MCXN947)
 const uint8_t SELF = 0x43, PEER = 0x42;
 const bool GOES_FIRST = false;
-#define PULL_UPS() do { PORT4->PCR[0] |= PORT_PCR_PE_MASK | PORT_PCR_PS_MASK; PORT4->PCR[1] |= PORT_PCR_PE_MASK | PORT_PCR_PS_MASK; } while (0)
 #else
 const uint8_t SELF = 0x42, PEER = 0x43;
 const bool GOES_FIRST = true;
-#define PULL_UPS() do { PORT1->PCR[8] |= PORT_PCR_PE_MASK | PORT_PCR_PS_MASK; PORT1->PCR[9] |= PORT_PCR_PE_MASK | PORT_PCR_PS_MASK; } while (0)
 #endif
 
 const uint8_t YOUR_TURN = 0x10;
@@ -126,12 +124,9 @@ void setup() {
   for (int i = 0; i < 16; i++)
     regs[i] = 0xA0 + i;
 
-  Wire.setWireTimeout(25000);  // also clears a bus-busy latched while the pins floated
+  Wire.setWireTimeout(25000);  // so a board reset mid-transfer shows as FAIL rather than a hang
   Wire.onReceive(onRx);
   Wire.onRequest(onReq);
-  Wire.begin(SELF);
-  PULL_UPS();
-  delay(2);
   Wire.begin(SELF);
 
   if (GOES_FIRST) {

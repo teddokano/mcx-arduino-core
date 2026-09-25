@@ -10,12 +10,9 @@
  *
  *  D8/D7 (MB_PWM/MB_INT) hold either bus line low on cue (open-drain
  *  output) -- standing in for a target that stretches the clock or holds
- *  SDA forever -- and let go of it again (input with pull-up). Those
- *  internal pull-ups are also the bus's only pull-ups: FRDM-MCXA153 has
- *  none on D18/D19, and a bus left floating reads low and hangs the very
- *  first transfer. Every transfer is addressed to 0x50, where nothing
- *  answers, so a healthy bus comes back with a NAK in well under a
- *  millisecond.
+ *  SDA forever -- and let go of it again (input with pull-up). Every
+ *  transfer is addressed to 0x50, where nothing answers, so a healthy bus
+ *  comes back with a NAK in well under a millisecond.
  *
  *  If the sketch stops printing after a "running:" line, that transfer hung
  *  -- the very thing a timeout is supposed to prevent.

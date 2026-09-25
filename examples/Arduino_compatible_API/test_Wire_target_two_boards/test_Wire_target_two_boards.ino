@@ -3,7 +3,8 @@
  *  the other.
  *
  *  Wiring: D18-D18, D19-D19 and GND-GND between the two boards; nothing
- *  else on D18/D19. The bus runs on the pins' internal pull-ups.
+ *  else on D18/D19. The bus runs on the pins' internal pull-ups, which
+ *  Wire.begin() turns on.
  *
  *  Flash this same sketch to both, in either order. The FRDM-MCXA153
  *  waits for the FRDM-MCXN947 to answer, runs its checks against it as
@@ -28,11 +29,9 @@
 #if defined(FRDM_MCXN947)
 const uint8_t SELF = 0x43, PEER = 0x42;
 const bool GOES_FIRST = false;
-#define PULL_UPS() do { PORT4->PCR[0] |= PORT_PCR_PE_MASK | PORT_PCR_PS_MASK; PORT4->PCR[1] |= PORT_PCR_PE_MASK | PORT_PCR_PS_MASK; } while (0)
 #else
 const uint8_t SELF = 0x42, PEER = 0x43;
 const bool GOES_FIRST = true;
-#define PULL_UPS() do { PORT1->PCR[8] |= PORT_PCR_PE_MASK | PORT_PCR_PS_MASK; PORT1->PCR[9] |= PORT_PCR_PE_MASK | PORT_PCR_PS_MASK; } while (0)
 #endif
 
 const uint8_t YOUR_TURN = 0x10;
@@ -137,12 +136,9 @@ void setup() {
   for (int i = 0; i < 16; i++)
     regs[i] = 0xA0 + i;
 
-  Wire.setWireTimeout(25000);  // also clears a bus-busy latched while the pins floated
+  Wire.setWireTimeout(25000);  // so a board reset mid-transfer shows as FAIL rather than a hang
   Wire.onReceive(onRx);
   Wire.onRequest(onReq);
-  Wire.begin(SELF);
-  PULL_UPS();
-  delay(2);
   Wire.begin(SELF);
 
   if (GOES_FIRST) {

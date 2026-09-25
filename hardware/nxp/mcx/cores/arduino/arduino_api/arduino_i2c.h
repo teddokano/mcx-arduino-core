@@ -60,7 +60,8 @@ public:
 	/** Join the bus as the controller (master), at 100kHz; setClock()
 	 *  changes that. Lazily creates the underlying I2C or I3C instance
 	 *  (I3C, in I2C_MODE, if sda_pin/scl_pin are this board's
-	 *  I3C_SDA/I3C_SCL).
+	 *  I3C_SDA/I3C_SCL). On the LPI2C buses (Wire, Wire2) it also turns on
+	 *  the pins' internal pull-ups, as AVR and UNO R4 do.
 	 */
 	void	begin( void );
 
@@ -87,8 +88,9 @@ public:
 	 */
 	void	begin( int address );
 
-	/** Deinitialize the bus, target side included, and free the underlying
-	 *  I2C/I3C instance. */
+	/** Deinitialize the bus, target side included, turn the internal
+	 *  pull-ups off again (as AVR does), and free the underlying I2C/I3C
+	 *  instance. */
 	void	end( void );
 
 	/** Set the handler called when a controller has written to this

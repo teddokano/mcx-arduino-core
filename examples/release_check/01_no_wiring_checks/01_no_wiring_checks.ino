@@ -120,17 +120,6 @@ void tgtOnRequest() {
     Wire.write(tgtRegs[(tgtPtr + i) & 15]);
 }
 
-// Internal pull-ups on Wire's pins; nothing else pulls the bus up here
-void wirePullUps() {
-#if defined(FRDM_MCXN947)
-  PORT4->PCR[0] |= PORT_PCR_PE_MASK | PORT_PCR_PS_MASK;
-  PORT4->PCR[1] |= PORT_PCR_PE_MASK | PORT_PCR_PS_MASK;
-#else
-  PORT1->PCR[8] |= PORT_PCR_PE_MASK | PORT_PCR_PS_MASK;
-  PORT1->PCR[9] |= PORT_PCR_PE_MASK | PORT_PCR_PS_MASK;
-#endif
-}
-
 void setup() {
   Serial.begin(115200);
   while (!Serial)
@@ -547,12 +536,10 @@ void setup() {
     for (int i = 0; i < 16; i++)
       tgtRegs[i] = 0xA0 + i;
 
-    Wire.setWireTimeout(25000);  // also clears a bus-busy latched while the pins floated
+    // Nothing but the internal pull-ups Wire.begin() turns on holds the bus up
+    Wire.setWireTimeout(25000);  // so a failure shows as FAIL rather than a hang
     Wire.onReceive(tgtOnReceive);
     Wire.onRequest(tgtOnRequest);
-    Wire.begin(ADDR);
-    wirePullUps();
-    delay(2);
     Wire.begin(ADDR);
 
     Wire.beginTransmission(ADDR);

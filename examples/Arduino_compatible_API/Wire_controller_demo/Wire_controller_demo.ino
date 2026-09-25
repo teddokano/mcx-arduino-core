@@ -12,6 +12,10 @@
  *    D19 (SCL) -- D19 (SCL)
  *    GND       -- GND
  *
+ *  No pull-up resistors needed for these short wires: Wire.begin() turns
+ *  on the pins' internal ones. A longer bus, or a faster one, wants
+ *  external pull-ups as well (e.g. 4.7k to 3.3V on SDA and SCL).
+ *
  *  Works on FRDM-MCXA153 and FRDM-MCXN947.
  */
 
@@ -22,28 +26,13 @@ const uint8_t TARGET_ADDRESS = 0x08;
 
 int count = 0;
 
-// This demo's bus has no pull-up resistors, so it uses the pins' internal
-// ones. A real I2C bus should have external pull-ups (e.g. 4.7k to 3.3V)
-// on SDA and SCL instead; with those fitted, leave this out.
-void enableInternalPullUps() {
-#if defined(FRDM_MCXN947)
-  PORT4->PCR[0] |= PORT_PCR_PE_MASK | PORT_PCR_PS_MASK;  // D18 = P4_0
-  PORT4->PCR[1] |= PORT_PCR_PE_MASK | PORT_PCR_PS_MASK;  // D19 = P4_1
-#else
-  PORT1->PCR[8] |= PORT_PCR_PE_MASK | PORT_PCR_PS_MASK;  // D18 = P1_8
-  PORT1->PCR[9] |= PORT_PCR_PE_MASK | PORT_PCR_PS_MASK;  // D19 = P1_9
-#endif
-}
-
 void setup() {
   Serial.begin(115200);
 
   // A timeout keeps a transfer from hanging if the other board is reset
-  // in the middle of it. It also lets the bus recover from the moment
-  // before the pull-ups below are on, when the lines float.
+  // in the middle of it
   Wire.setWireTimeout(25000);
   Wire.begin();
-  enableInternalPullUps();
 
   Serial.println("I2C controller ready");
 }
