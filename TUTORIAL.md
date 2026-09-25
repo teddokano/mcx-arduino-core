@@ -572,10 +572,10 @@ not AVR's `"ffff"`.
 
 ### 2.14. Keeping data across resets: `EEPROM`
 
-Neither board has an EEPROM chip, but the bundled `EEPROM` library gives you
-the same 1KB and the same interface as on UNO R3, kept in the top of the
-on-chip flash. What you store survives resets, power cycles and uploading a
-new sketch. This one counts how many times the board has started:
+The bundled `EEPROM` library gives you the same 1KB and the same interface
+as on UNO R3, kept in the top of the MCU's on-chip flash. What you store
+survives resets, power cycles and uploading a new sketch. This one counts
+how many times the board has started:
 
 ```cpp
 #include <Arduino.h>

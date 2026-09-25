@@ -21,9 +21,9 @@
  *  read()/write()/update(), EEPROM[i], get()/put() of any type, and
  *  iteration from begin() to end().
  *
- *  Neither chip has an EEPROM, so the bytes live in the top of the on-chip
- *  flash, which the linker script keeps the program out of: the last 16KB
- *  on FRDM-MCXA153 and 64KB on FRDM-MCXN947, two halves used in turn. A
+ *  The bytes live in the top of the MCU's on-chip flash, which the linker
+ *  script keeps the program out of: the last 16KB on FRDM-MCXA153 and 64KB
+ *  on FRDM-MCXN947, two halves used in turn. A
  *  write appends a small record to the current half, which takes about
  *  0.1-0.5ms. When that half is full, which happens every ~440 writes on
  *  FRDM-MCXA153 and every ~250 on FRDM-MCXN947, the other half is erased
