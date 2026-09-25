@@ -60,7 +60,10 @@ recipe.objcopy.bin.pattern="{compiler.path}{compiler.elf2hex.cmd}" {compiler.elf
 compiler.size.cmd=arm-none-eabi-size
 recipe.size.pattern="{compiler.path}{compiler.size.cmd}" -A "{build.path}/{build.project_name}.elf"
 recipe.size.regex=^(?:\.text|\.data|\.rodata)\s+([0-9]+).*
-recipe.size.regex.data=^(?:\.data|\.bss)\s+([0-9]+).*
+# RAM "used by global variables": everything in SRAM below the stack, the heap
+# included, so what the IDE reports left for local variables is the stack's
+# room before its hardware limit (MSPLIM, set at the end of the heap)
+recipe.size.regex.data=^(?:\.data|\.bss|\.noinit|\.uninit_RESERVED|\.heap)\s+([0-9]+).*
 
 # Upload
 tools.linkserver.upload.params.verbose=

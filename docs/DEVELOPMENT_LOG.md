@@ -2359,8 +2359,21 @@ IDEのDebugと同じ経路（gdb-bridgeで`load`して実行）では、LinkServ
 **気づいたこと**: 6.で最初はアドレス0への書き込みを使ったが、A153では静的初期化中だと**フォールトしなかった**（`setup()`内の同じ書き込みはPRECISERRになる）。原因は追っていない。テストは存在しないアドレスの読み出しに変えた。「nullへの書き込みは必ずフォールトする」とは書かないこと。
 なお、LinkServerの`gdbserver --attach`はコアを止めない（"No Halt on Attach"）ので、動いているターゲットのレジスタは0に見える。`monitor halt`も使えない。
 
+### IDEのRAM表示にヒープを含める
+ビルド後の「ローカル変数で○○バイト使うことができます」は、`platform.txt`の`recipe.size.regex.data`が`.data|.bss`しか数えていなかったため、ヒープ（A153 8KB、N947 16KB）の分だけ多く出ていた。
+`MSPLIM`でヒープの終わりがスタックの止まる所になったので、この差がそのまま「表示を信じたら止まる」差になる。
+正規表現にSRAM上のスタックより下の区間（`.noinit`・`.uninit_RESERVED`・`.heap`）を足した。`.bss_RAM2`・`.heap2stackfill`は`\s+`が要るので一致しない。
+A153の小さいスケッチで、表示は19668→11476バイトになり、`0x6000 − (.data+.bss+.heap)`と一致した。
+
+**実機確認（両ボード）**: `setup()`から呼んだ関数にローカル配列を置き、両端に書き込む。表示の1KB手前（A153 10452、N947 369924バイト）は`survived`まで進み、表示の64バイト先（11540、371012バイト）は`error: HardFault: stack overflow`で止まった。
+
+### mcxPinStateの照合（0.7.0）
+`MCXPINSTATE_VERIFIED_AGAINST`は開発の初め（2026-09-13）に、同梱コピーと上流の両方で0.7.0に上げてある。その後`arduino_io.h`が変わったのは`de27445`（`SDA`/`SCL`）だけである。
+これは`ArduinoPinNum`の外の`static const uint8_t`で、`PIN_WIRE_SDA`/`PIN_WIRE_SCL`と同じ値の別名にすぎない。
+ピン番号も`ALIAS_NAMES`/`KNOWN_INSTANCES`の対応も変わらないので、どちらのコピーも変更不要とした（hygieneチェックでも53個が順に一致）。同梱コピーと上流の中身は同一。
+
 ### CI（`b47c400`）
-`actions/checkout`をv7、`actions/cache`をv6に上げた（Node.js 20の廃止対応）。`arduino/setup-arduino-cli`はv2（Node.js 20）より新しいリリースが無いので、arduino-cliはGitHubのリリースから直接入れ、チェックサムファイルで照合する。`workflow_dispatch`に`runner`入力を加えた（2026-10-19に`ubuntu-latest`が切り替わる前に`ubuntu-26.04`を試すため）。
+`actions/checkout`をv7、`actions/cache`をv6に上げた（Node.js 20の廃止対応）。`arduino/setup-arduino-cli`はv2（Node.js 20）より新しいリリースが無いので、arduino-cliはGitHubのリリースから直接入れ、チェックサムファイルで照合する。`workflow_dispatch`に`runner`入力を加えた（2026-10-19に`ubuntu-latest`が切り替わる前に`ubuntu-26.04`を試すため）。2026-09-25に`ubuntu-26.04`で3ジョブとも通った（run 36163631573）。
 
 ---
 
