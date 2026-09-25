@@ -44,6 +44,12 @@
 // semihosted code in a production build of your application!
 //
 // ****************************************************************************
+//
+// mcx-arduino-core: modified from the SDK's copy where marked, so that a
+// fault other than semihosting prints what happened instead of hanging
+// silently.
+//
+// ****************************************************************************
 
 // Allow handler to be removed by setting a define (via command line)
 #if !defined (__SEMIHOST_HARDFAULT_DISABLE)
@@ -60,16 +66,39 @@ void HardFault_Handler(void){
             "B  _process             \n"
             "_MSP:                   \n"
             "MRS    R0, MSP          \n"
-        // Load the instruction that triggered hard fault
+        // mcx-arduino-core: a BKPT only gets here as HFSR.DEBUGEVT, so the
+        // instruction at the stacked PC is read only then. Any other fault
+        // may have a stacked PC that can't be read (a jump to a bad
+        // address), and a fault in here would lock the core up.
         "_process:                   \n"
+            "LDR    R2,=0xE000ED2C   \n"  // SCB->HFSR
+            "LDR    R2,[R2]          \n"
+            "CMP    R2,#0            \n"
+            "BPL    _hf_report       \n"  // DEBUGEVT (bit 31) clear
+        // Load the instruction that triggered hard fault
             "LDR    R1,[R0,#24]      \n"
             "LDRH   R2,[r1]          \n"
         // Semihosting instruction is "BKPT 0xAB" (0xBEAB)
             "LDR    R3,=0xBEAB       \n"
             "CMP    R2,R3            \n"
             "BEQ    _semihost_return \n"
-        // Wasn't semihosting instruction so enter infinite loop
-            "B .                     \n"
+        // mcx-arduino-core: wasn't semihosting, so report the fault on the
+        // USB serial port and blink SOS (mcx_fault_report() in mcu.cpp)
+        // instead of the original silent "B .". If the stack is within 1KB
+        // of its limit (a stack overflow, usually) the report gets a fresh
+        // stack from the top; otherwise the stack is kept, so a debugger
+        // paused later can still unwind to the fault.
+        "_hf_report:                 \n"
+            "MRS    R2, MSP          \n"
+            "LDR    R3,=_pvHeapLimit \n"
+            "ADD    R3, R3, #1024    \n"
+            "CMP    R2, R3           \n"
+            "BHS    _hf_keep_stack   \n"
+            "LDR    R3,=_vStackTop   \n"
+            "MSR    MSP, R3          \n"
+        "_hf_keep_stack:             \n"
+            "MOV    R1, LR           \n"  // EXC_RETURN
+            "B      mcx_fault_report \n"
         // Was semihosting instruction, so adjust location to
         // return to by 1 instruction (2 bytes), then exit function
             "_semihost_return:       \n"

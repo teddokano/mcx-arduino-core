@@ -155,6 +155,17 @@ garbled text or nothing at all.
 - Make sure the sketch actually finished uploading (watch for "Done
   uploading" in the output pane) before expecting output
 
+**The sketch stops and the red LED blinks SOS (`... --- ...`):**
+- The core stopped the sketch on purpose. The Serial Monitor shows why, in
+  a line starting with `error:`, repeated every few seconds (at the
+  sketch's baud rate, or 115200 if it never called `Serial.begin()`)
+- `error: HardFault: ...` means the program itself crashed: a bad pointer,
+  a stack overflow (too much in local variables, or recursion that never
+  ends), and so on. The `PC 0x...` in that line is where it happened. To
+  turn it into a source line, run `arm-none-eabi-addr2line -e <sketch>.elf
+  0x...` on the `.elf` from the build (**Sketch → Export Compiled Binary**
+  puts one under `build/` in the sketch folder)
+
 If none of this helps, the [README.md](README.md) has more detail, or open
 an issue on the
 [GitHub repo](https://github.com/teddokano/mcx-arduino-core/issues).

@@ -2333,6 +2333,32 @@ core側の不足が2つ見つかった:
 ### `docs/porting_a_new_board.md`にEEPROMの節
 新しいボードに要るもの4つ（リンカスクリプトの`EEPROM_FLASH`と`__base/__top_EEPROM_FLASH`、`boards.txt`の`upload.maximum_size`、`EEPROM.cpp`のチップ分岐と`UNIT`、SDKのフラッシュドライバ）と、実機で確かめること（`release_check/06`を2回、アップロード前後のダンプ）を書いた。
 
+### HardFaultで`error:`を出す、スタックに上限
+上のEEPROMの不具合では、シリアルに空行1つしか出ず、原因にたどり着くのにgdbとスキャン用スケッチが要った。
+調べると、coreのHardFaultハンドラ（`sdk/semihost_hardfault.c`、NXPのセミホスティング用）は、セミホスティングの`BKPT 0xAB`でなければ`B .`で無言のループに入っていた。SOS点滅すら出ない。
+
+**変更**:
+- **ハンドラ**: セミホスティング以外は`mcu.cpp`の`mcx_fault_report()`へ分岐する。CFSR/HFSRから理由を決め、PC・BFAR/MMFAR・CFSR・HFSRを付けた文を`panic()`に渡す（printfは使わない）。書式は`error: HardFault: <理由> [to <アドレス>] at PC <PC> [in an interrupt] (CFSR ..., HFSR ...)`
+- **スタックの付け替え**: MSPが上限（ヒープの終わり）から1KB以内なら、報告の前にMSPをスタックの先頭（`_vStackTop`）へ移す。そうでなければ今のスタックのまま続けるので、デバッガで後から止めてもフォールト箇所まで遡れる
+- **ハンドラ自身が起こしうるロックアップ**: 元のハンドラは、どのフォールトでも積まれたPCの命令を読んでいた。不正なアドレスへのジャンプでは、そこを読んだ時点でHardFault中に再びフォールトし、ロックアップする。BKPTは必ずHFSR.DEBUGEVTとして来るので、DEBUGEVTのときだけ読むようにした
+- **`MSPLIM`**: スタックはSRAMの末尾からヒープへ向かって下に伸び、間に止めるものが無かった。あふれるとヒープとグローバル変数（`Serial`のオブジェクトも）を壊してから、どこか無関係な所で失敗する。`start_mcu()`（constructor(0)）で`MSPLIM`をヒープの終わり（`_pvHeapLimit`）に設定した。ヒープとスタックの間の空きRAMは従来どおり使える
+
+**実機確認（両ボード）**: 8種類をわざと起こした（`examples/Arduino_compatible_API/test_fault_report`、`FAULT_KIND`で選ぶ）。全ケースで期待どおりの理由とレジスタ値が出た。
+1. アドレス0への書き込み
+2. 存在しないアドレス（0x2F000000）の読み出し
+3. nullの関数ポインタの呼び出し（`INVSTATE`、PC 0x00000000）
+4. 無限再帰（`STKOF`）。このときは積まれたフレームが信用できないのでPCを出さない
+5. SVCハンドラ内でのフォールト（`in an interrupt`）
+6. 静的初期化中のフォールト（`Serial.begin()`より前）
+7. 未定義命令
+8. デバッガ無しの`BKPT`
+
+どのケースでも、直前に`Serial.println()`した行（まだ送信バッファにあったもの）が先に出た。PCは`arm-none-eabi-addr2line`でスケッチの該当行に戻ることも確認した。
+IDEのDebugと同じ経路（gdb-bridgeで`load`して実行）では、LinkServerがHardFaultの入口でコアを止める（ベクタキャッチ）。バックトレースは`<signal handler called>`を挟んで`setup()`のフォールト行まで遡れるので、デバッグ中の挙動は従来と変わらない。
+
+**気づいたこと**: 6.で最初はアドレス0への書き込みを使ったが、A153では静的初期化中だと**フォールトしなかった**（`setup()`内の同じ書き込みはPRECISERRになる）。原因は追っていない。テストは存在しないアドレスの読み出しに変えた。「nullへの書き込みは必ずフォールトする」とは書かないこと。
+なお、LinkServerの`gdbserver --attach`はコアを止めない（"No Halt on Attach"）ので、動いているターゲットのレジスタは0に見える。`monitor halt`も使えない。
+
 ### CI（`b47c400`）
 `actions/checkout`をv7、`actions/cache`をv6に上げた（Node.js 20の廃止対応）。`arduino/setup-arduino-cli`はv2（Node.js 20）より新しいリリースが無いので、arduino-cliはGitHubのリリースから直接入れ、チェックサムファイルで照合する。`workflow_dispatch`に`runner`入力を加えた（2026-10-19に`ubuntu-latest`が切り替わる前に`ubuntu-26.04`を試すため）。
 

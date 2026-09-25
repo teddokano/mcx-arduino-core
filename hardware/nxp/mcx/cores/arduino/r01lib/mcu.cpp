@@ -33,6 +33,15 @@ extern "C" {
 __attribute__((constructor(0)))
 void start_mcu()
 {
+#if defined(__ARM_ARCH_8M_MAIN__)
+	//	The stack grows down from the top of SRAM towards the heap, with
+	//	nothing in between to stop it. MSPLIM turns running into the heap
+	//	into a fault (reported by mcx_fault_report()) before it corrupts
+	//	the heap and the globals below it.
+	extern char	_pvHeapLimit;
+	__set_MSPLIM( (uint32_t)&_pvHeapLimit );
+#endif
+
 	Obj	o( false );
 }
 
@@ -313,4 +322,110 @@ void panic( const char *s )
 			wait( code[ i ].off * duration );
 		}
 	}
+}
+
+/*
+ *  HardFault_Handler (sdk/semihost_hardfault.c) branches here for every
+ *  fault except semihosting. MemManage, BusFault and UsageFault are not
+ *  enabled, so they escalate to HardFault and come here too; CFSR still
+ *  tells them apart. This runs in the HardFault handler: interrupts are
+ *  off, and a fault in here would lock the core up, so the message is
+ *  built without printf and handed to panic(), which only polls.
+ *
+ *  The stacked PC is where the fault happened; arm-none-eabi-addr2line
+ *  on the sketch's .elf turns it into a source line. It is left out when
+ *  stacking itself failed, as the frame can't be trusted then.
+ */
+namespace {
+
+char *put_str( char *p, const char *s )
+{
+	while ( *s )
+		*p++	= *s++;
+
+	return p;
+}
+
+char *put_hex( char *p, uint32_t v )
+{
+	p	= put_str( p, "0x" );
+
+	for ( int i = 28; i >= 0; i -= 4 )
+		*p++	= "0123456789ABCDEF"[ (v >> i) & 0xF ];
+
+	return p;
+}
+
+const char *fault_reason( uint32_t cfsr, uint32_t hfsr )
+{
+	if ( cfsr & SCB_CFSR_STKOF_Msk )		return "stack overflow";
+	if ( cfsr & (SCB_CFSR_STKERR_Msk | SCB_CFSR_MSTKERR_Msk) )
+											return "stack overflow or corruption";
+	if ( cfsr & (SCB_CFSR_UNSTKERR_Msk | SCB_CFSR_MUNSTKERR_Msk) )
+											return "stack corruption";
+	if ( cfsr & (SCB_CFSR_PRECISERR_Msk | SCB_CFSR_DACCVIOL_Msk) )
+											return "bad memory access";
+	if ( cfsr & SCB_CFSR_IMPRECISERR_Msk )	return "bad memory write (PC is somewhat after it)";
+	if ( cfsr & (SCB_CFSR_IBUSERR_Msk | SCB_CFSR_IACCVIOL_Msk) )
+											return "jump to a bad address";
+	if ( cfsr & SCB_CFSR_INVSTATE_Msk )		return "call through a null or bad function pointer";
+	if ( cfsr & SCB_CFSR_UNDEFINSTR_Msk )	return "undefined instruction";
+	if ( cfsr & SCB_CFSR_INVPC_Msk )		return "bad exception return";
+	if ( cfsr & SCB_CFSR_NOCP_Msk )			return "coprocessor or FPU not enabled";
+	if ( cfsr & SCB_CFSR_DIVBYZERO_Msk )	return "division by zero";
+	if ( cfsr & SCB_CFSR_UNALIGNED_Msk )	return "unaligned access";
+	if ( cfsr & (SCB_CFSR_LSPERR_Msk | SCB_CFSR_MLSPERR_Msk) )
+											return "FPU state stacking failed";
+	if ( hfsr & SCB_HFSR_VECTTBL_Msk )		return "vector table read failed";
+	if ( hfsr & SCB_HFSR_DEBUGEVT_Msk )		return "breakpoint without a debugger";
+
+	return "unknown fault";
+}
+
+}	// namespace
+
+extern "C" __attribute__((noreturn)) void mcx_fault_report( const uint32_t *frame, uint32_t exc_return )
+{
+	uint32_t	cfsr	= SCB->CFSR;
+	uint32_t	hfsr	= SCB->HFSR;
+	bool		stacked	= !(cfsr & (SCB_CFSR_STKOF_Msk | SCB_CFSR_STKERR_Msk | SCB_CFSR_MSTKERR_Msk));
+
+	static char	msg[ 160 ];
+	char		*p	= msg;
+
+	p	= put_str( p, "HardFault: " );
+	p	= put_str( p, fault_reason( cfsr, hfsr ) );
+
+	if ( cfsr & SCB_CFSR_BFARVALID_Msk )
+	{
+		p	= put_str( p, " to " );
+		p	= put_hex( p, SCB->BFAR );
+	}
+	else if ( cfsr & SCB_CFSR_MMARVALID_Msk )
+	{
+		p	= put_str( p, " to " );
+		p	= put_hex( p, SCB->MMFAR );
+	}
+
+	if ( stacked )
+	{
+		p	= put_str( p, " at PC " );
+		p	= put_hex( p, frame[ 6 ] );
+	}
+
+	//	EXC_RETURN bit 3 clear: the fault came from handler mode
+	if ( !(exc_return & 0x8) )
+		p	= put_str( p, " in an interrupt" );
+
+	p	= put_str( p, " (CFSR " );
+	p	= put_hex( p, cfsr );
+	p	= put_str( p, ", HFSR " );
+	p	= put_hex( p, hfsr );
+	p	= put_str( p, ")" );
+	*p	= '\0';
+
+	panic( msg );
+
+	while ( true )
+		;
 }
