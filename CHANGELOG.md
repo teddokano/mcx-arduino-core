@@ -5,7 +5,7 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.7.0] - 2026-09-26
 
 ### Added
 - `EEPROM`, a bundled library with the AVR EEPROM library's interface: `read()`/`write()`/`update()`, `EEPROM[i]`, `get()`/`put()` of any type, `length()`, range-for over `EEPROM`, and `E2END`. 1024 bytes, as on UNO R3, kept across resets, power cycles and uploads. The bytes live in the top of the MCU's on-chip flash, which the linker scripts now keep the program out of: 16KB on FRDM-MCXA153 (so a sketch there gets 112KB, down from 128KB) and 64KB on FRDM-MCXN947, in the second flash bank. Written from scratch, with no code from AVR's library. How it works:
