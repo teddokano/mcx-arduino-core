@@ -7,7 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [0.7.0] - 2026-09-26
 
-**Highlights**: a persistent `EEPROM` library, I2C target (slave) mode and a stuck-bus timeout (`setWireTimeout()`) on `Wire`, and crash reports on the Serial Monitor (`error: HardFault: ...`) instead of a silent hang, with a stack overflow now caught before it corrupts memory. Several bug fixes, including a `Wire` buffer overflow, `Serial.print(double)` not rounding, and uploading/debugging failing whenever two boards were plugged in at once. Details below.
+**Highlights**
+- New bundled `EEPROM` library: 1KB that survives resets, power cycles and uploads
+- I2C: target (slave) mode on `Wire`, and `setWireTimeout()` so a stuck bus no longer hangs the sketch
+- Crashes and errors now print `error: ...` on the Serial Monitor instead of hanging silently, and stack overflows are caught
+- More AVR/UNO compatibility: `Serial.begin(baud, config)`, `serialEvent()`, `SDA`/`SCL`, `itoa()`/`dtostrf()` and more
+- Fixes: uploading and debugging with two boards attached, a `Wire` buffer overflow, `Serial.print(double)` rounding
 
 ### Added
 - `EEPROM`, a bundled library with the AVR EEPROM library's interface: `read()`/`write()`/`update()`, `EEPROM[i]`, `get()`/`put()` of any type, `length()`, range-for over `EEPROM`, and `E2END`. 1024 bytes, as on UNO R3, kept across resets, power cycles and uploads. The bytes live in the top of the MCU's on-chip flash, which the linker scripts now keep the program out of: 16KB on FRDM-MCXA153 (so a sketch there gets 112KB, down from 128KB) and 64KB on FRDM-MCXN947, in the second flash bank. Written from scratch, with no code from AVR's library. How it works:
