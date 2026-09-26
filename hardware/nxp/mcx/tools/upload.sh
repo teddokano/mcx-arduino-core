@@ -58,8 +58,22 @@ if [ -z "$LINKSERVER" ] || [ ! -x "$LINKSERVER" ]; then
 fi
 
 echo "Using: $LINKSERVER"
+
+# Only pass --probe when LinkServer lists that serial number, since it
+# refuses to flash at all for one it doesn't know ("No probes matched").
+# A port that reports its serial number in some other form then uploads as
+# before --probe was passed: fine with one board, refused with several.
+# A probe busy with a debug session is still listed, so this doesn't send
+# the upload to another board.
+UNLISTED=""
 if [ -n "$PROBE_ARGS" ]; then
-    echo "Probe: $PORT_SERIAL"
+    if "$LINKSERVER" probes 2>&1 | grep -F -i -w -q -- "$PORT_SERIAL"; then
+        echo "Probe: $PORT_SERIAL"
+    else
+        echo "The port's serial number $PORT_SERIAL is not among LinkServer's probes; uploading without --probe"
+        PROBE_ARGS=""
+        UNLISTED=1
+    fi
 fi
 
 # PROBE_ARGS unquoted on purpose: empty must vanish, not become "".
@@ -69,8 +83,13 @@ STATUS=$?
 # LinkServer's own message asks for --probe, which an IDE user can't pass.
 if [ $STATUS -ne 0 ] && [ -z "$PROBE_ARGS" ]; then
     echo "============================================"
-    echo "If more than one board is connected, select the port of the board"
-    echo "to upload to (Arduino IDE: Tools > Port; arduino-cli: -p)."
+    if [ -n "$UNLISTED" ]; then
+        echo "The selected port could not be matched to a debug probe, so with"
+        echo "more than one board connected, leave only the one to upload to."
+    else
+        echo "If more than one board is connected, select the port of the board"
+        echo "to upload to (Arduino IDE: Tools > Port; arduino-cli: -p)."
+    fi
     echo "============================================"
 fi
 exit $STATUS

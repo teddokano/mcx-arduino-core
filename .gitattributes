@@ -1,0 +1,3 @@
+# Windows batch files keep CRLF, in the repository and in the release zip:
+# cmd.exe can miss a goto label in a file with bare LF line endings
+*.bat -text

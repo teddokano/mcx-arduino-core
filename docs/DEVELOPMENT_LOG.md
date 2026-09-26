@@ -2379,6 +2379,19 @@ A153の小さいスケッチで、表示は19668→11476バイトになり、`0x
 そのうえでユーザーがmacOSのArduino IDE 2から、2枚つないだまま、ボードごとに書き込みボタンとDebugボタン（続行まで）を試した。
 4回とも`EEPROM kept`で、回数が引き継がれた。
 
+### 書き込みスクリプトの`--probe`に保険
+IDEは普段ポートを選んだ状態なので、`upload.sh`/`upload.bat`は**ボード1枚でも**ポートのシリアル番号を`--probe`に渡す。
+LinkServerは一覧に無い番号だと`No probes matched`で書き込み自体を拒む（macOSで確認。大文字小文字は区別しない）。
+WindowsとLinuxのIDEがLinkServerと同じ形で番号を報告するかは未確認で、違えば**0.6.0で動いていた1枚の書き込みがWindows/Linuxの全員で壊れる**。
+
+**変更**: 先に`LinkServer probes`を実行し、ポートの番号が一覧にあるときだけ`--probe`を渡す。無ければ渡さず（0.6.0と同じ）、その旨を表示する。複数枚で失敗したときは「ポートをプローブに結び付けられなかったので、1枚だけつないで」と案内する。
+- デバッグ中（gdbserverが使用中）のプローブも一覧に出ることを確かめた。したがって「一覧に無いから`--probe`を外す」ことで、使用中のボードを飛ばして別のボードに書き込むことは起きない
+- `upload.bat`は、Windowsのデバイスインスタンスパス（`6&2ecf2a0a&0&0001`のような形）が来ても行が分割されないように、`set "VAR=..."`で受ける
+- `upload.bat`をCRLFにし、`.gitattributes`に`*.bat -text`を置いた。cmd.exeはLFだけのバッチで`goto`のラベルを見失うことがあり、今回ラベルが増えたため。リポジトリにもリリースzipにもCRLFのまま入る
+
+**macOSでの確認（2枚接続）**: `arduino-cli upload -p`でA153・N947それぞれに書き込み（`Probe:`が出る）、小文字の番号でも書き込める、一覧に無い番号（`6&2ecf2a0a&0&0001`）では`--probe`を外して`Multiple probes detected`と案内が出る、ポート未選択は従来どおり。
+1枚接続で番号が一覧に無い場合（0.6.0と同じ動き）は、Windows/Linuxの確認で見る。
+
 ### CI（`b47c400`）
 `actions/checkout`をv7、`actions/cache`をv6に上げた（Node.js 20の廃止対応）。`arduino/setup-arduino-cli`はv2（Node.js 20）より新しいリリースが無いので、arduino-cliはGitHubのリリースから直接入れ、チェックサムファイルで照合する。`workflow_dispatch`に`runner`入力を加えた（2026-10-19に`ubuntu-latest`が切り替わる前に`ubuntu-26.04`を試すため）。2026-09-25に`ubuntu-26.04`で3ジョブとも通った（run 36163631573）。
 
