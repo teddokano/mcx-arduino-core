@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [0.7.0] - 2026-09-26
 
+**Highlights**: a persistent `EEPROM` library, I2C target (slave) mode and a stuck-bus timeout (`setWireTimeout()`) on `Wire`, and crash reports on the Serial Monitor (`error: HardFault: ...`) instead of a silent hang, with a stack overflow now caught before it corrupts memory. Several bug fixes, including a `Wire` buffer overflow, `Serial.print(double)` not rounding, and uploading/debugging failing whenever two boards were plugged in at once. Details below.
+
 ### Added
 - `EEPROM`, a bundled library with the AVR EEPROM library's interface: `read()`/`write()`/`update()`, `EEPROM[i]`, `get()`/`put()` of any type, `length()`, range-for over `EEPROM`, and `E2END`. 1024 bytes, as on UNO R3, kept across resets, power cycles and uploads. The bytes live in the top of the MCU's on-chip flash, which the linker scripts now keep the program out of: 16KB on FRDM-MCXA153 (so a sketch there gets 112KB, down from 128KB) and 64KB on FRDM-MCXN947, in the second flash bank. Written from scratch, with no code from AVR's library. How it works:
   - A write appends a small record (16 bytes on FRDM-MCXA153, 128 on FRDM-MCXN947, the smallest each flash programs) to one of two halves, in ~0.1-0.5ms. When that half is full, every ~440 writes on FRDM-MCXA153 and ~250 on FRDM-MCXN947, the other half is erased and the current contents written there in one go, so that write takes up to ~6ms / ~11ms (measured). Reads come from a copy in RAM
