@@ -2282,6 +2282,7 @@ SDKの`LPI2C_Slave*`割り込みAPIの上に実装した。実機で見つかっ
 
 **書きすぎた主張を3件訂正した**:
 - 「IDEのUploadとDebugで保持される」→ 確かめたのはそれらが実行するコマンドで、IDE自体ではない
+  （のちにIDE自体でも確かめた。「`EEPROM`のIDEからの書き込み・デバッグでの保持」の節）
 - 「電源断でも無事」→ 設計上そうなるだけで、書き込み中の電源断は試していない
 - 「他の書き込みでは失われない」→ 欠落を1件ずつ突き合わせて確かめてから書いた
 
@@ -2371,6 +2372,12 @@ A153の小さいスケッチで、表示は19668→11476バイトになり、`0x
 `MCXPINSTATE_VERIFIED_AGAINST`は開発の初め（2026-09-13）に、同梱コピーと上流の両方で0.7.0に上げてある。その後`arduino_io.h`が変わったのは`de27445`（`SDA`/`SCL`）だけである。
 これは`ArduinoPinNum`の外の`static const uint8_t`で、`PIN_WIRE_SDA`/`PIN_WIRE_SCL`と同じ値の別名にすぎない。
 ピン番号も`ALIAS_NAMES`/`KNOWN_INSTANCES`の対応も変わらないので、どちらのコピーも変更不要とした（hygieneチェックでも53個が順に一致）。同梱コピーと上流の中身は同一。
+
+### `EEPROM`のIDEからの書き込み・デバッグでの保持
+これまで確かめていたのは、IDEが実行するコマンド（`LinkServer flash load`、gdb-bridge経由の`load`）だけだった。
+起動回数を`EEPROM`に数える小さなスケッチ（印が消えていればそう表示）をCLIで両ボードに書き込み、`boot count 1`にしておいた。
+そのうえでユーザーがmacOSのArduino IDE 2から、2枚つないだまま、ボードごとに書き込みボタンとDebugボタン（続行まで）を試した。
+4回とも`EEPROM kept`で、回数が引き継がれた。
 
 ### CI（`b47c400`）
 `actions/checkout`をv7、`actions/cache`をv6に上げた（Node.js 20の廃止対応）。`arduino/setup-arduino-cli`はv2（Node.js 20）より新しいリリースが無いので、arduino-cliはGitHubのリリースから直接入れ、チェックサムファイルで照合する。`workflow_dispatch`に`runner`入力を加えた（2026-10-19に`ubuntu-latest`が切り替わる前に`ubuntu-26.04`を試すため）。2026-09-25に`ubuntu-26.04`で3ジョブとも通った（run 36163631573）。
