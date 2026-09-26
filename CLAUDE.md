@@ -191,7 +191,7 @@ xPack checksums（正しい値）：
 | AVR互換の補助関数（0.7.0） | ✅ | `itoa`/`dtostrf`/`word`/`_BV`/`analogReference`の定数/`HardwareSerial`/avr-libcの文字列関数/`M_`定数/`SDA`・`SCL`/`BitOrder`のenum化。`test_avr_compat_helpers`（`release_check/01`に統合） |
 | print(double)・String(double)の丸め（0.7.0） | ✅ | `test_print_float_rounding`で両ボード確認（代表的な項目は`release_check/01`にも入っている） |
 | panic()のメッセージ・HardFaultの報告・スタック上限（0.7.0） | ✅ | `error: ...`をUSBシリアルへ。`test_fault_report`で8種類のクラッシュを両ボード確認。スタックはヒープの終わりで`MSPLIM`により止まり、IDEの「ローカル変数で使える」表示はその量と一致する |
-| 2枚同時接続での書き込み・デバッグ（0.7.0） | ⚠️ | macOSのみ確認（IDEとarduino-cli）。Windows/Linuxはステージングで確認する |
+| 2枚同時接続での書き込み・デバッグ（0.7.0） | ✅ | macOS（IDEとarduino-cli）、Windows・Linux（IDE、`0.7.0-rc1`のステージング経由）の全てで、2枚つないだままの書き込み（ポートを切り替えてそれぞれ）とデバッグ（1枚ずつ順番に）を確認。2つのウインドウで同時にデバッグするのは未確認 |
 | 上記全機能の同時使用 | ✅ | `test_combined_peripherals.ino`（Serial1込み）で実機確認済み。WARNINGなし、`serial1`ループバック欠落なし |
 | ボードマネージャーインストール | ✅ | v0.1.5時点で確認済み。v0.2.0リリース後、実際にGitHubの`package_nxp_mcx_index.json`経由でBoards Managerからインストールし直し、macOS/Windows 11双方でビルド・書き込み・実行まで動作確認済み |
 
@@ -257,7 +257,7 @@ v0.4.0の`main`マージ直前、ユーザーから「今回のリリース準�
    - **`2n`**（`21`〜`24`）: 外部`P3T1755.h`＋MikroBus配線／外部LM75系センサー／`Waveshare_TFT_Touch`の`SDBitmapViewer`／もう1枚のボード（`24`はA153とN947をD18-D18、D19-D19、GND-GNDでつなぎ、両方に書き込む。どちらかが前から同じスケッチを動かしていたら、両方をほぼ同時にリセットしてから始める）。`21`/`22`は**CIスタブではなく実物のライブラリ**を`--library`で指定すること
    - **2枚同時接続での書き込みも各プラットフォームで1回**: A153とN947を両方つなぎ、ポートを切り替えて両方に書き込めること。
      `upload.sh`/`upload.bat`はポートのUSBシリアル番号（`{upload.port.properties.serialNumber}`）を
-     LinkServerの`--probe`に渡すので、**Windows/Linuxのポート検出がこの番号を同じ形で返すか**が肝。0.7.0ではmacOSでしか確認していない。
+     LinkServerの`--probe`に渡すので、**Windows/Linuxのポート検出がこの番号を同じ形で返すか**が肝。0.7.0でmacOS・Windows・Linuxの全てで2枚での書き込みを確認した（どれもLinkServerと同じ形の番号を返す）。
      **デバッグも同じく2枚つないで両ボードで1回ずつ**（IDEのDebugボタンで）。IDEはデバッグ時にポートを渡さないので、
      gdb-bridgeは`LinkServer probes`の`Device`列のチップ名でプローブを選ぶ。種類の違う2枚は区別できるが、同じ種類の2枚は区別できない（エラーで止まるのが正しい動作）
    - **IDE内蔵デバッガも各プラットフォームで1回**（`gdb-bridge`の起動経路はOSごとに別物——macOS/Linuxは`launch.sh`から`uname -s`で選ぶ別バイナリ＋別の`findLinkServer()`分岐、Windowsは共有exeを直接起動）
