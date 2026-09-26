@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [0.7.0] - 2026-09-26
 
-**Highlights**
+### Highlights
 - New bundled `EEPROM` library: 1KB that survives resets, power cycles and uploads
 - I2C: target (slave) mode on `Wire`, and `setWireTimeout()` so a stuck bus no longer hangs the sketch
 - Crashes and errors now print `error: ...` on the Serial Monitor instead of hanging silently, and stack overflows are caught
