@@ -2456,6 +2456,17 @@ Windows・Linuxでも、2枚つないだままの書き込み（ポートを切�
 - `23`（N947）: ユーザーが画像の崩れ・速度とも問題なしと確認。1枚約590ms。タッチ（上半分・下半分・長押し）も認識
 
 **これで`release_check`（`0n`・`1n`・`2n`）は両ボードとも全部通った。**
+
+### v0.7.0リリース完了
+- CHANGELOGを`[0.7.0] - 2026-09-26`に確定、`0.7.0-dev`を`main`へfast-forwardでマージ（`66980c5`→`c85b61b`、35コミット）
+- リリースzip: `git archive --format=zip --prefix=mcx/ main:hardware/nxp/mcx`。SHA-256 `a788643a2ce6374f6a9b3085b2df785693aa90b919ad0571f66850339f3c8cfb`、9122003 bytes。公開前に、Windows exe・実行ビット・`upload.bat`のCRLFを確認し、開発用symlinkを退避してzipを`0.7.0`として展開、両ボードのコンパイル（警告0）・`debug --info`・ポート指定の書き込みを確認
+- `gh release create 0.7.0`（Latest、ノートはCHANGELOGの0.7.0の節）。ダウンロードし直したchecksumが一致
+- `staging-0.7.0`（`main`から、0.7.0エントリを追加）でmacOS・Windows・Linuxを確認: Boards Managerからのインストール、ビルド、書き込み、IDEのDebug（ブレークポイント・ステップ実行）がすべてOK。macOSは`packages/nxp`をまるごと`packages/`の外へ退避し、ツールチェーンのダウンロードから確かめた
+- `main`に0.7.0エントリを追加（`114d8b6`）、`update_package_index.yml`を`main`に対して手動実行して成功。計算値がエントリと一致したので書き換えなし。`--release`付きhygieneは`main`で全項目pass
+- タグ`0.7.0`のpushで動いた`update_package_index.yml`と、エントリ追加前の`main`の回帰チェック（`package-index-entry`だけ）が失敗したのは想定どおり
+- `staging-0.7.0`・`0.7.0-dev`ブランチは役目を終えたのでリモート・ローカルとも削除。開発環境（`packages/nxp`）を戻した
+
+これでv0.7.0のリリース作業が全て完了。
 - 取り込みの注意: 書き込みの前にLinkServerがボードをリセットするので、配線を替えたあとの前のスケッチが一瞬動き、その出力（配線が合わないための`FAIL`）が次の取り込みの先頭に入る。判定は見出しより後の行だけで行う
 
 ---
