@@ -13,5 +13,6 @@ var searchData=
   ['digitalread_10',['digitalRead',['../arduino__io_8cpp.html#a3d31358c7ab10dac7ec82be57d4c2c40',1,'digitalRead(int pin_num):&#160;arduino_io.cpp'],['../arduino__io_8h.html#a3d31358c7ab10dac7ec82be57d4c2c40',1,'digitalRead(int pin_num):&#160;arduino_io.cpp']]],
   ['digitalwrite_11',['digitalWrite',['../arduino__io_8cpp.html#aa1373e51643406f2dd3598f16684e1c6',1,'digitalWrite(int pin_num, bool state):&#160;arduino_io.cpp'],['../arduino__io_8h.html#aa1373e51643406f2dd3598f16684e1c6',1,'digitalWrite(int pin_num, bool state):&#160;arduino_io.cpp']]],
   ['direction_12',['direction',['../class_digital_in_out.html#a1d3cba5d308078cf510100e8085b91f0',1,'DigitalInOut']]],
-  ['disable_13',['disable',['../class_interrupt_in.html#a9a4f3948cf4fdec4e8fe23efeedbc184',1,'InterruptIn']]]
+  ['disable_13',['disable',['../class_interrupt_in.html#a9a4f3948cf4fdec4e8fe23efeedbc184',1,'InterruptIn']]],
+  ['dtostrf_14',['dtostrf',['../_arduino_8h.html#a6fb2f76a606b21d411331c291e690a15',1,'dtostrf(double val, signed char width, unsigned char prec, char *str):&#160;arduino_stdlib.cpp'],['../arduino__stdlib_8cpp.html#a6fb2f76a606b21d411331c291e690a15',1,'dtostrf(double val, signed char width, unsigned char prec, char *str):&#160;arduino_stdlib.cpp']]]
 ];

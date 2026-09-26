@@ -95,10 +95,11 @@ mcx-arduino-core/
 │   │   ├── r01lib/           #   r01lib hardware driver core (Serial, I2C/I3C, SPI, GPIO,
 │   │   │                     #   AnalogIn, PwmOut, InterruptIn, Ticker, ...)
 │   │   └── sdk/               #   NXP MCX SDK driver files common to all supported chips
-│   ├── libraries/            # Bundled companion libraries, each developed in its
-│   │   │                      #   own repo and synced here at release time
-│   │   ├── mcxPinState/       #   Pin-ownership debugging (see docs/mcxpinstate_guide.md)
-│   │   └── mcxRCServo/        #   RC servo driver for the PWM0-PWM5 pins
+│   ├── libraries/            # Bundled libraries
+│   │   ├── EEPROM/            #   AVR-compatible EEPROM, 1KB in on-chip flash (lives here)
+│   │   ├── mcxPinState/       #   Pin-ownership debugging (see docs/mcxpinstate_guide.md);
+│   │   │                      #   developed in its own repo, synced here at release time
+│   │   └── mcxRCServo/        #   RC servo driver for the PWM0-PWM5 pins; likewise synced
 │   ├── tools/
 │   │   ├── upload.sh         # Upload script (auto-detects LinkServer), upload.bat for Windows
 │   │   └── gdb-bridge/       # Bridges Arduino IDE 2's cortex-debug (expects OpenOCD) to
@@ -157,7 +158,8 @@ GPIO, interrupts, Serial (USB + hardware UART), Wire (I2C and I3C-as-I2C),
 SPI, analogRead/analogWrite, millis/micros, tone/noTone, delay family,
 String, real `Print`/`Stream`/`Printable` base classes, F()/PROGMEM, and
 UNO R3/R4 compatibility macros are all supported. I2C target (slave) mode
-and `Wire.setWireTimeout` work on `Wire` (not on `Wire1`, which runs on I3C),
+works on `Wire`, and `Wire.setWireTimeout` on `Wire` and FRDM-MCXN947's `Wire2`
+(neither on `Wire1`, which runs on I3C),
 and the bundled `EEPROM` library keeps 1KB in on-chip flash across resets
 and uploads. Third-party libraries that
 inherit `Print` directly or take `Stream&` (e.g. ArduinoJson, LiquidCrystal,

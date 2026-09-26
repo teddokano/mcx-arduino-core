@@ -34,6 +34,23 @@ No source code was copied from either project.
 - ArduinoCore-avr — https://github.com/arduino/ArduinoCore-avr (LGPL 2.1)
 - ArduinoCore-API — https://github.com/arduino/ArduinoCore-API (LGPL 2.1)
 
+The same holds for the rest of the Arduino API layer in
+`hardware/nxp/mcx/cores/arduino/arduino_api/` and for the bundled
+`hardware/nxp/mcx/libraries/EEPROM/`: they are written from scratch to
+the interfaces those projects define, so that sketches and libraries
+written for them build and behave the same. That covers names,
+signatures, default values and constant values (for example
+`Wire.setWireTimeout()` and its defaults, I2C target mode's `onReceive()`/
+`onRequest()`, the `SERIAL_8N1` family, `BitOrder`, `SDA`/`SCL`, and the
+AVR EEPROM library's API), with behavior checked against their source
+and documentation. The UNO R4 core was consulted the same way, and
+avr-libc's documentation for `ltoa()`/`ultoa()`/`dtostrf()` and the
+string functions declared in `Arduino.h`. No source code was copied from
+any of them.
+
+- ArduinoCore-renesas (UNO R4) — https://github.com/arduino/ArduinoCore-renesas (LGPL 2.1)
+- avr-libc — https://github.com/avrdudes/avr-libc (Modified BSD License)
+
 The Linux LinkServer-discovery logic in `hardware/nxp/mcx/tools/upload.sh`
 (checking a fixed install path, then versioned `LinkServer_<version>`
 install directories, then falling back to `PATH`) is adapted from
@@ -49,7 +66,11 @@ peripheral-register descriptor under
 `hardware/nxp/mcx/variants/<board>/svd/` (used for Arduino IDE's debugger
 peripheral register view), are sourced from the NXP MCUXpresso SDK for the
 corresponding chip, unmodified aside from being extracted from the SDK
-package. Each file retains its own original copyright header.
+package, with one exception: the HardFault handler in
+`hardware/nxp/mcx/cores/arduino/sdk/semihost_hardfault.c` is changed,
+where marked in the file, to report a crash on the serial port instead
+of stopping silently. Each file retains its own original copyright
+header.
 
 - NXP MCUXpresso SDK — https://github.com/nxp-mcuxpresso/mcux-sdk (BSD-3-Clause)
 

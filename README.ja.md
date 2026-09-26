@@ -90,10 +90,11 @@ mcx-arduino-core/
 │   │   ├── r01lib/           #   r01libハードウェアドライバコア（Serial、I2C/I3C、SPI、GPIO、
 │   │   │                     #   AnalogIn、PwmOut、InterruptIn、Ticker等）
 │   │   └── sdk/               #   対応する全チップ共通のNXP MCX SDKドライバファイル
-│   ├── libraries/            # 同梱ライブラリ。いずれも開発は各自のリポジトリで行い、
-│   │   │                      #   リリース時にここへ同期
-│   │   ├── mcxPinState/       #   ピン所有状況のデバッグ（docs/mcxpinstate_guide.md参照）
-│   │   └── mcxRCServo/        #   PWM0〜PWM5ピンからRCサーボを駆動
+│   ├── libraries/            # 同梱ライブラリ
+│   │   ├── EEPROM/            #   AVR互換のEEPROM、オンチップのフラッシュに1KB（本体はここ）
+│   │   ├── mcxPinState/       #   ピン所有状況のデバッグ（docs/mcxpinstate_guide.md参照）。
+│   │   │                      #   開発は専用リポジトリで行い、リリース時にここへ同期
+│   │   └── mcxRCServo/        #   PWM0〜PWM5ピンからRCサーボを駆動。同じく同期
 │   ├── tools/
 │   │   ├── upload.sh         # アップロードスクリプト（LinkServer自動検出）、Windows用はupload.bat
 │   │   └── gdb-bridge/       # Arduino IDE 2のcortex-debug（OpenOCDを想定）をLinkServer自身の
@@ -151,7 +152,7 @@ MIT License — [LICENSE](LICENSE)を参照
 GPIO、割り込み、Serial（USB＋ハードウェアUART）、Wire（I2CおよびI3CのI2Cモード）、SPI、
 analogRead/analogWrite、millis/micros、tone/noTone、delay系、String、本物の
 `Print`/`Stream`/`Printable`基底クラス、F()/PROGMEM、UNO R3/R4互換マクロ、いずれも対応済みです。
-I2Cターゲット（スレーブ）モードと`Wire.setWireTimeout`は`Wire`で使えます（I3C上で動く`Wire1`では使えません）。
+I2Cターゲット（スレーブ）モードは`Wire`で、`Wire.setWireTimeout`は`Wire`とFRDM-MCXN947の`Wire2`で使えます（I3C上で動く`Wire1`ではどちらも使えません）。
 同梱の`EEPROM`ライブラリは、リセットや書き込みをまたいで1KBをオンチップのフラッシュに保持します。`Print`を直接継承する、
 または`Stream&`を受け取るサードパーティライブラリ（ArduinoJson、LiquidCrystal、Adafruit系
 センサーライブラリ等）もこのコア上でコンパイルできます。

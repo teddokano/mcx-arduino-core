@@ -88,7 +88,11 @@ peripheral instances on the SPI/I2C rows (see below the table):
 > **`Wire2`** is a plain I2C instance on `MB_SDA`/`MB_SCL`, backed by its own
 > peripheral (`LPI2C3`/FlexComm3) independent of `Wire` (FlexComm2) and
 > `Wire1` (I3C) — all three can be used in the same sketch. Verified on real
-> hardware with `test_Wire2_MikroBus_N947` (bus scan).
+> hardware with `test_Wire2_MikroBus_N947` (bus scan), and in 0.7.0 as a
+> controller jumpered to `Wire` (writes, reads and a scan). `setWireTimeout()`
+> works on it as on `Wire`. It can't be an I2C target: LPI2C3 never sees the
+> bus as one, for a reason not found, so `Wire2.begin(address)` stops the
+> sketch with a message saying so.
 >
 > **`SPI1`** is a plain SPI instance on `MB_MOSI`/`MB_MISO`/`MB_SCK`/`MB_CS`,
 > backed by its own peripheral (`LPSPI6`/FlexComm6) independent of `SPI`

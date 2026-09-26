@@ -1,6 +1,6 @@
 # mcx-arduino-core 入門チュートリアル
 
-NXP FRDM-MCXA153ボードでArduino APIを使うためのハンズオンガイドです。インストールから、対応している各種ペリフェラルまで一通り扱います。各セクションはそのまま書き込んで動く完結したスケッチです。API対応表・ピン配置の詳細は[README.md](README.md)、バージョン間の変更点は[CHANGELOG.md](CHANGELOG.md)を参照してください。
+NXP FRDM-MCXA153ボードでArduino APIを使うためのハンズオンガイドです。インストールから、対応している各種ペリフェラルまで一通り扱います。各セクションはそのまま書き込んで動く完結したスケッチです。API対応表は[API_COMPATIBILITY.md](API_COMPATIBILITY.md)、概要は[README.md](README.md)、バージョン間の変更点は[CHANGELOG.md](CHANGELOG.md)を参照してください。
 
 > **注**: このチュートリアルの例は**FRDM-MCXA153**を使用しています。
 
@@ -281,7 +281,7 @@ void loop() {
 
 ### 2.6. PWM出力: `analogWrite`
 
-PWMは専用ピン`PWM0`-`PWM5`（FlexPWM0）でのみ使用可能で、任意のデジタルピンでは使えません。周期は1kHz固定で、`analogWrite`が制御できるのはduty比（0-255）のみです（従来のArduinoと同じ）。以下の例は2.4節のADC読み取り値をそのままPWM出力に反映します — 抵抗付きLEDやオシロスコープを`PWM0`に接続して変化を確認してください:
+PWMは専用ピン`PWM0`-`PWM5`（FlexPWM0）でのみ使用可能で、任意のデジタルピンでは使えません。周波数は1kHzで、`analogWriteFrequency()`で変えられます。`analogWrite`が決めるのはduty比（0-255）です（従来のArduinoと同じ）。以下の例は2.5節のADC読み取り値をそのままPWM出力に反映します — 抵抗付きLEDやオシロスコープを`PWM0`に接続して変化を確認してください:
 
 ```cpp
 #include <Arduino.h>
@@ -542,7 +542,8 @@ void loop() {
 
 ## 次に見るべきもの
 
-- [README.md](README.md) — API対応表・ピン配置の全体像
+- [API_COMPATIBILITY.md](API_COMPATIBILITY.md) — API対応表
+- [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) — ピン配置
 - [`examples/Arduino_compatible_API/`](examples/Arduino_compatible_API) — 機能ごとの単体サンプル
 - [`examples/Arduino_compatible_API/test_combined_peripherals`](examples/Arduino_compatible_API/test_combined_peripherals) — 全機能同時動作の例
 - [CHANGELOG.md](CHANGELOG.md) — バージョン間の変更点

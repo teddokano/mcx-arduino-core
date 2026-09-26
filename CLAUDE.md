@@ -172,16 +172,16 @@ xPack checksums（正しい値）：
 | SPI | ✅ | |
 | attachInterrupt | ✅ | |
 | detachInterrupt | ✅ | v0.2.1で追加。SW2を使った実機確認済み |
-| analogRead | ✅ | LPADC, A0-A3 |
-| analogWrite (PWM) | ✅ | FlexPWM0, PWM0-PWM5のみ |
+| analogRead | ✅ | LPADC。A153は`A0`-`A3`、N947は`A2`-`A5` |
+| analogWrite (PWM) | ✅ | A153はFlexPWM0、N947はFlexPWM1。`PWM0`-`PWM5`のみ |
 | millis / micros | ✅ | SysTick(1ms) + DWT |
 | delayMicroseconds | ✅ | wait_us()ベース、v0.2.1で追加 |
 | tone / noTone | ✅ | CTIMER0, 任意のデジタルピン |
-| Serial1 (D0/D1ハードウェアUART) | ✅ | 入力バッファ有効化・RX割り込み・available()の3バグ修正後、実機ループバックで確認 |
+| Serial1（A153はD0/D1、N947はMikroBusの`MB_TX`/`MB_RX`） | ✅ | 入力バッファ有効化・RX割り込み・available()の3バグ修正後、実機ループバックで確認 |
 | shiftOut / shiftIn | ✅ | 割り込みベースの相互検証で確認 |
 | pulseIn / pulseInLong | ✅ | |
 | random / randomSeed | ✅ | |
-| UNO R3/R4互換マクロ・定数一式 | ✅ | コンパイル確認のみ（数値的な動作確認は各マクロの単純さから省略） |
+| UNO R3/R4互換マクロ・定数一式 | ✅ | `release_check/01`の「compat macros」節で実行時に値を確認 |
 | String クラス | ✅ | 独自実装（WString移植ではない）。連結・数値変換・検索・置換・大小文字変換・trim等を実機確認、全項目OK |
 | EEPROM（0.7.0） | ✅ | 1KB、内蔵フラッシュの末尾。`release_check/06`（API・書き込み・リセット後と書き込み後の保持）と`07`（ウォッチドッグで書き込み中に1000回リセット）で両ボード確認。CLIの`upload`とgdbの`load`、IDE（macOS）の書き込みボタンとDebugボタンで消えないことも確認 |
 | Wire.setWireTimeout / getWireTimeoutFlag / clearWireTimeoutFlag（0.7.0） | ✅ | LPI2Cのピンlowタイムアウト。`Wire`・N947の`Wire2`のみ（`Wire1`はI3Cで無効）。`release_check/14`（ジャンパ）で両ボード確認 |
@@ -204,7 +204,7 @@ xPack checksums（正しい値）：
 - **リポジトリパス**: `~/dev/mcx-arduino-core`
 - **v0.4.0以降のソース構成**: `MCUXpresso_project/`ディレクトリは廃止（削除済み）。ソースの唯一の実体は`hardware/nxp/mcx/cores/arduino/`（両ボード共有）＋`hardware/nxp/mcx/variants/<board>/src/`（ボード固有）で、プリビルド`.a`のビルド・配置手順も不要になった——編集したソースはそのままarduino-cli/Arduino IDEのビルドに反映される（詳細は[docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md)の「`cores/arduino/`一本化・`platform.txt`書き換え完了」節）
 - **xPackツールチェーン**: `~/.xpacktools/xpack-arm-none-eabi-gcc-14.2.1-1.1/`（`package_nxp_mcx_index.json`記載のものと同一バイナリ、チェックサム確認済み）
-- **ローカルArduino IDE連携**: `~/Library/Arduino15/packages/nxp/hardware/mcx/0.2.0-dev`（v0.2.0リリース後に`0.1.9-dev`から改名）をこのリポジトリの`hardware/nxp/mcx/`へのシンボリックリンクとして設定済み（編集が即座に反映される）。ツールチェーンも`~/.xpacktools/`への symlink。`-dev`サフィックスにより、Boards Manager経由でインストールする実リリース版（`0.2.0`）とはディレクトリ名が衝突せず共存可能
+- **ローカルArduino IDE連携**: `~/Library/Arduino15/packages/nxp/hardware/mcx/<version>-dev`（今は`0.7.0-dev`。ブランチ名と同じ）をこのリポジトリの`hardware/nxp/mcx/`へのシンボリックリンクとして設定済み（編集が即座に反映される）。ツールチェーンも`~/.xpacktools/`への symlink。`-dev`サフィックスにより、Boards Manager経由でインストールする実リリース版とはディレクトリ名が衝突せず共存できる（ただし下の項目のとおり、並んでいるとリリース版が選ばれる）
 - **リリース版を入れたままだと`-dev`が使われない**（0.7.0で踏んだ）: `packages/nxp/hardware/mcx/`に
   Boards Managerで入れた`0.6.0`と`0.7.0-dev`のsymlinkが並ぶと、**IDEも既定のarduino-cliもインストール済みの`0.6.0`を選ぶ**。
   開発中の修正がIDEで一切効かず、「直したはずの不具合がIDEでは再現する」形で表に出る。
@@ -213,8 +213,8 @@ xPack checksums（正しい値）：
 - **注意（Boards Manager経由の実インストール検証時のハマりどころ）**: 上記symlink環境を無効化する際、`~/Library/Arduino15/packages/nxp`を同じ`packages/`直下で別名（例: `nxp.dev-backup`）にリネームしただけでは不十分 — arduino-cliは`packages/*`配下の全ディレクトリ名をpackager IDとして解釈するため、リネーム後も`nxp.dev-backup:mcx`という別パッケージとして「0.1.9-dev installed」表示が残ってしまう（`arduino-cli core list --all`で再現・特定）。無効化する際は`packages/`の外（例: スクラッチパッド等）に完全に退避すること。v0.2.0リリース後、この手順でBoards Manager経由のGitHubからの実インストールを検証済み
 
 ## GitHub Actions
-- **Workflow**: `.github/workflows/update_package_index.yml`
-- **役割**: GCCのsizeをHEADリクエストで取得、プラットフォームZIPのchecksum/sizeをダウンロードして計算・更新
+- **`regression_check.yml`**: push・PRごとに全サンプルのコンパイル（fast/fullの2段）とhygieneチェック（`.github/scripts/check_repo_hygiene.py`、タグでは`--release`）
+- **`update_package_index.yml`**: GCCのsizeをHEADリクエストで取得、プラットフォームZIPのchecksum/sizeをダウンロードして計算・更新
 - **既知の制限**: タグpush（`push: tags: '[0-9]+.[0-9]+.[0-9]+'`）で起動した場合、`actions/checkout`がdetached HEADでチェックアウトするため最後の`git push`が失敗する（過去のv0.1.6〜v0.2.0全リリースで再現）。実際のchecksum確定は、リリース後に`gh workflow run update_package_index.yml --ref main`（または Actions UI の "Run workflow"）で`main`ブランチに対し手動実行する必要がある。**リリース時は「タグpush→(失敗を確認)→mainに対してworkflow_dispatchを手動実行」の2段階が必須の手順**
 
 ### リリース前クロスプラットフォーム検証: ステージングブランチ方式（v0.3.1から採用）
@@ -254,7 +254,7 @@ v0.4.0の`main`マージ直前、ユーザーから「今回のリリース準�
    - **`0n`**（`01`〜`07`）: 配線不要。`05`はN947限定。`06`（EEPROM）は自分で1回リセットしてから判定し、もう一度書き込むと前回のデータが書き込みをまたいで残ったかも確認する。
      `07`（EEPROMの書き込み中リセット）はウォッチドッグで1000回リセットをかけ、1ボード約6分。EEPROMを上書きするので`06`の2回が済んでから流す
    - **`1n`**（`11`〜`14`）: ジャンパのみ。`11`のSerial1配線は**ボードで違う**（A153=D0-D1、N947=MikroBus `MB_TX`-`MB_RX`）。`14`（`setWireTimeout`）は両ボード共通で`D19`-`D8`＋`D18`-`D7`、N947は`Wire2`用に`MB_SCL`-`MB_PWM`＋`MB_SDA`-`MB_INT`も
-   - **`2n`**（`21`〜`24`）: 外部`P3T1755.h`＋MikroBus配線／外部LM75系センサー／`Waveshare_TFT_Touch`の`SDBitmapViewer`／もう1枚のボード（`24`はA153とN947をD18-D18、D19-D19、GND-GNDでつなぎ、両方に書き込む。どちらかが前から同じスケッチを動かしていたら、両方をほぼ同時にリセットしてから始める）。`21`/`22`は**CIスタブではなく実物のライブラリ**を`--library`で指定すること
+   - **`2n`**（`21`〜`24`）: 外部`P3T1755.h`＋MikroBus配線／外部LM75系センサー／`Waveshare_TFT_Touch`の`SDBitmapViewerDemo`（`SDBitmapViewer`ではない）／もう1枚のボード（`24`はA153とN947をD18-D18、D19-D19、GND-GNDでつなぎ、両方に書き込む。どちらかが前から同じスケッチを動かしていたら、両方をほぼ同時にリセットしてから始める）。`21`/`22`は**CIスタブではなく実物のライブラリ**を`--library`で指定すること
    - **2枚同時接続での書き込みも各プラットフォームで1回**: A153とN947を両方つなぎ、ポートを切り替えて両方に書き込めること。
      `upload.sh`/`upload.bat`はポートのUSBシリアル番号（`{upload.port.properties.serialNumber}`）を
      LinkServerの`--probe`に渡すので、**Windows/Linuxのポート検出がこの番号を同じ形で返すか**が肝。0.7.0でmacOS・Windows・Linuxの全てで2枚での書き込みを確認した（どれもLinkServerと同じ形の番号を返す）。
@@ -262,13 +262,13 @@ v0.4.0の`main`マージ直前、ユーザーから「今回のリリース準�
      gdb-bridgeは`LinkServer probes`の`Device`列のチップ名でプローブを選ぶ。種類の違う2枚は区別できるが、同じ種類の2枚は区別できない（エラーで止まるのが正しい動作）
    - **IDE内蔵デバッガも各プラットフォームで1回**（`gdb-bridge`の起動経路はOSごとに別物——macOS/Linuxは`launch.sh`から`uname -s`で選ぶ別バイナリ＋別の`findLinkServer()`分岐、Windowsは共有exeを直接起動）
 
-この7項目が終わってはじめて「`main`へのマージ」以降の既存のリリース手順に進む: `main`マージ→リリースzip作成→GitHub Release作成→**ステージングブランチ（`staging-<version>`）でのmacOS/Windows/Linux 3プラットフォーム検証**（v0.3.1から採用、「リリース前クロスプラットフォーム検証」節参照）→問題なければ`main`に対して`update_package_index.yml`を手動実行しchecksum確定。**このステージングブランチでの検証は必ず実施する——スキップしてよい状況は無い**。今回（v0.4.0）は新規追加のIDE内蔵デバッガ（`gdb-bridge`）がmacOSでしか実機確認できていないため、ステージング検証時に「インストール→ビルド→アップロード」の従来チェックに加えて「Windows/LinuxでもIDEのDebugボタン→ブレークポイント→ステップ実行を試す」を追加すること
+この7項目が終わってはじめて「`main`へのマージ」以降の既存のリリース手順に進む: `main`マージ→リリースzip作成→GitHub Release作成→**ステージングブランチ（`staging-<version>`）でのmacOS/Windows/Linux 3プラットフォーム検証**（v0.3.1から採用、「リリース前クロスプラットフォーム検証」節参照）→問題なければ`main`に対して`update_package_index.yml`を手動実行しchecksum確定。**このステージングブランチでの検証は必ず実施する——スキップしてよい状況は無い**。各OSで「インストール→ビルド→アップロード」に加えて「IDEのDebugボタン→ブレークポイント→ステップ実行」まで試す（v0.4.0で追加、0.6.0以降は3OSとも毎回確認している）
 
 ---
 
 ## 残りのPendingタスク
 1. ~~Linux対応の実機検証~~ **解消済み（v0.2.2で確定）**: v0.2.1リリース後の実機検証で、ファイル名の大文字小文字ミスマッチ（`arduino.h`/`Arduino.h`、`spi.h`/`SPI.h`）によりLinuxでビルドが失敗することが判明・修正し、v0.2.2としてリリース。Linux実機（Ubuntu系）でBoards Manager経由インストール〜Blinkスケッチのビルド〜書き込み〜実行まで成功を確認済み。README.md/TUTORIAL.md/TUTORIAL.ja.mdの「未検証」表記もすべて「macOS, Windows 11, Linuxで検証済み」に更新済み
-2. マルチボード対応（MCXN947, MCXA156, MCXN236）— **N947は`prepare0.3.0`ブランチで完了**。GPIO/Serial/Wire/Wire1/SPI/analogRead/analogWrite/tone・noTone・MikroBusの`SPI1`/`Wire2`/`Serial1`まで実機検証済み、`README.md`の対応ボード表もA153と同じ✅に変更済み（ユーザー判断、2026-08-16）。残るはバージョン番号の更新とリリース手順（下記5）のみ。A156/N236は未着手
+2. マルチボード対応（MCXN947, MCXA156, MCXN236）— **N947は`prepare0.3.0`ブランチで完了**。GPIO/Serial/Wire/Wire1/SPI/analogRead/analogWrite/tone・noTone・MikroBusの`SPI1`/`Wire2`/`Serial1`まで実機検証済み、`README.md`の対応ボード表もA153と同じ✅に変更済み（ユーザー判断、2026-08-16）。v0.3.0でリリース済み。A156/N236は未着手
 3. ~~`examples/tests/GPIO_NXP_Arduino`の不要なgitlinkエントリの整理~~ **解消済み**: `git ls-files --stage`で`160000`（gitlink）エントリが残っているのに`.gitmodules`が存在しないと判明（外部クローンの誤`git add`の名残）。`git rm --cached`でインデックスから除去し、他4つの外部ライブラリクローンと同様`.gitignore`に追加
 4. ~~v0.3.0リリース~~ **完了**: 2026-08-16リリース。詳細は[docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md)の「リリース前最終チェックとv0.3.0リリース完了」節
 5. ~~SDライブラリビルド時の`-Waddress-of-packed-member`警告~~ **解消済み（v0.3.1で対応）**: `platform.txt`の`compiler.cpp.flags`に`-Wno-address-of-packed-member`を追加して警告クラス自体を抑制。純粋な診断抑制フラグ（`-W`系）でコード生成には一切影響しないため、プリビルド`.a`の再ビルドや実機再検証は不要と判断——両ボードで`SDBitmapViewer`（`SD`ライブラリ使用）をコンパイルし、警告が完全に消えたことを確認

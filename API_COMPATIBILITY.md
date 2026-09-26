@@ -16,7 +16,7 @@ surface except where a row below notes a difference. See the main
 | `digitalPinToInterrupt` / `NOT_AN_INTERRUPT` | ✅ | Every valid GPIO pin on this MCU supports interrupts, so `digitalPinToInterrupt()` never actually returns `NOT_AN_INTERRUPT` -- it's provided so sketches that check for it still compile |
 | `digitalPinToPort` / `digitalPinToBitMask` / `portOutputRegister` / `portInputRegister` / `portModeRegister` | ✅ | For fast-GPIO/bit-banging libraries; pin must have `pinMode()` called first |
 | `NUM_DIGITAL_PINS` | ✅ | `16` (D0-D13, D18, D19), same on both boards |
-| `NUM_ANALOG_INPUTS` | ✅ | `6` on FRDM-MCXA153, `4` on FRDM-MCXN947 (A0/A1 unavailable there — see Analog section below) |
+| `NUM_ANALOG_INPUTS` | ✅ | `4` on both boards: `A0`-`A3` on FRDM-MCXA153 (`A4`/`A5` are digital only), `A2`-`A5` on FRDM-MCXN947 (`A0`/`A1` unavailable there — see Analog section below). Was `6` on FRDM-MCXA153 before 0.7.0 |
 | `digitalPinHasPWM(pin)` | ✅ | True only for `PWM0`-`PWM5` — this board's PWM capability lives on those dedicated pins, not on the D-pins the way it does on AVR boards |
 | `PIN_WIRE_SDA` / `PIN_WIRE_SCL` / `PIN_SPI_SS` / `PIN_SPI_MOSI` / `PIN_SPI_MISO` / `PIN_SPI_SCK` | ✅ | Standard `pins_arduino.h`-style aliases (AVR/SAMD convention) for this board's `I2C_SDA`/`I2C_SCL`/`ARD_CS`/`ARD_MOSI`/`ARD_MISO`/`ARD_SCK` |
 | `SDA` / `SCL` / `SS` / `MOSI` / `MISO` / `SCK` | ✅ | The bare names, as in AVR's and UNO R4's `pins_arduino.h`. `SDA`/`SCL` were added in v0.7.0: before, a library that called `pinMode(SDA, ...)` failed to build |

@@ -2,8 +2,8 @@
 
 A hands-on walkthrough of the Arduino API on the NXP FRDM-MCXA153 board, from
 installation to every supported peripheral. Each section is a complete,
-runnable sketch. See [README.md](README.md) for the full API reference table
-and [CHANGELOG.md](CHANGELOG.md) for version history.
+runnable sketch. See [API_COMPATIBILITY.md](API_COMPATIBILITY.md) for the full API support table,
+[README.md](README.md) for the overview, and [CHANGELOG.md](CHANGELOG.md) for version history.
 
 > **Note**: This tutorial's examples target the **FRDM-MCXA153** board.
 
@@ -120,6 +120,8 @@ constantly:
 | ✔ (checkmark) | **Verify** — compiles the sketch without uploading, useful to catch errors quickly |
 | → (right arrow) | **Upload** — compiles *and* uploads to the board (via LinkServer, over the MCU-Link USB connector) |
 | 🔍 (magnifying glass), top right | **Serial Monitor** — opens a panel showing whatever the sketch sends with `Serial.print`/`println` |
+
+![buttons](img/buttons.png)
 
 Compiler errors and the upload log show up in the black output pane at the
 bottom of the window — if an upload fails, that's the first place to look.
@@ -344,9 +346,9 @@ void loop() {
 ### 2.6. PWM output: `analogWrite`
 
 PWM is only available on the dedicated pins `PWM0`-`PWM5` (FlexPWM0), not on
-every digital pin. The period is fixed at 1kHz; `analogWrite` only controls
-duty cycle (0-255), same as classic Arduino. This example mirrors the ADC
-reading from section 2.4 onto a PWM output — connect an LED (with a resistor) or
+every digital pin. The frequency is 1kHz unless `analogWriteFrequency()`
+changes it; `analogWrite` sets the duty cycle (0-255), same as classic Arduino. This example mirrors the ADC
+reading from section 2.5 onto a PWM output — connect an LED (with a resistor) or
 scope to `PWM0` to see it change:
 
 ```cpp
@@ -666,7 +668,8 @@ and
 
 ## Where to go next
 
-- [README.md](README.md) — full API support table and pin mapping
+- [API_COMPATIBILITY.md](API_COMPATIBILITY.md) — full API support table
+- [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) — pin mapping
 - [`examples/Arduino_compatible_API/`](examples/Arduino_compatible_API) — one focused sketch per feature
 - [`examples/Arduino_compatible_API/test_combined_peripherals`](examples/Arduino_compatible_API/test_combined_peripherals) — everything running at once
 - [CHANGELOG.md](CHANGELOG.md) — what changed between versions

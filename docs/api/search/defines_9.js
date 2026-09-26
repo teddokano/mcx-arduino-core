@@ -1,6 +1,12 @@
 var searchData=
 [
-  ['kfallingedge_0',['kFallingEdge',['../_interrupt_in_8cpp.html#a00caabc154049fbd0f8ee6c8d6489733',1,'InterruptIn.cpp']]],
-  ['klogiczero_1',['kLogicZero',['../_interrupt_in_8cpp.html#a33ad9ba5f480bcc960c20246fbd42088',1,'InterruptIn.cpp']]],
-  ['krisingedge_2',['kRisingEdge',['../_interrupt_in_8cpp.html#a1f2b7b62102c68e8cb9e63e3d6ffea59',1,'InterruptIn.cpp']]]
+  ['i2c_5fscl_0',['I2C_SCL',['../io_8h.html#a212ca328a6409c98f8c3dfbbe1ba561d',1,'I2C_SCL:&#160;io.h'],['../arduino__io_8h.html#a212ca328a6409c98f8c3dfbbe1ba561d',1,'I2C_SCL:&#160;arduino_io.h']]],
+  ['i2c_5fsda_1',['I2C_SDA',['../io_8h.html#a18aefd12ad84d4c33dc97923cb821e47',1,'I2C_SDA:&#160;io.h'],['../arduino__io_8h.html#a18aefd12ad84d4c33dc97923cb821e47',1,'I2C_SDA:&#160;arduino_io.h']]],
+  ['i3c_5fmaster_5fclock_5ffrequency_2',['I3C_MASTER_CLOCK_FREQUENCY',['../i3c_8cpp.html#a142c8fbc2a69aced6f313af4316f2902',1,'i3c.cpp']]],
+  ['i3c_5fscl_3',['I3C_SCL',['../io_8h.html#ad1810623cae94b1c88ec578bbe2b99f9',1,'I3C_SCL:&#160;io.h'],['../arduino__io_8h.html#ad1810623cae94b1c88ec578bbe2b99f9',1,'I3C_SCL:&#160;arduino_io.h']]],
+  ['i3c_5fsda_4',['I3C_SDA',['../io_8h.html#a3b45378908d7a069180d6c135ea75cf5',1,'I3C_SDA:&#160;io.h'],['../arduino__io_8h.html#a3b45378908d7a069180d6c135ea75cf5',1,'I3C_SDA:&#160;arduino_io.h']]],
+  ['i3c_5fsupported_5',['I3C_SUPPORTED',['../r01lib_8h.html#aa2c41653c6c8e81e53f258c8bbe1f7f6',1,'r01lib.h']]],
+  ['ibi_5fpayload_5fbuffer_5fsize_6',['IBI_PAYLOAD_BUFFER_SIZE',['../i3c_8cpp.html#a039307005eb408df115b1aef7055ba21',1,'i3c.cpp']]],
+  ['internal_7',['INTERNAL',['../arduino__analog_8h.html#a02c5e2eafaed44878fd8e6c54c8dde4d',1,'arduino_analog.h']]],
+  ['interrupts_8',['interrupts',['../_arduino_8h.html#aeab54da5ac84f3441a91cb982b2276bc',1,'Arduino.h']]]
 ];

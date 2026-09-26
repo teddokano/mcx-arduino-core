@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['freq_0',['FREQ',['../class_i2_c.html#aa009bd9217f2fe39b32a96aa68125edda3890b6bb9b8df95d506468f923371466',1,'I2C']]]
+  ['even_0',['Even',['../class_serial.html#aad7cba606351bc3f695774b19383da11abfbc88ed3260f516b5ee188db184539f',1,'Serial']]]
 ];

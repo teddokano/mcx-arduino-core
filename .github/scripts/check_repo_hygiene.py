@@ -149,11 +149,15 @@ def check_package_index_entry():
     data = json.loads(read(PACKAGE_INDEX))
     versions = [p.get("version") for p in data["packages"][0]["platforms"]]
     if version not in versions:
+        # Entries aren't kept in order (0.6.0 went on the end), so the
+        # newest is the highest version, not the first entry.
+        def key(v):
+            return tuple(int(x) for x in re.findall(r"\d+", v or ""))
         fail(
             "package-index-entry",
             "package_nxp_mcx_index.json has no platforms[] entry for %s "
             "(newest is %s) -- add a placeholder entry before running "
-            "update_package_index.yml" % (version, versions[0] if versions else "none"),
+            "update_package_index.yml" % (version, max(versions, key=key) if versions else "none"),
         )
 
 

@@ -2416,5 +2416,24 @@ Windows・Linuxでも、2枚つないだままの書き込み（ポートを切�
 ### CI（`b47c400`）
 `actions/checkout`をv7、`actions/cache`をv6に上げた（Node.js 20の廃止対応）。`arduino/setup-arduino-cli`はv2（Node.js 20）より新しいリリースが無いので、arduino-cliはGitHubのリリースから直接入れ、チェックサムファイルで照合する。`workflow_dispatch`に`runner`入力を加えた（2026-10-19に`ubuntu-latest`が切り替わる前に`ubuntu-26.04`を試すため）。2026-09-25に`ubuntu-26.04`で3ジョブとも通った（run 36163631573）。
 
+### リリース準備（F）
+**1. CHANGELOG**: 0.6.0以降の全コミットと突き合わせ、抜けていた6項目を足した（チュートリアルの新しい節、移植手順のEEPROMの節、READMEの更新、`upload.bat`のCRLF、CI、開発記録の分離）。見出しの確定は`main`へのマージ直前に行う。
+
+**2. ドキュメント監査**（Exploreエージェント）: リンク・アンカー・パス・スケッチ名・`release_check`の表はすべて正しかった。見つかったもの（1件ずつ実物で確かめてから直した）:
+- TUTORIAL（両言語）: `analogWrite`の節が「2.4節のADC」を参照（正しくは2.5節）、「周期は1kHz固定」（`analogWriteFrequency()`で変えられる）、API対応表の案内先がREADME（今は`API_COMPATIBILITY.md`）。英語版に日本語版にある`img/buttons.png`が無かった
+- README（両言語）: 構成図の`libraries/`に`EEPROM/`が無く、「どれも別リポジトリで開発」と書いていた。`setWireTimeout`が`Wire2`でも効くことが抜けていた
+- CLAUDE.md: 動作確認済み表のA153限定の記述（`A0-A3`・FlexPWM0・`Serial1`=D0/D1）、UNO互換マクロの「コンパイル確認のみ」（`release_check/01`で実行時に確かめている）、symlink名`0.2.0-dev`、ワークフローが1本しか載っていない、`SDBitmapViewer`（正しくは`SDBitmapViewerDemo`）、v0.4.0当時の「macOSでしか確認していない」、N947の「残るはバージョン番号の更新」
+- `docs/porting_a_new_board.md`: 時計の表の`Serial1`が0.6.0で実測して直す前の値のまま（A153 96MHz→12MHz、N947「attachが無い」→12MHz）。0.6.0のCHANGELOGは「移植手順に反映した」と書いていたが、入っていなかった。N947のI2Cが常にFlexComm2の時計を使うという注記も、0.6.0で直った後のまま
+- N947のvariant README: A153のI3CピンがD18/D19と共有でプルアップ抵抗がある、という誤り（A153のI3Cは`P0_16`/`P0_17`）。0.7.0の分（`Wire2`のターゲット不可、`EEPROM`、書き込み中リセットのバスフォールト、2枚でのデバッグ）の節を足した
+- `PIN_MAPPING_N947.md`の`Wire2`の注記、`docs/mcxpinstate_guide.md`の参照先（SDKチューニングのガイドには該当の記述が無い）、`release_check/README.md`（「毎pushで全部コンパイル」は不正確、0.7.0で入れなかったスケッチの理由）
+- **コードの誤り**: `NUM_ANALOG_INPUTS`がA153で6だった。ADCがあるのは`A0`-`A3`だけで、`A4`/`A5`の`analogRead()`は`panic()`で止まる。4に直し、「A0-A5すべてADC」と書いていたコメントも直した（`arduino_io.h`の変更だが、ピン番号と`ALIAS_NAMES`には関係しないのでmcxPinStateの照合はやり直し不要）。A153の実機で、`A0`から`NUM_ANALOG_INPUTS`本の`analogRead()`が最後まで通り、`A4`は`error: AnalogIn: unsupported analog pin`で止まることを確かめた
+- 残したもの: 同梱`mcxPinState`のREADMEの「three real bugs」（4つ挙げている）は上流で直してから同期する。N947の`Wire1`のRSTDAAの根本原因が未特定なのは事実どおり
+
+**3. Doxygen**: 再生成。warningは0。Homebrewの更新で1.17.0から1.18.0に上がっていたので、差分の大半はその分。同梱ライブラリ（EEPROMなど）は以前から対象外。
+
+**4. ライセンス**: `LICENSE`を2点直した。SDKのファイルは「無改変」と書いていたが、`semihost_hardfault.c`を0.7.0で変えたので例外として明記した。互換実装の注記が`Arduino.h`だけを対象にしていたので、`arduino_api/`全体と同梱`EEPROM`に広げ、0.7.0で参照したUNO R4のコア（ArduinoCore-renesas）とavr-libc（文書）を足した。
+
+**5. 機械チェック**: `git status`・`TODO`/`FIXME`・オープンなIssue（0件）・gdb-bridgeのバイナリとソースが同じコミット（`f3d234c`）で更新されていること・`go test`を確認。どこからも使われていない`variants/frdm_mcxa153/upload.sh`（0.1.2のOpenOCDの試みの名残）を削除した。`package-index-entry`のメッセージが「newest is 0.5.0」と言うのを、最も大きい版を出すよう直した。リリースzipは約9.1MB。
+
 ---
 

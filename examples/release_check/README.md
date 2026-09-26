@@ -64,8 +64,16 @@ check can't assume are on hand, and stay as individual examples instead:
 library), `test_analogRead_precision_N947` (needs an external voltage
 source on A2), and the bundled `mcxRCServo` library's own examples
 (`SG90_basic`, `SG90_moves`, `FS90R_rotate` -- each needs a real servo
-and its own supply). CI still compiles all of those on every push; what
-it cannot do is watch a shaft turn.
+and its own supply). CI still compiles all of those (the bundled
+libraries' examples on every push, the rest in the full sweep on `main`,
+tags and manual runs); what it cannot do is watch a shaft turn.
+
+Also left out on purpose, from 0.7.0: `test_Wire_begin_address` (it ends
+by checking that `Wire1.begin(address)` stops the sketch, so nothing can
+run after it), `test_fault_report` (it crashes the board on purpose, one
+kind of crash per upload), and `Wire_controller_demo`/`Wire_target_demo`
+(plain examples to watch, with no verdict; #24 checks the same two-board
+setup).
 
 What *can* go wrong in `mcxRCServo` without a servo present -- the pulse
 width it asks the core for -- is checked in #13 instead, by jumpering

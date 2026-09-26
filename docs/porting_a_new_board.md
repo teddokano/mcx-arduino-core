@@ -278,7 +278,7 @@ So the effective sources are:
 | `Wire2` | — | FlexComm3 @ 12MHz |
 | `SPI` | LPSPI1 @ 96MHz | FlexComm1 @ 48MHz |
 | `SPI1` | LPSPI0 @ 96MHz | FlexComm6 @ 48MHz |
-| `Serial1` | LPUART2 @ 96MHz | FlexComm5 @ **reset default — no attach exists** |
+| `Serial1` | LPUART2 @ 12MHz | FlexComm5 @ 12MHz |
 
 That asymmetry produced the same bug three times on N947 (default `SPI`,
 then `SPI1`, then suspected on `Wire2`), each time surfacing as
@@ -286,10 +286,18 @@ then `SPI1`, then suspected on `Wire2`), each time surfacing as
 check both files and **measure the result** — `CLOCK_Get…ClkFreq()`
 printed once over `Serial` is enough to see what you actually got.
 
+`Serial1` is the exception in both columns: neither file decides it.
+`Serial.cpp`'s pin map carries the attach (`kFRO12M_to_LPUART2`,
+`kFRO12M_to_FLEXCOMM5`), applied by the constructor during static
+initialization. An audit of `mcu.cpp` and `clock_config.c` alone read
+it as 96MHz on A153 and as a missing attach on N947; both were wrong, as
+measuring showed. `examples/release_check/01` asserts all of these values.
+
 Note also that a driver which *queries* its clock
 (`CLOCK_GetLpi2cClkFreq()`) survives all of this, while one that assumes
-a fixed instance does not. A153's I2C queries; N947's asks for FlexComm2
-unconditionally even when the instance in use is FlexComm3.
+a fixed instance does not. A153's I2C queries. N947's asked for FlexComm2
+unconditionally, even for `Wire2` on FlexComm3, until 0.6.0; `i2c.cpp` now
+picks the FlexComm by the LPI2C instance.
 
 **Check I2C target mode on each LPI2C, not just the controller side.**
 `Wire.begin(address)` rests on the SDK's `LPI2C_Slave*` API, and neither

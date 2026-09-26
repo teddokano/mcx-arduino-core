@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['utick_5fcallback_5ft_0',['utick_callback_t',['../_interrupt_in_8cpp.html#a2c74ed37473efedd3af337a67edc2ae4',1,'InterruptIn.cpp']]]
+  ['ticker_5fcallback_5ffp_5ft_0',['ticker_callback_fp_t',['../_ticker_8h.html#ac35acab1869d65eb7162f0ce9642abb0',1,'Ticker.h']]]
 ];

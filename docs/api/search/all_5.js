@@ -1,17 +1,17 @@
 var searchData=
 [
-  ['end_0',['end',['../class_two_wire.html#ab20ec491749f826abab709e3fce0183c',1,'TwoWire::end()'],['../class_s_p_i_class.html#a4e6b1133b5a5e817013c688c275aeaa4',1,'SPIClass::end()']]],
-  ['endian_1',['endian',['../arduino__spi_8h.html#aceb52d5e58265d474290d1e17bcf1716',1,'arduino_spi.h']]],
-  ['endswith_2',['endsWith',['../class_string.html#a03fa01871197c778ae0db59832f299f9',1,'String']]],
-  ['endtransaction_3',['endTransaction',['../class_s_p_i_class.html#aab416c5231b189391e13983fe93041c3',1,'SPIClass']]],
-  ['endtransmission_4',['endTransmission',['../class_two_wire.html#aff155a1530c1bf8a5ad96e6e30c2821a',1,'TwoWire']]],
-  ['equals_5',['equals',['../class_string.html#a2326ff92957d6fde3765eb8c9e975f54',1,'String::equals(const String &amp;s) const'],['../class_string.html#abd9e9fb535542de37ab46c8645e812d6',1,'String::equals(const char *cstr) const']]],
-  ['equalsignorecase_6',['equalsIgnoreCase',['../class_string.html#aec06e33ecc1b038aa20e1c0459a68f89',1,'String']]],
-  ['err_5fcallback_7',['err_callback',['../class_i2_c.html#aa99f3f29f9851da102ab3ccdd8ab0cea',1,'I2C']]],
-  ['err_5fcb_8',['err_cb',['../class_i2_c.html#a141f2f104343fc764ef1cf0cf60fd4d7',1,'I2C']]],
-  ['err_5fcb_5fptr_9',['err_cb_ptr',['../class_i2_c.html#a62ead40fa593d0ee1fd3b4ba5c603ba4',1,'I2C']]],
-  ['err_5fhandling_10',['err_handling',['../class_i2_c.html#a430ab75ee49dada60727998e0fac6397',1,'I2C']]],
-  ['euler_11',['EULER',['../_arduino_8h.html#a7f4ee7567f891560bb62dfbda5f93088',1,'Arduino.h']]],
+  ['end_0',['end',['../class_serial.html#a07005e868ef1849cfb58de3b712db88e',1,'Serial::end()'],['../class_two_wire.html#ab20ec491749f826abab709e3fce0183c',1,'TwoWire::end()'],['../class_serial_class.html#acf85d565ced19a7f25de83b520ba41ca',1,'SerialClass::end()'],['../class_s_p_i_class.html#a4e6b1133b5a5e817013c688c275aeaa4',1,'SPIClass::end()']]],
+  ['endswith_1',['endsWith',['../class_string.html#a03fa01871197c778ae0db59832f299f9',1,'String']]],
+  ['endtransaction_2',['endTransaction',['../class_s_p_i_class.html#aab416c5231b189391e13983fe93041c3',1,'SPIClass']]],
+  ['endtransmission_3',['endTransmission',['../class_two_wire.html#aff155a1530c1bf8a5ad96e6e30c2821a',1,'TwoWire']]],
+  ['equals_4',['equals',['../class_string.html#a2326ff92957d6fde3765eb8c9e975f54',1,'String::equals(const String &amp;s) const'],['../class_string.html#abd9e9fb535542de37ab46c8645e812d6',1,'String::equals(const char *cstr) const']]],
+  ['equalsignorecase_5',['equalsIgnoreCase',['../class_string.html#aec06e33ecc1b038aa20e1c0459a68f89',1,'String']]],
+  ['err_5fcallback_6',['err_callback',['../class_i2_c.html#aa99f3f29f9851da102ab3ccdd8ab0cea',1,'I2C']]],
+  ['err_5fcb_7',['err_cb',['../class_i2_c.html#a141f2f104343fc764ef1cf0cf60fd4d7',1,'I2C']]],
+  ['err_5fcb_5fptr_8',['err_cb_ptr',['../class_i2_c.html#a45eb52ae8e28a49879e3ae441b01118f',1,'I2C']]],
+  ['err_5fhandling_9',['err_handling',['../class_i2_c.html#a430ab75ee49dada60727998e0fac6397',1,'I2C']]],
+  ['euler_10',['EULER',['../_arduino_8h.html#a7f4ee7567f891560bb62dfbda5f93088',1,'Arduino.h']]],
+  ['even_11',['Even',['../class_serial.html#aad7cba606351bc3f695774b19383da11abfbc88ed3260f516b5ee188db184539f',1,'Serial']]],
   ['example_20usage_12',['Example usage',['../_analog_in_8h.html#autotoc_md0',1,'Example usage'],['../_pwm_out_8h.html#autotoc_md2',1,'Example usage'],['../_serial_8h.html#autotoc_md5',1,'Example usage']]],
   ['example_5fi2c_5fmaster_13',['EXAMPLE_I2C_MASTER',['../i2c_8cpp.html#ad5347a2a6b4c1c4d23523be260fc633e',1,'i2c.cpp']]],
   ['example_5fi2c_5fmaster_5fbase_14',['EXAMPLE_I2C_MASTER_BASE',['../i2c_8cpp.html#a9c31b9ad89192edc1e92fd0140f5c0dc',1,'i2c.cpp']]],
@@ -21,5 +21,7 @@ var searchData=
   ['example_5flpspi_5fmb_5fbaseaddr_18',['EXAMPLE_LPSPI_MB_BASEADDR',['../r01lib__spi_8cpp.html#a232c337da2fb86c9b1ac12e08385e5a5',1,'r01lib_spi.cpp']]],
   ['example_5flpspi_5fmb_5fpcs_5ffor_5finit_19',['EXAMPLE_LPSPI_MB_PCS_FOR_INIT',['../r01lib__spi_8cpp.html#a64e3e63b04372710a1875394975af86b',1,'r01lib_spi.cpp']]],
   ['example_5flpspi_5fmb_5fpcs_5ffor_5ftransfer_20',['EXAMPLE_LPSPI_MB_PCS_FOR_TRANSFER',['../r01lib__spi_8cpp.html#addbf5081a3efa0ea5d717fa8c6266896',1,'r01lib_spi.cpp']]],
-  ['example_5fmaster_21',['EXAMPLE_MASTER',['../i3c_8cpp.html#a30612a5f6e47af8a081afa4ef7e81a01',1,'i3c.cpp']]]
+  ['example_5fmaster_21',['EXAMPLE_MASTER',['../i3c_8cpp.html#a30612a5f6e47af8a081afa4ef7e81a01',1,'i3c.cpp']]],
+  ['exc_5freturn_22',['exc_return',['../mcu_8cpp.html#a019686ccab0a5d5cc80365f65312a986',1,'mcu.cpp']]],
+  ['external_23',['EXTERNAL',['../arduino__analog_8h.html#af3fe37c1cda80aa7202b5a3bb7557dc9',1,'arduino_analog.h']]]
 ];

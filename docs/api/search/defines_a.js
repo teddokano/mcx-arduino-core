@@ -1,8 +1,6 @@
 var searchData=
 [
-  ['led_5fbuiltin_0',['LED_BUILTIN',['../arduino__io_8h.html#a450a7c16ead7b3c7b882536b08f30a00',1,'arduino_io.h']]],
-  ['lowbyte_1',['lowByte',['../_arduino_8h.html#a57600234f6e26049357fbecfbdca9537',1,'Arduino.h']]],
-  ['lpspi_5fmaster_5fclk_5ffreq_2',['LPSPI_MASTER_CLK_FREQ',['../r01lib__spi_8cpp.html#a967c69428e6a7ea82d2bf6d13113c018',1,'r01lib_spi.cpp']]],
-  ['lpspi_5fmb_5fclk_5ffreq_3',['LPSPI_MB_CLK_FREQ',['../r01lib__spi_8cpp.html#a398e5b21dc1267b4cf05a8f4aa9519dd',1,'r01lib_spi.cpp']]],
-  ['lsbfirst_4',['LSBFIRST',['../_arduino_8h.html#a5811613d98580676f67f0dde8125433e',1,'Arduino.h']]]
+  ['kfallingedge_0',['kFallingEdge',['../_interrupt_in_8cpp.html#a00caabc154049fbd0f8ee6c8d6489733',1,'InterruptIn.cpp']]],
+  ['klogiczero_1',['kLogicZero',['../_interrupt_in_8cpp.html#a33ad9ba5f480bcc960c20246fbd42088',1,'InterruptIn.cpp']]],
+  ['krisingedge_2',['kRisingEdge',['../_interrupt_in_8cpp.html#a1f2b7b62102c68e8cb9e63e3d6ffea59',1,'InterruptIn.cpp']]]
 ];

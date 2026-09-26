@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['end_0',['end',['../class_two_wire.html#ab20ec491749f826abab709e3fce0183c',1,'TwoWire::end()'],['../class_s_p_i_class.html#a4e6b1133b5a5e817013c688c275aeaa4',1,'SPIClass::end()']]],
+  ['end_0',['end',['../class_serial.html#a07005e868ef1849cfb58de3b712db88e',1,'Serial::end()'],['../class_two_wire.html#ab20ec491749f826abab709e3fce0183c',1,'TwoWire::end()'],['../class_serial_class.html#acf85d565ced19a7f25de83b520ba41ca',1,'SerialClass::end()'],['../class_s_p_i_class.html#a4e6b1133b5a5e817013c688c275aeaa4',1,'SPIClass::end()']]],
   ['endswith_1',['endsWith',['../class_string.html#a03fa01871197c778ae0db59832f299f9',1,'String']]],
   ['endtransaction_2',['endTransaction',['../class_s_p_i_class.html#aab416c5231b189391e13983fe93041c3',1,'SPIClass']]],
   ['endtransmission_3',['endTransmission',['../class_two_wire.html#aff155a1530c1bf8a5ad96e6e30c2821a',1,'TwoWire']]],

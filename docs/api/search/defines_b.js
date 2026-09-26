@@ -1,29 +1,7 @@
 var searchData=
 [
-  ['max_5fanalog_5fpins_0',['MAX_ANALOG_PINS',['../arduino__analog_8cpp.html#a456875cb3f4116b4731acf544919a945',1,'arduino_analog.cpp']]],
-  ['max_5fdigital_5fpins_1',['MAX_DIGITAL_PINS',['../arduino__io_8cpp.html#accc8cde4a1fed2f4511d8a28ae302872',1,'arduino_io.cpp']]],
-  ['mb_5fan_2',['MB_AN',['../io_8h.html#a754fce840b4ac32f0ed8e220e95c8bd5',1,'io.h']]],
-  ['mb_5fcs_3',['MB_CS',['../io_8h.html#abbe1a3d173991fd183e3ed0496d1fdbb',1,'io.h']]],
-  ['mb_5fint_4',['MB_INT',['../io_8h.html#aa9700c1832594311f023a708283e9cfc',1,'io.h']]],
-  ['mb_5fmiso_5',['MB_MISO',['../io_8h.html#a992fa848ae3bcec9d75077cf369386ef',1,'io.h']]],
-  ['mb_5fmosi_6',['MB_MOSI',['../io_8h.html#a8230651d92f9f5cb41c262100fabd349',1,'io.h']]],
-  ['mb_5fpwm_7',['MB_PWM',['../io_8h.html#ae68b1593f82039801e959c90b8b8b1cf',1,'io.h']]],
-  ['mb_5frst_8',['MB_RST',['../io_8h.html#a407ba1a7b528f601683413d446bea747',1,'io.h']]],
-  ['mb_5frx_9',['MB_RX',['../io_8h.html#ac15d7687d47778df8df359b2f575d7b0',1,'io.h']]],
-  ['mb_5fsck_10',['MB_SCK',['../io_8h.html#a4e7edf7c986b4196d01b556f0a50fe8c',1,'io.h']]],
-  ['mb_5fscl_11',['MB_SCL',['../io_8h.html#a9f4a8e8a825a5393cbae30c0e331fdad',1,'io.h']]],
-  ['mb_5fsda_12',['MB_SDA',['../io_8h.html#aa728225001f206ccacc3770837e69021',1,'io.h']]],
-  ['mb_5ftx_13',['MB_TX',['../io_8h.html#ab3bc4a236503d91ef966494bb0227054',1,'io.h']]],
-  ['mcx_5farduino_5fcore_5fversion_14',['MCX_ARDUINO_CORE_VERSION',['../mcx__arduino__core__version_8h.html#a7b882e280ce838e56b95610a244c6806',1,'mcx_arduino_core_version.h']]],
-  ['mcx_5farduino_5fcore_5fversion_5fmajor_15',['MCX_ARDUINO_CORE_VERSION_MAJOR',['../mcx__arduino__core__version_8h.html#ac393c5665335ab85b3d36c2b104e25e0',1,'mcx_arduino_core_version.h']]],
-  ['mcx_5farduino_5fcore_5fversion_5fminor_16',['MCX_ARDUINO_CORE_VERSION_MINOR',['../mcx__arduino__core__version_8h.html#af2f89903a20c90a726e3e4aa5f4b26aa',1,'mcx_arduino_core_version.h']]],
-  ['mcx_5farduino_5fcore_5fversion_5fpatch_17',['MCX_ARDUINO_CORE_VERSION_PATCH',['../mcx__arduino__core__version_8h.html#aea3a6057c19e5a28cf99abefd0282d0a',1,'mcx_arduino_core_version.h']]],
-  ['mcx_5farduino_5fcore_5fversion_5fstr_18',['MCX_ARDUINO_CORE_VERSION_STR',['../mcx__arduino__core__version_8h.html#ad4eae6810211d2a74c9b30548a85d162',1,'mcx_arduino_core_version.h']]],
-  ['mcx_5farduino_5fcore_5fversion_5fstr2_19',['MCX_ARDUINO_CORE_VERSION_STR2',['../mcx__arduino__core__version_8h.html#a6ca0f76a1d408b486b6a52a87b76f669',1,'mcx_arduino_core_version.h']]],
-  ['mcx_5farduino_5fcore_5fversion_5fval_20',['MCX_ARDUINO_CORE_VERSION_VAL',['../mcx__arduino__core__version_8h.html#a089e3831931d97d01460e03c93b8b7af',1,'mcx_arduino_core_version.h']]],
-  ['mcx_5farduino_5fcore_5fversion_5fxstr_21',['MCX_ARDUINO_CORE_VERSION_XSTR',['../mcx__arduino__core__version_8h.html#a31483e7b5ebf6ad24ac4293bf6899d05',1,'mcx_arduino_core_version.h']]],
-  ['microsecondstoclockcycles_22',['microsecondsToClockCycles',['../_arduino_8h.html#aa4a5bbc71d71ab25856c1366b6ca15bb',1,'Arduino.h']]],
-  ['miso_23',['MISO',['../arduino__io_8h.html#a7334c540878c8c4d801fd75ed9fd8063',1,'arduino_io.h']]],
-  ['mosi_24',['MOSI',['../arduino__io_8h.html#a5d3f11f2fdf8a7e27b975291e0c2c8cc',1,'arduino_io.h']]],
-  ['msbfirst_25',['MSBFIRST',['../_arduino_8h.html#a1c7ef42eff02618bde70868af4944d81',1,'Arduino.h']]]
+  ['led_5fbuiltin_0',['LED_BUILTIN',['../arduino__io_8h.html#a450a7c16ead7b3c7b882536b08f30a00',1,'arduino_io.h']]],
+  ['lowbyte_1',['lowByte',['../_arduino_8h.html#a57600234f6e26049357fbecfbdca9537',1,'Arduino.h']]],
+  ['lpspi_5fmaster_5fclk_5ffreq_2',['LPSPI_MASTER_CLK_FREQ',['../r01lib__spi_8cpp.html#a967c69428e6a7ea82d2bf6d13113c018',1,'r01lib_spi.cpp']]],
+  ['lpspi_5fmb_5fclk_5ffreq_3',['LPSPI_MB_CLK_FREQ',['../r01lib__spi_8cpp.html#a398e5b21dc1267b4cf05a8f4aa9519dd',1,'r01lib_spi.cpp']]]
 ];

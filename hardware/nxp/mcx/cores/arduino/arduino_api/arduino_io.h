@@ -432,19 +432,18 @@ static const uint8_t	SCL	= PIN_WIRE_SCL;
  */
 #define	NUM_DIGITAL_PINS	16
 
-/** Working analog-input pins. Genuinely differs by board: FRDM-MCXA153
- *  has A0-A5 all wired to LPADC channels, but FRDM-MCXN947's A0/A1 have
- *  no LPADC channel routed to them at all (fixed to io.h's DISABLED_PIN
- *  sentinel -- see PIN_MAPPING_N947.md) -- analogRead() on either panics.
- *  A portable library assuming NUM_ANALOG_INPUTS pins starting at A0
- *  still won't work correctly on N947 purely from this count being
- *  right (A0 itself is the missing one, not one past the working range),
- *  but reporting the real working count here is still strictly more
- *  honest than the alternative of claiming 6 on a board where 2 of those
- *  6 don't work.
+/** Working analog-input pins: 4 on both boards, but not the same 4.
+ *  FRDM-MCXA153 has LPADC channels on A0-A3 only; A4/A5 are digital I/O
+ *  (see PIN_MAPPING_A153.md). FRDM-MCXN947 has them on A2-A5; its A0/A1
+ *  have no LPADC channel routed to them at all (fixed to io.h's
+ *  DISABLED_PIN sentinel -- see PIN_MAPPING_N947.md). analogRead() on a
+ *  pin without one panics. A portable library looping over
+ *  NUM_ANALOG_INPUTS pins from A0 works on FRDM-MCXA153, but still not
+ *  on FRDM-MCXN947, where A0 itself is the missing one; reporting the
+ *  real working count is still more honest than claiming 6.
  */
 #if	defined( FRDM_MCXA153 )
-#define	NUM_ANALOG_INPUTS	6
+#define	NUM_ANALOG_INPUTS	4
 #elif	defined( FRDM_MCXN947 )
 #define	NUM_ANALOG_INPUTS	4
 #endif

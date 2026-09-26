@@ -127,10 +127,8 @@ D2       P0_29  0    ON   -    -     GPIO, GPIO   CONFLICT
 Two owners, same pin, `CONFLICT`. In practice this is what shows up when,
 say, a library's `pinMode()` call collides with a peripheral you also
 begun on the same physical pin — the exact bug class the on-board I3C bus
-sharing pins with `Serial1` on FRDM-MCXN947 (see the [SDK tuning
-guide](advanced_sdk_tuning.md) and [r01lib I3C
-guide](advanced_r01lib_i3c.md) — the same board-specific gotcha is called
-out in both) would produce if you tried it.
+sharing pins with `Serial1` on FRDM-MCXN947 (see the [r01lib I3C
+guide](advanced_r01lib_i3c.md)) would produce if you tried it.
 
 ## When it's useful outside plain sketches
 
