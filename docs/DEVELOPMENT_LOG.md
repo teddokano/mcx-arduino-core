@@ -2392,6 +2392,25 @@ WindowsとLinuxのIDEがLinkServerと同じ形で番号を報告するかは未�
 **macOSでの確認（2枚接続）**: `arduino-cli upload -p`でA153・N947それぞれに書き込み（`Probe:`が出る）、小文字の番号でも書き込める、一覧に無い番号（`6&2ecf2a0a&0&0001`）では`--probe`を外して`Multiple probes detected`と案内が出る、ポート未選択は従来どおり。
 1枚接続で番号が一覧に無い場合（0.6.0と同じ動き）は、Windows/Linuxの確認で見る。
 
+### ステージング: Windows/Linuxの書き込み・デバッグ確認用に`0.7.0-rc1`をプレリリース
+0.6.0-rcと同じ形。タグ`0.7.0-rc1`（`ee3b0dc`）をprereleaseで作り、zipは`mcx-arduino-core-0.7.0.zip`（SHA-256 `f3999eaf…`、9121660 bytes、ダウンロードし直して一致）。
+`staging-0.7.0`ブランチ（`main`から）の`package_nxp_mcx_index.json`に、このzipを指す`0.7.0`エントリを末尾に足した。`main`のindexは無傷。
+
+**公開前に確認したこと**: zipにWindows exeがある、`upload.sh`/`launch.sh`/gdb-bridgeの実行ビット、`upload.bat`がCRLF、`platform.txt`が新しい`regex.data`。
+開発用symlinkを退避してzipを`0.7.0`として展開し、両ボードのコンパイル（`--warnings all`で警告0）、`debug --info`の解決、ポート指定の書き込み（両ボードで`Probe:`が出て成功）、同梱`EEPROM`のサンプルのコンパイル。symlinkは戻して`-dev`が使われることを確認した。
+arduino-cliに`staging-0.7.0`のURLを渡して`0.7.0`が選べることも確認した。
+
+**タグのCIが赤くなるのは想定内**: `--release`で`changelog-heading`・`package-index-entry`・`doxygen-freshness`の3件だけが落ちる（ローカルで再現）。
+
+**気づいたこと**: `package-index-entry`のメッセージが「newest is 0.5.0」と言う。`versions[0]`を最新として出しているが、0.6.0のエントリは配列の末尾にある。判定には影響しない（表示だけ）。
+
+**Windows・Linuxでの結果**: ユーザーが`staging-0.7.0`経由で入れ、A153を1枚つないでポートを選んで書き込んだところ、**両方で`Probe: <番号>`が出た**。
+WindowsとLinuxのポート検出も、LinkServerと同じ形のシリアル番号を返している（保険の分岐には入らなかった）。2枚接続での書き込みとデバッグは未報告。
+
+あわせて、0.6.0のときに削除し忘れていた`0.6.0-rc2`のプレリリースとタグを削除した（`0.6.0-rc1`はタグごと削除済みだった）。
+
+**確認が済んだらrcリリースと`staging-0.7.0`ブランチは削除する。**
+
 ### CI（`b47c400`）
 `actions/checkout`をv7、`actions/cache`をv6に上げた（Node.js 20の廃止対応）。`arduino/setup-arduino-cli`はv2（Node.js 20）より新しいリリースが無いので、arduino-cliはGitHubのリリースから直接入れ、チェックサムファイルで照合する。`workflow_dispatch`に`runner`入力を加えた（2026-10-19に`ubuntu-latest`が切り替わる前に`ubuntu-26.04`を試すため）。2026-09-25に`ubuntu-26.04`で3ジョブとも通った（run 36163631573）。
 
