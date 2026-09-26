@@ -2471,3 +2471,17 @@ Windows・Linuxでも、2枚つないだままの書き込み（ポートを切�
 
 ---
 
+
+## v0.8.0（`0.8.0-dev` ブランチ、開発開始 2026-09-26）
+`platform.txt`のversion系3行・`Doxyfile`のPROJECT_NUMBER・同梱`mcxPinState`の`MCXPINSTATE_VERIFIED_AGAINST`を0.8.0へ。
+`arduino_io.h`は0.7.0の完了（`74c1239`でのバンプ）以降`de27445`（`SDA`/`SCL`追加）・`aed3145`（`NUM_ANALOG_INPUTS`修正）の2回変わっているが、
+どちらもピン名・並びには触れておらず、hygieneチェックも53個の一致を保ったまま——0.7.0で行った監査がそのまま有効なので、定数だけ動かした。
+上流mcxPinStateリポジトリにも同じバンプをコミット・push（`d8423be`）。
+ローカルIDE連携のsymlinkも`0.7.0-dev`→`0.8.0-dev`に付け替え、ブランチ名との対応を保った。
+
+**0.7.0完了時点で保留にした候補**（`CLAUDE.md`の「残りのPendingタスク」参照）:
+- 上流`r01lib`への反映（他ボード対応が揃うまで保留）
+- GPIO治具（A156対応を含む）
+- ネットワーク基底クラス（`Client`/`Server`/`UDP`/`IPAddress`）
+- Serial RX バッファの拡張
+- マルチボード追加（A156が最も安い、N236はセンサー構成の違いが乗る、C444は新規実装規模）
