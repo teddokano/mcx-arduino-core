@@ -5,7 +5,7 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.7.1] - 2026-09-28
 
 ### Highlights
 - FRDM-MCXA153: uploading and debugging work with LinkServer 26.9.130 installed, as long as an earlier LinkServer (such as 26.6.137) is installed alongside it
