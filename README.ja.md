@@ -61,6 +61,23 @@ LinkServer自身のgdbserverを使用します——本家OpenOCDはMCXチップ
 
 インストール後、アップロードスクリプトが自動的にLinkServerを検出します——パス設定は不要です。
 
+> **FRDM-MCXA153とLinkServer 26.9について:** LinkServer 26.9.130はFRDM-MCXA153のフラッシュを32KBと読むため、
+> それより大きいスケッチは書き込めません（「Attempt to load into missing flash area」）。
+> 以前の版（26.6以前）も並べてインストールしておいてください。書き込みとデバッグは、両ボードとも自動で26.9を避けてそちらを使います
+> （FRDM-MCXN947は26.9でも動きますが、2つのボードで同じ版を使わないと、後から書き込んだほうが失敗します）。
+>
+> NXPのLinkServerのページには最新版しか載っていません。26.6.137は次のURLから直接ダウンロードできます。
+>
+> | OS | LinkServer 26.6.137 |
+> |----|---------------------|
+> | Windows | [LinkServer_26.6.137.exe](https://www.nxp.com/lgfiles/updates/mcuxpresso/LinkServer_26.6.137.exe) |
+> | macOS（Apple silicon） | [LinkServer_26.6.137.aarch64.pkg](https://www.nxp.com/lgfiles/updates/mcuxpresso/LinkServer_26.6.137.aarch64.pkg) |
+> | macOS（Intel） | [LinkServer_26.6.137.x86-64.pkg](https://www.nxp.com/lgfiles/updates/mcuxpresso/LinkServer_26.6.137.x86-64.pkg) |
+> | Linux（x86_64） | [LinkServer_26.6.137.x86_64.deb.bin](https://www.nxp.com/lgfiles/updates/mcuxpresso/LinkServer_26.6.137.x86_64.deb.bin) |
+> | Linux（arm64） | [LinkServer_26.6.137.aarch64.deb.bin](https://www.nxp.com/lgfiles/updates/mcuxpresso/LinkServer_26.6.137.aarch64.deb.bin) |
+>
+> ダウンロードページから入手する場合と同じく、ダウンロードするとNXPのソフトウェア使用許諾に同意したことになります。
+
 インストール→ビルド→アップロードの一連の流れは**macOS・Windows 11・Linux**で検証済みです。
 
 ## インストール

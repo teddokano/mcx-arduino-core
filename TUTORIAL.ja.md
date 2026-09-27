@@ -66,6 +66,22 @@ English version → [TUTORIAL.md](TUTORIAL.md)
 
 インストール後は、ボードパッケージの書き込みスクリプトが自動的にLinkServerを検出します — パス設定は不要です。
 
+> **注意: LinkServer 26.9について**
+>
+> LinkServer 26.9.130はFRDM-MCXA153のフラッシュを32KBと読むため、それより大きいスケッチは書き込めません
+> （出力ペインに「Attempt to load into missing flash area」と出ます）。NXPのLinkServerのページには最新版しか載っていないので、
+> 次のURLから26.6.137も入れて、26.9と並べておいてください。書き込みとデバッグは自動で26.6を使います。
+>
+> | OS | LinkServer 26.6.137 |
+> |----|---------------------|
+> | Windows | [LinkServer_26.6.137.exe](https://www.nxp.com/lgfiles/updates/mcuxpresso/LinkServer_26.6.137.exe) |
+> | macOS（Apple silicon） | [LinkServer_26.6.137.aarch64.pkg](https://www.nxp.com/lgfiles/updates/mcuxpresso/LinkServer_26.6.137.aarch64.pkg) |
+> | macOS（Intel） | [LinkServer_26.6.137.x86-64.pkg](https://www.nxp.com/lgfiles/updates/mcuxpresso/LinkServer_26.6.137.x86-64.pkg) |
+> | Linux（x86_64） | [LinkServer_26.6.137.x86_64.deb.bin](https://www.nxp.com/lgfiles/updates/mcuxpresso/LinkServer_26.6.137.x86_64.deb.bin) |
+> | Linux（arm64） | [LinkServer_26.6.137.aarch64.deb.bin](https://www.nxp.com/lgfiles/updates/mcuxpresso/LinkServer_26.6.137.aarch64.deb.bin) |
+>
+> ダウンロードページから入手する場合と同じく、ダウンロードするとNXPのソフトウェア使用許諾に同意したことになります。
+
 ### 1.4. どちらのUSBコネクタを使うか
 
 このボードには**2つ**のUSB-Cコネクタがあり、間違った方に挿すとIDEに何も表示されません。**"MCU-Link USB"**とシルク印刷されたコネクタ（**J15**）を使ってください。このポートがオンボードのデバッグプローブで、LinkServerでの書き込み・ボードへの給電・`Serial`（USB経由のシリアルポート）の出力先すべてを兼ねています。
@@ -117,6 +133,7 @@ English version → [TUTORIAL.md](TUTORIAL.md)
 
 **アップロードに失敗する、または出力ペインにLinkServer関連のエラーが出る場合:**
 - LinkServerが実際にインストールされているか確認 — 書き込みスクリプトは自動検出しますが、インストールされていないと見つけられません
+- 「Attempt to load into missing flash area」と出る場合は、LinkServer 26.9がFRDM-MCXA153のフラッシュを32KBと読んでいます。26.6.137も並べてインストールしてください（ダウンロードのURLは[1.3](#13-nxp-linkserverのインストール)）。書き込みは自動でそちらを使います
 - Windowsでは**デバイスマネージャー**でボードのエントリに黄色い警告アイコン（ドライバの問題）が出ていないか確認
 - ポートを掴んだままの他のプログラム（別のシリアルモニタ、ターミナルソフト等）を閉じる
 

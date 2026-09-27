@@ -1,7 +1,7 @@
 # mcx-arduino-core 開発履歴（バージョンごとの作業記録）
 
 このファイルは`CLAUDE.md`から切り出した**過去の作業記録のアーカイブ**です。
-v0.1.5からv0.6.0までの各リリース（と開発中のv0.7.0）で「何を作り、どこで詰まり、なぜそう決めたか」を
+v0.1.5からv0.7.1までの各リリースで「何を作り、どこで詰まり、なぜそう決めたか」を
 当時の記述のまま残してあります。
 
 **読み方**:
@@ -31,7 +31,7 @@ v0.1.5からv0.6.0までの各リリース（と開発中のv0.7.0）で「何�
 - **v0.2.1**（前バージョン）: `prepare0.2.1`→`main`fast-forwardマージ・GitHub Release作成済み、2026-08-12リリース
 - **重要な学び（リリースzipの構造要件）**: v0.2.1の初回リリース作業で`git archive --format=zip -o ... HEAD:hardware/nxp/mcx`を使ってzipを作成したところ、Arduino IDE経由の実インストールで`Failed to install platform: ... no unique root dir in archive, found '.../cores' and '.../tools'`エラーで失敗。Arduino Boards Managerのインストーラーは**zip直下に単一のラッパーディレクトリが1つだけ**存在することを要求する（インストーラーがそのディレクトリを剥がして`packages/<vendor>/hardware/<arch>/<version>/`に配置する仕組み）。`git archive HEAD:hardware/nxp/mcx`はサブディレクトリの中身を直接展開するため、`boards.txt`/`cores/`/`tools/`/`variants/`等がzip直下に並ぶ「フラットな」構造になってしまい、この要件を満たしていなかった。実際に公開済みのv0.2.0のzipを確認したところ、そちらは`mcx/`という単一のラッパーディレクトリを持つ正しい構造になっており問題なし（0.2.1作成時のみのミス）。**今後リリースzipを作る際は、必ず単一のトップレベルディレクトリ（名前は任意、例: `mcx-arduino-core-<version>/`）でラップすること** — `git archive`で作る場合は一旦別ディレクトリに展開してからラッパーディレクトリごと`zip -r`するか、`--prefix=<name>/`オプションを使う
 - **内容**: NXP FRDM-MCXA153 (Cortex-M33) 向けArduino IDEボードサポートパッケージ
-- v0.2.1の主な内容: `String`クラス独自実装、`Print`/`Stream`/`Printable`抽象基底クラス新設（サードパーティライブラリ互換性向上）、Serial/Stream系ヘルパー一式、複数の実バグ修正（SPI bitOrder、Serial BIN基数、Serial.writeオーバーロード、attachInterrupt LOW、Wire.end() BusFault）。詳細は本ファイル内の「v0.2.1 で作業中の内容」セクションおよび[CHANGELOG.md](CHANGELOG.md)を参照
+- v0.2.1の主な内容: `String`クラス独自実装、`Print`/`Stream`/`Printable`抽象基底クラス新設（サードパーティライブラリ互換性向上）、Serial/Stream系ヘルパー一式、複数の実バグ修正（SPI bitOrder、Serial BIN基数、Serial.writeオーバーロード、attachInterrupt LOW、Wire.end() BusFault）。詳細は本ファイル内の「v0.2.1 で作業中の内容」セクションおよび[CHANGELOG.md](../CHANGELOG.md)を参照
 - **Linux対応の扱い**: v0.2.1にxPack GCC（Linux x86_64/arm64）・`upload.sh`のLinux分岐を含めたが、実機（実Linux環境）でのBoards Managerインストール〜ビルド〜書き込みは未検証（README.mdに明記済み）。ユーザー方針: このリリース版を使って実際にLinuxマシンで検証し、確認できた時点で正式サポート確定とする（残りのPendingタスク#1）
 - **v0.2.1のBoards Managerインストール実機検証**: macOS・Windowsともに実機でインストール・動作確認済み（Windowsはユーザーが別マシンで実施、インストール成功・実行確認まで完了と報告）。Linuxのみ未検証で残っている
 - **重要な変更（`package_nxp_mcx_index.json`の構造・過去バージョン対応）**: v0.2.1インストール検証中、Boards Managerで過去バージョン（0.2.0等）を選択できないことが判明。原因は`package_nxp_mcx_index.json`の`platforms`配列が**常にエントリ1つだけ**で、リリースのたびに`version`/`url`/`checksum`等を上書きする方式だったため（0.1.0リリース以来ずっとこの方式）。ユーザー指示で過去バージョンも選択可能にする方針に変更し、以下を実施:
@@ -834,7 +834,7 @@ v0.3.1セッション末で修正済みだった（未コミットのまま残�
 
 - **切り分け**: `loop()`内の各ステップ直後に`Serial.println()`+`Serial.flush()`のチェックポイントを挿入して再フラッシュ・再確認する方式で二分探索。当初「I3C(`sensor.temp()`)が怪しい」という仮説を立てコメントアウトを依頼したが、ユーザーが「1行だけで止まる」と報告し否定——的外れな仮説だったと判明。改めて全ステップにチェックポイントを入れ直したところ、**`cp4`（`analogWrite`後）は出力されるが`cp5`（`SPI1.transfer16()`後）が出ない**ことが判明——`SPI1`（MikroBusのSPI、A153では`LPSPI0`）のブロッキング転送内で無限待ちしていると特定
 - **根本原因**: `cores/arduino/mcu.cpp`の`init_mcu()`内、実際にA153でビルドされる`#elif CPU_MCXA153VLH`分岐に、`LPSPI0`（MikroBus SPI1用）のクロックアタッチ（`CLOCK_SetClockDiv(kCLOCK_DivLPSPI0,1u); CLOCK_AttachClk(kFRO12M_to_LPSPI0);`）が存在しなかった——このコードはA153のMikroBus SPI1対応作業時に実機バグとして発見・追加されたはずのものだが（このドキュメントの「A153のMikroBus対応: `SPI1`とGPIO」セクション参照）、r01libソース統合作業中に、なぜかA153の実ビルドには使われない`#elif CPU_MCXA156VLL`分岐（未リリースの別チップ向け）の方にだけこのクロック設定が残り、A153自身の分岐からは消えてしまっていた。クロック未供給のペリフェラルに対して`LPSPI_MasterTransferBlocking()`（SDK関数、内部でTX/RXステータスフラグをポーリング）を呼ぶと、そのフラグが永久に立たないため無限ループ＝ハングする、という典型的な症状と完全に一致
-- **修正**: `CPU_MCXA153VLH`分岐に`LPSPI0`のクロックアタッチを追加し直した（[mcu.cpp](hardware/nxp/mcx/cores/arduino/r01lib/mcu.cpp)）。ソース配布方式になったため、`.a`の再ビルド・再配置は不要——ソースを直すだけで次回ビルドに反映される
+- **修正**: `CPU_MCXA153VLH`分岐に`LPSPI0`のクロックアタッチを追加し直した（[mcu.cpp](../hardware/nxp/mcx/cores/arduino/r01lib/mcu.cpp)）。ソース配布方式になったため、`.a`の再ビルド・再配置は不要——ソースを直すだけで次回ビルドに反映される
 - ユーザーが再フラッシュし、**A153で正常動作を確認**（`test_combined_peripherals_A153`が全ステップ完走）。チェックポイント計装は削除しスケッチを元の内容に復元
 - N947についても同様にチェックポイント計装を入れて確認を依頼したところ、ユーザーから「A153のスケッチを動かしていた」という誤操作の訂正があり、**改めてN947でも問題なく動作することを確認**——N947側には実機バグは無かった（チェックポイント計装も削除・復元済み）
 
@@ -2454,6 +2454,7 @@ Windows・Linuxでも、2枚つないだままの書き込み（ポートを切�
 - `21`（N947）: 40秒・210ループで`WARNING`0件。`Wire2`は毎回`134`（NAK）がすぐ返り、`SPI1`は`0x1234`、温度は約26.2℃
 - `22`（N947）: 同じモジュールで15秒・36回の読み出しがすべてOK、24.875〜25.250℃
 - `23`（N947）: ユーザーが画像の崩れ・速度とも問題なしと確認。1枚約590ms。タッチ（上半分・下半分・長押し）も認識
+- 取り込みの注意: 書き込みの前にLinkServerがボードをリセットするので、配線を替えたあとの前のスケッチが一瞬動き、その出力（配線が合わないための`FAIL`）が次の取り込みの先頭に入る。判定は見出しより後の行だけで行う
 
 **これで`release_check`（`0n`・`1n`・`2n`）は両ボードとも全部通った。**
 
@@ -2467,10 +2468,85 @@ Windows・Linuxでも、2枚つないだままの書き込み（ポートを切�
 - `staging-0.7.0`・`0.7.0-dev`ブランチは役目を終えたのでリモート・ローカルとも削除。開発環境（`packages/nxp`）を戻した
 
 これでv0.7.0のリリース作業が全て完了。
-- 取り込みの注意: 書き込みの前にLinkServerがボードをリセットするので、配線を替えたあとの前のスケッチが一瞬動き、その出力（配線が合わないための`FAIL`）が次の取り込みの先頭に入る。判定は見出しより後の行だけで行う
 
 ---
 
+## v0.7.1（`0.7.1-dev` ブランチ、`main`から切ったパッチリリース、2026-09-28リリース）
+
+2026-09-28、0.7.0の`main`から`0.7.1-dev`を切った（`8096795`）。`platform.txt`・`Doxyfile`を0.7.1に。`arduino_io.h`は0.7.0から変わっていないので、同梱`mcxPinState`の`MCXPINSTATE_VERIFIED_AGAINST`も0.7.1に上げた（上流の`mcxPinState`は0.8.0のまま）。
+0.8.0（`0.8.0-dev`）と並行するので、ローカルIDE用のsymlinkはそのとき作業ツリーで切り替えたブランチの名前に付け替える。
+
+### LinkServer 26.9.130でFRDM-MCXA153に書き込めない（`077650d`）
+**報告**: LinkServerを26.9.130に上げたら、Arduino IDEからA153に書き込めなくなった。N947は問題なく、LinkServerを前の版に戻すと直る。
+
+**症状**: 26.9.130はA153のフラッシュを32KBと判定する（ログに`Flash variant 'MCXA1x3 ...' detected (32KB = 4*8K at 0x0)`）。32KBを超えるスケッチ（46KBの`hello_world`など）はすべて`Attempt to load into missing flash area`で失敗し、32KB以下なら書ける。
+同じELFを26.6.137で書くと`128KB = 16*8K`と判定されて成功する。チップを消去した状態でも26.9は32KBと判定したので、動いているスケッチの状態とは関係ない。
+LinkServerのデバイス定義（`devices/`のJSON）は両版とも128KBのままで、26.9のリリースノートに「Fixed flash size detection for some MCXAxxx devices」とある。**このコアの不具合ではなく、NXPへの報告はユーザーが行う**。
+原因の詳細は、LinkServerの使用許諾（使用結果の報告の公開を制限している）に配慮して、この公開リポジトリには書かない。
+
+**対処**: A153のときだけ、書き込み（`upload.sh`/`upload.bat`）とデバッグ（`gdb-bridge`）が26.9を避ける。
+- 入っているLinkServerを新しい順に並べ、A153のときだけ各候補に`--version`を聞いて、26.9.xなら次へ進む。N947では版を聞かず、これまでどおり最新を使う。`--version`は1回0.2〜0.9秒
+- 26.9しか無いときはそれを使う（32KB以下は書けるため）。書き込みに失敗したら「26.6以前も並べて入れれば自動でそちらを使う」と案内する。失敗の原因が別（複数ボードなど）のこともあるので、案内は「上のエラーが`missing flash area`なら」という条件付きにした。`gdb-bridge`は26.9を使うときに最初から警告を出す
+- 避ける版の一覧は`upload.sh`の`flash_size_bug()`、`upload.bat`の`:consider`、`gdb-bridge`の`flashSizeBug`の3か所。NXPが直した版を出したら、46KBの`hello_world`が書けることを確かめてから揃えて更新する
+- LinkServerの`-o /device/memory/0/flash-driver=<ファイル>`で26.6のフラッシュドライバを指せば、26.9本体のままでも書けることは確かめた。ただし旧ドライバをこのコアに同梱することは使用許諾（再配布の禁止）上できず、結局旧版が入っていることが前提になるので、版を選ぶ方式にした
+- `gdb-bridge`は`findLinkServer()`が候補を全部並べる形になった（以前は最新の1つだけを見ていて、その中に実行ファイルが無ければ「見つからない」だった）。5つのバイナリを前回と同じ手順（go1.27.1、`-ldflags="-s -w" -trimpath`）でビルドし直した
+- `upload.bat`はCRLFを保つためPythonで`newline=''`を指定して書き換えた
+
+**確認（macOS、26.9.130・26.6.137・26.5.59・25.6.131が入った状態）**:
+- A153: `upload.sh`・`arduino-cli compile -u`（IDEと同じ経路）・gdb-bridge経由の`load`のすべてで26.6.137が選ばれ、46KBを書けた（2枚接続中でもgdb-bridgeはA153のプローブを選んだ）
+- 候補を26.9だけにしたコピーで、書き込みが失敗して案内が出ることを確認
+- N947: `upload.sh`・gdb-bridgeとも26.9.130のままで成功
+- Windows・Linux: 下のステージングで、ユーザーが問題なしと確認
+
+### 旧版LinkServerのダウンロード先（`cf7a62d`）
+NXPの製品ページには最新版しか並ばず、「Download」の先はNXPアカウントでのサインインが必要（その先に旧版の一覧があるかは見ていない）。
+ファイル名に版を入れた直接URL（`https://www.nxp.com/lgfiles/updates/mcuxpresso/LinkServer_26.6.137.<拡張子>`）ならサインインなしで取れる。
+Windows `.exe`、macOS `.aarch64.pkg`・`.x86-64.pkg`（Intelはハイフン。`x86_64`は404）、Linux `.x86_64.deb.bin`・`.aarch64.deb.bin`の5つがHEADで200を返すことを確かめ、README・TUTORIAL（両言語）の注意書きに載せた。
+
+### ステージング: Windows/Linuxの確認用に`0.7.1-rc1`をプレリリース
+0.7.0-rcと同じ形。タグ`0.7.1-rc1`（`077650d`）をprereleaseで作り、zipは`mcx-arduino-core-0.7.1.zip`（SHA-256 `13df362d…`、9134399 bytes、ダウンロードし直して一致）。`staging-0.7.1`ブランチ（`main`から）のindexの末尾に`0.7.1`エントリを足した。`main`のindexは無傷。
+公開前に、zipの実行ビット・`upload.bat`のCRLF・`version=0.7.1`を確認し、zipを`0.7.1`として展開して両ボードのコンパイル（警告0）・A153への書き込み（26.9を避けて成功）・`debug --info`の解決を確認した。arduino-cliでstagingのURLから`0.7.1`が選べることも確認。
+タグのCIは`--release`の3件（`changelog-heading`・`package-index-entry`・`doxygen-freshness`）だけが落ちた（想定どおり）。
+
+**Windows・Linuxでの結果**: ユーザーが`staging-0.7.1`経由で入れ、26.9と旧版を並べた状態で、A153の書き込みとデバッグが問題なしと確認した。
+
+確認が済んだので、`0.7.1-rc1`のプレリリースとタグ、`staging-0.7.1`ブランチを削除した。本番リリースでは改めてステージングを作って3プラットフォームで確かめる。
+
+### リリース準備
+コードの変更がLinkServerの選び方だけなので、**実機の`release_check`（項目7）は省略した**（ユーザー判断）。
+
+**1. CHANGELOG**: `[Unreleased]`に`### Highlights`（2行）と、README・TUTORIALの追記を`### Changed`として足した。見出しの確定は`main`へのマージ直前に行う。
+
+**2. ドキュメント監査**（Exploreエージェント）: 新しい注意書きは英語版・日本語版で事実・5つのURL・アンカーとも一致していた。見つかったもの（実物で確かめてから直した）:
+- **`upload.bat`が版を名前順（`sort /r`）で並べていた**。0.7.0からの並べ方だが、26.12が出ると26.9が上に来る。そうなるとA153には26.6、N947には26.9が選ばれ、版を数値で比べるgdb-bridgeとも食い違う。ディレクトリ名`LinkServer_<版>`から版を読んで数値で比べる形に書き直した（版を聞くための`--version`も不要になった）。**Windowsでまだ動かしていないので、本番のステージングで確かめる**
+- 書き込み失敗時の案内が、26.6の載っていない`nxp.com/linkserver`を指していた。READMEのダウンロード表（`#nxp-linkserver-required-for-uploading-and-debugging`）を指すように直し、gdb-bridgeの警告にも同じ案内を足した（バイナリを作り直し、macOSのA153で読み込みと案内を再確認）
+- 「ダウンロードページには最新版しかない」は言い過ぎだった（確かめたのは製品ページまでで、サインインの先は見ていない）。「NXPのLinkServerのページには最新版しか載っていない」に直した
+- TUTORIAL（両言語）の注記で、見出しの行と本文が1段落につながっていた
+- `docs/porting_a_new_board.md`の4節に、LinkServerの版の除外がチップ名ごとであること（新しいチップでは32KBを超えるスケッチで判定サイズを確かめる）を足した
+- この開発記録の冒頭（対象の版）と、`docs/`からの相対リンク2件（`CHANGELOG.md`・`mcu.cpp`）。v0.7.0の節の最後にはみ出していた「取り込みの注意」を`release_check`の項目の中に戻した。CLAUDE.mdの開発記録の範囲も直した
+
+**3. Doxygen**: 再生成。warningは0件で、差分は版番号（0.7.0→0.7.1）だけ。
+
+**4. ライセンス**: 変更不要。LinkServerの探し方（固定パス→版付きディレクトリ→`PATH`）はArduinoCore-zephyr由来として記載済みで、版を選ぶ処理は他のプロジェクトを参照せずに書いた。LinkServerのファイルは同梱していない。
+
+**5. 機械チェック**: オープンなIssueは0件。追加した行に`TODO`や「未確認」は無い。gdb-bridgeのバイナリとソースは同じコミットで更新、`go test`も通る。
+
+**6. 全サンプルのコンパイル**: 両ボードのfull tierを逐次で流し、全部通った（終了コード0）。
+
+**7. `release_check`（実機）**: 省略（上記）。
+
+### リリース作業中に見つかった不具合: A153の直後にN947へ書くと失敗する
+`main`へマージしたあと、リリースzipを`0.7.1`として展開してA153→N947の順に書き込んだところ、**N947が`Ed:02: Failed on connect: Ee(F0). Redlink interface error 240`で失敗した**。同じ順で3回くり返して3回とも失敗し、N947だけを書くと成功する。
+
+**原因**: LinkServerは書き込みのあとも`redlinkserv`（ポート23490）を残し、次の起動はそれに「Reconnected to existing LinkServer process」で再接続する。A153を26.6で書くと26.6の`redlinkserv`が残り、N947を26.9で書くと26.9がそれに再接続して失敗していた。
+逆（26.9の`redlinkserv`に26.6がつなぐ）は成功し、同じ版どうしならどちらの順でも成功する。**0.7.0は常に同じ版を使っていたので起きず、A153だけ版を変えたこの修正で入った不具合**。
+
+- 版ごとに`redlinkserv`のポートを分ける案（LinkServerの`--config`で`internal-redlink`を変えられる）は、25.6.131に`--config`が無いので採らなかった
+- **対処**: 26.9を避けるのを全ボードに広げ、どのボードも同じ版を使うようにした（`upload.sh`・`upload.bat`・gdb-bridge）。26.9しか無いときはどのボードも26.9を使い、失敗時の案内はA153のときだけ出す
+- **確認（macOS）**: A153→N947の書き込みを3回くり返して全部成功（両方26.6を使用）。gdb経由の読み込みをA153→N947の順に行い、続けてA153への書き込みも成功。候補を26.9だけにしたコピーでは、N947は成功して案内なし、A153は失敗して案内あり
+- **教訓**: 書き込みを1ボードずつ確かめるだけでは、ボードごとに違うツールの版を使ったときの干渉は見えない。2枚つないで**続けて**書く確認を、今回の本番ステージングでもWindows・Linuxで行う
+
+---
 
 ## v0.8.0（`0.8.0-dev` ブランチ、開発開始 2026-09-26）
 `platform.txt`のversion系3行・`Doxyfile`のPROJECT_NUMBER・同梱`mcxPinState`の`MCXPINSTATE_VERIFIED_AGAINST`を0.8.0へ。
