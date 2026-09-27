@@ -465,14 +465,16 @@ func reserveFreePort() (int, net.Listener, error) {
 	return l.Addr().(*net.TCPAddr).Port, l, nil
 }
 
-// flashSizeBug lists LinkServer versions whose flash driver takes the
-// FRDM-MCXA153's 128KB of flash for 32KB, so loading a sketch larger than
-// that fails ("Attempt to load into missing flash area"). For these chips,
-// findLinkServer passes over those versions when another install is
-// present. Keep in step with the same list in tools/upload.sh and
-// tools/upload.bat.
-var flashSizeBug = []struct{ chip, versionPrefix string }{
-	{"MCXA153", "26.9."},
+// flashSizeBug lists LinkServer versions whose flash driver takes a
+// chip's flash for smaller than it is, so loading a larger sketch fails
+// ("Attempt to load into missing flash area"). findLinkServer passes over
+// them while another install is present -- for every board, not just the
+// affected chip: LinkServer leaves its redlinkserv running after a session,
+// and 26.9 fails ("Redlink interface error 240") when the one it finds was
+// started by 26.6, so all boards have to use the same version. Keep in
+// step with the same list in tools/upload.sh and tools/upload.bat.
+var flashSizeBug = []struct{ versionPrefix, chip string }{
+	{"26.9.", "MCXA153"}, // reads its 128KB as 32KB
 }
 
 // findLinkServer mirrors the discovery logic in tools/upload.sh and
@@ -508,44 +510,38 @@ func linkServerInstalls() []string {
 	return installs
 }
 
-// pickLinkServer returns the first of installs whose version has no known
-// flash-size bug for device's chip, or the first of all (with a warning)
-// when every one has it -- a sketch that fits in what the bug leaves still
-// loads. Versions are only asked for chips flashSizeBug names.
+// pickLinkServer returns the first of installs whose version is not in
+// flashSizeBug, or the first of all when every one is -- other chips are
+// unaffected, and a sketch that fits in what the bug leaves still loads.
+// Only for the affected chip does that last case come with a warning.
 func pickLinkServer(installs []string, device string) string {
 	chip := chipOf(device)
-	var prefixes []string
-	for _, b := range flashSizeBug {
-		if b.chip == chip {
-			prefixes = append(prefixes, b.versionPrefix)
-		}
-	}
-	if len(prefixes) == 0 {
-		return installs[0]
-	}
-
 	var skipped []string
+	var skippedFor string
 	for _, p := range installs {
 		v := linkServerVersion(p)
-		bad := false
-		for _, prefix := range prefixes {
-			if strings.HasPrefix(v, prefix) {
-				bad = true
+		bugChip := ""
+		for _, b := range flashSizeBug {
+			if strings.HasPrefix(v, b.versionPrefix) {
+				bugChip = b.chip
 			}
 		}
-		if !bad {
+		if bugChip == "" {
 			if len(skipped) > 0 {
 				fmt.Fprintf(os.Stderr, "gdb-bridge: using LinkServer %s; %s reads the %s's flash as 32KB\n",
-					v, strings.Join(skipped, ", "), chip)
+					v, strings.Join(skipped, ", "), skippedFor)
 			}
 			return p
 		}
 		skipped = append(skipped, v)
+		skippedFor = bugChip
 	}
-	fmt.Fprintf(os.Stderr, "gdb-bridge: LinkServer %s reads the %s's flash as 32KB, so a sketch larger than that "+
-		"will fail to load. Install LinkServer 26.6.137 alongside it; it is then used automatically. Download links: "+
-		"https://github.com/teddokano/mcx-arduino-core#nxp-linkserver-required-for-uploading-and-debugging\n",
-		skipped[0], chip)
+	if skippedFor == chip {
+		fmt.Fprintf(os.Stderr, "gdb-bridge: LinkServer %s reads the %s's flash as 32KB, so a sketch larger than that "+
+			"will fail to load. Install LinkServer 26.6.137 alongside it; it is then used automatically. Download links: "+
+			"https://github.com/teddokano/mcx-arduino-core#nxp-linkserver-required-for-uploading-and-debugging\n",
+			skipped[0], chip)
+	}
 	return installs[0]
 }
 

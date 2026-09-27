@@ -40,9 +40,12 @@ linkserver_installs() {
 
 # LinkServer versions whose flash driver takes the FRDM-MCXA153's 128KB of
 # flash for 32KB, so a larger sketch fails to load ("Attempt to load into
-# missing flash area"). They are passed over for that board (the MCXA153:
-# case below) while another install is present. Keep in step with
-# upload.bat and gdb-bridge's flashSizeBug.
+# missing flash area"). They are passed over while another install is
+# present -- for every board, not just the FRDM-MCXA153: LinkServer leaves
+# its redlinkserv running after a flash, and 26.9 fails ("Redlink
+# interface error 240") when the one it finds was started by 26.6, so all
+# boards have to use the same version. Keep in step with upload.bat and
+# gdb-bridge's flashSizeBug.
 flash_size_bug() {
     case "$1" in
         26.9.*) return 0 ;;
@@ -63,29 +66,30 @@ IFS='
 '
 for CANDIDATE in $(linkserver_installs); do
     [ -x "$CANDIDATE" ] || continue
-    case "$LINKSERVER_TARGET" in
-        MCXA153:*)
-            VERSION=$(linkserver_version "$CANDIDATE")
-            if flash_size_bug "$VERSION"; then
-                if [ -z "$BUGGY" ]; then
-                    BUGGY=$CANDIDATE
-                    BUGGY_VERSION=$VERSION
-                fi
-                SKIPPED="$SKIPPED $VERSION"
-                continue
-            fi
-            ;;
-    esac
+    VERSION=$(linkserver_version "$CANDIDATE")
+    if flash_size_bug "$VERSION"; then
+        if [ -z "$BUGGY" ]; then
+            BUGGY=$CANDIDATE
+            BUGGY_VERSION=$VERSION
+        fi
+        SKIPPED="$SKIPPED $VERSION"
+        continue
+    fi
     LINKSERVER=$CANDIDATE
     break
 done
 IFS=$OLDIFS
 
-# Only versions with the bug: use one anyway, since a sketch that fits in
-# 32KB still loads, and explain if it fails.
+# Only versions with the bug: use one anyway, since other boards are
+# unaffected and an FRDM-MCXA153 sketch that fits in 32KB still loads, and
+# explain if an FRDM-MCXA153 upload fails.
 if [ -z "$LINKSERVER" ] && [ -n "$BUGGY" ]; then
     LINKSERVER=$BUGGY
     SKIPPED=""
+    case "$LINKSERVER_TARGET" in
+        MCXA153:*) ;;
+        *) BUGGY_VERSION="" ;;
+    esac
 else
     BUGGY_VERSION=""
 fi

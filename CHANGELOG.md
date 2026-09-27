@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - README and TUTORIAL give direct download links for LinkServer 26.6.137, which NXP's LinkServer page no longer lists
 
 ### Fixed
-- FRDM-MCXA153: uploading or debugging a sketch larger than 32KB failed with LinkServer 26.9.130 ("Attempt to load into missing flash area"), which reads the board's 128KB of flash as 32KB. For this board, `upload.sh`/`upload.bat` and `gdb-bridge` now pass over 26.9 and use another LinkServer installed alongside it. With only 26.9 installed they still use it, since a sketch of 32KB or less loads, and say what to do if the upload fails. FRDM-MCXN947 is not affected and keeps using the newest LinkServer.
+- FRDM-MCXA153: uploading or debugging a sketch larger than 32KB failed with LinkServer 26.9.130 ("Attempt to load into missing flash area"), which reads the board's 128KB of flash as 32KB. `upload.sh`/`upload.bat` and `gdb-bridge` now pass over 26.9 and use another LinkServer installed alongside it. They do so for FRDM-MCXN947 too, which works with 26.9 itself: LinkServer leaves a background server running after an upload, and 26.9 fails ("Redlink interface error 240") when the one it finds was started by 26.6, so both boards have to use the same version. With only 26.9 installed they still use it, since other boards and an FRDM-MCXA153 sketch of 32KB or less are fine, and an FRDM-MCXA153 upload that fails says what to do.
 
 ### Changed
 - README and TUTORIAL (English and Japanese) explain the LinkServer 26.9.130 problem and link to LinkServer 26.6.137's installer for each OS (Windows, macOS on Apple silicon and Intel, Linux on x86_64 and arm64).

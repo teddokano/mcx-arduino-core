@@ -35,8 +35,9 @@ for /f "delims=" %%i in ('dir /b /ad "C:\NXP\LinkServer*" 2^>nul') do (
 )
 if defined LINKSERVER goto :found
 
-rem Only versions with the bug: use one anyway, since a sketch that fits in
-rem 32KB still loads, and explain if it fails.
+rem Only versions with the bug: use one anyway, since other boards are
+rem unaffected and an FRDM-MCXA153 sketch that fits in 32KB still loads,
+rem and explain if an FRDM-MCXA153 upload fails.
 if defined BUGGY goto :use_buggy
 
 echo ============================================
@@ -84,6 +85,7 @@ set STATUS=%ERRORLEVEL%
 if %STATUS% equ 0 exit /b 0
 
 if not defined BUGGY_VERSION goto :bug_message_done
+if not "%BOARD_DEVICE:~0,8%"=="MCXA153:" goto :bug_message_done
 echo ============================================
 echo If the error above is "Attempt to load into missing flash area":
 echo LinkServer %BUGGY_VERSION% reads the FRDM-MCXA153's flash as 32KB, so a
@@ -112,8 +114,12 @@ rem LinkServer's installer makes LinkServer_<version>). Makes it LINKSERVER
 rem if its version is the highest so far, unless it is a version whose
 rem flash driver takes the FRDM-MCXA153's 128KB of flash for 32KB, so a
 rem larger sketch fails to load ("Attempt to load into missing flash
-rem area"): for that board, those go to BUGGY instead. Keep the version
-rem list in step with upload.sh and gdb-bridge's flashSizeBug.
+rem area"): those go to BUGGY instead. That is for every board, not just
+rem the FRDM-MCXA153: LinkServer leaves its redlinkserv running after a
+rem flash, and 26.9 fails ("Redlink interface error 240") when the one it
+rem finds was started by 26.6, so all boards have to use the same version.
+rem Keep the version list in step with upload.sh and gdb-bridge's
+rem flashSizeBug.
 :consider
 set "LS_VERSION="
 set "LS_KEY=0"
@@ -121,7 +127,6 @@ for /f "tokens=2-4 delims=_." %%a in ("%~2") do (
     set "LS_VERSION=%%a.%%b.%%c"
     set /a LS_KEY=%%a*1000000+%%b*1000+%%c 2>nul
 )
-if not "%BOARD_DEVICE:~0,8%"=="MCXA153:" goto :consider_ok
 if not "%LS_VERSION:~0,5%"=="26.9." goto :consider_ok
 set "SKIPPED=%SKIPPED% %LS_VERSION%"
 if %LS_KEY% leq %BUGGY_KEY% exit /b 0

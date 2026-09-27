@@ -57,7 +57,8 @@ func TestPickLinkServer(t *testing.T) {
 		{"A153 passes over 26.9", []string{bad, good, older}, "MCXA153:FRDM-MCXA153", good},
 		{"A153 with only 26.9 still gets it", []string{bad}, "MCXA153:FRDM-MCXA153", bad},
 		{"A153 keeps the newest when it is fine", []string{good, older}, "MCXA153:FRDM-MCXA153", good},
-		{"N947 keeps 26.9", []string{bad, good}, "MCXN947:FRDM-MCXN947", bad},
+		{"N947 passes over 26.9 too, to share A153's version", []string{bad, good}, "MCXN947:FRDM-MCXN947", good},
+		{"N947 with only 26.9 gets it", []string{bad}, "MCXN947:FRDM-MCXN947", bad},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
