@@ -70,6 +70,18 @@ After installation, the upload script will automatically detect LinkServer — n
 > larger than that fails to upload ("Attempt to load into missing flash area"). Keep an earlier version
 > (26.6 or before) installed alongside it: for the FRDM-MCXA153, uploading and debugging then pass over 26.9 by themselves.
 > FRDM-MCXN947 is not affected.
+>
+> The download page offers only the newest version. 26.6.137 can be downloaded directly:
+>
+> | OS | LinkServer 26.6.137 |
+> |----|---------------------|
+> | Windows | [LinkServer_26.6.137.exe](https://www.nxp.com/lgfiles/updates/mcuxpresso/LinkServer_26.6.137.exe) |
+> | macOS (Apple silicon) | [LinkServer_26.6.137.aarch64.pkg](https://www.nxp.com/lgfiles/updates/mcuxpresso/LinkServer_26.6.137.aarch64.pkg) |
+> | macOS (Intel) | [LinkServer_26.6.137.x86-64.pkg](https://www.nxp.com/lgfiles/updates/mcuxpresso/LinkServer_26.6.137.x86-64.pkg) |
+> | Linux (x86_64) | [LinkServer_26.6.137.x86_64.deb.bin](https://www.nxp.com/lgfiles/updates/mcuxpresso/LinkServer_26.6.137.x86_64.deb.bin) |
+> | Linux (arm64) | [LinkServer_26.6.137.aarch64.deb.bin](https://www.nxp.com/lgfiles/updates/mcuxpresso/LinkServer_26.6.137.aarch64.deb.bin) |
+>
+> As with the download page, downloading LinkServer means accepting NXP's software license agreement.
 
 The install → build → upload flow has been verified on **macOS, Windows 11, and Linux**.
 

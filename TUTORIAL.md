@@ -78,6 +78,24 @@ This tutorial's full install → build → upload flow has been verified on
 Once installed, the board package's upload script finds LinkServer
 automatically — no path configuration needed.
 
+> **Note: LinkServer 26.9**
+> LinkServer 26.9.130 reads the FRDM-MCXA153's flash as 32KB, so a sketch
+> larger than that fails to upload (the output pane says "Attempt to load
+> into missing flash area"). The download page offers only the newest
+> version, so also install 26.6.137 from the links below, alongside 26.9.
+> Uploading and debugging then use 26.6 by themselves.
+>
+> | OS | LinkServer 26.6.137 |
+> |----|---------------------|
+> | Windows | [LinkServer_26.6.137.exe](https://www.nxp.com/lgfiles/updates/mcuxpresso/LinkServer_26.6.137.exe) |
+> | macOS (Apple silicon) | [LinkServer_26.6.137.aarch64.pkg](https://www.nxp.com/lgfiles/updates/mcuxpresso/LinkServer_26.6.137.aarch64.pkg) |
+> | macOS (Intel) | [LinkServer_26.6.137.x86-64.pkg](https://www.nxp.com/lgfiles/updates/mcuxpresso/LinkServer_26.6.137.x86-64.pkg) |
+> | Linux (x86_64) | [LinkServer_26.6.137.x86_64.deb.bin](https://www.nxp.com/lgfiles/updates/mcuxpresso/LinkServer_26.6.137.x86_64.deb.bin) |
+> | Linux (arm64) | [LinkServer_26.6.137.aarch64.deb.bin](https://www.nxp.com/lgfiles/updates/mcuxpresso/LinkServer_26.6.137.aarch64.deb.bin) |
+>
+> As with the download page, downloading LinkServer means accepting NXP's
+> software license agreement.
+
 ### 1.4. Which USB connector to use
 
 The board has **two** USB-C connectors — plugging into the wrong one means
@@ -147,9 +165,9 @@ garbled text or nothing at all.
 - Confirm LinkServer is actually installed — the upload script looks for
   it automatically, but only finds it if it's installed
 - If it says "Attempt to load into missing flash area", you have LinkServer
-  26.9, which reads the FRDM-MCXA153's flash as 32KB. Install an earlier
-  version (26.6 or before) alongside it; uploads then use that one by
-  themselves
+  26.9, which reads the FRDM-MCXA153's flash as 32KB. Install 26.6.137
+  alongside it (download links in [1.3](#13-install-nxp-linkserver));
+  uploads then use that one by themselves
 - On Windows, check **Device Manager** for a driver problem (a yellow
   warning icon) on the board's entry
 - Close any other program that might be holding the port open (another

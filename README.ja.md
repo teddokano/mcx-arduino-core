@@ -65,6 +65,18 @@ LinkServer自身のgdbserverを使用します——本家OpenOCDはMCXチップ
 > それより大きいスケッチは書き込めません（「Attempt to load into missing flash area」）。
 > 以前の版（26.6以前）も並べてインストールしておいてください。FRDM-MCXA153の書き込みとデバッグは、自動で26.9を避けてそちらを使います。
 > FRDM-MCXN947は影響を受けません。
+>
+> ダウンロードページには最新版しかありません。26.6.137は次のURLから直接ダウンロードできます。
+>
+> | OS | LinkServer 26.6.137 |
+> |----|---------------------|
+> | Windows | [LinkServer_26.6.137.exe](https://www.nxp.com/lgfiles/updates/mcuxpresso/LinkServer_26.6.137.exe) |
+> | macOS（Apple silicon） | [LinkServer_26.6.137.aarch64.pkg](https://www.nxp.com/lgfiles/updates/mcuxpresso/LinkServer_26.6.137.aarch64.pkg) |
+> | macOS（Intel） | [LinkServer_26.6.137.x86-64.pkg](https://www.nxp.com/lgfiles/updates/mcuxpresso/LinkServer_26.6.137.x86-64.pkg) |
+> | Linux（x86_64） | [LinkServer_26.6.137.x86_64.deb.bin](https://www.nxp.com/lgfiles/updates/mcuxpresso/LinkServer_26.6.137.x86_64.deb.bin) |
+> | Linux（arm64） | [LinkServer_26.6.137.aarch64.deb.bin](https://www.nxp.com/lgfiles/updates/mcuxpresso/LinkServer_26.6.137.aarch64.deb.bin) |
+>
+> ダウンロードページから入手する場合と同じく、ダウンロードするとNXPのソフトウェア使用許諾に同意したことになります。
 
 インストール→ビルド→アップロードの一連の流れは**macOS・Windows 11・Linux**で検証済みです。
 
