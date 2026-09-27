@@ -2471,3 +2471,46 @@ Windows・Linuxでも、2枚つないだままの書き込み（ポートを切�
 
 ---
 
+## v0.7.1（`0.7.1-dev` ブランチ、`main`から切ったパッチリリース）
+
+2026-09-28、0.7.0の`main`から`0.7.1-dev`を切った（`8096795`）。`platform.txt`・`Doxyfile`を0.7.1に。`arduino_io.h`は0.7.0から変わっていないので、同梱`mcxPinState`の`MCXPINSTATE_VERIFIED_AGAINST`も0.7.1に上げた（上流の`mcxPinState`は0.8.0のまま）。
+0.8.0（`0.8.0-dev`）と並行するので、ローカルIDE用のsymlinkはそのとき作業ツリーで切り替えたブランチの名前に付け替える。
+
+### LinkServer 26.9.130でFRDM-MCXA153に書き込めない（`077650d`）
+**報告**: LinkServerを26.9.130に上げたら、Arduino IDEからA153に書き込めなくなった。N947は問題なく、LinkServerを前の版に戻すと直る。
+
+**症状**: 26.9.130はA153のフラッシュを32KBと判定する（ログに`Flash variant 'MCXA1x3 ...' detected (32KB = 4*8K at 0x0)`）。32KBを超えるスケッチ（46KBの`hello_world`など）はすべて`Attempt to load into missing flash area`で失敗し、32KB以下なら書ける。
+同じELFを26.6.137で書くと`128KB = 16*8K`と判定されて成功する。チップを消去した状態でも26.9は32KBと判定したので、動いているスケッチの状態とは関係ない。
+LinkServerのデバイス定義（`devices/`のJSON）は両版とも128KBのままで、26.9のリリースノートに「Fixed flash size detection for some MCXAxxx devices」とある。**このコアの不具合ではなく、NXPへの報告はユーザーが行う**。
+原因の詳細は、LinkServerの使用許諾（使用結果の報告の公開を制限している）に配慮して、この公開リポジトリには書かない。
+
+**対処**: A153のときだけ、書き込み（`upload.sh`/`upload.bat`）とデバッグ（`gdb-bridge`）が26.9を避ける。
+- 入っているLinkServerを新しい順に並べ、A153のときだけ各候補に`--version`を聞いて、26.9.xなら次へ進む。N947では版を聞かず、これまでどおり最新を使う。`--version`は1回0.2〜0.9秒
+- 26.9しか無いときはそれを使う（32KB以下は書けるため）。書き込みに失敗したら「26.6以前も並べて入れれば自動でそちらを使う」と案内する。失敗の原因が別（複数ボードなど）のこともあるので、案内は「上のエラーが`missing flash area`なら」という条件付きにした。`gdb-bridge`は26.9を使うときに最初から警告を出す
+- 避ける版の一覧は`upload.sh`の`flash_size_bug()`、`upload.bat`の`:consider`、`gdb-bridge`の`flashSizeBug`の3か所。NXPが直した版を出したら、46KBの`hello_world`が書けることを確かめてから揃えて更新する
+- LinkServerの`-o /device/memory/0/flash-driver=<ファイル>`で26.6のフラッシュドライバを指せば、26.9本体のままでも書けることは確かめた。ただし旧ドライバをこのコアに同梱することは使用許諾（再配布の禁止）上できず、結局旧版が入っていることが前提になるので、版を選ぶ方式にした
+- `gdb-bridge`は`findLinkServer()`が候補を全部並べる形になった（以前は最新の1つだけを見ていて、その中に実行ファイルが無ければ「見つからない」だった）。5つのバイナリを前回と同じ手順（go1.27.1、`-ldflags="-s -w" -trimpath`）でビルドし直した
+- `upload.bat`はCRLFを保つためPythonで`newline=''`を指定して書き換えた
+
+**確認（macOS、26.9.130・26.6.137・26.5.59・25.6.131が入った状態）**:
+- A153: `upload.sh`・`arduino-cli compile -u`（IDEと同じ経路）・gdb-bridge経由の`load`のすべてで26.6.137が選ばれ、46KBを書けた（2枚接続中でもgdb-bridgeはA153のプローブを選んだ）
+- 候補を26.9だけにしたコピーで、書き込みが失敗して案内が出ることを確認
+- N947: `upload.sh`・gdb-bridgeとも26.9.130のままで成功
+- Windows・Linux: 下のステージングで、ユーザーが問題なしと確認
+
+### 旧版LinkServerのダウンロード先（`cf7a62d`）
+NXPの製品ページには最新版しか並ばず、「Download」の先はNXPアカウントでのサインインが必要（その先に旧版の一覧があるかは見ていない）。
+ファイル名に版を入れた直接URL（`https://www.nxp.com/lgfiles/updates/mcuxpresso/LinkServer_26.6.137.<拡張子>`）ならサインインなしで取れる。
+Windows `.exe`、macOS `.aarch64.pkg`・`.x86-64.pkg`（Intelはハイフン。`x86_64`は404）、Linux `.x86_64.deb.bin`・`.aarch64.deb.bin`の5つがHEADで200を返すことを確かめ、README・TUTORIAL（両言語）の注意書きに載せた。
+
+### ステージング: Windows/Linuxの確認用に`0.7.1-rc1`をプレリリース
+0.7.0-rcと同じ形。タグ`0.7.1-rc1`（`077650d`）をprereleaseで作り、zipは`mcx-arduino-core-0.7.1.zip`（SHA-256 `13df362d…`、9134399 bytes、ダウンロードし直して一致）。`staging-0.7.1`ブランチ（`main`から）のindexの末尾に`0.7.1`エントリを足した。`main`のindexは無傷。
+公開前に、zipの実行ビット・`upload.bat`のCRLF・`version=0.7.1`を確認し、zipを`0.7.1`として展開して両ボードのコンパイル（警告0）・A153への書き込み（26.9を避けて成功）・`debug --info`の解決を確認した。arduino-cliでstagingのURLから`0.7.1`が選べることも確認。
+タグのCIは`--release`の3件（`changelog-heading`・`package-index-entry`・`doxygen-freshness`）だけが落ちた（想定どおり）。
+
+**Windows・Linuxでの結果**: ユーザーが`staging-0.7.1`経由で入れ、26.9と旧版を並べた状態で、A153の書き込みとデバッグが問題なしと確認した。
+
+確認が済んだので、`0.7.1-rc1`のプレリリースとタグ、`staging-0.7.1`ブランチを削除した。本番リリースでは改めてステージングを作って3プラットフォームで確かめる。
+
+---
+
