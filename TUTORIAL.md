@@ -79,9 +79,10 @@ Once installed, the board package's upload script finds LinkServer
 automatically — no path configuration needed.
 
 > **Note: LinkServer 26.9**
+>
 > LinkServer 26.9.130 reads the FRDM-MCXA153's flash as 32KB, so a sketch
 > larger than that fails to upload (the output pane says "Attempt to load
-> into missing flash area"). The download page offers only the newest
+> into missing flash area"). NXP's LinkServer page lists only the newest
 > version, so also install 26.6.137 from the links below, alongside 26.9.
 > Uploading and debugging then use 26.6 by themselves.
 >

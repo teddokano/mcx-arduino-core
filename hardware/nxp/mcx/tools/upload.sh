@@ -129,9 +129,9 @@ if [ $STATUS -ne 0 ] && [ -n "$BUGGY_VERSION" ]; then
     echo "============================================"
     echo "If the error above is \"Attempt to load into missing flash area\":"
     echo "LinkServer $BUGGY_VERSION reads the FRDM-MCXA153's flash as 32KB, so a"
-    echo "sketch larger than that fails to upload. Install an earlier LinkServer"
-    echo "(26.6 or before, https://www.nxp.com/linkserver) alongside it; uploads"
-    echo "then use that one automatically."
+    echo "sketch larger than that fails to upload. Install LinkServer 26.6.137"
+    echo "alongside it; uploads then use that one automatically. Download links:"
+    echo "https://github.com/teddokano/mcx-arduino-core#nxp-linkserver-required-for-uploading-and-debugging"
     echo "============================================"
 fi
 

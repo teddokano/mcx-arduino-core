@@ -228,6 +228,14 @@ Then, on hardware:
   `Device` column: with several boards plugged in, that is how
   gdb-bridge picks the probe to debug through. Check it with the new
   board and another one attached, `arduino-cli debug` on each.
+- **LinkServer versions to pass over**: `tools/upload.sh`
+  (`flash_size_bug()` and the `MCXA153:*` case), `tools/upload.bat`
+  (`:consider`) and gdb-bridge (`flashSizeBug`) skip LinkServer
+  versions known to misread a chip's flash size, listed by chip name
+  (0.7.1: 26.9.x reads the MCXA153's 128KB as 32KB). For a new chip,
+  upload a sketch larger than 32KB with the newest LinkServer and check
+  the size in its `Flash variant ... detected` line; add the chip to
+  all three if it is misread too.
 - **`mcxPinState`**: `ALIAS_NAMES[]` and `KNOWN_INSTANCES` in
   `PinState.cpp`, in the upstream repo *and* the bundled copy. CI checks
   these against `arduino_io.h`, so a mismatch fails fast.

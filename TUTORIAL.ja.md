@@ -67,8 +67,9 @@ English version → [TUTORIAL.md](TUTORIAL.md)
 インストール後は、ボードパッケージの書き込みスクリプトが自動的にLinkServerを検出します — パス設定は不要です。
 
 > **注意: LinkServer 26.9について**
+>
 > LinkServer 26.9.130はFRDM-MCXA153のフラッシュを32KBと読むため、それより大きいスケッチは書き込めません
-> （出力ペインに「Attempt to load into missing flash area」と出ます）。ダウンロードページには最新版しかないので、
+> （出力ペインに「Attempt to load into missing flash area」と出ます）。NXPのLinkServerのページには最新版しか載っていないので、
 > 次のURLから26.6.137も入れて、26.9と並べておいてください。書き込みとデバッグは自動で26.6を使います。
 >
 > | OS | LinkServer 26.6.137 |

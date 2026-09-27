@@ -543,7 +543,8 @@ func pickLinkServer(installs []string, device string) string {
 		skipped = append(skipped, v)
 	}
 	fmt.Fprintf(os.Stderr, "gdb-bridge: LinkServer %s reads the %s's flash as 32KB, so a sketch larger than that "+
-		"will fail to load. Install an earlier LinkServer (26.6 or before) alongside it; it is then used automatically\n",
+		"will fail to load. Install LinkServer 26.6.137 alongside it; it is then used automatically. Download links: "+
+		"https://github.com/teddokano/mcx-arduino-core#nxp-linkserver-required-for-uploading-and-debugging\n",
 		skipped[0], chip)
 	return installs[0]
 }

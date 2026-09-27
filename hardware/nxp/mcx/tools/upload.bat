@@ -20,16 +20,20 @@ if /i not "%PORT_VID%"=="0x1FC9" goto :probe_done
 set "PROBE_SERIAL=%PORT_SERIAL%"
 :probe_done
 
-rem Newest LinkServer first; :consider passes over a version with the
-rem FRDM-MCXA153 flash-size bug (see there) and remembers the first such.
+rem Every C:\NXP\LinkServer_<version> goes through :consider, which keeps
+rem the highest version, compared as numbers (sorting the names would put
+rem 26.9 above 26.12), and passes over a version with the FRDM-MCXA153
+rem flash-size bug (see there), remembering the highest such.
 set "LINKSERVER="
+set "BEST_KEY=-1"
 set "BUGGY="
+set "BUGGY_KEY=-1"
 set "BUGGY_VERSION="
 set "SKIPPED="
-for /f "delims=" %%i in ('dir /b /ad "C:\NXP\LinkServer*" 2^>nul ^| sort /r') do (
-    if exist "C:\NXP\%%i\LinkServer.exe" call :consider "C:\NXP\%%i\LinkServer.exe"
-    if defined LINKSERVER goto :found
+for /f "delims=" %%i in ('dir /b /ad "C:\NXP\LinkServer*" 2^>nul') do (
+    if exist "C:\NXP\%%i\LinkServer.exe" call :consider "C:\NXP\%%i\LinkServer.exe" "%%i"
 )
+if defined LINKSERVER goto :found
 
 rem Only versions with the bug: use one anyway, since a sketch that fits in
 rem 32KB still loads, and explain if it fails.
@@ -83,9 +87,9 @@ if not defined BUGGY_VERSION goto :bug_message_done
 echo ============================================
 echo If the error above is "Attempt to load into missing flash area":
 echo LinkServer %BUGGY_VERSION% reads the FRDM-MCXA153's flash as 32KB, so a
-echo sketch larger than that fails to upload. Install an earlier LinkServer
-echo ^(26.6 or before, https://www.nxp.com/linkserver^) alongside it; uploads
-echo then use that one automatically.
+echo sketch larger than that fails to upload. Install LinkServer 26.6.137
+echo alongside it; uploads then use that one automatically. Download links:
+echo https://github.com/teddokano/mcx-arduino-core#nxp-linkserver-required-for-uploading-and-debugging
 echo ============================================
 :bug_message_done
 
@@ -103,23 +107,30 @@ echo more than one board connected, leave only the one to upload to.
 echo ============================================
 exit /b %STATUS%
 
-rem Takes one LinkServer.exe path (%1), and sets LINKSERVER to it unless it
-rem is a version whose flash driver takes the FRDM-MCXA153's 128KB of flash
-rem for 32KB, so a larger sketch fails to load ("Attempt to load into
-rem missing flash area"). Only asked for that board. Keep the version list
-rem in step with upload.sh and gdb-bridge's flashSizeBug.
+rem Takes one LinkServer.exe path (%1) and its directory name (%2, which
+rem LinkServer's installer makes LinkServer_<version>). Makes it LINKSERVER
+rem if its version is the highest so far, unless it is a version whose
+rem flash driver takes the FRDM-MCXA153's 128KB of flash for 32KB, so a
+rem larger sketch fails to load ("Attempt to load into missing flash
+rem area"): for that board, those go to BUGGY instead. Keep the version
+rem list in step with upload.sh and gdb-bridge's flashSizeBug.
 :consider
-if not "%BOARD_DEVICE:~0,8%"=="MCXA153:" goto :consider_ok
 set "LS_VERSION="
-rem "LinkServer v26.9.130 [Build 130] ..." -> "v26.9.130"
-for /f "tokens=1,2" %%u in ('"%~1" --version') do if "%%u"=="LinkServer" if not defined LS_VERSION set "LS_VERSION=%%v"
-if not defined LS_VERSION goto :consider_ok
-set "LS_VERSION=%LS_VERSION:~1%"
+set "LS_KEY=0"
+for /f "tokens=2-4 delims=_." %%a in ("%~2") do (
+    set "LS_VERSION=%%a.%%b.%%c"
+    set /a LS_KEY=%%a*1000000+%%b*1000+%%c 2>nul
+)
+if not "%BOARD_DEVICE:~0,8%"=="MCXA153:" goto :consider_ok
 if not "%LS_VERSION:~0,5%"=="26.9." goto :consider_ok
-if not defined BUGGY set "BUGGY_VERSION=%LS_VERSION%"
-if not defined BUGGY set "BUGGY=%~1"
 set "SKIPPED=%SKIPPED% %LS_VERSION%"
+if %LS_KEY% leq %BUGGY_KEY% exit /b 0
+set "BUGGY=%~1"
+set "BUGGY_KEY=%LS_KEY%"
+set "BUGGY_VERSION=%LS_VERSION%"
 exit /b 0
 :consider_ok
+if %LS_KEY% leq %BEST_KEY% exit /b 0
 set "LINKSERVER=%~1"
+set "BEST_KEY=%LS_KEY%"
 exit /b 0

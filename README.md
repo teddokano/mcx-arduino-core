@@ -71,7 +71,7 @@ After installation, the upload script will automatically detect LinkServer — n
 > (26.6 or before) installed alongside it: for the FRDM-MCXA153, uploading and debugging then pass over 26.9 by themselves.
 > FRDM-MCXN947 is not affected.
 >
-> The download page offers only the newest version. 26.6.137 can be downloaded directly:
+> NXP's LinkServer page lists only the newest version. 26.6.137 can be downloaded directly:
 >
 > | OS | LinkServer 26.6.137 |
 > |----|---------------------|
