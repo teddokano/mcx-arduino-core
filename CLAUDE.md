@@ -10,7 +10,7 @@
   `EEPROM`はこのリポジトリが本体（フラッシュの配置がリンカスクリプトと一体なので）
 - **現在のリリース**: **v0.7.0**（2026-09-26）。macOS・Windows・Linuxの3プラットフォームで
   インストール〜ビルド〜アップロード〜IDE内蔵デバッガまで検証済み
-- **開発中**: なし（次は0.8.0）
+- **開発中**: **0.7.1**（`0.7.1-dev`ブランチ、`main`から切ったパッチリリース）と、並行して**0.8.0**（`0.8.0-dev`ブランチ）
 - **リリースごとの変更点**: [CHANGELOG.md](CHANGELOG.md)
 - **各リリースで何をやり、どこで詰まったかの詳細**: [docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md)
   （v0.1.5〜v0.7.0の全作業記録。自動では読み込まれないので、経緯が必要なときだけ開く）
@@ -204,7 +204,7 @@ xPack checksums（正しい値）：
 - **リポジトリパス**: `~/dev/mcx-arduino-core`
 - **v0.4.0以降のソース構成**: `MCUXpresso_project/`ディレクトリは廃止（削除済み）。ソースの唯一の実体は`hardware/nxp/mcx/cores/arduino/`（両ボード共有）＋`hardware/nxp/mcx/variants/<board>/src/`（ボード固有）で、プリビルド`.a`のビルド・配置手順も不要になった——編集したソースはそのままarduino-cli/Arduino IDEのビルドに反映される（詳細は[docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md)の「`cores/arduino/`一本化・`platform.txt`書き換え完了」節）
 - **xPackツールチェーン**: `~/.xpacktools/xpack-arm-none-eabi-gcc-14.2.1-1.1/`（`package_nxp_mcx_index.json`記載のものと同一バイナリ、チェックサム確認済み）
-- **ローカルArduino IDE連携**: `~/Library/Arduino15/packages/nxp/hardware/mcx/<version>-dev`（今は`0.7.0-dev`。ブランチ名と同じ）をこのリポジトリの`hardware/nxp/mcx/`へのシンボリックリンクとして設定済み（編集が即座に反映される）。ツールチェーンも`~/.xpacktools/`への symlink。`-dev`サフィックスにより、Boards Manager経由でインストールする実リリース版とはディレクトリ名が衝突せず共存できる（ただし下の項目のとおり、並んでいるとリリース版が選ばれる）
+- **ローカルArduino IDE連携**: `~/Library/Arduino15/packages/nxp/hardware/mcx/<version>-dev`（今は`0.7.1-dev`。ブランチ名と同じ。0.7.1と0.8.0を並行して進める間は、作業ツリーで切り替えたブランチに合わせてこの名前も付け替える）をこのリポジトリの`hardware/nxp/mcx/`へのシンボリックリンクとして設定済み（編集が即座に反映される）。ツールチェーンも`~/.xpacktools/`への symlink。`-dev`サフィックスにより、Boards Manager経由でインストールする実リリース版とはディレクトリ名が衝突せず共存できる（ただし下の項目のとおり、並んでいるとリリース版が選ばれる）
 - **リリース版を入れたままだと`-dev`が使われない**（0.7.0で踏んだ）: `packages/nxp/hardware/mcx/`に
   Boards Managerで入れた`0.6.0`と`0.7.0-dev`のsymlinkが並ぶと、**IDEも既定のarduino-cliもインストール済みの`0.6.0`を選ぶ**。
   開発中の修正がIDEで一切効かず、「直したはずの不具合がIDEでは再現する」形で表に出る。
@@ -247,6 +247,8 @@ xPack checksums（正しい値）：
 v0.4.0の`main`マージ直前、ユーザーから「今回のリリース準備の手順を記録しておく。今後のリリース準備では必ずこれらを行うこと」と指示。`<version>-dev`ブランチでの開発が一区切りつき、`main`へマージする前に**必ず**、以下を順番に実施する（実施済みかどうかに関わらず、リリースのたびに毎回やり直す）:
 
 1. **`CHANGELOG.md`の`[Unreleased]`セクションを補完してから確定**: そのバージョンの開発期間中に`CLAUDE.md`へ記録してきた内容（新機能・変更・実バグ修正）を漏れなく洗い出し、`[Unreleased]`に追記——特にセッション中盤以降に追加された機能（今回で言えば`mcxPinState`・`examples/release_check/`・`docs/`配下の上級者向けガイド等）は、CHANGELOGの初稿作成時点でまだ存在しておらず抜け落ちやすいので要注意。全項目を追記し終えてから`[Unreleased]`→`[<version>] - <日付>`に書き換えて確定する
+   - **節の冒頭に3〜5行の要約（`### Highlights`の見出しと箇条書き。Added/Changed/Fixedと同じレベル）を書く**（0.7.0から）。詳細は正確だが一般ユーザーが読み切るには多いので、詳細を読むかどうかをここで判断できるようにする。
+     主な追加・互換性の改善・重要な修正を、1行1項目で平易に書く。GitHub Releaseのノートはこの節をそのまま使うので、要約もそこに載る
 2. **ドキュメント全体の再監査**: Explore agentに、全`.md`ファイル（README/README.ja/TUTORIAL/TUTORIAL.ja/API_COMPATIBILITY/CHANGELOG/PIN_MAPPING_*/LICENSE/`docs/`配下/`variants/*/README.md`/`examples/release_check/README.md`）を対象にした網羅監査を依頼する。特に開発期間中にリネーム・統合・移動したファイル/サンプル名/パスへの追従漏れ（古い名前の残存、リンク切れ）を機械的に洗い出すのが目的——`CLAUDE.md`自身の過去形の言及（開発日誌としての性質上正しい）は対象外としてよい
 3. **`docs/api/`（Doxygen）の再生成**: `doxygen Doxyfile`を実行し、直近のソース変更（コメントを含む）が反映された状態にする。`docs/api/index.html`のタイムスタンプより新しいソースファイルがないか確認してから判断するとよい
 4. **ライセンスチェック**: `LICENSE`全文を読み返し、開発期間中に追加した新規ツール/ファイル（外部プロジェクトのソースを読んで挙動を参考にしたもの含む）で、帰属記載が漏れているものがないか確認する。「コードは一切コピーしていないが、他プロジェクトのソースを読んで互換動作を実装した」ケースは、コピーでなくても透明性のため記載する、というこのプロジェクトの既存の判断基準（`upload.sh`のArduinoCore-zephyr参照等）を毎回適用する
