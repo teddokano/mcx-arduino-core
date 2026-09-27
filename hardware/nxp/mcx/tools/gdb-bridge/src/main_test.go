@@ -36,6 +36,38 @@ func fakeLinkServer(t *testing.T, output string) string {
 	return exe
 }
 
+// fakeVersion writes a stand-in for LinkServer that answers --version as
+// the given version does, and returns its path.
+func fakeVersion(t *testing.T, version string) string {
+	t.Helper()
+	return fakeLinkServer(t, "LinkServer v"+version+" [Build 1] [2026-01-01 00:00:00]\n")
+}
+
+func TestPickLinkServer(t *testing.T) {
+	bad := fakeVersion(t, "26.9.130")
+	good := fakeVersion(t, "26.6.137")
+	older := fakeVersion(t, "25.6.131")
+
+	cases := []struct {
+		name     string
+		installs []string
+		device   string
+		want     string
+	}{
+		{"A153 passes over 26.9", []string{bad, good, older}, "MCXA153:FRDM-MCXA153", good},
+		{"A153 with only 26.9 still gets it", []string{bad}, "MCXA153:FRDM-MCXA153", bad},
+		{"A153 keeps the newest when it is fine", []string{good, older}, "MCXA153:FRDM-MCXA153", good},
+		{"N947 keeps 26.9", []string{bad, good}, "MCXN947:FRDM-MCXN947", bad},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			if got := pickLinkServer(c.installs, c.device); got != c.want {
+				t.Errorf("got %s, want %s", got, c.want)
+			}
+		})
+	}
+}
+
 func TestListProbes(t *testing.T) {
 	got := listProbes(fakeLinkServer(t, twoKinds))
 	want := []linkProbe{{"PZU5XXMWG442Y", "MCXA153"}, {"UENBVJCYVDM5J", "MCXN947"}}

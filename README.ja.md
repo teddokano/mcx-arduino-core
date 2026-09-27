@@ -61,6 +61,11 @@ LinkServer自身のgdbserverを使用します——本家OpenOCDはMCXチップ
 
 インストール後、アップロードスクリプトが自動的にLinkServerを検出します——パス設定は不要です。
 
+> **FRDM-MCXA153とLinkServer 26.9について:** LinkServer 26.9.130はFRDM-MCXA153のフラッシュを32KBと読むため、
+> それより大きいスケッチは書き込めません（「Attempt to load into missing flash area」）。
+> 以前の版（26.6以前）も並べてインストールしておいてください。FRDM-MCXA153の書き込みとデバッグは、自動で26.9を避けてそちらを使います。
+> FRDM-MCXN947は影響を受けません。
+
 インストール→ビルド→アップロードの一連の流れは**macOS・Windows 11・Linux**で検証済みです。
 
 ## インストール

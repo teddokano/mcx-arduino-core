@@ -20,35 +20,77 @@ case "$PORT_SERIAL" in
         ;;
 esac
 
-# LinkServerを探す（macOS）
+# LinkServer installs, one per line, the preferred one first.
+linkserver_installs() {
+    # macOS: newest version first
+    if [ "$(uname)" = "Darwin" ]; then
+        ls /Applications/ | grep "^LinkServer" | sort -V -r | sed 's|^\(.*\)$|/Applications/\1/LinkServer|'
+    fi
+
+    # Linux -- discovery order adapted from ArduinoCore-zephyr's
+    # tools/upload_pyocd_or_linkserver.sh (Apache License 2.0): fixed install
+    # path first, then versioned install dirs (LinkServer's installer names
+    # these LinkServer_<version>), then fall back to PATH.
+    if [ "$(uname)" = "Linux" ]; then
+        echo /usr/local/LinkServer/LinkServer
+        ls -d /usr/local/LinkServer_* 2>/dev/null | sort -V -r | sed 's|$|/LinkServer|'
+        command -v LinkServer 2>/dev/null
+    fi
+}
+
+# LinkServer versions whose flash driver takes the FRDM-MCXA153's 128KB of
+# flash for 32KB, so a larger sketch fails to load ("Attempt to load into
+# missing flash area"). They are passed over for that board (the MCXA153:
+# case below) while another install is present. Keep in step with
+# upload.bat and gdb-bridge's flashSizeBug.
+flash_size_bug() {
+    case "$1" in
+        26.9.*) return 0 ;;
+    esac
+    return 1
+}
+
+linkserver_version() {
+    "$1" --version 2>/dev/null | sed -n 's/^LinkServer v\([0-9.]*\).*/\1/p' | head -1
+}
+
 LINKSERVER=""
-if [ "$(uname)" = "Darwin" ]; then
-    LINKSERVER_DIR=$(ls /Applications/ | grep "^LinkServer" | sort -V | tail -1)
-    if [ -n "$LINKSERVER_DIR" ]; then
-        LINKSERVER="/Applications/$LINKSERVER_DIR/LinkServer"
-    fi
+BUGGY=""
+BUGGY_VERSION=""
+SKIPPED=""
+OLDIFS=$IFS
+IFS='
+'
+for CANDIDATE in $(linkserver_installs); do
+    [ -x "$CANDIDATE" ] || continue
+    case "$LINKSERVER_TARGET" in
+        MCXA153:*)
+            VERSION=$(linkserver_version "$CANDIDATE")
+            if flash_size_bug "$VERSION"; then
+                if [ -z "$BUGGY" ]; then
+                    BUGGY=$CANDIDATE
+                    BUGGY_VERSION=$VERSION
+                fi
+                SKIPPED="$SKIPPED $VERSION"
+                continue
+            fi
+            ;;
+    esac
+    LINKSERVER=$CANDIDATE
+    break
+done
+IFS=$OLDIFS
+
+# Only versions with the bug: use one anyway, since a sketch that fits in
+# 32KB still loads, and explain if it fails.
+if [ -z "$LINKSERVER" ] && [ -n "$BUGGY" ]; then
+    LINKSERVER=$BUGGY
+    SKIPPED=""
+else
+    BUGGY_VERSION=""
 fi
 
-# Linux -- discovery order adapted from ArduinoCore-zephyr's
-# tools/upload_pyocd_or_linkserver.sh (Apache License 2.0): fixed install
-# path first, then versioned install dirs (LinkServer's installer names
-# these LinkServer_<version>), then fall back to PATH.
-if [ "$(uname)" = "Linux" ]; then
-    if [ -x /usr/local/LinkServer/LinkServer ]; then
-        LINKSERVER=/usr/local/LinkServer/LinkServer
-    else
-        LINKSERVER_DIR=$(ls -d /usr/local/LinkServer_* 2>/dev/null | sort -V | tail -1)
-        if [ -n "$LINKSERVER_DIR" ]; then
-            LINKSERVER="$LINKSERVER_DIR/LinkServer"
-        fi
-    fi
-
-    if [ -z "$LINKSERVER" ] || [ ! -x "$LINKSERVER" ]; then
-        LINKSERVER=$(command -v LinkServer 2>/dev/null)
-    fi
-fi
-
-if [ -z "$LINKSERVER" ] || [ ! -x "$LINKSERVER" ]; then
+if [ -z "$LINKSERVER" ]; then
     echo "============================================"
     echo "ERROR: LinkServer not found."
     echo "Please install LinkServer from:"
@@ -58,6 +100,9 @@ if [ -z "$LINKSERVER" ] || [ ! -x "$LINKSERVER" ]; then
 fi
 
 echo "Using: $LINKSERVER"
+if [ -n "$SKIPPED" ]; then
+    echo "(passed over LinkServer$SKIPPED, which reads the FRDM-MCXA153's flash as 32KB)"
+fi
 
 # Only pass --probe when LinkServer lists that serial number, since it
 # refuses to flash at all for one it doesn't know ("No probes matched").
@@ -79,6 +124,16 @@ fi
 # PROBE_ARGS unquoted on purpose: empty must vanish, not become "".
 "$LINKSERVER" flash $PROBE_ARGS "$LINKSERVER_TARGET" load "$ELF"
 STATUS=$?
+
+if [ $STATUS -ne 0 ] && [ -n "$BUGGY_VERSION" ]; then
+    echo "============================================"
+    echo "If the error above is \"Attempt to load into missing flash area\":"
+    echo "LinkServer $BUGGY_VERSION reads the FRDM-MCXA153's flash as 32KB, so a"
+    echo "sketch larger than that fails to upload. Install an earlier LinkServer"
+    echo "(26.6 or before, https://www.nxp.com/linkserver) alongside it; uploads"
+    echo "then use that one automatically."
+    echo "============================================"
+fi
 
 # LinkServer's own message asks for --probe, which an IDE user can't pass.
 if [ $STATUS -ne 0 ] && [ -z "$PROBE_ARGS" ]; then

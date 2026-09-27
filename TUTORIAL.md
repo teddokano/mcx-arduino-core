@@ -146,6 +146,10 @@ garbled text or nothing at all.
 **Upload fails, or the output pane shows a LinkServer error:**
 - Confirm LinkServer is actually installed — the upload script looks for
   it automatically, but only finds it if it's installed
+- If it says "Attempt to load into missing flash area", you have LinkServer
+  26.9, which reads the FRDM-MCXA153's flash as 32KB. Install an earlier
+  version (26.6 or before) alongside it; uploads then use that one by
+  themselves
 - On Windows, check **Device Manager** for a driver problem (a yellow
   warning icon) on the board's entry
 - Close any other program that might be holding the port open (another

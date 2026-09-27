@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+- FRDM-MCXA153: uploading or debugging a sketch larger than 32KB failed with LinkServer 26.9.130 ("Attempt to load into missing flash area"), which reads the board's 128KB of flash as 32KB. For this board, `upload.sh`/`upload.bat` and `gdb-bridge` now pass over 26.9 and use the newest other LinkServer installed. With only 26.9 installed they still use it, since a sketch of 32KB or less loads, and say what to do if the upload fails. FRDM-MCXN947 is not affected and keeps using the newest LinkServer.
+
 ## [0.7.0] - 2026-09-26
 
 ### Highlights

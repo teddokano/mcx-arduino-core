@@ -159,7 +159,7 @@ func main() {
 		}
 	}
 
-	linkserver, err := findLinkServer()
+	linkserver, err := findLinkServer(device)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "gdb-bridge: LinkServer not found. Install it from https://www.nxp.com/linkserver")
 		os.Exit(1)
@@ -260,10 +260,7 @@ func probeFor(linkserver, device string) (string, error) {
 		return "", nil
 	}
 
-	chip := device
-	if i := strings.Index(device, ":"); i >= 0 {
-		chip = device[:i]
-	}
+	chip := chipOf(device)
 	var matches []string
 	for _, p := range probes {
 		if p.chip == chip {
@@ -283,6 +280,15 @@ func probeFor(linkserver, device string) (string, error) {
 			"which one is meant: Arduino IDE does not pass it the selected port. Leave only the board to debug connected",
 			len(matches), chip, strings.Join(matches, ", "))
 	}
+}
+
+// chipOf is the chip part of a LinkServer DEVICE string
+// ("MCXA153:FRDM-MCXA153" -> "MCXA153").
+func chipOf(device string) string {
+	if i := strings.Index(device, ":"); i >= 0 {
+		return device[:i]
+	}
+	return device
 }
 
 type linkProbe struct {
@@ -459,43 +465,114 @@ func reserveFreePort() (int, net.Listener, error) {
 	return l.Addr().(*net.TCPAddr).Port, l, nil
 }
 
+// flashSizeBug lists LinkServer versions whose flash driver takes the
+// FRDM-MCXA153's 128KB of flash for 32KB, so loading a sketch larger than
+// that fails ("Attempt to load into missing flash area"). For these chips,
+// findLinkServer passes over those versions when another install is
+// present. Keep in step with the same list in tools/upload.sh and
+// tools/upload.bat.
+var flashSizeBug = []struct{ chip, versionPrefix string }{
+	{"MCXA153", "26.9."},
+}
+
 // findLinkServer mirrors the discovery logic in tools/upload.sh and
 // tools/upload.bat, so this binary finds the same install regardless of
 // which one a given user has.
-func findLinkServer() (string, error) {
-	switch runtime.GOOS {
-	case "darwin":
-		if p := newestVersionedDir("/Applications", "LinkServer", "LinkServer"); p != "" {
-			return p, nil
-		}
-	case "linux":
-		fixed := "/usr/local/LinkServer/LinkServer"
-		if isExecutable(fixed) {
-			return fixed, nil
-		}
-		if p := newestVersionedDir("/usr/local", "LinkServer_", "LinkServer"); p != "" {
-			return p, nil
-		}
-		if p, err := exec.LookPath("LinkServer"); err == nil {
-			return p, nil
-		}
-	case "windows":
-		if p := newestVersionedDir(`C:\NXP`, "LinkServer", "LinkServer.exe"); p != "" {
-			return p, nil
-		}
+func findLinkServer(device string) (string, error) {
+	installs := linkServerInstalls()
+	if len(installs) == 0 {
+		return "", fmt.Errorf("not found")
 	}
-	return "", fmt.Errorf("not found")
+	return pickLinkServer(installs, device), nil
 }
 
-// newestVersionedDir finds the entry directly under dir whose name starts
-// with prefix, picks the highest by version-aware comparison (so
-// "LinkServer_9.0.0" doesn't win over "LinkServer_26.6.137" the way a plain
-// lexicographic sort would), and returns the path to exeName inside it if
-// that file exists and is executable.
-func newestVersionedDir(dir, prefix, exeName string) string {
-	entries, err := os.ReadDir(dir)
+// linkServerInstalls lists the LinkServer executables found, the preferred
+// one first: newest version first, and on Linux the fixed install path
+// ahead of the versioned ones and PATH last.
+func linkServerInstalls() []string {
+	var installs []string
+	switch runtime.GOOS {
+	case "darwin":
+		installs = versionedDirs("/Applications", "LinkServer", "LinkServer")
+	case "linux":
+		if fixed := "/usr/local/LinkServer/LinkServer"; isExecutable(fixed) {
+			installs = append(installs, fixed)
+		}
+		installs = append(installs, versionedDirs("/usr/local", "LinkServer_", "LinkServer")...)
+		if p, err := exec.LookPath("LinkServer"); err == nil {
+			installs = append(installs, p)
+		}
+	case "windows":
+		installs = versionedDirs(`C:\NXP`, "LinkServer", "LinkServer.exe")
+	}
+	return installs
+}
+
+// pickLinkServer returns the first of installs whose version has no known
+// flash-size bug for device's chip, or the first of all (with a warning)
+// when every one has it -- a sketch that fits in what the bug leaves still
+// loads. Versions are only asked for chips flashSizeBug names.
+func pickLinkServer(installs []string, device string) string {
+	chip := chipOf(device)
+	var prefixes []string
+	for _, b := range flashSizeBug {
+		if b.chip == chip {
+			prefixes = append(prefixes, b.versionPrefix)
+		}
+	}
+	if len(prefixes) == 0 {
+		return installs[0]
+	}
+
+	var skipped []string
+	for _, p := range installs {
+		v := linkServerVersion(p)
+		bad := false
+		for _, prefix := range prefixes {
+			if strings.HasPrefix(v, prefix) {
+				bad = true
+			}
+		}
+		if !bad {
+			if len(skipped) > 0 {
+				fmt.Fprintf(os.Stderr, "gdb-bridge: using LinkServer %s; %s reads the %s's flash as 32KB\n",
+					v, strings.Join(skipped, ", "), chip)
+			}
+			return p
+		}
+		skipped = append(skipped, v)
+	}
+	fmt.Fprintf(os.Stderr, "gdb-bridge: LinkServer %s reads the %s's flash as 32KB, so a sketch larger than that "+
+		"will fail to load. Install an earlier LinkServer (26.6 or before) alongside it; it is then used automatically\n",
+		skipped[0], chip)
+	return installs[0]
+}
+
+var versionRe = regexp.MustCompile(`LinkServer v(\d+(?:\.\d+)+)`)
+
+// linkServerVersion is the version `LinkServer --version` reports
+// ("LinkServer v26.9.130 [Build 130] ..." -> "26.9.130"), or "" if it
+// can't be read.
+func linkServerVersion(linkserver string) string {
+	out, err := exec.Command(linkserver, "--version").CombinedOutput()
 	if err != nil {
 		return ""
+	}
+	if m := versionRe.FindSubmatch(out); m != nil {
+		return string(m[1])
+	}
+	return ""
+}
+
+// versionedDirs finds the entries directly under dir whose names start with
+// prefix and returns the path to exeName inside each where that file exists
+// and is executable, highest version first by version-aware comparison (so
+// "LinkServer_9.0.0" doesn't win over "LinkServer_26.6.137" the way a plain
+// lexicographic sort would).
+func versionedDirs(dir, prefix, exeName string) []string {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return nil
 	}
 	var candidates []string
 	for _, e := range entries {
@@ -503,18 +580,16 @@ func newestVersionedDir(dir, prefix, exeName string) string {
 			candidates = append(candidates, e.Name())
 		}
 	}
-	if len(candidates) == 0 {
-		return ""
-	}
 	sort.Slice(candidates, func(i, j int) bool {
-		return versionLess(candidates[i], candidates[j])
+		return versionLess(candidates[j], candidates[i])
 	})
-	best := candidates[len(candidates)-1]
-	p := filepath.Join(dir, best, exeName)
-	if isExecutable(p) {
-		return p
+	var paths []string
+	for _, c := range candidates {
+		if p := filepath.Join(dir, c, exeName); isExecutable(p) {
+			paths = append(paths, p)
+		}
 	}
-	return ""
+	return paths
 }
 
 var numRe = regexp.MustCompile(`\d+`)
