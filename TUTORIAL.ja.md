@@ -70,7 +70,7 @@ English version → [TUTORIAL.md](TUTORIAL.md)
 >
 > LinkServer 26.9.130はFRDM-MCXA153のフラッシュを32KBと読むため、それより大きいスケッチは書き込めません
 > （出力ペインに「Attempt to load into missing flash area」と出ます）。NXPのLinkServerのページには最新版しか載っていないので、
-> 次のURLから26.6.137も入れて、26.9と並べておいてください。書き込みとデバッグは自動で26.6を使います。
+> 次のURLから26.6.137もインストールしておいてください。26.9と両方がインストールされていても問題ありません。書き込みとデバッグは自動で26.6を使います。
 >
 > | OS | LinkServer 26.6.137 |
 > |----|---------------------|
@@ -133,7 +133,7 @@ English version → [TUTORIAL.md](TUTORIAL.md)
 
 **アップロードに失敗する、または出力ペインにLinkServer関連のエラーが出る場合:**
 - LinkServerが実際にインストールされているか確認 — 書き込みスクリプトは自動検出しますが、インストールされていないと見つけられません
-- 「Attempt to load into missing flash area」と出る場合は、LinkServer 26.9がFRDM-MCXA153のフラッシュを32KBと読んでいます。26.6.137も並べてインストールしてください（ダウンロードのURLは[1.3](#13-nxp-linkserverのインストール)）。書き込みは自動でそちらを使います
+- 「Attempt to load into missing flash area」と出る場合は、LinkServer 26.9がFRDM-MCXA153のフラッシュを32KBと読んでいます。26.6.137もインストールしてください（26.9と両方あっても問題ありません。ダウンロードのURLは[1.3](#13-nxp-linkserverのインストール)）。書き込みは自動でそちらを使います
 - Windowsでは**デバイスマネージャー**でボードのエントリに黄色い警告アイコン（ドライバの問題）が出ていないか確認
 - ポートを掴んだままの他のプログラム（別のシリアルモニタ、ターミナルソフト等）を閉じる
 

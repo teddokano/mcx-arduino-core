@@ -67,8 +67,8 @@ Please install it before using the Upload or Debug buttons in Arduino IDE.
 After installation, the upload script will automatically detect LinkServer — no path configuration needed.
 
 > **FRDM-MCXA153 and LinkServer 26.9:** LinkServer 26.9.130 reads the FRDM-MCXA153's flash as 32KB, so a sketch
-> larger than that fails to upload ("Attempt to load into missing flash area"). Keep an earlier version
-> (26.6 or before) installed alongside it: uploading and debugging then pass over 26.9 by themselves, for both boards
+> larger than that fails to upload ("Attempt to load into missing flash area"). Also install an earlier version
+> (26.6 or before); having both installed is fine. Uploading and debugging then pass over 26.9 by themselves, for both boards
 > (FRDM-MCXN947 works with 26.9, but both boards have to use the same LinkServer version, or the second one to upload fails).
 >
 > NXP's LinkServer page lists only the newest version. 26.6.137 can be downloaded directly:
