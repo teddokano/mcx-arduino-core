@@ -83,8 +83,8 @@ automatically — no path configuration needed.
 > LinkServer 26.9.130 reads the FRDM-MCXA153's flash as 32KB, so a sketch
 > larger than that fails to upload (the output pane says "Attempt to load
 > into missing flash area"). NXP's LinkServer page lists only the newest
-> version, so also install 26.6.137 from the links below, alongside 26.9.
-> Uploading and debugging then use 26.6 by themselves.
+> version, so also install 26.6.137 from the links below. Having both
+> installed is fine. Uploading and debugging then use 26.6 by themselves.
 >
 > | OS | LinkServer 26.6.137 |
 > |----|---------------------|
@@ -166,8 +166,8 @@ garbled text or nothing at all.
 - Confirm LinkServer is actually installed — the upload script looks for
   it automatically, but only finds it if it's installed
 - If it says "Attempt to load into missing flash area", you have LinkServer
-  26.9, which reads the FRDM-MCXA153's flash as 32KB. Install 26.6.137
-  alongside it (download links in [1.3](#13-install-nxp-linkserver));
+  26.9, which reads the FRDM-MCXA153's flash as 32KB. Also install
+  26.6.137 (having both installed is fine; download links in [1.3](#13-install-nxp-linkserver));
   uploads then use that one by themselves
 - On Windows, check **Device Manager** for a driver problem (a yellow
   warning icon) on the board's entry
