@@ -25,7 +25,7 @@
 | 知りたいこと | 見る場所 |
 |---|---|
 | 対応APIの一覧・未対応項目 | [API_COMPATIBILITY.md](API_COMPATIBILITY.md) |
-| ピン配置（ボード別） | [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) / [PIN_MAPPING_N947.md](PIN_MAPPING_N947.md) |
+| ピン配置（ボード別） | [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) / [PIN_MAPPING_N947.md](PIN_MAPPING_N947.md) / [PIN_MAPPING_A156.md](PIN_MAPPING_A156.md)（0.8.0で作成中） |
 | リリースごとの変更点 | [CHANGELOG.md](CHANGELOG.md) |
 | 使い方の入門 | [TUTORIAL.md](TUTORIAL.md) / [TUTORIAL.ja.md](TUTORIAL.ja.md) |
 | クラス・関数のリファレンス | `docs/api/`（Doxygen生成、リリース前に再生成する） |
@@ -163,6 +163,21 @@ xPack checksums（正しい値）：
   - **R75・R76を外す**: 工場出荷時はA4(P1_12)・A5(P1_13)がCANトランシーバ(TJA1057)の`CAN_RXD`・`CAN_TXD`にもつながっていて、
     A4はトランシーバに駆動される。コアはA0〜A5の6本とも使える前提にする。
     **開発用のボードはまだ付いている（ユーザーが後で外す）ので、外したと聞くまではA4・A5の結果で合否を判定しない**
+- **I²Cの割り当て（2026-10-03に決定）**: A156はオンボードのP3T1755が**ArduinoのD18/D19（`LPI2C0`）に直結**している
+  （A153・N947のように専用ピンが無い。I3C0もセンサーにはこの2本でしか届かない）。そこで
+  **`Wire`=D18/D19（センサーも`0x48`でここ）、`Wire1`=MikroBusの`MB_SDA`/`MB_SCL`（`LPI2C3`、`P3_28`/`P3_27`、ALT2）**とし、I3C0は使わない。
+  `Wire1`は0.8.0で実装する。他の2ボードと`Wire1`の意味が違うので、`Wire1`でセンサーを読む既存サンプル（十数本）にはA156の分岐が要る。
+  コアは`arduino_i2c.cpp`の「`I3C_SDA`のピンなら`Wire1`（I3C）」と「`MB_SDA`のピンならN947の`Wire2`」の2つの判定をボードで分ける必要がある。
+  **テストは`MB_SDA`-`D18`・`MB_SCL`-`D19`をジャンパでつなぐ**: `Wire1`からP3T1755を読める、`Wire`と`Wire1`の間でターゲットモード
+  （N947の`LPI2C3`はターゲットとして動かなかったが、A156では両方向を試す）、D18/D19をGPIOでLOWにして`Wire1`のタイムアウト。
+  プルアップは2.2kΩ（センサー側）と4.7kΩ（MikroBus側）が並列になる
+- **UARTの割り当て（2026-10-03に決定）**: `Serial`=USB（`LPUART0`）、`Serial1`=D0/D1（`LPUART2`、`P2_11` RX/`P2_10` TX、ALT3）、
+  **`Serial2`=MikroBusの`MB_RX`/`MB_TX`（`LPUART1`、`P3_20`/`P3_21`、ALT3）を0.8.0で入れる**。`Serial2`はどのボードにも無かった新しい名前で、
+  A156だけに置く（宣言・`serialEvent2`の呼び出しもA156の分岐で）。テストは`MB_RX`-`MB_TX`のジャンパでループバック
+- **D3/D5/D6/D9（FlexPWM1）での`analogWrite`は0.8.0では見送る**（2026-10-03、ユーザー判断）。
+  A156の`analogWrite`はA153と同じ`PWM0`〜`PWM5`（FlexPWM0、J3の`P3_11`〜`P3_6`）だけ。
+  D-ピンのPWMは0.8.0より後の候補（D3=`P3_12` PWM1_A2、D5=`P3_14` PWM1_A1、D6=`P3_16` PWM1_A0、D9=`P3_17` PWM1_B0、いずれもALT7。
+  D6とD9はsm0を共有するので周波数が連動する）
 - **LinkServer 26.9の不具合（Pendingタスク9）はA156には出ない**（2026-10-03に確認）。26.9.130は
   `Flash variant 'MCXA1x6 ...' detected (1MB = 128*8K at 0x0)`と正しく判定し、46KBのイメージの書き込みと`verify`が通った
   （A156のvariantがまだ無いので、A153向けの`hello_world`のELFを`MCXA156:FRDM-MCXA156`として書いた）。
