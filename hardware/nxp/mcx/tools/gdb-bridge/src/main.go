@@ -252,6 +252,12 @@ func main() {
 // boards of the same kind; for those, this says so instead of leaving
 // LinkServer's own error, whose advice (pass --probe) no IDE user can take.
 //
+// Not every on-board probe reports its chip: the FRDM-MCXA156 checked had
+// none set ("MCU-LINK on-board", empty Device and Board columns), while the
+// FRDM-MCXA153 and FRDM-MCXN947 ones do. So when no probe reports the chip
+// but exactly one reports nothing at all, that one is taken -- every other
+// probe names a different chip, so it is the only one that can be it.
+//
 // Returns "" when there is at most one probe, which LinkServer picks by
 // itself.
 func probeFor(linkserver, device string) (string, error) {
@@ -261,10 +267,13 @@ func probeFor(linkserver, device string) (string, error) {
 	}
 
 	chip := chipOf(device)
-	var matches []string
+	var matches, unidentified []string
 	for _, p := range probes {
-		if p.chip == chip {
+		switch p.chip {
+		case chip:
 			matches = append(matches, p.serial)
+		case "":
+			unidentified = append(unidentified, p.serial)
 		}
 	}
 
@@ -273,8 +282,19 @@ func probeFor(linkserver, device string) (string, error) {
 		fmt.Fprintf(os.Stderr, "gdb-bridge: %d probes connected; using %s, the one on the %s\n", len(probes), matches[0], chip)
 		return matches[0], nil
 	case 0:
-		return "", fmt.Errorf("%d debug probes are connected, but none of them reports an %s on it. "+
-			"Leave only the board to debug connected", len(probes), chip)
+		switch len(unidentified) {
+		case 1:
+			fmt.Fprintf(os.Stderr, "gdb-bridge: %d probes connected; none reports an %s, so using %s, "+
+				"the only one that does not say which chip it is on\n", len(probes), chip, unidentified[0])
+			return unidentified[0], nil
+		case 0:
+			return "", fmt.Errorf("%d debug probes are connected, but none of them reports an %s on it. "+
+				"Leave only the board to debug connected", len(probes), chip)
+		default:
+			return "", fmt.Errorf("%d debug probes are connected; none of them reports an %s on it, "+
+				"and %d (probes %s) do not say which chip they are on, so the debugger cannot tell which one is meant. "+
+				"Leave only the board to debug connected", len(probes), chip, len(unidentified), strings.Join(unidentified, ", "))
+		}
 	default:
 		return "", fmt.Errorf("%d boards with an %s are connected (probes %s), and the debugger cannot tell "+
 			"which one is meant: Arduino IDE does not pass it the selected port. Leave only the board to debug connected",

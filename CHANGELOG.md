@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   added later stops at each place that needs it rather than silently taking another board's settings.
   The hygiene check `board-fallback` keeps it so. The FRDM-MCXA153 and FRDM-MCXN947 builds are unchanged
   (every example's binary is byte-identical before and after)
+- Debugging with several boards connected: gdb-bridge now also picks a probe that does not report
+  its chip (the FRDM-MCXA156's on-board MCU-LINK leaves it blank), when it is the only such probe and
+  no probe reports the board's chip
 
 ## [0.7.1] - 2026-09-28
 

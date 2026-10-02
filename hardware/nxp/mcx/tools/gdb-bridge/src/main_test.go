@@ -98,6 +98,11 @@ func TestProbeFor(t *testing.T) {
 	unidentified := strings.Replace(twoKinds, "UENBVJCYVDM5J  MCXN947   FRDM-MCXN947",
 		"UENBVJCYVDM5J                          ", 1)
 	oneProbe := strings.Join(strings.Split(twoKinds, "\n")[:3], "\n") + "\n"
+	// The FRDM-MCXA156's probe as `LinkServer probes` (26.6) printed it: no
+	// board name, and nothing in the Device and Board columns.
+	withA156 := twoKinds +
+		"  3  MCU-LINK on-board (r0E7) CMSIS-DAP V3.128       TRCY3KVQCH3R3                          DEBUG, VCOM, SIO\n"
+	twoUnidentified := strings.Replace(unidentified, "MCXA153   FRDM-MCXA153", "                      ", 1)
 
 	cases := []struct {
 		name, output, device, want string
@@ -108,7 +113,11 @@ func TestProbeFor(t *testing.T) {
 		{"one probe is left to LinkServer", oneProbe, "MCXN947:FRDM-MCXN947", "", ""},
 		{"two of the same kind", twoSame, "MCXA153:FRDM-MCXA153", "", "2 boards with an MCXA153"},
 		{"no probe on that chip", twoKinds, "MCXC444:FRDM-MCXC444", "", "none of them reports an MCXC444"},
-		{"a probe with no target identified", unidentified, "MCXN947:FRDM-MCXN947", "", "none of them reports an MCXN947"},
+		{"the one probe with no chip is taken", unidentified, "MCXN947:FRDM-MCXN947", "UENBVJCYVDM5J", ""},
+		{"a probe reporting the chip wins over one with none", unidentified, "MCXA153:FRDM-MCXA153", "PZU5XXMWG442Y", ""},
+		{"A156 among A153 and N947", withA156, "MCXA156:FRDM-MCXA156", "TRCY3KVQCH3R3", ""},
+		{"A153 is still found with an A156 connected", withA156, "MCXA153:FRDM-MCXA153", "PZU5XXMWG442Y", ""},
+		{"two probes with no chip", twoUnidentified, "MCXA156:FRDM-MCXA156", "", "2 (probes PZU5XXMWG442Y, UENBVJCYVDM5J) do not say"},
 		{"unreadable output is left to LinkServer", "Error: something else\n", "MCXA153:FRDM-MCXA153", "", ""},
 	}
 	for _, c := range cases {

@@ -237,8 +237,12 @@ Then, on hardware:
   directly rather than a script. The part of that line before the `:`
   must be the chip name exactly as `LinkServer probes` prints it in its
   `Device` column: with several boards plugged in, that is how
-  gdb-bridge picks the probe to debug through. Check it with the new
-  board and another one attached, `arduino-cli debug` on each.
+  gdb-bridge picks the probe to debug through. Some on-board probes
+  leave that column empty (the FRDM-MCXA156 checked did, as
+  `MCU-LINK on-board`); gdb-bridge then takes the one probe that names
+  no chip, so such a board can be debugged alongside boards whose probes
+  do name theirs, but not alongside a second one that names none. Check it
+  with the new board and another one attached, `arduino-cli debug` on each.
 - **LinkServer versions to pass over**: `tools/upload.sh`
   (`flash_size_bug()`), `tools/upload.bat` (`:consider`) and gdb-bridge
   (`flashSizeBug`) skip LinkServer versions known to misread a chip's
