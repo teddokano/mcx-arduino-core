@@ -262,11 +262,13 @@ SPI::SPI( int mosi, int miso, int sclk, int cs ) : Obj( true ), chip_select( cs,
 	{
 		panic( "FRDM-MCXA153 supports SPI on Arduino pins (D10-D13) or MikroBus (MB_MOSI/MB_MISO/MB_SCK/MB_CS)" );
 	}
-#else
+#elif	CPU_MCXN236VDF
 	unit_base			= EXAMPLE_LPSPI_MASTER_BASEADDR;
 	master_clk_freq		= LPSPI_MASTER_CLK_FREQ;
 	master_pcs_for_init	= EXAMPLE_LPSPI_MASTER_PCS_FOR_INIT;
 	master_pcs_4_xfer	= EXAMPLE_LPSPI_MASTER_PCS_FOR_TRANSFER;
+#else
+#error "r01lib_spi.cpp: no SPI pin sets for this chip"
 #endif
 	
 	LPSPI_MasterGetDefaultConfig( &masterConfig );

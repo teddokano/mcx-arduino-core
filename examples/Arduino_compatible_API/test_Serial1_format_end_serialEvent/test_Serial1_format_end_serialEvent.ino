@@ -26,9 +26,11 @@
 #if defined(FRDM_MCXN947)
 const int TX_PIN = MB_TX;
 const int RX_PIN = MB_RX;
-#else
+#elif defined(FRDM_MCXA153)
 const int TX_PIN = D1;
 const int RX_PIN = D0;
+#else
+#error "This sketch has no settings for this board yet"
 #endif
 
 const unsigned long BAUD = 1200;

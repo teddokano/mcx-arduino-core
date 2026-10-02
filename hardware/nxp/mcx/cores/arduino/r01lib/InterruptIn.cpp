@@ -30,12 +30,15 @@ extern "C" {
 	#define		GPIO_BITS	24
 	static	GPIO_Type	*gpio_ptr[]	= { GPIOA, GPIOC, GPIOD };
 	
-#else // CPU_MCXN947VDF
+#elif	CPU_MCXA153VLH
 	#define		N_GPIO		4
 	#define		GPIO_BITS	32
 	static	GPIO_Type	*gpio_ptr[]	= GPIO_BASE_PTRS;
 	static	IRQn_Type	irqs[]		= GPIO_IRQS;
-#endif //CPU_MCXN947VDF
+
+#else
+	#error "InterruptIn.cpp: set N_GPIO and the GPIO tables for this chip"
+#endif
 
 #if (defined(FSL_FEATURE_PORT_HAS_NO_INTERRUPT) && FSL_FEATURE_PORT_HAS_NO_INTERRUPT)
 #define	kRisingEdge		kGPIO_InterruptRisingEdge

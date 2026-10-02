@@ -57,7 +57,7 @@ void setup() {
 #elif defined(ARDUINO_FRDM_MCXN947)
   check("ARDUINO_FRDM_MCXN947 defined", true);
 #else
-  check("ARDUINO_FRDM_<board> defined", false);
+#error "No ARDUINO_FRDM_<board> macro, or this sketch has no line for this board yet"
 #endif
 }
 

@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- Every board-specific branch in the core, the bundled libraries and the examples now names each
+  board and ends in `#error`, instead of falling back to "the other board" in an `#else`. A board
+  added later stops at each place that needs it rather than silently taking another board's settings.
+  The hygiene check `board-fallback` keeps it so. The FRDM-MCXA153 and FRDM-MCXN947 builds are unchanged
+  (every example's binary is byte-identical before and after)
+
 ## [0.7.1] - 2026-09-28
 
 ### Highlights

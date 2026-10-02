@@ -66,9 +66,11 @@ const uint32_t TRIALS = 1000;
 #if defined(FRDM_MCXA153)
 const uint32_t UNIT = 16;           // one record
 const uint32_t COMPACT_US = 7000;   // a compacting write takes up to ~6ms
-#else
+#elif defined(FRDM_MCXN947)
 const uint32_t UNIT = 128;
 const uint32_t COMPACT_US = 12000;  // up to ~11ms
+#else
+#error "This sketch has no settings for this board yet"
 #endif
 const uint32_t APPEND_US = 700;     // an ordinary write takes ~0.1-0.5ms
 const uint32_t LOG_OFF = 128 + 1024;
@@ -188,10 +190,12 @@ void wdt_clock_on() {
 #if defined(FRDM_MCXA153)
   CLOCK_SetClockDiv(kCLOCK_DivWWDT0, 1U);
   CLOCK_EnableClock(kCLOCK_GateWWDT0);
-#else
+#elif defined(FRDM_MCXN947)
   SYSCON->CLOCK_CTRL |= SYSCON_CLOCK_CTRL_FRO1MHZ_ENA_MASK | SYSCON_CLOCK_CTRL_FRO1MHZ_CLK_ENA_MASK;
   CLOCK_SetClkDiv(kCLOCK_DivWdt0Clk, 1U);
   CLOCK_EnableClock(kCLOCK_Wwdt0);
+#else
+#error "This sketch has no settings for this board yet"
 #endif
 }
 
@@ -200,8 +204,10 @@ void wdt_clock_on() {
 bool reset_by_watchdog() {
 #if defined(FRDM_MCXA153)
   return CMC->SRS & CMC_SRS_WWDT0_MASK;
-#else
+#elif defined(FRDM_MCXN947)
   return CMC0->SRS & CMC_SRS_WWDT0_MASK;
+#else
+#error "This sketch has no settings for this board yet"
 #endif
 }
 
@@ -303,8 +309,10 @@ void setup() {
     Serial.print("EEPROM reset-during-write test (a new run; SRS=0x");
 #if defined(FRDM_MCXA153)
     Serial.print(CMC->SRS, HEX);
-#else
+#elif defined(FRDM_MCXN947)
     Serial.print(CMC0->SRS, HEX);
+#else
+#error "This sketch has no settings for this board yet"
 #endif
     Serial.print(by_watchdog ? ", by watchdog" : "");
     Serial.println(state_valid() ? ")" : ", state lost)");

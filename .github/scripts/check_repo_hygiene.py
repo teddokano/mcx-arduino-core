@@ -436,6 +436,67 @@ def check_comment_terminators():
     notes.append("comment-terminator: scanned for early '*/' in block comments")
 
 
+# Macros that name one board or chip. MCXC444's are left out: the chains
+# that test only it split the Kinetis peripherals from the LPI2C/LPSPI ones
+# every other chip shares, so their #else is a peripheral family, not a
+# guess at which board it is.
+BOARD_MACRO = re.compile(r"\b(?:CPU_MCX(?!C444)\w+|(?:ARDUINO_)?FRDM_MCX(?!C444)\w+)\b")
+DIRECTIVE = re.compile(r"\s*#\s*(if|ifdef|ifndef|elif|else|endif)\b(.*)")
+
+
+def scan_board_fallbacks(path):
+    """Yield the line numbers of board #if chains whose #else is not an #error.
+
+    `#if defined(FRDM_MCXN947) ... #else ... #endif` was written with two
+    boards in mind: the #else meant "the other one". A third board then
+    builds without complaint and silently takes the other board's settings
+    (21 such chains were found before adding the FRDM-MCXA156). Or it
+    fails far from the cause: EEPROM.cpp would have sent an A15x chip down
+    the N947's flash-driver calls. Naming every board with
+    #elif and ending the chain in #error makes a new board stop at each one.
+    """
+    lines = read(path).splitlines()
+    stack = []
+    for line_no, line in enumerate(lines, 1):
+        m = DIRECTIVE.match(line)
+        if not m:
+            continue
+        kind, rest = m.groups()
+        if kind in ("if", "ifdef", "ifndef"):
+            stack.append({"start": line_no, "board": bool(BOARD_MACRO.search(rest)), "else": None})
+        elif not stack:
+            continue
+        elif kind == "elif":
+            stack[-1]["board"] |= bool(BOARD_MACRO.search(rest))
+        elif kind == "else":
+            stack[-1]["else"] = line_no
+        else:
+            chain = stack.pop()
+            if not (chain["board"] and chain["else"]):
+                continue
+            body = [b.strip() for b in lines[chain["else"]:line_no - 1]]
+            body = [b for b in body if b and not b.startswith("//")]
+            if not (body and re.match(r"#\s*error\b", body[0])):
+                yield chain["start"]
+
+
+def check_board_fallbacks():
+    hits = []
+    for root in SCAN_ROOTS:
+        base = os.path.join(REPO, root)
+        for dirpath, _dirnames, filenames in os.walk(base):
+            for name in sorted(filenames):
+                if not name.endswith(SCAN_EXTS):
+                    continue
+                path = os.path.join(dirpath, name)
+                for line_no in scan_board_fallbacks(path):
+                    hits.append((os.path.relpath(path, REPO), line_no))
+    for rel, line_no in hits:
+        fail("board-fallback", "%s:%d tests for a board and falls back to #else; name each board "
+             "with #elif and end with #else #error" % (rel, line_no))
+    notes.append("board-fallback: every board #if chain names its boards and ends in #error")
+
+
 def parse_pin_by_number():
     """Return the identifier sequence in arduino_io.h's arduino_pin_by_number[]."""
     text = read(ARDUINO_IO_H)
@@ -541,6 +602,7 @@ def main():
     check_doxyfile_version()
     check_platform_paths()
     check_comment_terminators()
+    check_board_fallbacks()
     check_mcxpinstate_aliases()
 
     if args.release:

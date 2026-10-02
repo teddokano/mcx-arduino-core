@@ -69,10 +69,12 @@ SerialClass	Serial(  USBTX, USBRX );
 // explicitly set their own ALT, so all three switch cleanly on the same two
 // pins (just not simultaneously).
 SerialClass	Serial1( SERIAL1_TX_PIN, SERIAL1_RX_PIN );
-#else
+#elif defined( CPU_MCXA153VLH )
 // Serial1: hardware UART on D0(RX)/D1(TX) -- arduino_pin_by_number[] converts
 //          the renumbered D0/D1 indices back to the raw physical pin macros
 //          Serial::resolve_pins() expects (same trick pinMode()/digitalWrite()
 //          use).
 SerialClass	Serial1( arduino_pin_by_number[ D1 ], arduino_pin_by_number[ D0 ] );
+#else
+#error "arduino_serial.cpp: say where this board's Serial1 is"
 #endif

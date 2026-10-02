@@ -214,8 +214,10 @@ void setup() {
 
 #if defined(FRDM_MCXN947)
   suite(Wire, "Wire", 0x42, LPI2C2);
-#else
+#elif defined(FRDM_MCXA153)
   suite(Wire, "Wire", 0x42, LPI2C0);
+#else
+#error "This sketch has no settings for this board yet"
 #endif
 
   Serial.println();

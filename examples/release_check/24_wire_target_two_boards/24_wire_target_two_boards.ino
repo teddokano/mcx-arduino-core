@@ -17,9 +17,11 @@
 #if defined(FRDM_MCXN947)
 const uint8_t SELF = 0x43, PEER = 0x42;
 const bool GOES_FIRST = false;
-#else
+#elif defined(FRDM_MCXA153)
 const uint8_t SELF = 0x42, PEER = 0x43;
 const bool GOES_FIRST = true;
+#else
+#error "This sketch has no settings for this board yet"
 #endif
 
 const uint8_t YOUR_TURN = 0x10;

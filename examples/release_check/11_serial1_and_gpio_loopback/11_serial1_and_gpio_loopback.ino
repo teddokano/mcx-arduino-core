@@ -22,9 +22,11 @@
 #if defined(FRDM_MCXN947)
 const int S1_TX = MB_TX;
 const int S1_RX = MB_RX;
-#else
+#elif defined(FRDM_MCXA153)
 const int S1_TX = D1;
 const int S1_RX = D0;
+#else
+#error "This sketch has no settings for this board yet"
 #endif
 
 // Serial1 frame formats, checked bit by bit off the RX pin at 1200 baud

@@ -42,8 +42,12 @@
 
 #include "fsl_device_registers.h"
 
+//	Which flash API the chip has: EEPROM_ROM_FLASH_API for the boot ROM's,
+//	otherwise the SDK's fsl_flash. The calls below branch on that, not on
+//	the chip, so a new chip is placed here once and nowhere else
 #if defined( CPU_MCXA153VLH )
 #include "fsl_romapi.h"
+#define	EEPROM_ROM_FLASH_API		//	the boot ROM's (FLASH_API->...), by phrase or page
 static const uint32_t	UNIT	= 16;	// phrase
 #elif defined( CPU_MCXN947VDF )
 #include "fsl_flash.h"
@@ -102,7 +106,7 @@ void clear_cache( void )
 bool erase_half( int h )
 {
 	status_t	s;
-#if defined( CPU_MCXA153VLH )
+#if defined( EEPROM_ROM_FLASH_API )
 	s	= FLASH_EraseSector( &flash, half_base( h ), half_size(), kFLASH_ApiEraseKey );
 #else
 	s	= FLASH_Erase( &flash, half_base( h ), half_size(), kFLASH_ApiEraseKey );
@@ -115,7 +119,7 @@ bool erase_half( int h )
 bool program( uint32_t addr, const void *src, uint32_t n )
 {
 	status_t	s;
-#if defined( CPU_MCXA153VLH )
+#if defined( EEPROM_ROM_FLASH_API )
 	if ( ( n % PAGE == 0 ) && ( addr % PAGE == 0 ) )
 		s	= FLASH_ProgramPage( &flash, addr, (uint8_t *)src, n );
 	else
@@ -188,7 +192,7 @@ void start( void )
 
 	started	= true;
 	memset( &flash, 0, sizeof( flash ) );
-#if defined( CPU_MCXA153VLH )
+#if defined( EEPROM_ROM_FLASH_API )
 	FLASH_API->flash_init( &flash );
 #else
 	FLASH_Init( &flash );

@@ -46,7 +46,7 @@ void PORTC_PORTD_DriverIRQHandler( void )
 	irq_handler( 1 );
 }
 
-#else // CPU_MCXN947VDF
+#elif	CPU_MCXA153VLH
 void GPIO0_IRQHandler( void )
 {	irq_handler( 0 );
 }
@@ -63,6 +63,9 @@ void GPIO3_IRQHandler( void )
 {
 	irq_handler( 3 );
 }
-#endif // CPU_MCXN947VDF
+
+#else
+#error "irq.c: no GPIO interrupt handlers for this chip -- list its GPIO banks here"
+#endif
 
 

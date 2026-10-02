@@ -283,8 +283,10 @@ void setup() {
   // 1 on FRDM-MCXN947 (12MHz)
 #if defined(FRDM_MCXN947)
   const uint32_t cap400k = 87360;
-#else
+#elif defined(FRDM_MCXA153)
   const uint32_t cap400k = 21840;
+#else
+#error "This sketch has no settings for this board yet"
 #endif
 
   suite(Wire, "Wire (D19-D8, D18-D7)", D8, D7, cap400k);

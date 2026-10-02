@@ -111,7 +111,18 @@ Every property below is required. The ones that bite hardest are marked.
 ## 3. Add the board's branches to the shared core
 
 This is the bulk of the work, and the part that scales badly. Twenty
-files under `cores/arduino/` currently branch per board:
+files under `cores/arduino/` currently branch per board.
+
+Every board branch names its boards with `#elif` and ends in
+`#else #error`, so the first build for a new board stops at each place
+that needs it, in the core, in `libraries/` and in the examples. Work
+through those errors rather than only through the tables below. Before
+0.8.0, many chains ended in a bare `#else` meaning "the other board", and
+a new board would have built and quietly taken that board's settings,
+or failed far from the cause — the `EEPROM` library, for one, would have
+sent an A15x chip down the N947's flash-driver calls. The hygiene check's `board-fallback` keeps it that way; the
+chains that test only `CPU_MCXC444VLH` are exempt, since their `#else`
+is the LPI2C/LPSPI peripheral family the other chips share.
 
 **Pin and instance tables** — the real content of a port.
 
