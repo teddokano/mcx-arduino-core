@@ -31,6 +31,14 @@ physical MCU port pin.
 > says to remove both when the Arduino `A4`/`A5` are used. `A0`-`A3` are not
 > affected.
 
+![pins-FRDM-MCXA156](img/pins-FRDM-MCXA156-ard.png)  
+*FRDM-MCXA156 Arduino shield socket pins*
+
+![pins-FRDM-MCXA156](img/pins-FRDM-MCXA156-mb.png)  
+*FRDM-MCXA156 MikroBus socket pins*
+
+
+
 ## Arduino header
 
 | Arduino pin | MCU pin | Notes |
