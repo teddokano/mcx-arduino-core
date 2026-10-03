@@ -118,4 +118,5 @@ peripheral instances on the SPI/I2C rows (see below the table):
 > coexist in one sketch. Referencing `Serial1` uses the MikroBus header
 > instead (see above), not D0/D1.
 
-See [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) for FRDM-MCXA153's pin mapping.
+See [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) and
+[PIN_MAPPING_A156.md](PIN_MAPPING_A156.md) for the other boards.

@@ -11,7 +11,8 @@ Arduino board support package for NXP FRDM MCX Series boards.
 
 New here? Start with the [tutorial](TUTORIAL.md) ([日本語版](TUTORIAL.ja.md)).
 See [API_COMPATIBILITY.md](API_COMPATIBILITY.md) for the full Arduino API support status,
-[PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) / [PIN_MAPPING_N947.md](PIN_MAPPING_N947.md)
+[PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) / [PIN_MAPPING_N947.md](PIN_MAPPING_N947.md) /
+[PIN_MAPPING_A156.md](PIN_MAPPING_A156.md)
 for each board's pin assignments, [CHANGELOG.md](CHANGELOG.md) for release history, and
 [docs/api/](docs/api/index.html) for generated Doxygen class reference (the r01lib driver
 core and the Arduino-compatible API layer).
@@ -36,9 +37,15 @@ it, and has its own guide:
 | Board | MCU | Core |
 |-------|-----|------|
 | FRDM-MCXA153 | MCXA153 (Cortex-M33) | ✅ |
-| FRDM-MCXA156 | MCXA156 (Cortex-M33) | 🔜 |
+| FRDM-MCXA156 | MCXA156 (Cortex-M33) | ✅ (from 0.8.0; see below) |
 | FRDM-MCXN947 | MCXN947 (Cortex-M33) | ✅ |
 | FRDM-MCXN236 | MCXN236 (Cortex-M33) | 🔜 |
+
+> **FRDM-MCXA156 needs two small board changes** for the Arduino header to
+> work fully: move R59 and R60 to their 2-3 position, or `SPI`'s CS and
+> MOSI never reach `D10`/`D11`; and remove R75 and R76, or the on-board
+> CAN transceiver drives `A4`. See
+> [PIN_MAPPING_A156.md](PIN_MAPPING_A156.md).
 
 > **Note**: mcx-arduino-core is an independent, community project and is not
 > part of or affiliated with Arduino's official
@@ -68,8 +75,8 @@ After installation, the upload script will automatically detect LinkServer — n
 
 > **FRDM-MCXA153 and LinkServer 26.9:** LinkServer 26.9.130 reads the FRDM-MCXA153's flash as 32KB, so a sketch
 > larger than that fails to upload ("Attempt to load into missing flash area"). Also install an earlier version
-> (26.6 or before); having both installed is fine. Uploading and debugging then pass over 26.9 by themselves, for both boards
-> (FRDM-MCXN947 works with 26.9, but both boards have to use the same LinkServer version, or the second one to upload fails).
+> (26.6 or before); having both installed is fine. Uploading and debugging then pass over 26.9 by themselves, for every board
+> (FRDM-MCXN947 and FRDM-MCXA156 work with 26.9, but all boards have to use the same LinkServer version, or the second one to upload fails).
 >
 > NXP's LinkServer page lists only the newest version. 26.6.137 can be downloaded directly:
 >
@@ -165,7 +172,8 @@ MIT License — see [LICENSE](LICENSE)
 
 ## Pin Mapping
 
-See [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) / [PIN_MAPPING_N947.md](PIN_MAPPING_N947.md)
+See [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) / [PIN_MAPPING_N947.md](PIN_MAPPING_N947.md) /
+[PIN_MAPPING_A156.md](PIN_MAPPING_A156.md)
 for the full Arduino-pin-to-MCU-pin table for each supported board, including
 the on-board LEDs/buttons and peripheral pins (`Wire1`, `SPI`, `PWM`, etc.).
 
@@ -176,7 +184,8 @@ SPI, analogRead/analogWrite, millis/micros, tone/noTone, delay family,
 String, real `Print`/`Stream`/`Printable` base classes, F()/PROGMEM, and
 UNO R3/R4 compatibility macros are all supported. I2C target (slave) mode
 works on `Wire`, and `Wire.setWireTimeout` on `Wire` and FRDM-MCXN947's `Wire2`
-(neither on `Wire1`, which runs on I3C),
+(neither on `Wire1`, which runs on I3C there and on FRDM-MCXA153; on
+FRDM-MCXA156, `Wire1` is the MikroBus I2C and both work on it),
 and the bundled `EEPROM` library keeps 1KB in on-chip flash across resets
 and uploads. Third-party libraries that
 inherit `Print` directly or take `Stream&` (e.g. ArduinoJson, LiquidCrystal,

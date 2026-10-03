@@ -11,7 +11,7 @@ English version → [README.md](README.md)
 
 初めての方は[チュートリアル日本語版](TUTORIAL.ja.md)（[英語版もあります](TUTORIAL.md)）から始めてください。
 Arduino API対応状況の一覧は[API_COMPATIBILITY.md](API_COMPATIBILITY.md)、
-各ボードのピン配置は[PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) / [PIN_MAPPING_N947.md](PIN_MAPPING_N947.md)、
+各ボードのピン配置は[PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) / [PIN_MAPPING_N947.md](PIN_MAPPING_N947.md) / [PIN_MAPPING_A156.md](PIN_MAPPING_A156.md)、
 バージョン間の変更点は[CHANGELOG.md](CHANGELOG.md)、
 生成済みDoxygenクラスリファレンス（r01libドライバコアとArduino互換APIレイヤー）は
 [docs/api/](docs/api/index.html)を参照してください（これらは英語のみです）。
@@ -32,9 +32,13 @@ Arduino API対応状況の一覧は[API_COMPATIBILITY.md](API_COMPATIBILITY.md)�
 | ボード | MCU | コア |
 |-------|-----|------|
 | FRDM-MCXA153 | MCXA153 (Cortex-M33) | ✅ |
-| FRDM-MCXA156 | MCXA156 (Cortex-M33) | 🔜 |
+| FRDM-MCXA156 | MCXA156 (Cortex-M33) | ✅（0.8.0から。下の注を参照） |
 | FRDM-MCXN947 | MCXN947 (Cortex-M33) | ✅ |
 | FRDM-MCXN236 | MCXN236 (Cortex-M33) | 🔜 |
+
+> **FRDM-MCXA156はボードの抵抗を2か所変える前提です**。R59とR60を2-3側へ付け替えないと、
+> `SPI`のCSとMOSIが`D10`/`D11`に出ません。R75とR76を外さないと、オンボードのCANトランシーバが`A4`を駆動します。
+> 詳しくは[PIN_MAPPING_A156.md](PIN_MAPPING_A156.md)を参照してください。
 
 > **注**: mcx-arduino-coreは独立したコミュニティプロジェクトであり、Arduino公式の
 > [ArduinoCore-zephyr](https://github.com/arduino/ArduinoCore-zephyr)の一部でも
@@ -63,8 +67,8 @@ LinkServer自身のgdbserverを使用します——本家OpenOCDはMCXチップ
 
 > **FRDM-MCXA153とLinkServer 26.9について:** LinkServer 26.9.130はFRDM-MCXA153のフラッシュを32KBと読むため、
 > それより大きいスケッチは書き込めません（「Attempt to load into missing flash area」）。
-> 以前の版（26.6以前）もインストールしておいてください。両方がインストールされていても問題ありません。書き込みとデバッグは、両ボードとも自動で26.9を避けてそちらを使います
-> （FRDM-MCXN947は26.9でも動きますが、2つのボードで同じ版を使わないと、後から書き込んだほうが失敗します）。
+> 以前の版（26.6以前）もインストールしておいてください。両方がインストールされていても問題ありません。書き込みとデバッグは、どのボードでも自動で26.9を避けてそちらを使います
+> （FRDM-MCXN947とFRDM-MCXA156は26.9でも動きますが、ボードごとに違う版を使うと、後から書き込んだほうが失敗します）。
 >
 > NXPのLinkServerのページには最新版しか載っていません。26.6.137は次のURLから直接ダウンロードできます。
 >
@@ -161,7 +165,7 @@ MIT License — [LICENSE](LICENSE)を参照
 
 対応ボードごとのArduinoピン↔MCUピンの完全な対応表（オンボードLED/ボタン・ペリフェラルピン
 （`Wire1`、`SPI`、`PWM`等）込み）は
-[PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) / [PIN_MAPPING_N947.md](PIN_MAPPING_N947.md)
+[PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) / [PIN_MAPPING_N947.md](PIN_MAPPING_N947.md) / [PIN_MAPPING_A156.md](PIN_MAPPING_A156.md)
 を参照してください。
 
 ## 対応Arduino API
@@ -169,7 +173,7 @@ MIT License — [LICENSE](LICENSE)を参照
 GPIO、割り込み、Serial（USB＋ハードウェアUART）、Wire（I2CおよびI3CのI2Cモード）、SPI、
 analogRead/analogWrite、millis/micros、tone/noTone、delay系、String、本物の
 `Print`/`Stream`/`Printable`基底クラス、F()/PROGMEM、UNO R3/R4互換マクロ、いずれも対応済みです。
-I2Cターゲット（スレーブ）モードは`Wire`で、`Wire.setWireTimeout`は`Wire`とFRDM-MCXN947の`Wire2`で使えます（I3C上で動く`Wire1`ではどちらも使えません）。
+I2Cターゲット（スレーブ）モードは`Wire`で、`Wire.setWireTimeout`は`Wire`とFRDM-MCXN947の`Wire2`で使えます（FRDM-MCXA153・FRDM-MCXN947でI3C上で動く`Wire1`ではどちらも使えません。FRDM-MCXA156の`Wire1`はMikroBusのI2Cで、どちらも使えます）。
 同梱の`EEPROM`ライブラリは、リセットや書き込みをまたいで1KBをオンチップのフラッシュに保持します。`Print`を直接継承する、
 または`Stream&`を受け取るサードパーティライブラリ（ArduinoJson、LiquidCrystal、Adafruit系
 センサーライブラリ等）もこのコア上でコンパイルできます。
