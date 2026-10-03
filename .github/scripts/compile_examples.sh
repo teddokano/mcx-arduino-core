@@ -2,7 +2,7 @@
 # Compile-checks every example sketch for one board.
 #
 # Usage: compile_examples.sh <board> <mode>
-#   board: frdm_mcxa153 | frdm_mcxn947
+#   board: frdm_mcxa153 | frdm_mcxn947 | frdm_mcxa156
 #   mode:  fast | full
 #     fast - examples/release_check/** + hello_world + the bundled
 #            libraries' examples (runs on every push/PR; a few minutes)
@@ -12,9 +12,10 @@
 # The bundled libraries are globbed rather than named, so adding one to
 # hardware/nxp/mcx/libraries/ puts its examples in the sweep by itself.
 #
-# Board-exclusive sketches (directory name ends in _N947, currently the
-# only such suffix in use) are skipped on the other board -- that's
-# expected and not a failure; see examples/release_check/README.md.
+# Board-exclusive sketches (directory name ending in the board's chip, as
+# _N947 -- currently the only such suffix in use) are skipped on every
+# other board -- that's expected and not a failure; see
+# examples/release_check/README.md.
 set -uo pipefail
 
 BOARD="$1"
@@ -48,7 +49,9 @@ while IFS= read -r sketch; do
   dir="$(dirname "$sketch")"
   name="$(basename "$dir")"
 
-  if [[ "$name" == *_N947 && "$BOARD" != "frdm_mcxn947" ]]; then
+  suffix="${name##*_}"
+  if [[ "$suffix" =~ ^[ACN][0-9]{3}$ ]] && \
+     [[ "$BOARD" != *"$(echo "$suffix" | tr '[:upper:]' '[:lower:]')" ]]; then
     continue
   fi
 

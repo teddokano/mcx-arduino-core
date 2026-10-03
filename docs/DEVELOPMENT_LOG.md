@@ -2676,4 +2676,9 @@ A156はこの3組もSDKの`devices/MCXA156/project_template/`のものにした�
 
 **残り**（0.8.0の残作業）:
 - 配線の要る確認: `Serial1`・`Serial2`のループバック、`release_check/11`・`14`・`21`、`MB_SDA`-`D18`・`MB_SCL`-`D19`のジャンパでの`Wire1`、FlexPWM・ADC・tone・SPIの実機確認、`release_check`の全項目
-- CIのマトリクス、`mcxPinState`の上流（同梱側は直した）、文書（READMEの対応表、API_COMPATIBILITYなど）
+- `mcxPinState`の上流（同梱側は直した）、文書（READMEの対応表、API_COMPATIBILITYなど）
+
+### CIのマトリクスにA156を追加（2026-10-03）
+- `regression_check.yml`の`board`に`frdm_mcxa156`を追加。`compile_examples.sh`の「`_N947`で終わるサンプルは他のボードで飛ばす」を、
+  末尾がチップ名（`_A153`・`_N947`・`_A156`など）ならそのボード以外で飛ばす形にした。3ボード分のドライランで、`_N947`の7本がA153・A156だけで飛ぶことを確認
+- 同じスクリプトでA156のfast tierをローカルで流し、24本すべて通った。`--warnings all`での警告はA153・A156とも0件

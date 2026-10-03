@@ -1,8 +1,8 @@
 name: Regression check
 
 # Compile-checks every example sketch against this branch's own
-# hardware/nxp/mcx source (not a released/installed version), for both
-# boards. Two speed tiers, chosen after measuring locally what actually
+# hardware/nxp/mcx source (not a released/installed version), for every
+# board. Two speed tiers, chosen after measuring locally what actually
 # moves the needle (see CLAUDE.md's "0.5以降のロードマップ方針" and
 # "0.5: CI" sections for the numbers behind these choices):
 #   fast - release_check/** + hello_world + mcxPinState examples.
@@ -89,7 +89,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        board: [frdm_mcxa153, frdm_mcxn947]
+        board: [frdm_mcxa153, frdm_mcxn947, frdm_mcxa156]
     runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
     steps:
       - name: Checkout
