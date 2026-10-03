@@ -50,6 +50,14 @@ public:
 	 */
 	virtual void	fall( func_ptr callback );
 
+	/** Register callback function which is called by both edges
+	 *  (Arduino's CHANGE). A pin has one interrupt setting, so rise() then
+	 *  fall() leaves it on the falling edge only.
+	 *
+	 * @param callback pointer to callback function
+	 */
+	virtual void	change( func_ptr callback );
+
 	/** Register callback function which is called continuously while the
 	 *  pin reads logic low (level-triggered, matches classic Arduino's
 	 *  attachInterrupt(pin, isr, LOW))

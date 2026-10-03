@@ -11,15 +11,11 @@
 
 static DigitalInOut*    digital_pins[ MAX_DIGITAL_PINS ]    = {};
 static InterruptIn*     interrupt_pins[ MAX_DIGITAL_PINS ]  = {};
+static uint8_t          pin_modes[ MAX_DIGITAL_PINS ]       = {};  // the last pinMode() mode, valid where digital_pins[] is set
 
-void pinMode( int pin_num, int mode )
+static void set_pin_mode( int pin_num, int mode )
 {
-#ifdef  ARDUINO_PIN_RENUMBERING
-		pin_num = arduino_pin_by_number[ pin_num ];
-#endif
-
-		if ( pin_num < 0 || pin_num >= MAX_DIGITAL_PINS )
-				return;
+		pin_modes[ pin_num ]    = (uint8_t)mode;
 
 		int     dir       = (mode == OUTPUT || mode == OUTPUT_OPENDRAIN) ? DigitalInOut::OUTPUT : DigitalInOut::INPUT;
 		int     pin_mode  = DigitalInOut::PullNone;
@@ -50,6 +46,18 @@ void pinMode( int pin_num, int mode )
 
 				digital_pins[ pin_num ]->pin_mux( 0 );   // some pins (e.g. MB_RX/MB_TX = I3C_SDA/I3C_SCL) boot up muxed to a non-GPIO peripheral function instead of the usual ALT0 default
 		}
+}
+
+void pinMode( int pin_num, int mode )
+{
+#ifdef  ARDUINO_PIN_RENUMBERING
+		pin_num = arduino_pin_by_number[ pin_num ];
+#endif
+
+		if ( pin_num < 0 || pin_num >= MAX_DIGITAL_PINS )
+				return;
+
+		set_pin_mode( pin_num, mode );
 }
 
 void digitalWrite( int pin_num, bool state )
@@ -99,6 +107,14 @@ void attachInterrupt( int pin_num, void (*callback)(void), int mode )
 						panic( "error @ new, in attachInterrupt()" );
 
 				interrupt_pins[ pin_num ]    = int_pin;
+
+				// The InterruptIn's own DigitalInOut constructor has just set
+				// the pin up afresh: input, no pull. Arduino's attachInterrupt()
+				// leaves the pin as pinMode() set it -- pinMode(INPUT_PULLUP)
+				// then attachInterrupt() is the usual way to wire a button or
+				// an open-drain INT line -- so put that back.
+				if ( digital_pins[ pin_num ] != nullptr )
+						set_pin_mode( pin_num, pin_modes[ pin_num ] );
 		}
 
 		switch ( mode )
@@ -112,8 +128,7 @@ void attachInterrupt( int pin_num, void (*callback)(void), int mode )
 						break;
 
 				case    CHANGE:
-						int_pin->rise( callback );
-						int_pin->fall( callback );
+						int_pin->change( callback );
 						break;
 
 				case    LOW:

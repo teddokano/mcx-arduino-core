@@ -11,7 +11,7 @@ surface except where a row below notes a difference. See the main
 |-----|--------|-------|
 | `pinMode` | ✅ | `INPUT` / `OUTPUT` / `INPUT_PULLUP` / `INPUT_PULLDOWN` / `OUTPUT_OPENDRAIN` |
 | `digitalWrite` / `digitalRead` | ✅ | |
-| `attachInterrupt` | ✅ | RISING / FALLING / CHANGE / LOW (level-triggered, fires repeatedly while held) |
+| `attachInterrupt` | ✅ | RISING / FALLING / CHANGE / LOW (level-triggered, fires repeatedly while held). The pin keeps what `pinMode()` set (direction, pull-up/pull-down), as on AVR. Before 0.8.0 the first call on a pin dropped its pull and made it an input, and CHANGE fired on the falling edge only |
 | `detachInterrupt` | ✅ | |
 | `digitalPinToInterrupt` / `NOT_AN_INTERRUPT` | ✅ | Every valid GPIO pin on this MCU supports interrupts, so `digitalPinToInterrupt()` never actually returns `NOT_AN_INTERRUPT` -- it's provided so sketches that check for it still compile |
 | `digitalPinToPort` / `digitalPinToBitMask` / `portOutputRegister` / `portInputRegister` / `portModeRegister` | ✅ | For fast-GPIO/bit-banging libraries; pin must have `pinMode()` called first |

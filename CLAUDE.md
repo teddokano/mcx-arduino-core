@@ -209,9 +209,13 @@ xPack checksums（正しい値）：
   `07`はALL OK（1000回中759回が書き込み中に切られ、読めないフラッシュでの起動は0回）
 - **`release_check/03`も通った**（2026-10-04、SW2＝`P1_7`）。1回目はPhase 1が時間切れになったが、押すのが30秒の窓に間に合わなかっただけ
   （エッジ割り込みと`digitalRead()`の監視を並べた切り分けで、取りこぼしが無いことを確かめた）。対話型のスケッチは、書き込み後に**RESETを押してもらってから**操作してもらうと窓に収まる
-- **見つけた・扱いは未決定**: `attachInterrupt()`がピンの`pinMode()`の設定を消す（全ボード共通のはず）。初回に作る`InterruptIn`が
-  `DigitalIn(pin)`＝`PullNone`でピンを設定し直すため、`INPUT_PULLUP`のあとに呼ぶと内部プルアップが外れる（A156のSW2で`PCR=0x1000`を確認）。
-  AVRの`attachInterrupt()`はピンに触らない。0.8.0で直すか後に回すかはユーザー判断待ち
+- **`attachInterrupt()`の2つの不具合を0.8.0で直す**（2026-10-04、ユーザー判断。全ボード共通）:
+  (1) 初回に作る`InterruptIn`が`DigitalIn(pin)`＝入力・`PullNone`でピンを設定し直し、`pinMode()`のプルと向きを消していた（A156のSW2で`PCR=0x1000`を見て発覚）。
+  `arduino_io.cpp`が`pinMode()`のモードを覚えておき、`InterruptIn`を作った直後にかけ直す。
+  (2) `CHANGE`が`rise()`→`fall()`の順に設定していて、ピンの割り込み設定は1つなので立ち下がりだけになっていた。`InterruptIn::change()`（EitherEdge）を足した。
+  テストは`test_attachInterrupt_keeps_pinMode`（配線不要）。プルの有無は**ピンを逆に駆動して離し、引き戻されるかで見る**（読むだけだと浮いたピンでも通る。
+  最初の版は修正前のコアでも読み取りの項目が通った）。3ボードとも修正前8 FAIL→修正後ALL OK。
+  `release_check/03`（SW2を`INPUT_PULLUP`にしてから`attachInterrupt()`）も修正後のコアで3ボードとも通った
 - **残り**: `PWM1`〜`PWM5`・ADC・toneの波形（ロジアナ）、A4・A5（R75・R76を外してから）、`release_check`の`02`・`22`・`24`、
   `mcxPinState`の上流（同梱側は直した）、文書
 - **READMEの対応表でA156を✅にした**（2026-10-03、ユーザー判断。配線の要る実機確認はリリース前に済ませる前提）。

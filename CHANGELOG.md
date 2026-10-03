@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+- `attachInterrupt()` no longer undoes `pinMode()`. The first call on a pin set it to input with no
+  pull, so `pinMode(pin, INPUT_PULLUP)` followed by `attachInterrupt()` (the usual way to wire a button
+  or an open-drain INT line) left the pin floating unless something outside pulled it up, and an
+  `OUTPUT` pin stopped driving. The pin now keeps its direction and pull, as on AVR
+- `attachInterrupt(pin, isr, CHANGE)` fired on the falling edge only. It now fires on both edges
+
 ### Changed
 - Every board-specific branch in the core, the bundled libraries and the examples now names each
   board and ends in `#error`, instead of falling back to "the other board" in an `#else`. A board

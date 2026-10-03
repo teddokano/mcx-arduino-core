@@ -105,7 +105,8 @@ constexpr int	RISING	= 3;
 /** Register a callback to run on a digital pin's edge (or level, for LOW).
  *  Lazily creates the pin's InterruptIn instance if this is the first
  *  attach() on it; a later call re-registers on the existing instance
- *  (no leak).
+ *  (no leak). The pin keeps what pinMode() set -- direction, pull-up or
+ *  pull-down -- as on AVR.
  *
  * @param int_num Arduino pin number (despite the name, a pin number, not
  *                 an interrupt index -- pass digitalPinToInterrupt(pin) or
