@@ -64,6 +64,27 @@ void GPIO3_IRQHandler( void )
 	irq_handler( 3 );
 }
 
+#elif	CPU_MCXA156VLL
+void GPIO0_IRQHandler( void )
+{	irq_handler( 0 );
+}
+
+void GPIO1_IRQHandler( void )
+{	irq_handler( 1 );
+}
+
+void GPIO2_IRQHandler( void )
+{	irq_handler( 2 );
+}
+
+void GPIO3_IRQHandler( void )
+{	irq_handler( 3 );
+}
+
+void GPIO4_IRQHandler( void )
+{	irq_handler( 4 );
+}
+
 #else
 #error "irq.c: no GPIO interrupt handlers for this chip -- list its GPIO banks here"
 #endif

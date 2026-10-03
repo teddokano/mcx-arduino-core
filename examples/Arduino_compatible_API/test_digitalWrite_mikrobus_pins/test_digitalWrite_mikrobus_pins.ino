@@ -1,13 +1,13 @@
 /** digitalWrite() output test across the MikroBus header pins
- *  -- FRDM-MCXA153 / FRDM-MCXN947
+ *  -- FRDM-MCXA153 / FRDM-MCXN947 / FRDM-MCXA156
  *
  *  Walks a single HIGH pulse through the MikroBus pin macros (defined in
  *  io.h/arduino_io.h): MB_AN, MB_RST, MB_CS, MB_SCK, MB_MISO, MB_MOSI,
  *  MB_PWM, MB_INT, MB_RX, MB_TX, MB_SCL, MB_SDA.
  *
- *  MB_AN is only included on FRDM-MCXA153 (12 pins total) -- on
- *  FRDM-MCXN947 it's DISABLED_PIN (not a real, wired pin), so it's left
- *  out there (11 pins).
+ *  MB_AN is only included on FRDM-MCXA153 and FRDM-MCXA156 (12 pins
+ *  total) -- on FRDM-MCXN947 it's DISABLED_PIN (not a real, wired pin),
+ *  so it's left out there (11 pins).
  *
  *  Note (N947 only): MB_RX/MB_TX are the same physical pins as
  *  I3C_SDA/I3C_SCL, already exercised via Wire1 -- included here anyway
@@ -22,7 +22,7 @@ struct PinInfo {
 };
 
 PinInfo pins[] = {
-#if defined(FRDM_MCXA153)
+#if defined(FRDM_MCXA153) || defined(FRDM_MCXA156)
   { MB_AN, "MB_AN" },
 #endif
   { MB_RST, "MB_RST" }, { MB_CS, "MB_CS" },

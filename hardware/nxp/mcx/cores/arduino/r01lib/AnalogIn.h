@@ -39,7 +39,11 @@
 #ifndef R01LIB_ANALOGIN_H
 #define R01LIB_ANALOGIN_H
 
-#if defined( CPU_MCXA153VLH )
+/*
+ *  FRDM-MCXA156 uses this same class, on LPADC1 (ADC1): A0-A5 are P1_10,
+ *  P2_5, P2_3, P2_4, P1_12, P1_13, on ADC1_A8, A1, A4, A0, A10, A11.
+ */
+#if defined( CPU_MCXA153VLH ) || defined( CPU_MCXA156VLL )
 
 extern "C" {
 #include "fsl_lpadc.h"
@@ -200,6 +204,8 @@ private:
     int     _pin;
 };
 
-#endif // defined( CPU_MCXA153VLH ) / defined( CPU_MCXN947VDF )
+#else
+#error "AnalogIn.h: no analog inputs for this chip"
+#endif
 
 #endif // R01LIB_ANALOGIN_H

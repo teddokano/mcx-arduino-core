@@ -110,7 +110,58 @@ frdm_mcxn947.debug.svd_file={runtime.platform.path}/variants/frdm_mcxn947/svd/MC
 
 
 ##############################################################
+# FRDM-MCXA156
+##############################################################
+
+frdm_mcxa156.name=FRDM-MCXA156 (mcx-arduino-core)
+
+# CPU (with FPU, unlike MCXA153; flags as in the SDK's own projects)
+frdm_mcxa156.build.mcu=cortex-m33
+frdm_mcxa156.build.fpu_flags=-mfpu=fpv5-sp-d16 -mfloat-abi=hard
+frdm_mcxa156.build.f_cpu=96000000UL
+
+# Arduino IDE internal identifiers
+frdm_mcxa156.build.board=FRDM_MCXA156
+frdm_mcxa156.build.core=arduino
+frdm_mcxa156.build.variant=frdm_mcxa156
+
+# Board-specific preprocessor defines
+frdm_mcxa156.build.board_defines=-DCPU_MCXA156VLL -DTARGET_A156 -DFRDM_MCXA156
+
+# Optimization (release build)
+frdm_mcxa156.build.opt_flags=-O2
+
+# Flash / RAM
+frdm_mcxa156.upload.maximum_size=1032192
+frdm_mcxa156.upload.maximum_data_size=122880
+
+# Linker script filename (inside variants/frdm_mcxa156/linker/)
+frdm_mcxa156.build.ldscript=MCXA156.ld
+
+# Upload
+# build.pyocd_target is currently unused (see the same note on A153's entry
+# above).
+frdm_mcxa156.build.pyocd_target=mcxa156
+frdm_mcxa156.build.linkserver_target=MCXA156:FRDM-MCXA156
+frdm_mcxa156.upload.tool=linkserver
+frdm_mcxa156.upload.tool.default=linkserver
+frdm_mcxa156.upload.protocol=
+
+frdm_mcxa156.vid.0=0x1FC9
+frdm_mcxa156.pid.0=0x0143
+frdm_mcxa156.upload_port.0.vid=0x1FC9
+frdm_mcxa156.upload_port.0.pid=0x0143
+
+# Debug (see platform.txt's debug.* section and tools/gdb-bridge/src/main.go).
+# The launcher and the binaries are board-agnostic; the script below is
+# what tells gdb-bridge which board this is.
+frdm_mcxa156.debug.server.openocd.path={runtime.platform.path}/tools/gdb-bridge/launch.sh
+frdm_mcxa156.debug.server.openocd.path.windows={runtime.platform.path}\tools\gdb-bridge\gdb-bridge-windows-amd64.exe
+frdm_mcxa156.debug.server.openocd.script=a156.cfg
+frdm_mcxa156.debug.svd_file={runtime.platform.path}/variants/frdm_mcxa156/svd/MCXA156.svd
+
+
+##############################################################
 # （将来追加予定）
-# frdm_mcxa156.name=FRDM-MCXA156 ...
 # frdm_mcxn236.name=FRDM-MCXN236 ...
 ##############################################################

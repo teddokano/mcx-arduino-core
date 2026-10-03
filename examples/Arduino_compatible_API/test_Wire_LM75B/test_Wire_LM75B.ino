@@ -3,7 +3,8 @@
  *
  *  This is the first real-device (not just bus-scan) test of `Wire` -- the
  *  Arduino-connector I2C pins (D18/D19), as opposed to `Wire1` which is the
- *  on-board I3C-in-I2C-mode sensor. Verified on real hardware with a
+ *  on-board I3C-in-I2C-mode sensor. (FRDM-MCXA156's on-board P3T1755 is on
+ *  D18/D19 itself, at 0x48: a module at 0x48 collides with it there.) Verified on real hardware with a
  *  P3T1035xUK-ARD board wired to D18(SDA)/D19(SCL)/3V3/GND (7-bit address
  *  0x72 as tied on that board -- change SENSOR_ADDR below for an LM75B/
  *  P3T1755 at their more common default of 0x48).

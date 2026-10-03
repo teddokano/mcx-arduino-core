@@ -9,9 +9,17 @@
 #include	"arduino_i2c.h"
 
 TwoWire	Wire(  I2C_SDA, I2C_SCL );
+#if defined( CPU_MCXA153VLH )
 TwoWire	Wire1( I3C_SDA, I3C_SCL );
-#ifdef	CPU_MCXN947VDF
+#elif defined( CPU_MCXN947VDF )
+TwoWire	Wire1( I3C_SDA, I3C_SCL );
 TwoWire	Wire2( MB_SDA,  MB_SCL );
+#elif defined( CPU_MCXA156VLL )
+// The on-board sensor is on Wire's own D18/D19 here (I3C0 reaches it only
+// through those pins), so Wire1 is the MikroBus I2C, on LPI2C3.
+TwoWire	Wire1( MB_SDA,  MB_SCL );
+#else
+#error "arduino_i2c.cpp: say which pins this board's Wire1 is on"
 #endif
 
 /*
@@ -70,7 +78,15 @@ TwoWire::TwoWire( int sda_pin, int scl_pin )
 
 bool TwoWire::on_i3c_pins( void ) const
 {
+#if defined( CPU_MCXA153VLH ) || defined( CPU_MCXN947VDF )
 	return ( I3C_SDA == _sda ) && ( I3C_SCL == _scl );
+#elif defined( CPU_MCXA156VLL )
+	// No TwoWire runs on I3C here: I3C_SDA/I3C_SCL are Wire's D18/D19,
+	// which Wire drives through LPI2C0.
+	return false;
+#else
+#error "arduino_i2c.cpp: say whether any TwoWire here runs on I3C"
+#endif
 }
 
 void TwoWire::begin( void )

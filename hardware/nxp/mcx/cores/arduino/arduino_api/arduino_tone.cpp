@@ -47,7 +47,7 @@ void ctimer_init( void )
 	CLOCK_AttachClk( kFRO12M_to_CTIMER0 );
 #if defined( CPU_MCXN947VDF )
 	CLOCK_SetClkDiv( kCLOCK_DivCtimer0Clk, 1u );
-#elif defined( CPU_MCXA153VLH )
+#elif defined( CPU_MCXA153VLH ) || defined( CPU_MCXA156VLL )
 	CLOCK_SetClockDiv( kCLOCK_DivCTIMER0, 1u );
 #else
 #error "arduino_tone.cpp: set CTIMER0's clock divider for this chip"

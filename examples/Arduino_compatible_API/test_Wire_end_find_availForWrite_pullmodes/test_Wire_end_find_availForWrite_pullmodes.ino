@@ -5,14 +5,25 @@
  *   - D0-D1 jumper (Serial1 TX/RX loopback, for find()/findUntil())
  *   - D2-D3 jumper (used for both the INPUT_PULLDOWN/INPUT_PULLUP rigor
  *     test and the OUTPUT_OPENDRAIN test, below)
- *  Uses the on-board P3T1755 over Wire1 for the Wire.end() test -- no
- *  extra wiring needed for that part.
+ *  Uses the on-board P3T1755 over Wire1 for the Wire.end() test (over
+ *  Wire on FRDM-MCXA156; the messages still say Wire1) -- no extra wiring
+ *  needed for that part.
  */
 
 #include <P3T1755.h>
 #include <Wire.h>
 
-P3T1755 sensor(Wire1, 0x48);
+// The on-board P3T1755's bus: Wire1 on FRDM-MCXA153 and FRDM-MCXN947,
+// Wire (D18/D19) on FRDM-MCXA156, whose sensor is on the Arduino I2C pins
+#if defined(FRDM_MCXA153) || defined(FRDM_MCXN947)
+#define SENSOR_WIRE Wire1
+#elif defined(FRDM_MCXA156)
+#define SENSOR_WIRE Wire
+#else
+#error "This sketch has no settings for this board yet"
+#endif
+
+P3T1755 sensor(SENSOR_WIRE, 0x48);
 
 void check(const char *label, bool ok) {
   Serial.print(label);
@@ -32,16 +43,16 @@ void setup() {
   Serial.println("Wire.end() / Serial.find(len) / findUntil() / availableForWrite() / pull modes test");
 
   // ---- Wire1.end() ----
-  Wire1.begin();
+  SENSOR_WIRE.begin();
   float t1 = sensor.temp();
   Serial.print("temp before end(): ");
   Serial.println(t1, 2);
   check("Wire1 read before end()", sane(t1));
 
-  Wire1.end();
+  SENSOR_WIRE.end();
   Serial.println("Wire1.end() called");
 
-  Wire1.begin();
+  SENSOR_WIRE.begin();
   float t2 = sensor.temp();
   Serial.print("temp after end()+begin(): ");
   Serial.println(t2, 2);

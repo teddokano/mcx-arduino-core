@@ -17,6 +17,9 @@ int		main() __attribute__((weak));
 //	stays null and the check below costs one comparison per loop().
 void	serialEvent( void ) __attribute__((weak));
 void	serialEvent1( void ) __attribute__((weak));
+#if defined( CPU_MCXA156VLL )
+void	serialEvent2( void ) __attribute__((weak));
+#endif
 
 int main( void )
 {
@@ -32,6 +35,10 @@ int main( void )
 			serialEvent();
 		if ( serialEvent1 && Serial1.available() )
 			serialEvent1();
+#if defined( CPU_MCXA156VLL )
+		if ( serialEvent2 && Serial2.available() )
+			serialEvent2();
+#endif
 	}
 
 	return 0;

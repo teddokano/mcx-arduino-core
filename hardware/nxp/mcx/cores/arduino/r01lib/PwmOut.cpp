@@ -24,7 +24,7 @@
  * @copyright MIT License
  */
 
-#if defined( CPU_MCXA153VLH )
+#if defined( CPU_MCXA153VLH ) || defined( CPU_MCXA156VLL )
 
 extern "C" {
 #include "fsl_reset.h"
@@ -55,7 +55,11 @@ const PwmPinDescriptor s_pins[] = {
     { PWM0, 11u, 2u, 1u },
 };
 
+#if defined( CPU_MCXA153VLH )
 const clock_ip_name_t s_sm_clock[ 3 ] = { kCLOCK_GatePWMSM0, kCLOCK_GatePWMSM1, kCLOCK_GatePWMSM2 };
+#elif defined( CPU_MCXA156VLL )
+const clock_ip_name_t s_sm_clock[ 3 ] = { kCLOCK_GatePWM0SM0, kCLOCK_GatePWM0SM1, kCLOCK_GatePWM0SM2 };
+#endif
 
 bool s_sm_init[ 3 ] = { false, false, false };
 
@@ -562,4 +566,6 @@ PwmOut::operator float()
     return read();
 }
 
-#endif // defined( CPU_MCXA153VLH ) / defined( CPU_MCXN947VDF )
+#else
+#error "PwmOut.cpp: no PWM outputs for this chip"
+#endif

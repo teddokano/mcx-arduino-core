@@ -13,15 +13,25 @@
 #include <P3T1755.h>
 #include <Wire.h>
 
+// The on-board P3T1755's bus: Wire1 on FRDM-MCXA153 and FRDM-MCXN947,
+// Wire (D18/D19) on FRDM-MCXA156, whose sensor is on the Arduino I2C pins
+#if defined(FRDM_MCXA153) || defined(FRDM_MCXN947)
+#define SENSOR_WIRE Wire1
+#elif defined(FRDM_MCXA156)
+#define SENSOR_WIRE Wire
+#else
+#error "This sketch has no settings for this board yet"
+#endif
+
 //P3T1755 sensor;
-P3T1755 sensor(Wire1, 0x48);
+P3T1755 sensor(SENSOR_WIRE, 0x48);
 
 void setup() {
   Serial.begin(115200);
   while (!Serial)
     ;
 
-  Wire1.begin();
+  SENSOR_WIRE.begin();
 
   Serial.println("\n***** Hello, P3T1755! *****");
 }

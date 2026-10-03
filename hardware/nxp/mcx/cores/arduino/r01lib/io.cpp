@@ -488,6 +488,16 @@ DigitalInOut::DigitalInOut( uint8_t pin_num, bool direction, bool v, int pin_mod
 	
 	GPIO_PinInit( gpio_n, gpio_pin, &led_config );
 	mode( pin_mode );
+#if defined( CPU_MCXA156VLL )
+	//	On this chip every pin's input buffer is off out of reset (PCR.IBE
+	//	= 0, seen on hardware for all but P0_6 and P0_2), and the SDK's
+	//	pin_mux.c used here turns it on only for the debug UART. Without
+	//	it, digitalRead() reads 0, and so does every peripheral reading its
+	//	pin through here: LPI2C's SDA/SCL, LPSPI's SDI, interrupts. It is
+	//	turned on again in pin_mux(), which pinMode() calls, since AnalogIn
+	//	turns it off on its pins.
+	input_buffer( true );
+#endif
 
 	value( (bool)_value );
 
@@ -542,6 +552,9 @@ void DigitalInOut::direction( bool dir )
 void DigitalInOut::pin_mux( int mux )
 {
 	PORT_SetPinMux( port_n, gpio_pin, (port_mux_t)mux );
+#if defined( CPU_MCXA156VLL )
+	input_buffer( true );	//	see the constructor
+#endif
 
 	// Keep the pin registry's "wanted ALT" in sync. The constructor's own
 	// registration call (wanted_mux=0) only reflects reality for plain

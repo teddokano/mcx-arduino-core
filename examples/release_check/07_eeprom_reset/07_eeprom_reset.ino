@@ -63,7 +63,7 @@
 const uint32_t TRIALS = 1000;
 
 // ---- EEPROM.cpp's layout in flash (white-box, for the log fill level) ----
-#if defined(FRDM_MCXA153)
+#if defined(FRDM_MCXA153) || defined(FRDM_MCXA156)
 const uint32_t UNIT = 16;           // one record
 const uint32_t COMPACT_US = 7000;   // a compacting write takes up to ~6ms
 #elif defined(FRDM_MCXN947)
@@ -187,7 +187,7 @@ bool state_valid() { return st.magic == STATE_MAGIC && st.sum == state_sum(); }
 
 // ---- the watchdog ----
 void wdt_clock_on() {
-#if defined(FRDM_MCXA153)
+#if defined(FRDM_MCXA153) || defined(FRDM_MCXA156)
   CLOCK_SetClockDiv(kCLOCK_DivWWDT0, 1U);
   CLOCK_EnableClock(kCLOCK_GateWWDT0);
 #elif defined(FRDM_MCXN947)
@@ -202,7 +202,7 @@ void wdt_clock_on() {
 // Whether the last reset came from the watchdog. The WWDT's own WDTOF flag
 // doesn't tell: the reset it causes clears it. The CMC's reset status does
 bool reset_by_watchdog() {
-#if defined(FRDM_MCXA153)
+#if defined(FRDM_MCXA153) || defined(FRDM_MCXA156)
   return CMC->SRS & CMC_SRS_WWDT0_MASK;
 #elif defined(FRDM_MCXN947)
   return CMC0->SRS & CMC_SRS_WWDT0_MASK;
@@ -307,7 +307,7 @@ void setup() {
     delay(500);  // time to open the Serial Monitor
     Serial.println();
     Serial.print("EEPROM reset-during-write test (a new run; SRS=0x");
-#if defined(FRDM_MCXA153)
+#if defined(FRDM_MCXA153) || defined(FRDM_MCXA156)
     Serial.print(CMC->SRS, HEX);
 #elif defined(FRDM_MCXN947)
     Serial.print(CMC0->SRS, HEX);

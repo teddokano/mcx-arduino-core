@@ -36,6 +36,12 @@ extern "C" {
 	static	GPIO_Type	*gpio_ptr[]	= GPIO_BASE_PTRS;
 	static	IRQn_Type	irqs[]		= GPIO_IRQS;
 
+#elif	CPU_MCXA156VLL
+	#define		N_GPIO		5
+	#define		GPIO_BITS	32
+	static	GPIO_Type	*gpio_ptr[]	= GPIO_BASE_PTRS;
+	static	IRQn_Type	irqs[]		= GPIO_IRQS;
+
 #else
 	#error "InterruptIn.cpp: set N_GPIO and the GPIO tables for this chip"
 #endif

@@ -1,7 +1,7 @@
 /** Wire.setClock() test
  *
  *  Uses the on-board P3T1755 temperature sensor over Wire1 (I3C in I2C
- *  mode) -- no external wiring needed. Reads the sensor at the default
+ *  mode; over Wire on FRDM-MCXA156) -- no external wiring needed. Reads the sensor at the default
  *  clock, switches clock speed at runtime with setClock(), and confirms
  *  the sensor still responds with a sane reading afterward.
  */
@@ -9,7 +9,17 @@
 #include <P3T1755.h>
 #include <Wire.h>
 
-P3T1755 sensor(Wire1, 0x48);
+// The on-board P3T1755's bus: Wire1 on FRDM-MCXA153 and FRDM-MCXN947,
+// Wire (D18/D19) on FRDM-MCXA156, whose sensor is on the Arduino I2C pins
+#if defined(FRDM_MCXA153) || defined(FRDM_MCXN947)
+#define SENSOR_WIRE Wire1
+#elif defined(FRDM_MCXA156)
+#define SENSOR_WIRE Wire
+#else
+#error "This sketch has no settings for this board yet"
+#endif
+
+P3T1755 sensor(SENSOR_WIRE, 0x48);
 
 void check(const char *label, bool ok) {
   Serial.print(label);
@@ -28,20 +38,20 @@ void setup() {
 
   Serial.println("Wire.setClock() test");
 
-  Wire1.begin();
+  SENSOR_WIRE.begin();
 
   float t1 = sensor.temp();
   Serial.print("temp @ default clock: ");
   Serial.println(t1, 2);
   check("default clock read", sane(t1));
 
-  Wire1.setClock(400000);
+  SENSOR_WIRE.setClock(400000);
   float t2 = sensor.temp();
   Serial.print("temp @ 400kHz: ");
   Serial.println(t2, 2);
   check("400kHz read", sane(t2));
 
-  Wire1.setClock(100000);
+  SENSOR_WIRE.setClock(100000);
   float t3 = sensor.temp();
   Serial.print("temp @ 100kHz (back to default): ");
   Serial.println(t3, 2);

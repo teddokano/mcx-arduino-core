@@ -8,10 +8,12 @@
  *  Wiring, both boards:
  *    D19 (Wire SCL) -- D8
  *    D18 (Wire SDA) -- D7
- *  and on FRDM-MCXN947 also, for Wire2:
+ *  and on FRDM-MCXN947 also, for Wire2, and on FRDM-MCXA156, for Wire1
+ *  (an LPI2C there, on the MikroBus I2C pins):
  *    MB_SCL -- MB_PWM
  *    MB_SDA -- MB_INT
- *  Nothing else on those buses.
+ *  Nothing else on those buses. (FRDM-MCXA156's D18/D19 also carry its
+ *  on-board P3T1755, at 0x48; nothing here addresses it.)
  *
  *  D8/D7 (MB_PWM/MB_INT) hold either bus line low on cue (open-drain
  *  output) -- standing in for a target that stretches the clock or holds
@@ -281,11 +283,11 @@ void setup() {
   Serial.println("Wire.setWireTimeout() test");
 
   // The counter's cap at 400kHz: 4095 x 256 x prescaler / functional clock,
-  // with the prescaler the baud rate picked -- 2 on FRDM-MCXA153 (96MHz),
-  // 1 on FRDM-MCXN947 (12MHz)
+  // with the prescaler the baud rate picked -- 2 on FRDM-MCXA153 and
+  // FRDM-MCXA156 (96MHz), 1 on FRDM-MCXN947 (12MHz)
 #if defined(FRDM_MCXN947)
   const uint32_t cap400k = 87360;
-#elif defined(FRDM_MCXA153)
+#elif defined(FRDM_MCXA153) || defined(FRDM_MCXA156)
   const uint32_t cap400k = 21840;
 #else
 #error "This sketch has no settings for this board yet"
@@ -296,8 +298,11 @@ void setup() {
 
 #if defined(FRDM_MCXN947)
   suite(Wire2, "Wire2 (MB_SCL-MB_PWM, MB_SDA-MB_INT)", MB_PWM, MB_INT, cap400k);
+#elif defined(FRDM_MCXA156)
+  suite(Wire1, "Wire1 (MB_SCL-MB_PWM, MB_SDA-MB_INT)", MB_PWM, MB_INT, cap400k);
 #endif
 
+#if defined(FRDM_MCXA153) || defined(FRDM_MCXN947)
   // Wire1 runs on I3C, not LPI2C: setWireTimeout() must leave it working.
   Serial.println("=== Wire1 ===");
   Wire1.begin();
@@ -307,6 +312,7 @@ void setup() {
   bool w1 = Wire1.endTransmission(false) == 0 && Wire1.requestFrom(0x48, 2) == 2;
   check("Wire1 still reads the on-board sensor", w1);
   check("Wire1 flag clear", !Wire1.getWireTimeoutFlag());
+#endif
 
   Serial.println();
   if (fails) {

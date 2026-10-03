@@ -337,6 +337,23 @@ found, so `begin(address)` refuses that bus by its pins. Run
 every LPI2C the new board exposes, and refuse the ones that fail the same
 way.
 
+**Pins may come out of reset with their input buffer off.** On
+FRDM-MCXA156 every pin's `PCR.IBE` reads 0 after reset except the ISP
+button's, and the SDK's template `pin_mux.c` turns it on only for the
+debug UART. FRDM-MCXA153 never showed this. With the buffer
+off, `digitalRead()` always returns 0, and `Wire` hangs on its first
+transfer, since the LPI2C never sees SCL go high. `DigitalInOut` turns
+the buffer on for that chip. If inputs read nothing or I2C stalls at
+once on a new board, print the pins' PCR values first.
+
+**A change in line count can break the binary comparison.** When a core
+change for the new board should leave the other boards untouched, their
+images are compared by hash. `assert()` builds `__LINE__` into the image,
+so removing one line in front of an `assert()` changed 49 images on
+FRDM-MCXA156's bring-up (by 4 bytes, in the one compared). Keep the line count of
+the other boards' translation units, or check the difference with
+`cmp -l` and `addr2line` before calling it harmless.
+
 **Aggregate initialization of SDK config structs is not portable.**
 `port_pin_config_t` is a bitfield whose members depend on
 `FSL_FEATURE_PORT_HAS_*`. A positional `{a, b, c}` initializer that

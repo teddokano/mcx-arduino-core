@@ -28,7 +28,8 @@ struct WireTarget;	// target (slave) mode state, arduino_i2c.cpp; allocated
 /** Arduino-compatible I2C (Wire) class.
  *
  *  Wraps an r01lib I2C (or, when sda_pin/scl_pin are this board's I3C
- *  pins, an I3C running in legacy I2C_MODE) behind the classic
+ *  pins, an I3C running in legacy I2C_MODE; not on FRDM-MCXA156, where
+ *  every TwoWire is an LPI2C) behind the classic
  *  Arduino two-phase Wire API: beginTransmission()/write()/
  *  endTransmission() buffer up a transaction locally, sent as one write()
  *  to the target on endTransmission(); requestFrom()/available()/read()
@@ -43,9 +44,10 @@ struct WireTarget;	// target (slave) mode state, arduino_i2c.cpp; allocated
  *  begin(address) also makes it a target (slave), as on AVR: onReceive()
  *  and onRequest() handlers run, from the interrupt, when a controller
  *  writes to or reads from that address, and the bus can still be used
- *  as a controller at the same time. Wire only: Wire1 runs on the I3C
- *  peripheral, and Wire2's LPI2C on FRDM-MCXN947 doesn't respond as a
- *  target (see begin(uint8_t)).
+ *  as a controller at the same time. Not on Wire1 where it runs on the
+ *  I3C peripheral (FRDM-MCXA153 and FRDM-MCXN947), and not on
+ *  FRDM-MCXN947's Wire2, whose LPI2C doesn't respond as a target (see
+ *  begin(uint8_t)).
  */
 class TwoWire : public Stream
 {
@@ -68,9 +70,10 @@ public:
 	/** Join the bus as a target (slave) at the given address, as well as
 	 *  a controller, as in every official core. Controller transfers keep
 	 *  working alongside. Calls panic() for an address over 127, and on
-	 *  any bus but Wire: Wire1 runs on the I3C peripheral, and FRDM-MCXN947's
-	 *  Wire2 (LPI2C3) never sees the bus as a target, though it works as a
-	 *  controller and is set up the same as Wire's LPI2C2, which does.
+	 *  Wire1 where it runs on the I3C peripheral (FRDM-MCXA153 and
+	 *  FRDM-MCXN947), and on FRDM-MCXN947's Wire2 (LPI2C3), which never
+	 *  sees the bus as a target, though it works as a controller and is
+	 *  set up the same as Wire's LPI2C2, which does.
 	 *
 	 *  A later begin() with no address goes back to controller only.
 	 * @param address the target's own 7-bit address
@@ -210,8 +213,10 @@ public:
 	 *  FRDM-MCXA153 ~87ms at 100kHz and only ~21.8ms at 400kHz, so even the
 	 *  25ms default is clamped there. Longer values are clamped to the cap.
 	 *
-	 *  No effect on Wire1: that bus runs on the I3C peripheral rather than
-	 *  LPI2C, and is not covered, so getWireTimeoutFlag() stays false there.
+	 *  No effect on Wire1 where it runs on the I3C peripheral rather than
+	 *  LPI2C (FRDM-MCXA153 and FRDM-MCXN947): it is not covered, so
+	 *  getWireTimeoutFlag() stays false there. FRDM-MCXA156's Wire1 is an
+	 *  LPI2C and is covered.
 	 *
 	 * @param timeout limit in microseconds, 0 to disable (default 25ms)
 	 * @param reset_with_timeout re-initialize the bus hardware after a timeout
@@ -260,6 +265,9 @@ extern TwoWire	Wire;
 /** Global TwoWire instance on this board's I3C pins (I3C_SDA/I3C_SCL), run
  *  in legacy I2C_MODE -- see TwoWire::begin(). Typically wired to an
  *  on-board sensor rather than an external header.
+ *
+ *  On FRDM-MCXA156 it is the MikroBus I2C (MB_SDA/MB_SCL) instead, on its
+ *  own LPI2C3: that board's on-board sensor is on Wire's D18/D19.
  */
 extern TwoWire	Wire1;
 

@@ -14,6 +14,10 @@
  *  (MB_TX-MB_RX) off before running this: those are Wire1's SDA/SCL pins
  *  there, and the jumper shorts them together.
  *
+ *  On FRDM-MCXA156 the on-board sensor is on Wire (D18/D19), and the
+ *  sensor checks use that; their messages still say Wire1. Its Wire1, the
+ *  MikroBus I2C, gets the bus scan FRDM-MCXN947's Wire2 does.
+ *
  *  Every check here is fully automatic -- read the final "ALL OK"/
  *  "N FAILED" line, no jumpers, no scope, no button presses. Sketches
  *  that need a human to watch a scope/LED/piezo, press a button, or
@@ -27,6 +31,16 @@
 #include <Arduino.h>
 #include <cstring>
 #include "fsl_clock.h"
+
+// The on-board P3T1755's bus: Wire1 on FRDM-MCXA153 and FRDM-MCXN947,
+// Wire (D18/D19) on FRDM-MCXA156, whose sensor is on the Arduino I2C pins
+#if defined(FRDM_MCXA153) || defined(FRDM_MCXN947)
+#define SENSOR_WIRE Wire1
+#elif defined(FRDM_MCXA156)
+#define SENSOR_WIRE Wire
+#else
+#error "This sketch has no settings for this board yet"
+#endif
 
 // A minimal Print-derived class that can simulate a failing write(), used
 // by the Print::*WriteError() section below. File-scope, not declared
@@ -82,12 +96,12 @@ void checkClock(const char *label, uint32_t actual, uint32_t expect) {
 // on Wire1's on-board sensor, to compare the new forms against.
 // 0xFFFFFFFF if the read failed, which no 16-bit register value can be.
 uint32_t readSensorReg16(uint8_t reg) {
-  Wire1.beginTransmission(0x48);
-  Wire1.write(reg);
-  if (Wire1.endTransmission(false) != 0 || Wire1.requestFrom((uint8_t)0x48, (size_t)2) != 2)
+  SENSOR_WIRE.beginTransmission(0x48);
+  SENSOR_WIRE.write(reg);
+  if (SENSOR_WIRE.endTransmission(false) != 0 || SENSOR_WIRE.requestFrom((uint8_t)0x48, (size_t)2) != 2)
     return 0xFFFFFFFF;
-  uint16_t v = Wire1.read() << 8;
-  return v | Wire1.read();
+  uint16_t v = SENSOR_WIRE.read() << 8;
+  return v | SENSOR_WIRE.read();
 }
 
 size_t printThroughPrint(Print &p, const char *s) {
@@ -185,6 +199,19 @@ void setup() {
     // nothing to fix. Asserted like the rest now that the value is known and
     // traceable to a line of code rather than to a reset default.
     checkClock("Serial1 (FlexComm5)", CLOCK_GetLPFlexCommClkFreq(5u), 12000000u);
+#elif defined(FRDM_MCXA156)
+    // clock_config.c is the SDK's template and attaches nothing; mcu.cpp
+    // puts the LPI2Cs and LPSPIs on FRO_HF_DIV, to match FRDM-MCXA153. The
+    // two LPUARTs attach FRO12M themselves, as Serial1 does on FRDM-MCXA153.
+    checkClock("core", CLOCK_GetCoreSysClkFreq(), 96000000u);
+    checkClock("Wire    (LPI2C0) ", CLOCK_GetLpi2cClkFreq(0u), 96000000u);
+    checkClock("Wire1   (LPI2C3) ", CLOCK_GetLpi2cClkFreq(3u), 96000000u);
+    checkClock("SPI     (LPSPI1) ", CLOCK_GetLpspiClkFreq(1u), 96000000u);
+    checkClock("SPI1    (LPSPI0) ", CLOCK_GetLpspiClkFreq(0u), 96000000u);
+    checkClock("Serial1 (LPUART2)", CLOCK_GetLpuartClkFreq(2u), 12000000u);
+    checkClock("Serial2 (LPUART1)", CLOCK_GetLpuartClkFreq(1u), 12000000u);
+#else
+#error "This sketch has no settings for this board yet"
 #endif
   }
 
@@ -450,18 +477,18 @@ void setup() {
     const uint8_t SENSOR_ADDR = 0x48;
     const uint8_t TEMP_REG = 0x00;
 
-    Wire1.begin();
-    Wire1.beginTransmission(SENSOR_ADDR);
-    Wire1.write(TEMP_REG);
-    uint8_t err = Wire1.endTransmission(false);
+    SENSOR_WIRE.begin();
+    SENSOR_WIRE.beginTransmission(SENSOR_ADDR);
+    SENSOR_WIRE.write(TEMP_REG);
+    uint8_t err = SENSOR_WIRE.endTransmission(false);
     check("Wire1 endTransmission(false)", err == 0);
 
-    uint8_t n = Wire1.requestFrom(SENSOR_ADDR, (size_t)2);
+    uint8_t n = SENSOR_WIRE.requestFrom(SENSOR_ADDR, (size_t)2);
     check("Wire1 requestFrom() got 2 bytes", n == 2);
 
     if (n == 2) {
-      uint8_t msb = Wire1.read();
-      uint8_t lsb = Wire1.read();
+      uint8_t msb = SENSOR_WIRE.read();
+      uint8_t lsb = SENSOR_WIRE.read();
       int16_t raw = (int16_t)((msb << 8) | lsb);
       raw >>= 5;
       float celsius = raw * 0.125f;
@@ -481,71 +508,71 @@ void setup() {
     uint32_t saved = readSensorReg16(T_LOW);
     check("T_LOW readable", saved <= 0xFFFF);
 
-    Wire1.beginTransmission(SENSOR);
-    Wire1.write(T_LOW);
-    size_t n = printThroughPrint(Wire1, "P");  // 0x50
-    Wire1.write(0);                            // used to be ambiguous once Wire is a Print
-    uint8_t err = Wire1.endTransmission();
+    SENSOR_WIRE.beginTransmission(SENSOR);
+    SENSOR_WIRE.write(T_LOW);
+    size_t n = printThroughPrint(SENSOR_WIRE, "P");  // 0x50
+    SENSOR_WIRE.write(0);                            // used to be ambiguous once Wire is a Print
+    uint8_t err = SENSOR_WIRE.endTransmission();
     check("Wire print() through a Print& queues 1 byte", n == 1);
     check("T_LOW written with print() + write(0)", err == 0 && readSensorReg16(T_LOW) == 0x5000);
 
-    uint8_t got = Wire1.requestFrom(SENSOR, (uint8_t)2, (uint32_t)T_LOW, (uint8_t)1, (uint8_t)true);
-    int msb = Wire1.read();
-    int lsb = Wire1.read();
+    uint8_t got = SENSOR_WIRE.requestFrom(SENSOR, (uint8_t)2, (uint32_t)T_LOW, (uint8_t)1, (uint8_t)true);
+    int msb = SENSOR_WIRE.read();
+    int lsb = SENSOR_WIRE.read();
     check("requestFrom(addr, 2, T_LOW, 1, true) reads the register", got == 2 && msb == 0x50 && lsb == 0x00);
 
-    got = Wire1.requestFrom(0x48, 2, 0x02, 1, 1);
-    check("the same with int arguments", got == 2 && Wire1.read() == 0x50);
+    got = SENSOR_WIRE.requestFrom(0x48, 2, 0x02, 1, 1);
+    check("the same with int arguments", got == 2 && SENSOR_WIRE.read() == 0x50);
 
-    got = Wire1.requestFrom(SENSOR, (uint8_t)2, (uint32_t)0, (uint8_t)0, (uint8_t)true);
-    check("isize 0 just reads (pointer still at T_LOW)", got == 2 && Wire1.read() == 0x50);
+    got = SENSOR_WIRE.requestFrom(SENSOR, (uint8_t)2, (uint32_t)0, (uint8_t)0, (uint8_t)true);
+    check("isize 0 just reads (pointer still at T_LOW)", got == 2 && SENSOR_WIRE.read() == 0x50);
 
-    got = Wire1.requestFrom((uint8_t)0x2A, (uint8_t)2, (uint32_t)T_LOW, (uint8_t)1, (uint8_t)true);
-    check("absent target: returns 0, available() 0", got == 0 && Wire1.available() == 0);
+    got = SENSOR_WIRE.requestFrom((uint8_t)0x2A, (uint8_t)2, (uint32_t)T_LOW, (uint8_t)1, (uint8_t)true);
+    check("absent target: returns 0, available() 0", got == 0 && SENSOR_WIRE.available() == 0);
 
-    Wire1.requestFrom(SENSOR, (uint8_t)2, (uint32_t)T_LOW, (uint8_t)1, (uint8_t)true);
-    int a = Wire1.available();
-    int p1 = Wire1.peek();
-    int p2 = Wire1.peek();
-    check("Wire peek() doesn't consume", a == 2 && p1 == 0x50 && p2 == 0x50 && Wire1.available() == 2);
-    check("Wire read() through a Stream&", readThroughStream(Wire1) == 0x50);
+    SENSOR_WIRE.requestFrom(SENSOR, (uint8_t)2, (uint32_t)T_LOW, (uint8_t)1, (uint8_t)true);
+    int a = SENSOR_WIRE.available();
+    int p1 = SENSOR_WIRE.peek();
+    int p2 = SENSOR_WIRE.peek();
+    check("Wire peek() doesn't consume", a == 2 && p1 == 0x50 && p2 == 0x50 && SENSOR_WIRE.available() == 2);
+    check("Wire read() through a Stream&", readThroughStream(SENSOR_WIRE) == 0x50);
 
-    Wire1.beginTransmission(SENSOR);
-    Wire1.write(T_LOW);
-    check("beginTransmission() keeps unread bytes", Wire1.available() == 1 && Wire1.read() == 0x00);
-    Wire1.endTransmission();
-    check("Wire peek()/read() -1 once empty", Wire1.peek() == -1 && Wire1.read() == -1);
+    SENSOR_WIRE.beginTransmission(SENSOR);
+    SENSOR_WIRE.write(T_LOW);
+    check("beginTransmission() keeps unread bytes", SENSOR_WIRE.available() == 1 && SENSOR_WIRE.read() == 0x00);
+    SENSOR_WIRE.endTransmission();
+    check("Wire peek()/read() -1 once empty", SENSOR_WIRE.peek() == -1 && SENSOR_WIRE.read() == -1);
 
     uint8_t buf[2] = { 0 };
-    Wire1.requestFrom(SENSOR, (uint8_t)2, (uint32_t)T_LOW, (uint8_t)1, (uint8_t)true);
-    size_t rb = Wire1.readBytes(buf, 2);
+    SENSOR_WIRE.requestFrom(SENSOR, (uint8_t)2, (uint32_t)T_LOW, (uint8_t)1, (uint8_t)true);
+    size_t rb = SENSOR_WIRE.readBytes(buf, 2);
     check("Wire readBytes()", rb == 2 && buf[0] == 0x50 && buf[1] == 0x00);
 
-    Wire1.clearWriteError();
-    Wire1.beginTransmission(SENSOR);
+    SENSOR_WIRE.clearWriteError();
+    SENSOR_WIRE.beginTransmission(SENSOR);
     size_t total = 0;
     for (int i = 0; i < WIRE_BUFFER_SIZE; i++)
-      total += Wire1.write((uint8_t)i);
-    size_t over = Wire1.write((uint8_t)0);
+      total += SENSOR_WIRE.write((uint8_t)i);
+    size_t over = SENSOR_WIRE.write((uint8_t)0);
     uint8_t more[4] = { 1, 2, 3, 4 };
-    size_t overBulk = Wire1.write(more, 4);
+    size_t overBulk = SENSOR_WIRE.write(more, 4);
     check("Wire write() returns 1 per byte up to WIRE_BUFFER_SIZE", total == WIRE_BUFFER_SIZE);
     check("Wire write() past the end returns 0 and sets the write error",
-          over == 0 && overBulk == 0 && Wire1.getWriteError() != 0);
-    Wire1.clearWriteError();
-    Wire1.beginTransmission(SENSOR);  // never sent: throw the 128 bytes away
+          over == 0 && overBulk == 0 && SENSOR_WIRE.getWriteError() != 0);
+    SENSOR_WIRE.clearWriteError();
+    SENSOR_WIRE.beginTransmission(SENSOR);  // never sent: throw the 128 bytes away
 
-    got = Wire1.requestFrom(SENSOR, (size_t)200);
+    got = SENSOR_WIRE.requestFrom(SENSOR, (size_t)200);
     check("requestFrom(200) is cut down to WIRE_BUFFER_SIZE",
-          got == WIRE_BUFFER_SIZE && Wire1.available() == WIRE_BUFFER_SIZE);
-    while (Wire1.available())
-      Wire1.read();
+          got == WIRE_BUFFER_SIZE && SENSOR_WIRE.available() == WIRE_BUFFER_SIZE);
+    while (SENSOR_WIRE.available())
+      SENSOR_WIRE.read();
 
-    Wire1.beginTransmission(SENSOR);
-    Wire1.write(T_LOW);
-    Wire1.write((uint8_t)(saved >> 8));
-    Wire1.write((uint8_t)saved);
-    Wire1.endTransmission();
+    SENSOR_WIRE.beginTransmission(SENSOR);
+    SENSOR_WIRE.write(T_LOW);
+    SENSOR_WIRE.write((uint8_t)(saved >> 8));
+    SENSOR_WIRE.write((uint8_t)saved);
+    SENSOR_WIRE.endTransmission();
     check("T_LOW restored", readSensorReg16(T_LOW) == saved);
   }
 
@@ -605,6 +632,24 @@ void setup() {
     Serial.print(found);
     Serial.println(" device(s) found (0 is fine -- nothing needs to be plugged in)");
     check("Wire2 bus scan completed without hanging", true);
+  }
+#elif defined(FRDM_MCXA156)
+  // ---- Wire1 (MikroBus I2C, LPI2C3 on this board) bus scan ----
+  Serial.println("--- Wire1 (MikroBus I2C) bus scan (A156 only) ---");
+  {
+    Wire1.begin();
+    int found = 0;
+    for (uint8_t addr = 0x08; addr <= 0x77; addr++) {
+      Wire1.beginTransmission(addr);
+      if (Wire1.endTransmission() == 0) {
+        Serial.print("found device at 0x");
+        Serial.println(addr, HEX);
+        found++;
+      }
+    }
+    Serial.print(found);
+    Serial.println(" device(s) found (0 is fine -- nothing needs to be plugged in)");
+    check("Wire1 bus scan completed without hanging", true);
   }
 #endif
 

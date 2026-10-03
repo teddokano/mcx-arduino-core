@@ -45,7 +45,7 @@
 //	Which flash API the chip has: EEPROM_ROM_FLASH_API for the boot ROM's,
 //	otherwise the SDK's fsl_flash. The calls below branch on that, not on
 //	the chip, so a new chip is placed here once and nowhere else
-#if defined( CPU_MCXA153VLH )
+#if defined( CPU_MCXA153VLH ) || defined( CPU_MCXA156VLL )
 #include "fsl_romapi.h"
 #define	EEPROM_ROM_FLASH_API		//	the boot ROM's (FLASH_API->...), by phrase or page
 static const uint32_t	UNIT	= 16;	// phrase

@@ -18,6 +18,11 @@
  *    error: Wire1: target (slave) mode isn't supported on Wire1, ...
  *  repeated every couple of seconds, with the red LED blinking an SOS.
  *  "NOT STOPPED" means it failed.
+ *
+ *  FRDM-MCXA156 has no bus that refuses: its Wire1 is an LPI2C (the
+ *  MikroBus I2C) and can be a target, as test_Wire_target_self checks.
+ *  There only the first part runs, on Wire, where that board's sensor is,
+ *  and the last line says so.
  */
 
 #include <Arduino.h>
@@ -29,6 +34,7 @@ void setup() {
     ;
   Serial.println("=== Wire.begin() arguments (no wiring) ===");
 
+#if defined(FRDM_MCXA153) || defined(FRDM_MCXN947)
   Wire1.begin(400000);  // deprecated form: a value over 127 is a frequency
   Wire1.beginTransmission(0x48);
   Wire1.write(0x00);
@@ -41,6 +47,18 @@ void setup() {
   Wire1.begin(0x10);
 
   Serial.println("NOT STOPPED: Wire1.begin(address) went on as if it worked -- FAIL");
+#elif defined(FRDM_MCXA156)
+  Wire.begin(400000);  // deprecated form: a value over 127 is a frequency
+  Wire.beginTransmission(0x48);
+  Wire.write(0x00);
+  bool ok = Wire.endTransmission(false) == 0 && Wire.requestFrom((uint8_t)0x48, (size_t)2) == 2;
+  Serial.print("begin(400000) still starts a controller: ");
+  Serial.println(ok ? "OK" : "FAIL");
+
+  Serial.println("no bus on this board refuses begin(address): nothing more to check");
+#else
+#error "This sketch has no settings for this board yet"
+#endif
 }
 
 void loop() {

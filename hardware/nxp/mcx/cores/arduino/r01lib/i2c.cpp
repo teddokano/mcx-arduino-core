@@ -131,15 +131,11 @@ I2C::I2C( int sda, int scl, bool no_hw ) : Obj( true ), _sda( sda ), _scl( scl )
 	unit_base	= EXAMPLE_I2C_MASTER;
 	
 #elif	CPU_MCXA156VLL
+	/* ALTs from Zephyr's MCXA156VLL-pinctrl.h. I3C_SDA/I3C_SCL are the
+	 * same two pins as I2C_SDA/I2C_SCL (D18/D19) on this board. */
 	int	mux_setting	= kPORT_MuxAlt2;
 
-	if ( (sda == I3C_SDA) && (scl == I3C_SCL) )
-	{
-		mux_setting	= kPORT_MuxAlt2;
-		unit_base	= LPI2C0;
-		RESET_ReleasePeripheralReset( kLPI2C0_RST_SHIFT_RSTn );
-	}
-	else if ( (sda == I2C_SDA) && (scl == I2C_SCL) )
+	if ( (sda == I2C_SDA) && (scl == I2C_SCL) )
 	{
 		mux_setting	= kPORT_MuxAlt2;
 		unit_base	= LPI2C0;
@@ -164,7 +160,7 @@ I2C::I2C( int sda, int scl, bool no_hw ) : Obj( true ), _sda( sda ), _scl( scl )
 		RESET_ReleasePeripheralReset( kLPI2C1_RST_SHIFT_RSTn );
 	}
 	else
-		panic( "FRDM-MCXA156 supports I3C_SDA/I3C_SCL, I2C_SDA(D18)/I2C_SCL(D19), MB_SDA/MB_SCL or MB_MOSI/MB_SCK pins for I2C" );
+		panic( "FRDM-MCXA156 supports I2C_SDA(D18)/I2C_SCL(D19), MB_SDA/MB_SCL, MB_MOSI/MB_SCK or A4/A5 pins for I2C" );
 
 #elif	CPU_MCXA153VLH
 	/* LPI2C0 is reachable from all four pin pairs below, but it does not

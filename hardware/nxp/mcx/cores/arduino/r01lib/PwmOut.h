@@ -47,7 +47,12 @@
 #ifndef R01LIB_PWMOUT_H
 #define R01LIB_PWMOUT_H
 
-#if defined( CPU_MCXA153VLH )
+/*
+ *  FRDM-MCXA156 uses this same class: its PWM0-PWM5 are the same P3_11..P3_6
+ *  on the same FlexPWM0 submodules and channels (Alt5), on the motor-control
+ *  header J3.
+ */
+#if defined( CPU_MCXA153VLH ) || defined( CPU_MCXA156VLL )
 
 extern "C" {
 #include "fsl_pwm.h"
@@ -282,6 +287,8 @@ private:
     uint32_t _pulse_us;
 };
 
-#endif // defined( CPU_MCXA153VLH ) / defined( CPU_MCXN947VDF )
+#else
+#error "PwmOut.h: no PWM outputs for this chip"
+#endif
 
 #endif // R01LIB_PWMOUT_H

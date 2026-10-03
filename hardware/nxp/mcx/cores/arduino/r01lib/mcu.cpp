@@ -157,42 +157,61 @@ void init_mcu( void )
 
 
 #elif	CPU_MCXA156VLL
-	
-	RESET_ReleasePeripheralReset( kLPUART0_RST_SHIFT_RSTn);
+	/* This board's clock_config.c and pin_mux.c are the SDK's unmodified
+	 * project template: BOARD_BootClockFRO96M() attaches no peripheral
+	 * clock, and BOARD_InitPins() sets up only PORT0 and the debug UART's
+	 * pins. Everything else FRDM-MCXA153's own clock_config.c/pin_mux.c
+	 * do for it is done here, to the same effect: the ports, and LPI2C/
+	 * LPSPI/I3C0 on FRO_HF_DIV (96MHz, FRO_HF divided by 1). LPUARTs and
+	 * the other peripherals attach their own clocks. */
+	CLOCK_EnableClock( kCLOCK_GatePORT0 );
+	CLOCK_EnableClock( kCLOCK_GatePORT1 );
+	CLOCK_EnableClock( kCLOCK_GatePORT2 );
+	CLOCK_EnableClock( kCLOCK_GatePORT3 );
+	CLOCK_EnableClock( kCLOCK_GatePORT4 );
 	RESET_ReleasePeripheralReset( kPORT0_RST_SHIFT_RSTn );
 	RESET_ReleasePeripheralReset( kPORT1_RST_SHIFT_RSTn );
-	RESET_ReleasePeripheralReset( kGPIO1_RST_SHIFT_RSTn );
-	
-	/* Attach peripheral clock */
-	CLOCK_SetClockDiv( kCLOCK_DivI3C0_FCLK, 4U );
-	CLOCK_AttachClk( kFRO_HF_DIV_to_I3C0FCLK );
-
-	/* I2C */
-	CLOCK_SetClockDiv( kCLOCK_DivLPI2C0, 1u );
-	CLOCK_SetClockDiv( kCLOCK_DivLPI2C1, 1u );
-	CLOCK_SetClockDiv( kCLOCK_DivLPI2C3, 1u );
-	CLOCK_AttachClk( kFRO12M_to_LPI2C0 );
-	CLOCK_AttachClk( kFRO12M_to_LPI2C1 );
-	CLOCK_AttachClk( kFRO12M_to_LPI2C3 );
-
-	/* SPI */
-	CLOCK_SetClockDiv( kCLOCK_DivLPSPI0, 1u );
-	CLOCK_AttachClk( kFRO12M_to_LPSPI0 );
-	CLOCK_SetClockDiv( kCLOCK_DivLPSPI1, 1u );
-	CLOCK_AttachClk( kFRO12M_to_LPSPI1 );
+	RESET_ReleasePeripheralReset( kPORT2_RST_SHIFT_RSTn );
+	RESET_ReleasePeripheralReset( kPORT3_RST_SHIFT_RSTn );
+	RESET_ReleasePeripheralReset( kPORT4_RST_SHIFT_RSTn );
 
 	CLOCK_EnableClock( kCLOCK_GateGPIO0 );
 	CLOCK_EnableClock( kCLOCK_GateGPIO1 );
 	CLOCK_EnableClock( kCLOCK_GateGPIO2 );
 	CLOCK_EnableClock( kCLOCK_GateGPIO3 );
 	CLOCK_EnableClock( kCLOCK_GateGPIO4 );
+	RESET_ReleasePeripheralReset( kGPIO0_RST_SHIFT_RSTn );
+	RESET_ReleasePeripheralReset( kGPIO1_RST_SHIFT_RSTn );
+	RESET_ReleasePeripheralReset( kGPIO2_RST_SHIFT_RSTn );
+	RESET_ReleasePeripheralReset( kGPIO3_RST_SHIFT_RSTn );
+	RESET_ReleasePeripheralReset( kGPIO4_RST_SHIFT_RSTn );
+
+	/* I3C0 at FRO_HF_DIV / 2 = 48MHz, as on FRDM-MCXA153. The Arduino
+	 * layer does not use it (Wire is LPI2C0 on the same two pins). */
+	CLOCK_SetClockDiv( kCLOCK_DivI3C0_FCLK, 2U );
+	CLOCK_AttachClk( kFRO_HF_DIV_to_I3C0FCLK );
+
+	/* I2C: Wire (LPI2C0, D18/D19), Wire1 (LPI2C3, MB_SDA/MB_SCL), and
+	 * LPI2C1, which r01lib's I2C class also offers on MB_MOSI/MB_SCK and
+	 * A4/A5 */
+	CLOCK_SetClockDiv( kCLOCK_DivLPI2C0, 1u );
+	CLOCK_AttachClk( kFRO_HF_DIV_to_LPI2C0 );
+	CLOCK_SetClockDiv( kCLOCK_DivLPI2C1, 1u );
+	CLOCK_AttachClk( kFRO_HF_DIV_to_LPI2C1 );
+	CLOCK_SetClockDiv( kCLOCK_DivLPI2C3, 1u );
+	CLOCK_AttachClk( kFRO_HF_DIV_to_LPI2C3 );
+
+	/* SPI: SPI (LPSPI1, D10-D13) and SPI1 (LPSPI0, MikroBus) */
+	CLOCK_SetClockDiv( kCLOCK_DivLPSPI1, 1u );
+	CLOCK_AttachClk( kFRO_HF_DIV_to_LPSPI1 );
+	CLOCK_SetClockDiv( kCLOCK_DivLPSPI0, 1u );
+	CLOCK_AttachClk( kFRO_HF_DIV_to_LPSPI0 );
 
 	RESET_PeripheralReset( kUTICK0_RST_SHIFT_RSTn );
-	
+
 	BOARD_InitPins();
 	BOARD_InitBootClocks();
 	BOARD_InitDebugConsole();
-
 
 #elif	CPU_MCXA153VLH
 	/* Attach I3C0 to FRO_HF_DIV / 2. Note the attach below is overridden

@@ -2626,3 +2626,54 @@ A156を足す前の地ならし。`#if defined(FRDM_MCXN947) … #else …`の�
 - **ADC**: A0〜A5の6本ともADC1（A153はA4/A5がデジタルのみ）。A4/A5はR75/R76を外す前提
 - 上流由来の`io.h`のA156ブロックは出荷時のボード（D10=`P3_13`、D11=`P3_15`、`GREEN`=`D10`）を前提にしていて`PWM0`〜`PWM5`も無いので、コア側のコピーを付け替え後のボードに合わせて直す。
   `arduino_i2c.cpp`の「`I3C_SDA`のピンなら`Wire1`」（A156では`I3C_SDA`=`I2C_SDA`）と「`MB_SDA`のピンならN947の`Wire2`」の判定もボードで分ける必要がある
+
+### A156のvariantとコアの分岐を作り、実機で起動・EEPROM・Wire/Wire1を確認（2026-10-03）
+**variant**（`variants/frdm_mcxa156/`）は、`include/`・`src/`・`svd/`の全ファイルを`SDK_2_16_000_FRDM-MCXA156.zip`から無改変でコピーした。
+A153のvariantがどこから来たかを先に確かめてある: ドライバ・スタートアップ・デバイスヘッダはSDK 2.16.000とバイト一致で、
+`clock_config`・`pin_mux`・`peripherals`だけがConfig Toolsの出力（ユーザーのMCUXpressoプロジェクト由来）、`fsl_lpadc`・`fsl_ctimer`は新しいSDKから持ってきたもの。
+A156はこの3組もSDKの`devices/MCXA156/project_template/`のものにした（`board.h`をここから取ったA153と揃えた）。
+- **リンカスクリプト**: メモリマップはSDKのマニフェストの値（`PROGRAM_FLASH` 1MB、`SRAM` 120KB、`SRAMX` 12KB）。末尾16KBを`EEPROM_FLASH`に。
+  A153のスクリプトから`SRAMX1`の分を除いた形で、ヒープ16KB・スタック4KBはN947と同じ
+- **`boards.txt`**: FPUありで`-mfpu=fpv5-sp-d16 -mfloat-abi=hard`（SDKのプロジェクトの設定と同じ。A153は`+nodsp`でFPU無し）。
+  `upload.maximum_size`=1008KB、`maximum_data_size`=120KB。プローブのVID/PIDはA153・N947と同じ`0x1FC9`/`0x0143`だった。`tools/gdb-bridge/a156.cfg`を追加
+
+**コアの分岐**。最初のビルドで止まった`#error`を順に潰し、A153と同じ作りのものはA153の分岐に`|| defined( CPU_MCXA156VLL )`で入れた:
+- `io.h`: 上流由来のA156ブロックを付け替え後のボードに直した（D10=`P2_6`、D11=`P2_13`、`GREEN`=`P3_13`、`PWM0`〜`PWM5`を追加、
+  `SPI_*`はA153・N947と同じくD10〜D13（上流ではMikroBus）、`I3C_SDA`/`I3C_SCL`は`D18`/`D19`の別名ではなく`P0_16`/`P0_17`そのもの）。
+  `io.cpp`のピン表と列挙の一致は機械的に確かめた（81本）
+- `AnalogIn`: A153の分岐を共有し、インスタンス（ADC1）とピン表だけ分けた。チャネルはZephyrのpinctrlとSDKのLPADCポーリング例（ADC1・ch8・VDDA）で確認
+- `PwmOut`: ピンもALT（5）もA153と同じで、サブモジュールのクロックゲート名だけ違う（`kCLOCK_GatePWMSM0`→`kCLOCK_GatePWM0SM0`）
+- `Serial.cpp`: `LPUART1`（MikroBus）・`LPUART2`（D0/D1）を追加。`arduino_serial`に`Serial2`、`arduino_main.cpp`に`serialEvent2`（いずれもA156の分岐だけ）
+- `arduino_i2c.cpp`: `Wire1`を`MB_SDA`/`MB_SCL`（`LPI2C3`）に。「I3Cのピンか」の判定はA156では常に偽。`r01lib_spi.cpp`・`irq.c`・`InterruptIn.cpp`（GPIO0〜4）・`arduino_tone.cpp`・`EEPROM.cpp`（ブートROMのフラッシュAPI、`UNIT`=16）
+- `mcu.cpp`: SDKのテンプレートは周辺機能のクロックを付けず、`BOARD_InitPins()`もPORT0しか触らないので、A153の`pin_mux.c`/`clock_config.c`がやっている分
+  （PORT0〜4・GPIO0〜4のクロックとリセット解除、LPI2C0/1/3・LPSPI0/1を`FRO_HF_DIV`の96MHzに、I3C0を48MHzに）をここで行う。結果のクロックはA153と同じ
+- 上流のA156分岐にあった誤り: `i3c.cpp`のエラーメッセージが「FRDM-MCXA153」、`arduino_io.h`の`NUM_ANALOG_INPUTS`の連鎖に`#else`が無かった（board-fallbackは`#else`の無い連鎖を見ないので素通りしていた）
+- サンプルは、A153と同じ設定でよいもの（`Serial1`がD0/D1、EEPROMの`UNIT`、`setWireTimeout`の400kHzでの上限など）に分岐を足した。
+  `test_Wire_target_self`は`Wire1`もLPI2Cなので両方で回し、`setWireTimeout`のテストはN947の`Wire2`と同じ配線で`Wire1`も回すようにした
+
+**実機で分かったこと**
+- **A156はリセット後、ほぼ全ピンの入力バッファが切れている**（`PCR.IBE`=0。読めたのは`P0_6`（SW3/ISP）と、デバッグUARTとして`pin_mux.c`が設定した`P0_2`だけ）。
+  このままだと`digitalRead()`は常に0で、`Wire`は最初の転送で止まった（LPI2CがSCLのHighを見られず待ち続ける）。A153では同じコードで問題が無いので、
+  A153はリセット値かConfig Toolsの`pin_mux.c`で入っている。`DigitalInOut`のコンストラクタと`pin_mux()`で、A156に限って入力バッファを入れるようにした
+  （`pin_mux()`でも入れるのは、`AnalogIn`がアナログピンで切るため）
+- **確認できたこと**: `hello_world`（起動・クロック・`Serial`）。`test_EEPROM`がALL OK（リセットをまたいだ保持も）、もう一度書き込んでも前回のデータが残った。
+  `Wire`のスキャンでP3T1755（`0x48`）が見つかり温度が読めた。`Wire1`（MikroBus、何もつないでいない）のスキャンは止まらずに終わる。
+  `test_Wire_target_self`が`Wire`・`Wire1`ともALL OK（N947の`LPI2C3`と違い、A156の`LPI2C3`はターゲットとして応答する）
+- **A153・N947のバイナリが変わっていないこと**は、前回と同じく全サンプルのイメージのSHA-256で確かめた。途中で`i3c.cpp`の行数を変えたら、
+  I3Cを含む49件（177件中）が変わった。1件を比べると違いは4バイトで、`i3c.cpp`の`assert(false)`が埋め込む行番号（363→362）だった。
+  A156の分岐の行数を元に戻すと、49件とも一致に戻った。
+  **行数の変わる編集は、後ろに`assert()`がある翻訳単位ではバイナリの比較を崩す**
+
+**センサーを読むサンプル**: ボードに依らない名前をコアに置くか、サンプルごとに書き分けるかをユーザーに聞き、**サンプルごとの`#if`**に決まった
+（N236・C444のオンボードセンサーは別物の加速度センサーで、共通の名前を置いても効く範囲が狭い）。
+各サンプルの先頭で`SENSOR_WIRE`を`Wire1`（A153・N947）か`Wire`（A156）に定義し、コード中の`Wire1`をそれに置き換えた（コメントと文字列は元のまま）。
+マクロにしたのは、A153・N947のバイナリを1バイトも変えないため（参照変数だと最適化次第で変わり得る）。
+`test_Wire_begin_address`は、A156には`begin(address)`を断るバスが無い（`Wire1`もLPI2C）ので前半だけを`Wire`で行う。
+`test_combined_peripherals`・`release_check/21`は、A156では全部が別の周辺機能なので`Serial1`・`Serial2`（MB_TX→MB_RXのジャンパを追加）・`Wire1`のプローブ・`SPI1`を同時に回す。
+`release_check/01`にA156のクロック（LPI2C0/3・LPSPI0/1が96MHz、LPUART1/2が12MHz）と`Wire1`のスキャンを足した。
+- 編集した29本を含めA156で全85本がビルドでき、A153・N947は全177件のイメージが変更前と一致した
+- **実機**: `release_check/01`がA156でALL OK（クロック、`Wire`でのセンサー、Streamと5引数`requestFrom()`、ターゲットモード、`Wire1`のスキャン）
+
+**残り**（0.8.0の残作業）:
+- 配線の要る確認: `Serial1`・`Serial2`のループバック、`release_check/11`・`14`・`21`、`MB_SDA`-`D18`・`MB_SCL`-`D19`のジャンパでの`Wire1`、FlexPWM・ADC・tone・SPIの実機確認、`release_check`の全項目
+- CIのマトリクス、`mcxPinState`の上流（同梱側は直した）、文書（READMEの対応表、API_COMPATIBILITYなど）

@@ -18,7 +18,8 @@
  *  external pull-ups as well (e.g. 4.7k to 3.3V on SDA and SCL).
  *
  *  Works on FRDM-MCXA153 and FRDM-MCXN947, on Wire only (not Wire1 or
- *  Wire2).
+ *  Wire2), and on FRDM-MCXA156, on Wire or Wire1. On FRDM-MCXA156, D18/D19
+ *  also carry the on-board P3T1755 at 0x48.
  */
 
 #include <Arduino.h>

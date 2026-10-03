@@ -1,4 +1,4 @@
-/** Combined peripheral stress test -- FRDM-MCXA153 / FRDM-MCXN947
+/** Combined peripheral stress test -- FRDM-MCXA153 / FRDM-MCXN947 / FRDM-MCXA156
  *
  *  Exercises multiple peripherals together in a single loop to check for
  *  interference between them:
@@ -30,6 +30,12 @@
  *  genuinely independent peripherals. Wire2 doesn't have this conflict,
  *  so it takes Serial1's place in the N947 branch instead.
  *
+ *  FRDM-MCXA156 has a peripheral of its own for every one of these, so it
+ *  runs them all: the on-board sensor over Wire (it is on D18/D19 there),
+ *  Serial1 on D0/D1 (D1->D0 jumper), Serial2 on the MikroBus UART
+ *  (MB_TX->MB_RX jumper), Wire1 on the MikroBus I2C probed like
+ *  FRDM-MCXN947's Wire2, and SPI1.
+ *
  *  If any of these peripherals share a clock/interrupt resource incorrectly,
  *  expect symptoms here: I2C/I3C read errors or hangs, out-of-range ADC
  *  values, PWM/tone glitches, millis()/micros() drifting/stalling, Serial1
@@ -41,21 +47,36 @@
 #include <P3T1755.h>
 #include <Wire.h>
 
+// The on-board P3T1755's bus: Wire1 on FRDM-MCXA153 and FRDM-MCXN947,
+// Wire (D18/D19) on FRDM-MCXA156, whose sensor is on the Arduino I2C pins
+#if defined(FRDM_MCXA153) || defined(FRDM_MCXN947)
+#define SENSOR_WIRE Wire1
+#elif defined(FRDM_MCXA156)
+#define SENSOR_WIRE Wire
+#else
+#error "This sketch has no settings for this board yet"
+#endif
+
 #define BUZZER_PIN  D13
 #define PWM_PIN     PWM0
-#if defined(FRDM_MCXA153)
+#if defined(FRDM_MCXA153) || defined(FRDM_MCXA156)
 #define ADC_PIN     A0
 #elif defined(FRDM_MCXN947)
 #define ADC_PIN     A2
+#else
+#error "This sketch has no settings for this board yet"
 #endif
 
-P3T1755 sensor(Wire1, 0x48);
+P3T1755 sensor(SENSOR_WIRE, 0x48);
 
 int pwmDuty = 0;
 int pwmStep = 5;
 int loopCount = 0;
 #if defined(FRDM_MCXA153)
 char serial1Rx[32];
+#elif defined(FRDM_MCXA156)
+char serial1Rx[32];
+char serial2Rx[32];
 #endif
 
 void setup() {
@@ -63,11 +84,15 @@ void setup() {
   while (!Serial)
     ;
 
-  Wire1.begin();
+  SENSOR_WIRE.begin();
 #if defined(FRDM_MCXA153)
   Serial1.begin(9600);  // D0/D1 hardware UART -- jumper D1->D0 to loop back
 #elif defined(FRDM_MCXN947)
   Wire2.begin();  // MikroBus I2C -- no device required, see header comment
+#elif defined(FRDM_MCXA156)
+  Serial1.begin(9600);  // D0/D1 hardware UART -- jumper D1->D0 to loop back
+  Serial2.begin(9600);  // MikroBus UART -- jumper MB_TX->MB_RX to loop back
+  Wire1.begin();        // MikroBus I2C -- no device required, see header comment
 #endif
 
   pinMode(MB_CS, OUTPUT);
@@ -79,6 +104,8 @@ void setup() {
   Serial.println("Combined peripheral test: I3C(Wire1) + analogRead + analogWrite + tone + millis/micros + Serial1 + SPI1");
 #elif defined(FRDM_MCXN947)
   Serial.println("Combined peripheral test (N947): I3C(Wire1) + analogRead + analogWrite + tone + millis/micros + Wire2 + SPI1");
+#elif defined(FRDM_MCXA156)
+  Serial.println("Combined peripheral test (A156): sensor(Wire) + analogRead + analogWrite + tone + millis/micros + Serial1 + Serial2 + Wire1 + SPI1");
 #endif
 }
 
@@ -95,6 +122,19 @@ void loop() {
   while (Serial1.available() && i < (int)sizeof(serial1Rx) - 1)
     serial1Rx[i++] = (char)Serial1.read();
   serial1Rx[i] = '\0';
+#elif defined(FRDM_MCXA156)
+  // Serial1 and Serial2 -- as on FRDM-MCXA153, read back what the previous
+  // iteration sent
+  int serial1Avail = Serial1.available();
+  int i = 0;
+  while (Serial1.available() && i < (int)sizeof(serial1Rx) - 1)
+    serial1Rx[i++] = (char)Serial1.read();
+  serial1Rx[i] = '\0';
+  int serial2Avail = Serial2.available();
+  i = 0;
+  while (Serial2.available() && i < (int)sizeof(serial2Rx) - 1)
+    serial2Rx[i++] = (char)Serial2.read();
+  serial2Rx[i] = '\0';
 #endif
 
   // I3C (on-board P3T1755 over Wire1)
@@ -119,6 +159,10 @@ void loop() {
   // completes promptly under load; see header comment
   Wire2.beginTransmission(0x08);
   uint8_t wire2Err = Wire2.endTransmission();
+#elif defined(FRDM_MCXA156)
+  // Wire1 (MikroBus I2C) -- the same probe as FRDM-MCXN947's Wire2
+  Wire1.beginTransmission(0x08);
+  uint8_t wire1Err = Wire1.endTransmission();
 #endif
 
   Serial.print("millis=");
@@ -140,6 +184,13 @@ void loop() {
 #elif defined(FRDM_MCXN947)
   Serial.print(" wire2Err=");
   Serial.print(wire2Err);
+#elif defined(FRDM_MCXA156)
+  Serial.print(" serial1=\"");
+  Serial.print(serial1Rx);
+  Serial.print("\" serial2=\"");
+  Serial.print(serial2Rx);
+  Serial.print("\" wire1Err=");
+  Serial.print(wire1Err);
 #endif
 
   if (adc < 0 || adc > 1023)
@@ -154,6 +205,11 @@ void loop() {
 #if defined(FRDM_MCXA153)
   if (loopCount > 0 && serial1Avail == 0)
     Serial.print("  <-- WARNING: Serial1 loopback got nothing!");
+#elif defined(FRDM_MCXA156)
+  if (loopCount > 0 && serial1Avail == 0)
+    Serial.print("  <-- WARNING: Serial1 loopback got nothing!");
+  if (loopCount > 0 && serial2Avail == 0)
+    Serial.print("  <-- WARNING: Serial2 loopback got nothing!");
 #endif
 
   Serial.println();
@@ -167,6 +223,11 @@ void loop() {
   // iteration
   Serial1.print("hb");
   Serial1.println(loopCount);
+#elif defined(FRDM_MCXA156)
+  Serial1.print("hb");
+  Serial1.println(loopCount);
+  Serial2.print("hb");
+  Serial2.println(loopCount);
 #endif
 
   loopCount++;

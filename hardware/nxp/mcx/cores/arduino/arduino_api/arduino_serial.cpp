@@ -75,6 +75,14 @@ SerialClass	Serial1( SERIAL1_TX_PIN, SERIAL1_RX_PIN );
 //          Serial::resolve_pins() expects (same trick pinMode()/digitalWrite()
 //          use).
 SerialClass	Serial1( arduino_pin_by_number[ D1 ], arduino_pin_by_number[ D0 ] );
+#elif defined( CPU_MCXA156VLL )
+// Serial1: hardware UART on D0(RX)/D1(TX) (LPUART2), as on FRDM-MCXA153.
+// Serial2: the MikroBus UART (MB_TX/MB_RX, LPUART1). This board's only one
+//          with a Serial2: on FRDM-MCXA153 the MikroBus UART pins reach
+//          only the same LPUART2 as D0/D1, and on FRDM-MCXN947 they are
+//          Serial1.
+SerialClass	Serial1( arduino_pin_by_number[ D1 ], arduino_pin_by_number[ D0 ] );
+SerialClass	Serial2( arduino_pin_by_number[ MB_TX ], arduino_pin_by_number[ MB_RX ] );
 #else
 #error "arduino_serial.cpp: say where this board's Serial1 is"
 #endif

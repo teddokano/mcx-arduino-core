@@ -531,8 +531,11 @@ enum {
 	#define	D7		P1_14
 	#define	D8		P1_15
 	#define	D9		P3_17
-	#define	D10		P3_13
-	#define	D11		P3_15
+	// D10/D11 as on a board with R59/R60 moved to 2-3, which this core
+	// assumes (PIN_MAPPING_A156.md): LPSPI1's PCS1/SDO. As shipped, the
+	// header's D10/D11 are P3_13/P3_15 instead.
+	#define	D10		P2_6
+	#define	D11		P2_13
 	#define	D12		P2_16
 	#define	D13		P2_12
 	#define	D18		P0_16
@@ -543,6 +546,12 @@ enum {
 	#define	A3		P2_4
 	#define	A4		P1_12
 	#define	A5		P1_13
+	#define	PWM0	P3_11	/* FlexPWM0 sm2 chB */
+	#define	PWM1	P3_10	/* FlexPWM0 sm2 chA */
+	#define	PWM2	P3_9	/* FlexPWM0 sm1 chB */
+	#define	PWM3	P3_8	/* FlexPWM0 sm1 chA */
+	#define	PWM4	P3_7	/* FlexPWM0 sm0 chB */
+	#define	PWM5	P3_6	/* FlexPWM0 sm0 chA */
 	#define	SW2		P1_7
 	#define	SW3		P0_6
 	#define	MB_AN	P3_30
@@ -558,21 +567,23 @@ enum {
 	#define	MB_SCL	P3_27
 	#define	MB_SDA	P3_28
 	#define	RED		D3
-	#define	GREEN	D10
+	#define	GREEN	P3_13
 	#define	BLUE	P3_0
 
-	#define	I3C_SDA		D18
-	#define	I3C_SCL		D19
+	// The on-board P3T1755 is on D18/D19, and I3C0 reaches it only through
+	// these same two pins; the Arduino layer uses them as LPI2C0 (Wire).
+	#define	I3C_SDA		P0_16
+	#define	I3C_SCL		P0_17
 	#define	I2C_SDA		D18
 	#define	I2C_SCL		D19
-	#define	SPI_CS		MB_CS
-	#define	SPI_MOSI	MB_MOSI
-	#define	SPI_MISO	MB_MISO
-	#define	SPI_SCLK	MB_SCK
-	#define	ARD_CS		P2_6
-	#define	ARD_MOSI	P2_13
-	#define	ARD_MISO	D12
-	#define	ARD_SCK		D13
+	#define	SPI_CS		D10
+	#define	SPI_MOSI	D11
+	#define	SPI_MISO	D12
+	#define	SPI_SCLK	D13
+	#define	ARD_CS		SPI_CS
+	#define	ARD_MOSI	SPI_MOSI
+	#define	ARD_MISO	SPI_MISO
+	#define	ARD_SCK		SPI_SCLK
 
 	#define	USBTX		P0_3
 	#define	USBRX		P0_2

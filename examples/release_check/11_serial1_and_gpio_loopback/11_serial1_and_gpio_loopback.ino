@@ -7,8 +7,8 @@
  *  test_Serial_stream_helpers, test_String_plus_numeric_Printable_fastGPIO,
  *  test_Serial1_format_end_serialEvent.
  *
- *  Wiring needed: a Serial1 TX/RX loopback jumper -- on FRDM-MCXA153
- *  that's D0-D1, but on FRDM-MCXN947 Serial1 lives on the MikroBus
+ *  Wiring needed: a Serial1 TX/RX loopback jumper -- on FRDM-MCXA153 and
+ *  FRDM-MCXA156 that's D0-D1, but on FRDM-MCXN947 Serial1 lives on the MikroBus
  *  header instead (MB_TX-MB_RX), since D0/D1 there conflicts with Wire
  *  over FlexComm2 (see PIN_MAPPING_N947.md) -- plus a D2-D3 jumper
  *  (fast-GPIO register test drives D2, observes it on D3).
@@ -22,7 +22,7 @@
 #if defined(FRDM_MCXN947)
 const int S1_TX = MB_TX;
 const int S1_RX = MB_RX;
-#elif defined(FRDM_MCXA153)
+#elif defined(FRDM_MCXA153) || defined(FRDM_MCXA156)
 const int S1_TX = D1;
 const int S1_RX = D0;
 #else

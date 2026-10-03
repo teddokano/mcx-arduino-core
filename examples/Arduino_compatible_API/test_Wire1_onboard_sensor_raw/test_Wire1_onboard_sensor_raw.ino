@@ -11,9 +11,22 @@
  *  gives degC directly. Same register format as the LM75B/P3T1035x family
  *  -- see test_Wire_LM75B for the same technique on the external `Wire`
  *  instance instead.
+ *
+ *  On FRDM-MCXA156 the sensor is on Wire (D18/D19) instead, and the sketch
+ *  uses that; the messages still say Wire1.
  */
 
 #include <Arduino.h>
+
+// The on-board P3T1755's bus: Wire1 on FRDM-MCXA153 and FRDM-MCXN947,
+// Wire (D18/D19) on FRDM-MCXA156, whose sensor is on the Arduino I2C pins
+#if defined(FRDM_MCXA153) || defined(FRDM_MCXN947)
+#define SENSOR_WIRE Wire1
+#elif defined(FRDM_MCXA156)
+#define SENSOR_WIRE Wire
+#else
+#error "This sketch has no settings for this board yet"
+#endif
 
 const uint8_t SENSOR_ADDR = 0x48;
 const uint8_t TEMP_REG = 0x00;
@@ -25,13 +38,13 @@ void setup() {
 
   Serial.println("Wire1 (on-board I3C-in-I2C-mode) + P3T1755 raw register test");
 
-  Wire1.begin();
+  SENSOR_WIRE.begin();
 }
 
 void loop() {
-  Wire1.beginTransmission(SENSOR_ADDR);
-  Wire1.write(TEMP_REG);
-  uint8_t err = Wire1.endTransmission(false);  // repeated start, keep the bus held
+  SENSOR_WIRE.beginTransmission(SENSOR_ADDR);
+  SENSOR_WIRE.write(TEMP_REG);
+  uint8_t err = SENSOR_WIRE.endTransmission(false);  // repeated start, keep the bus held
 
   if (err != 0) {
     Serial.print("endTransmission failed, error = ");
@@ -40,7 +53,7 @@ void loop() {
     return;
   }
 
-  uint8_t n = Wire1.requestFrom(SENSOR_ADDR, (size_t)2);
+  uint8_t n = SENSOR_WIRE.requestFrom(SENSOR_ADDR, (size_t)2);
 
   if (n != 2) {
     Serial.print("requestFrom returned ");
@@ -50,8 +63,8 @@ void loop() {
     return;
   }
 
-  uint8_t msb = Wire1.read();
-  uint8_t lsb = Wire1.read();
+  uint8_t msb = SENSOR_WIRE.read();
+  uint8_t lsb = SENSOR_WIRE.read();
 
   int16_t raw = (int16_t)((msb << 8) | lsb);
   raw >>= 5;

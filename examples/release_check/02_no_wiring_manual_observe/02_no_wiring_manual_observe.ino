@@ -45,11 +45,11 @@ void setup() {
       { D4, "D4" }, { D5, "D5" }, { D6, "D6" }, { D7, "D7" },
       { D8, "D8" }, { D9, "D9" }, { D10, "D10" }, { D11, "D11" },
       { D12, "D12" }, { D13, "D13" }, { D18, "D18" }, { D19, "D19" },
-#if defined(FRDM_MCXA153)
+#if defined(FRDM_MCXA153) || defined(FRDM_MCXA156)
       { A0, "A0" }, { A1, "A1" },
 #endif
       { A2, "A2" }, { A3, "A3" }, { A4, "A4" }, { A5, "A5" },
-#if defined(FRDM_MCXA153)
+#if defined(FRDM_MCXA153) || defined(FRDM_MCXA156)
       { MB_AN, "MB_AN" },
 #endif
       { MB_RST, "MB_RST" }, { MB_CS, "MB_CS" },

@@ -160,6 +160,13 @@ extern SerialClass	Serial;
 /** Global Serial1 instance -- hardware UART pin pair, board-dependent (see above). */
 extern SerialClass	Serial1;
 
+#if defined( CPU_MCXA156VLL )
+/** Global Serial2 instance (FRDM-MCXA156 only) -- the MikroBus UART
+ *  (MB_TX/MB_RX), on its own LPUART, so it can be open together with
+ *  Serial and Serial1. */
+extern SerialClass	Serial2;
+#endif
+
 /** Standard cross-core serial-port role aliases, same convention as
  *  ArduinoCore-avr's/ArduinoCore-samd's pins_arduino.h/variant.h -- for
  *  generic sketches/libraries (GPS modules, Bridge-style examples, ...)

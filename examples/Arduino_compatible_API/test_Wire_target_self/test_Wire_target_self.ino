@@ -6,6 +6,12 @@
  *  Wiring: none. Nothing may be connected to D18/D19: the bus runs on the
  *  pins' internal pull-ups, which Wire.begin() turns on.
  *
+ *  On FRDM-MCXA156, Wire1 is an LPI2C too (LPI2C3, on the MikroBus
+ *  MB_SDA/MB_SCL), so it goes through the same checks; nothing may be
+ *  connected to those pins either. That board's D18/D19 carry the on-board
+ *  P3T1755 (at 0x48) and its pull-ups, and its MikroBus I2C has pull-ups
+ *  on the board too.
+ *
  *  Automatic: reads "ALL OK" or "N FAILED" at the end.
  */
 
@@ -216,6 +222,9 @@ void setup() {
   suite(Wire, "Wire", 0x42, LPI2C2);
 #elif defined(FRDM_MCXA153)
   suite(Wire, "Wire", 0x42, LPI2C0);
+#elif defined(FRDM_MCXA156)
+  suite(Wire, "Wire", 0x42, LPI2C0);
+  suite(Wire1, "Wire1", 0x42, LPI2C3);
 #else
 #error "This sketch has no settings for this board yet"
 #endif

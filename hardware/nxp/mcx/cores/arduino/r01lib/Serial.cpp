@@ -4,7 +4,7 @@
  *  Supports:
  *    FRDM-MCXC444  (CPU_MCXC444VLH)   LPUART0/1
  *    FRDM-MCXA153  (CPU_MCXA153VLH)   LPUART0/1/2
- *    FRDM-MCXA156  (CPU_MCXA156VLL)   LPUART0
+ *    FRDM-MCXA156  (CPU_MCXA156VLL)   LPUART0/1/2
  *    FRDM-MCXN236  (CPU_MCXN236VDF)   LP_FLEXCOMM4 (LPUART4)
  *    FRDM-MCXN947  (CPU_MCXN947VDF)   LP_FLEXCOMM4 (LPUART4)
  *
@@ -114,15 +114,17 @@ void     Serial::_unregister_instance( void ) { s_instances[ _instance ] = nullp
 
 
 // ===========================================================================
-//  MCX A156  (LPUART0, PORT mux, CLOCK_AttachClk / CLOCK_SetClockDiv)
+//  MCX A156  (LPUART0/1/2, PORT mux, CLOCK_AttachClk / CLOCK_SetClockDiv)
 // ===========================================================================
 #elif defined( CPU_MCXA156VLL )
 
-static Serial *s_instances[ 1 ] = { nullptr };
+static Serial *s_instances[ 3 ] = { nullptr, nullptr, nullptr };
 
 extern "C"
 {
     void LPUART0_IRQHandler( void ) { if ( s_instances[0] ) s_instances[0]->_irq_handler(); SDK_ISR_EXIT_BARRIER; }
+    void LPUART1_IRQHandler( void ) { if ( s_instances[1] ) s_instances[1]->_irq_handler(); SDK_ISR_EXIT_BARRIER; }
+    void LPUART2_IRQHandler( void ) { if ( s_instances[2] ) s_instances[2]->_irq_handler(); SDK_ISR_EXIT_BARRIER; }
 }
 
 struct lpuart_pin_map_t {
@@ -139,6 +141,12 @@ struct lpuart_pin_map_t {
 static const lpuart_pin_map_t s_pinMap[] = {
     //  TX      RX      base     inst  tx_mux         rx_mux         rst                        irqn          clk_attach           clk_div
     { USBTX, USBRX, LPUART0, 0U, kPORT_MuxAlt2, kPORT_MuxAlt2, kLPUART0_RST_SHIFT_RSTn, LPUART0_IRQn, kFRO12M_to_LPUART0, kCLOCK_DivLPUART0 }, // P0_3/P0_2
+    // Unlike A153, the Arduino D0/D1 and the MikroBus UART are separate
+    // LPUARTs here, so both can be open at once. ALTs from Zephyr's
+    // MCXA156VLL-pinctrl.h: LPUART2_TXD_P2_10/LPUART2_RXD_P2_11 and
+    // LPUART1_TXD_P3_21/LPUART1_RXD_P3_20 are all mux=3.
+    { D1,    D0,    LPUART2, 2U, kPORT_MuxAlt3, kPORT_MuxAlt3, kLPUART2_RST_SHIFT_RSTn, LPUART2_IRQn, kFRO12M_to_LPUART2, kCLOCK_DivLPUART2 }, // Arduino D0/D1 (P2_11/P2_10)
+    { MB_TX, MB_RX, LPUART1, 1U, kPORT_MuxAlt3, kPORT_MuxAlt3, kLPUART1_RST_SHIFT_RSTn, LPUART1_IRQn, kFRO12M_to_LPUART1, kCLOCK_DivLPUART1 }, // MikroBus (P3_21/P3_20)
 };
 
 void Serial::resolve_pins( int tx, int rx )

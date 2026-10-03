@@ -16,7 +16,7 @@
  *  on the pins' internal ones. A longer bus, or a faster one, wants
  *  external pull-ups as well (e.g. 4.7k to 3.3V on SDA and SCL).
  *
- *  Works on FRDM-MCXA153 and FRDM-MCXN947.
+ *  Works on FRDM-MCXA153, FRDM-MCXN947 and FRDM-MCXA156.
  */
 
 #include <Arduino.h>

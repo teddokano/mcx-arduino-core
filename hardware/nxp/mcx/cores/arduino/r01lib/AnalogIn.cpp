@@ -21,7 +21,7 @@
  * @copyright MIT License
  */
 
-#if defined( CPU_MCXA153VLH )
+#if defined( CPU_MCXA153VLH ) || defined( CPU_MCXA156VLL )
 
 extern "C" {
 #include "fsl_reset.h"
@@ -31,18 +31,39 @@ extern "C" {
 #include "mcu.h"
 #include "pin_registry.h"
 
+/*
+ *  FRDM-MCXA156 works the same way, on its second LPADC: all six of its
+ *  analog pins are ADC1 inputs (Zephyr's MCXA156VLL-pinctrl.h), and the
+ *  SDK's FRDM-MCXA156 LPADC polling example uses ADC1 with the same VDDA
+ *  reference (kLPADC_ReferenceVoltageAlt3) and FRO12M clock as here.
+ */
+#if defined( CPU_MCXA153VLH )
+    #define ANALOGIN_ADC        ADC0
+    #define ANALOGIN_ADC_GATE   kCLOCK_GateADC0
+    #define ANALOGIN_ADC_RST    kADC0_RST_SHIFT_RSTn
+    #define ANALOGIN_ADC_DIV    kCLOCK_DivADC0
+    #define ANALOGIN_ADC_CLK    kFRO12M_to_ADC0
+#elif defined( CPU_MCXA156VLL )
+    #define ANALOGIN_ADC        ADC1
+    #define ANALOGIN_ADC_GATE   kCLOCK_GateADC1
+    #define ANALOGIN_ADC_RST    kADC1_RST_SHIFT_RSTn
+    #define ANALOGIN_ADC_DIV    kCLOCK_DivADC1
+    #define ANALOGIN_ADC_CLK    kFRO12M_to_ADC1
+#endif
+
 uint8_t AnalogIn::_instance_count = 0;
 bool    AnalogIn::_calibrated     = false;
 
 namespace {
 
 struct AnalogPinDescriptor {
-    int         pin;             // io.h logical pin (A0..A3)
+    int         pin;             // io.h logical pin (A0..A3, A0..A5 on A156)
     PORT_Type  *port;
     uint32_t    port_pin;
-    uint32_t    input_positive;  // hardware ADC0_An number
+    uint32_t    input_positive;  // hardware ADCn_An number
 };
 
+#if defined( CPU_MCXA153VLH )
 const AnalogPinDescriptor s_pins[] = {
     //  pin  port   pin#  ADC0_An
     { A0,  PORT1, 10u,  8u },
@@ -50,6 +71,17 @@ const AnalogPinDescriptor s_pins[] = {
     { A2,  PORT1, 13u, 11u },
     { A3,  PORT2,  0u,  0u },
 };
+#elif defined( CPU_MCXA156VLL )
+const AnalogPinDescriptor s_pins[] = {
+    //  pin  port   pin#  ADC1_An
+    { A0,  PORT1, 10u,  8u },
+    { A1,  PORT2,  5u,  1u },
+    { A2,  PORT2,  3u,  4u },
+    { A3,  PORT2,  4u,  0u },
+    { A4,  PORT1, 12u, 10u },
+    { A5,  PORT1, 13u, 11u },
+};
+#endif
 
 } // namespace
 
@@ -60,7 +92,7 @@ void AnalogIn::resolve_pin( int pin )
         if ( s_pins[ i ].pin == pin )
         {
             _input_positive = (uint8_t)s_pins[ i ].input_positive;
-            _channel_id     = (uint8_t)( i + 1 );   // dedicated LPADC CMD1..CMD4
+            _channel_id     = (uint8_t)( i + 1 );   // dedicated LPADC CMD1..CMD4 (CMD1..CMD6 on A156)
             _pin            = pin;
 
             port_pin_config_t cfg = {
@@ -71,7 +103,7 @@ void AnalogIn::resolve_pin( int pin )
                 kPORT_OpenDrainDisable,
                 kPORT_LowDriveStrength,
                 kPORT_NormalDriveStrength,
-                kPORT_MuxAlt0,               // ADC0_An
+                kPORT_MuxAlt0,               // ADCn_An
                 kPORT_InputBufferDisable,    // required for analog function
                 kPORT_InputNormal,
                 kPORT_UnlockRegister
@@ -90,26 +122,26 @@ void AnalogIn::_acquire_peripheral( void )
 {
     if ( _instance_count == 0 )
     {
-        CLOCK_EnableClock( kCLOCK_GateADC0 );
-        RESET_ReleasePeripheralReset( kADC0_RST_SHIFT_RSTn );
+        CLOCK_EnableClock( ANALOGIN_ADC_GATE );
+        RESET_ReleasePeripheralReset( ANALOGIN_ADC_RST );
 
         // ADCK (conversion clock) source — without this, LPADC_Init()
         // succeeds but no conversion/calibration cycle ever completes and
         // LPADC_DoAutoCalibration() spins forever polling GCC[0].RDY.
-        CLOCK_SetClockDiv( kCLOCK_DivADC0, 1u );
-        CLOCK_AttachClk( kFRO12M_to_ADC0 );
+        CLOCK_SetClockDiv( ANALOGIN_ADC_DIV, 1u );
+        CLOCK_AttachClk( ANALOGIN_ADC_CLK );
 
         lpadc_config_t cfg;
         LPADC_GetDefaultConfig( &cfg );
         cfg.enableAnalogPreliminary = true;
-        cfg.referenceVoltageSource  = kLPADC_ReferenceVoltageAlt3;   // VDDA (FRDM-MCXA153)
+        cfg.referenceVoltageSource  = kLPADC_ReferenceVoltageAlt3;   // VDDA
         cfg.powerLevelMode          = kLPADC_PowerLevelAlt4;         // highest accuracy
-        LPADC_Init( ADC0, &cfg );
+        LPADC_Init( ANALOGIN_ADC, &cfg );
 
 #if defined( FSL_FEATURE_LPADC_HAS_CTRL_CAL_REQ ) && FSL_FEATURE_LPADC_HAS_CTRL_CAL_REQ
         if ( !_calibrated )
         {
-            LPADC_DoAutoCalibration( ADC0 );
+            LPADC_DoAutoCalibration( ANALOGIN_ADC );
             _calibrated = true;
         }
 #endif
@@ -124,7 +156,7 @@ void AnalogIn::_release_peripheral( void )
 
     if ( _instance_count == 0 )
     {
-        LPADC_Deinit( ADC0 );
+        LPADC_Deinit( ANALOGIN_ADC );
         _calibrated = false;   // re-calibrate on the next acquire after a full deinit
     }
 }
@@ -146,7 +178,7 @@ AnalogIn::AnalogIn( int pin )
     LPADC_GetDefaultConvCommandConfig( &cmd );
     cmd.channelNumber            = _input_positive;
     cmd.conversionResolutionMode = kLPADC_ConversionResolutionStandard;  // 12-bit
-    LPADC_SetConvCommandConfig( ADC0, _channel_id, &cmd );
+    LPADC_SetConvCommandConfig( ANALOGIN_ADC, _channel_id, &cmd );
 
     uint8_t pin8 = (uint8_t)_pin;
     pin_registry_note( this, "AnalogIn", &pin8, 1, (uint8_t)kPORT_MuxAlt0 );
@@ -171,13 +203,13 @@ uint16_t AnalogIn::sample_raw( void )
     LPADC_GetDefaultConvTriggerConfig( &trig );
     trig.targetCommandId       = _channel_id;
     trig.enableHardwareTrigger = false;
-    LPADC_SetConvTriggerConfig( ADC0, 0u, &trig );
+    LPADC_SetConvTriggerConfig( ANALOGIN_ADC, 0u, &trig );
 
-    LPADC_DoResetFIFO( ADC0 );
-    LPADC_DoSoftwareTrigger( ADC0, 1u );   // trigger0 mask
+    LPADC_DoResetFIFO( ANALOGIN_ADC );
+    LPADC_DoSoftwareTrigger( ANALOGIN_ADC, 1u );   // trigger0 mask
 
     lpadc_conv_result_t result;
-    while ( !LPADC_GetConvResult( ADC0, &result ) )
+    while ( !LPADC_GetConvResult( ANALOGIN_ADC, &result ) )
         ;
 
     return (uint16_t)( ( result.convValue >> 3u ) & 0x0FFFu );
@@ -384,4 +416,6 @@ AnalogIn::operator float()
     return read();
 }
 
-#endif // defined( CPU_MCXA153VLH ) / defined( CPU_MCXN947VDF )
+#else
+#error "AnalogIn.cpp: no analog inputs for this chip"
+#endif

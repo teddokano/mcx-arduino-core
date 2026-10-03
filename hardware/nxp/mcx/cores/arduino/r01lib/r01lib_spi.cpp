@@ -155,23 +155,10 @@ DigitalOut* SPI::cs_manual_control( bool flag )
 	#define EXAMPLE_LPSPI_MASTER_PCS_FOR_INIT     (kLPSPI_Pcs0)
 	#define EXAMPLE_LPSPI_MASTER_PCS_FOR_TRANSFER (kLPSPI_MasterPcs0)
 	#define LPSPI_MASTER_CLK_FREQ CLOCK_GetLPFlexCommClkFreq(3u)
-#elif	CPU_MCXA156VLL
-	#define EXAMPLE_LPSPI_DEALY_COUNT				0xFFFFF
-
-	#define EXAMPLE_LPSPI_MASTER_BASEADDR0			(LPSPI0)
-	#define EXAMPLE_LPSPI_MASTER_IRQN0				(LPSPI0_IRQn)
-	#define LPSPI_MASTER_CLK_FREQ0					(CLOCK_GetLpspiClkFreq(0))
-	#define EXAMPLE_LPSPI_MASTER_PCS_FOR_INIT0		(kLPSPI_Pcs0)
-	#define EXAMPLE_LPSPI_MASTER_PCS_FOR_TRANSFER0	(kLPSPI_MasterPcs0)
-	#define EXAMPLE_LPSPI_MASTER_IRQHandler			(LPSPI0_IRQHandler)
-
-	#define EXAMPLE_LPSPI_MASTER_BASEADDR1			(LPSPI1)
-	#define EXAMPLE_LPSPI_MASTER_IRQN1				(LPSPI1_IRQn)
-	#define LPSPI_MASTER_CLK_FREQ1					(CLOCK_GetLpspiClkFreq(1))
-	#define EXAMPLE_LPSPI_MASTER_PCS_FOR_INIT1		(kLPSPI_Pcs1)
-	#define EXAMPLE_LPSPI_MASTER_PCS_FOR_TRANSFER1	(kLPSPI_MasterPcs1)
-	#define EXAMPLE_LPSPI_MASTER_IRQHandler1		(LPSPI1_IRQHandler)
-#elif	CPU_MCXA153VLH
+#elif	defined( CPU_MCXA153VLH ) || defined( CPU_MCXA156VLL )
+	// FRDM-MCXA156 is wired the same way: D10 (P2_6, with R59 at 2-3) is
+	// LPSPI1_PCS1, D11-D13 LPSPI1's data/clock pins, and the MikroBus SPI
+	// pins LPSPI0 (all Alt2, Zephyr's MCXA156VLL-pinctrl.h).
 	#define EXAMPLE_LPSPI_MASTER_BASEADDR         (LPSPI1)
 	#define EXAMPLE_LPSPI_MASTER_IRQN             (LPSPI1_IRQn)
 	#define EXAMPLE_LPSPI_DEALY_COUNT             0xFFFFF
@@ -189,6 +176,12 @@ DigitalOut* SPI::cs_manual_control( bool flag )
 	#define EXAMPLE_LPSPI_MB_PCS_FOR_INIT     (kLPSPI_Pcs0)
 	#define EXAMPLE_LPSPI_MB_PCS_FOR_TRANSFER (kLPSPI_MasterPcs0)
 	#define LPSPI_MB_CLK_FREQ                 (CLOCK_GetLpspiClkFreq(0))
+
+	#if defined( CPU_MCXA153VLH )
+		#define SPI_PIN_SETS	"FRDM-MCXA153 supports SPI on Arduino pins (D10-D13) or MikroBus (MB_MOSI/MB_MISO/MB_SCK/MB_CS)"
+	#elif defined( CPU_MCXA156VLL )
+		#define SPI_PIN_SETS	"FRDM-MCXA156 supports SPI on Arduino pins (D10-D13, with R59/R60 moved to 2-3) or MikroBus (MB_MOSI/MB_MISO/MB_SCK/MB_CS)"
+	#endif
 #else
 	#error Not supported CPU
 #endif
@@ -201,26 +194,7 @@ SPI::SPI( int mosi, int miso, int sclk, int cs ) : Obj( true ), chip_select( cs,
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"	// for master_pcs_for_init
 	lpspi_which_pcs_t	master_pcs_for_init;
 
-#ifdef	CPU_MCXA156VLL
-	if ( (mosi == MB_MOSI) && (miso == MB_MISO) && (sclk == MB_SCK) && (cs == MB_CS) )
-	{
-		unit_base			= EXAMPLE_LPSPI_MASTER_BASEADDR0;
-		master_clk_freq		= LPSPI_MASTER_CLK_FREQ0;
-		master_pcs_for_init	= EXAMPLE_LPSPI_MASTER_PCS_FOR_INIT0;
-		master_pcs_4_xfer	= EXAMPLE_LPSPI_MASTER_PCS_FOR_TRANSFER0;
-	}
-	else if ( (mosi == ARD_MOSI) && (miso == ARD_MISO) && (sclk == ARD_SCK) && (cs == ARD_CS) )
-	{
-		unit_base			= EXAMPLE_LPSPI_MASTER_BASEADDR1;
-		master_clk_freq		= LPSPI_MASTER_CLK_FREQ1;
-		master_pcs_for_init	= EXAMPLE_LPSPI_MASTER_PCS_FOR_INIT1;
-		master_pcs_4_xfer	= EXAMPLE_LPSPI_MASTER_PCS_FOR_TRANSFER1;
-	}
-	else
-	{
-		panic( "FRDM-MCXA156 SPI on Arduino pin and MikroBus are supported. To use Arduino pins, change jumper setting (short 2-3 pins on R59 and R60) and use \"ARD_MOSI\" and \"ARD_CS\" keywords instead of D10 and D11." );
-	}
-#elif	CPU_MCXN947VDF
+#ifdef	CPU_MCXN947VDF
 	if ( (mosi == MB_MOSI) && (miso == MB_MISO) && (sclk == MB_SCK) && (cs == MB_CS) )
 	{
 		unit_base			= EXAMPLE_LPSPI_MB_BASEADDR;
@@ -241,7 +215,7 @@ SPI::SPI( int mosi, int miso, int sclk, int cs ) : Obj( true ), chip_select( cs,
 	{
 		panic( "FRDM-MCXN947 supports SPI on Arduino pins (D10-D13) or MikroBus (MB_MOSI/MB_MISO/MB_SCK/MB_CS)" );
 	}
-#elif	CPU_MCXA153VLH
+#elif	defined( CPU_MCXA153VLH ) || defined( CPU_MCXA156VLL )
 	if ( (mosi == MB_MOSI) && (miso == MB_MISO) && (sclk == MB_SCK) && (cs == MB_CS) )
 	{
 		unit_base			= EXAMPLE_LPSPI_MB_BASEADDR;
@@ -260,7 +234,7 @@ SPI::SPI( int mosi, int miso, int sclk, int cs ) : Obj( true ), chip_select( cs,
 	}
 	else
 	{
-		panic( "FRDM-MCXA153 supports SPI on Arduino pins (D10-D13) or MikroBus (MB_MOSI/MB_MISO/MB_SCK/MB_CS)" );
+		panic( SPI_PIN_SETS );
 	}
 #elif	CPU_MCXN236VDF
 	unit_base			= EXAMPLE_LPSPI_MASTER_BASEADDR;

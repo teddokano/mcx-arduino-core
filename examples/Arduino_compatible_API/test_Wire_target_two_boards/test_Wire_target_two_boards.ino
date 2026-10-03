@@ -17,6 +17,9 @@
  *  starts, the new run talks to the old one and the hand-back never
  *  comes. Press RESET on both boards, close together, to start clean.
  *
+ *  An FRDM-MCXA156 takes the FRDM-MCXA153's side, so it pairs with an
+ *  FRDM-MCXN947 (its D18/D19 also carry the on-board P3T1755, at 0x48).
+ *
  *  Each target acts as a small register file, as target sketches usually
  *  do: a write's first byte sets the register pointer and the rest are
  *  stored from there, a read returns 4 registers from the pointer.
@@ -29,7 +32,7 @@
 #if defined(FRDM_MCXN947)
 const uint8_t SELF = 0x43, PEER = 0x42;
 const bool GOES_FIRST = false;
-#elif defined(FRDM_MCXA153)
+#elif defined(FRDM_MCXA153) || defined(FRDM_MCXA156)
 const uint8_t SELF = 0x42, PEER = 0x43;
 const bool GOES_FIRST = true;
 #else

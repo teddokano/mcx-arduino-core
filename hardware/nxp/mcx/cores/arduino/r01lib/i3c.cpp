@@ -60,12 +60,12 @@ I3C::I3C( int sda, int scl, uint32_t i2c_freq, uint32_t i3c_od_freq, uint32_t i3
 	else
 		panic( "FRDM-MCXN236 only support I3C_SDA/I3C_SCL pins for I3C" );
 #elif	CPU_MCXA156VLL
+	//	I3C_SDA/I3C_SCL are the same two pins as I2C_SDA/I2C_SCL
+	//	(D18/D19) on this board
 	if ( (sda == I3C_SDA) && (scl == I3C_SCL) )
 		;
-	else if ( (sda == I2C_SDA) && (scl == I2C_SCL) )
-		;
 	else
-		panic( "FRDM-MCXA153 supports I3C_SDA/I3C_SCL or I2C_SDA(D18)/I2C_SCL(D19) pins for I3C" );
+		panic( "FRDM-MCXA156 supports I3C_SDA/I3C_SCL (D18/D19) pins for I3C" );
 #elif 	CPU_MCXA153VLH
 	if ( (sda == I3C_SDA) && (scl == I3C_SCL) )
 		;

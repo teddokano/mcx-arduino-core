@@ -225,7 +225,15 @@ struct KnownInstance
 const KnownInstance KNOWN_INSTANCES[]	=
 {
 	{ "Wire",    "GPIO",   { (uint8_t)I2C_SDA, (uint8_t)I2C_SCL, 0 }, 2 },
+#if defined( FRDM_MCXA153 ) || defined( FRDM_MCXN947 )
 	{ "Wire1",   "GPIO",   { (uint8_t)I3C_SDA, (uint8_t)I3C_SCL, 0 }, 2 },
+#elif defined( FRDM_MCXA156 )
+	// The MikroBus I2C (LPI2C3): this board's on-board sensor, and with it
+	// its I3C pins, are on Wire's own D18/D19.
+	{ "Wire1",   "GPIO",   { (uint8_t)arduino_pin_by_number[ MB_SDA ], (uint8_t)arduino_pin_by_number[ MB_SCL ], 0 }, 2 },
+#else
+#error "mcxPinState: say which pins this board's Wire1 is on"
+#endif
 #if defined( FRDM_MCXN947 )
 	// A153 has no Wire2 at all: a single physical I2C peripheral, already
 	// spoken for by Wire, makes a genuinely independent third I2C bus
@@ -250,6 +258,13 @@ const KnownInstance KNOWN_INSTANCES[]	=
 	// wins the physical bus) -- if both show up claimed simultaneously,
 	// owners_of()'s raw, name-agnostic count catches it as CONFLICT below.
 	{ "Serial1", "Serial", { (uint8_t)arduino_pin_by_number[ MB_TX ], (uint8_t)arduino_pin_by_number[ MB_RX ], 0 }, 2 },
+#elif defined( FRDM_MCXA156 )
+	// D0/D1 and the MikroBus UART are separate LPUARTs on this board, so it
+	// has a Serial2 as well.
+	{ "Serial1", "Serial", { (uint8_t)arduino_pin_by_number[ D0 ], (uint8_t)arduino_pin_by_number[ D1 ], 0 }, 2 },
+	{ "Serial2", "Serial", { (uint8_t)arduino_pin_by_number[ MB_TX ], (uint8_t)arduino_pin_by_number[ MB_RX ], 0 }, 2 },
+#else
+#error "mcxPinState: say where this board's Serial1 is"
 #endif
 };
 
