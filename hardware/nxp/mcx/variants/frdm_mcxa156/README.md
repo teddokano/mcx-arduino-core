@@ -73,5 +73,18 @@ FRDM-MCXA153のvariantとの違い:
 | `Wire`（D18/D19） | スキャンでオンボードのP3T1755（`0x48`）が見つかり、温度が読めた |
 | `Wire`・`Wire1`のターゲットモード | `test_Wire_target_self`が両方ともALL OK（`Wire1`の`LPI2C3`も応答する。N947の`LPI2C3`は応答しない） |
 | `release_check/01` | ALL OK（クロックの値、`Wire`でのセンサー、`Wire1`のスキャンを含む） |
+| `release_check/11`（D0-D1、D2-D3） | ALL OK（`Serial1`の12形式をRXピンからビット単位で、`end()`・`serialEvent1`、高速GPIO） |
+| `SPI`（D11-D12） | `test_SPI_bitorder_end_transfer16`が全項目OK |
+| `SPI1`（`MB_MOSI`-`MB_MISO`） | `test_SPI1_MikroBus`が全項目OK |
+| `release_check/12`（D11-D12、`MB_MOSI`-`MB_MISO`） | ALL OK（`SPI`の分割転送・旧API、`SPI1`を含む） |
+| `release_check/13`（D0-D1、D2-D3、D4-D5、D6-D7、`PWM0`（J3の5番）-D8） | ALL OK（`shiftOut`・`shiftIn`、`tone`を`pulseIn`で496us、`mcxRCServo`の16ビット分解能のパルスが499/1448/2399us） |
+| `release_check/21`（上の配線＋`MB_TX`-`MB_RX`） | 約57秒・285周でWARNINGなし。`Serial1`・`Serial2`のループバックは欠落なし、`SPI1`の折り返しは毎回一致、`Wire1`（何もつないでいないMikroBus）は毎回NAK（`134`）で止まらない |
 
-まだのもの: `Serial1`・`Serial2`のループバック、`SPI`・`SPI1`、`analogRead`・`analogWrite`・`tone`、割り込み、`release_check`の全項目。
+| `release_check/14`（D19-D8、D18-D7、`MB_SCL`-`MB_PWM`、`MB_SDA`-`MB_INT`） | ALL PASS（`Wire`・`Wire1`とも。上限は100kHzで約88ms、400kHzで約22ms） |
+| `Wire`と`Wire1`をつないだ形（`MB_SDA`-D18、`MB_SCL`-D19） | `test_Wire_Wire1_jumpered_A156`がALL OK（`Wire1`からP3T1755が`Wire`と同じ値で読める、400kHzでも読める、`Wire`↔`Wire1`のターゲットモードが両方向で動く、D18・D19をLOWに押さえると`Wire1`は8usで失敗を返し、離すと戻る） |
+
+| `release_check/04` | CONFLICT・MISMATCHなし（`Wire`・`Wire1`・`Serial1`・`Serial2`・`SPI1`・`PwmOut`・`AnalogIn`を同時に） |
+| `release_check/06` | 2回ともALL OK（自分でかけるリセットをまたいだ保持、前回のデータが書き込みのあとも残る） |
+| `release_check/07` | ALL OK（1000回のうち書き込み中に切られたのが759回、すべて書く前か書いた後の値に戻り、読めないフラッシュで起動したのは0回） |
+
+まだのもの: `analogRead`・`analogWrite`（`PWM0`以外）の波形、割り込み、`release_check`の残り（`02`・`03`・`22`・`24`）。
