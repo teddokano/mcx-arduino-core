@@ -87,4 +87,6 @@ FRDM-MCXA153のvariantとの違い:
 | `release_check/06` | 2回ともALL OK（自分でかけるリセットをまたいだ保持、前回のデータが書き込みのあとも残る） |
 | `release_check/07` | ALL OK（1000回のうち書き込み中に切られたのが759回、すべて書く前か書いた後の値に戻り、読めないフラッシュで起動したのは0回） |
 
-まだのもの: `analogRead`・`analogWrite`（`PWM0`以外）の波形、割り込み、`release_check`の残り（`02`・`03`・`22`・`24`）。
+| `release_check/03`（SW2＝`P1_7`） | 立ち下がりエッジで3回とも数え青LEDが切り替わる、`detachInterrupt()`後は反応しない、LOWレベルで押している間に数百万回 |
+
+まだのもの: `analogRead`・`analogWrite`（`PWM0`以外）の波形、`release_check`の残り（`02`・`22`・`24`）。
