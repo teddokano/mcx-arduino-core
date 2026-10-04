@@ -20,6 +20,12 @@ loopback-only sketch here can get.
    FRDM-MCXA153 and/or FRDM-MCXN947 (the SD card content used for this
    check is prepared to match `SDBitmapViewerDemo`, not the plainer
    `SDBitmapViewer` example).
+   `SDBitmapViewerDemo` stops with an `#error` on FRDM-MCXA156, so run
+   `SDBitmapViewer` there instead: the LCD and the SD card share the
+   bus just the same. Rename or remove the card's `/PLAYLIST.JSN` first
+   -- it is written for `SDBitmapViewerDemo`, and `SDBitmapViewer` would
+   read it as a list of file names. Without it, `SDBitmapViewer` shows
+   the `.bmp` files in the card's root.
 3. Check:
    - The bitmap renders correctly, with no diagonal streaking/noise
      (that was the CS-forced-to-PCS symptom -- the LCD's CS pin

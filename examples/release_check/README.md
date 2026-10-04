@@ -33,7 +33,7 @@ with one setup each:
 | 15 | `15_wire_wire1_jumpered_A156` | A156 only: MB_SDA-D18 + MB_SCL-D19, nothing else on either bus (joins `Wire` and `Wire1` into one bus) | automatic |
 | 21 | `21_combined_peripherals_external_module` | needs the external `P3T1755.h` library + (A153 and A156) D1-D0 jumper + (A156 only) MikroBus MB_TX-MB_RX jumper + MikroBus MOSI-MISO jumper | manual (watch the Serial log for WARNING lines) |
 | 22 | `22_wire_lm75b_external_module` | needs an external LM75-family sensor module on D18(SDA)/D19(SCL)/3V3/GND | manual (read the printed temperature) |
-| 23 | `23_waveshare_tft_touch_external_library` | needs the external `Waveshare_TFT_Touch` library + its LCD/SD hardware (see its own README) | manual (judge the rendered image + draw speed) |
+| 23 | `23_waveshare_tft_touch_external_library` | needs the external `Waveshare_TFT_Touch` library + its LCD/SD hardware (see its own README); on FRDM-MCXA156 its `SDBitmapViewer` example instead | manual (judge the rendered image + draw speed) |
 | 24 | `24_wire_target_two_boards` | an FRDM-MCXA153 (or FRDM-MCXA156) and an FRDM-MCXN947 wired D18-D18, D19-D19, GND-GND, both running this sketch (reset both together if either already was) | automatic, on each board |
 
 `06_eeprom` mirrors

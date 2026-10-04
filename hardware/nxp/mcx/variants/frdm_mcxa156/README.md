@@ -86,6 +86,8 @@ FRDM-MCXA153のvariantとの違い:
 | `release_check/06` | 2回ともALL OK（自分でかけるリセットをまたいだ保持、前回のデータが書き込みのあとも残る） |
 | `release_check/07` | ALL OK（1000回のうち書き込み中に切られたのが759回、すべて書く前か書いた後の値に戻り、読めないフラッシュで起動したのは0回） |
 | `release_check/08` | ALL OK（`attachInterrupt()`のあとも`pinMode()`のプルと出力が残る、`CHANGE`が両エッジ、`analogRead()`のあとの`pinMode()`で入力バッファが戻る） |
+| `analogRead`（`A0`〜`A5`、R75・R76を外したあと） | 6本とも動く |
+| `release_check/23`（Waveshare 2.8インチTFTタッチシールド） | `SDBitmapViewer`でSDカードのBMPが正しく描かれた（LCDとSDカードが`SPI`を分け合い、CSは`D10`・`D5`。`SDBitmapViewerDemo`はライブラリ側がこのボードを対象にしていない） |
 | `release_check/22`（外付けのLM75系モジュールをD18/D19に） | 温度が読めた（オンボードのP3T1755と同じバスで） |
 | `release_check/24`（N947とD18-D18、D19-D19、GND-GND） | 両ボードともALL OK |
 | Arduino IDE（macOS） | 3枚つないだまま書き込みとDebugボタン（ブレークポイント、ステップ実行）が動く。このボードのプローブは`LinkServer probes`の`Device`列が空で、gdb-bridgeはそれを選ぶ |
