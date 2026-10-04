@@ -16,8 +16,9 @@ the fact).
 
 The second has one row per mcx-arduino-core well-known global instance
 (`Wire`, `Wire1`, `Wire2` on FRDM-MCXN947, `SPI`, `SPI1`, `Serial`,
-`Serial1`), showing whether it's currently begun, which of its own pins
-it actually holds, and the same CONFLICT flagging as the first table.
+`Serial1`, `Serial2` on FRDM-MCXA156), showing whether it's currently
+begun, which of its own pins it actually holds, and the same CONFLICT
+flagging as the first table.
 
 Depends on mcx-arduino-core's internal pin representation directly — this
 library is not usable with any other Arduino core.
@@ -142,9 +143,10 @@ skipped -- there's nothing to compare against.
 
 ## Status
 
-Functional and verified on real hardware (both FRDM-MCXA153 and
-FRDM-MCXN947) -- ownership tracking (conflict detection), the MUX
-expectation cross-check, and IBE/open-drain/pull-resistor reporting.
+Functional and verified on real hardware (FRDM-MCXA153, FRDM-MCXN947
+and, from mcx-arduino-core 0.8.0, FRDM-MCXA156) -- ownership tracking
+(conflict detection), the MUX expectation cross-check, and
+IBE/open-drain/pull-resistor reporting.
 Development turned up three real bugs in mcx-arduino-core along the way,
 all fixed and confirmed on hardware there:
 
