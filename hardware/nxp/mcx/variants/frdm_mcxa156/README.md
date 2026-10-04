@@ -93,4 +93,6 @@ FRDM-MCXA153のvariantとの違い:
 | Arduino IDE（macOS） | 3枚つないだまま書き込みとDebugボタン（ブレークポイント、ステップ実行）が動く。このボードのプローブは`LinkServer probes`の`Device`列が空で、gdb-bridgeはそれを選ぶ |
 | `release_check/03`（SW2＝`P1_7`） | 立ち下がりエッジで3回とも数え青LEDが切り替わる、`detachInterrupt()`後は反応しない、LOWレベルで押している間に数百万回 |
 
+0.8.0の`attachInterrupt()`の修正のあと、R75・R76を外した同じ基板で`release_check`の`01`〜`04`・`06`〜`08`・`11`〜`15`・`21`〜`24`をすべて流し直し、どれも通った（2026-10-05）。
+
 `release_check/02`（目で見る確認）も通った: 全ピンの巡回、`PWM0`〜`PWM5`のduty、`PWM0`を変えても`PWM1`が変わらないこと、`analogWriteFrequency()`の4つの周波数、`D13`の`tone()`。`D2`のトグルは`digitalWrite()`で1.274MHz、SDKのAPIで43.619MHz。
