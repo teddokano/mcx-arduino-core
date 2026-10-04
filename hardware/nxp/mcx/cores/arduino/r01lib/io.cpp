@@ -488,14 +488,15 @@ DigitalInOut::DigitalInOut( uint8_t pin_num, bool direction, bool v, int pin_mod
 	
 	GPIO_PinInit( gpio_n, gpio_pin, &led_config );
 	mode( pin_mode );
-#if defined( CPU_MCXA156VLL )
-	//	On this chip every pin's input buffer is off out of reset (PCR.IBE
-	//	= 0, seen on hardware for all but P0_6 and P0_2), and the SDK's
-	//	pin_mux.c used here turns it on only for the debug UART. Without
-	//	it, digitalRead() reads 0, and so does every peripheral reading its
-	//	pin through here: LPI2C's SDA/SCL, LPSPI's SDI, interrupts. It is
-	//	turned on again in pin_mux(), which pinMode() calls, since AnalogIn
-	//	turns it off on its pins.
+#if defined( CPU_MCXA153VLH ) || defined( CPU_MCXN947VDF ) || defined( CPU_MCXA156VLL )
+	//	Without the input buffer (PCR.IBE) digitalRead() reads 0, and so
+	//	does every peripheral reading its pin through here: LPI2C's SDA/SCL,
+	//	LPSPI's SDI, interrupts. AnalogIn turns it off on its pins, on every
+	//	board, so a pin used by analogRead() needs it back. And on
+	//	MCXA156 every pin's buffer is off out of reset (seen on hardware for
+	//	all but P0_6 and P0_2), with the SDK's pin_mux.c used there turning
+	//	it on only for the debug UART. It is turned on again in pin_mux(),
+	//	which pinMode() calls.
 	input_buffer( true );
 #endif
 
@@ -552,7 +553,7 @@ void DigitalInOut::direction( bool dir )
 void DigitalInOut::pin_mux( int mux )
 {
 	PORT_SetPinMux( port_n, gpio_pin, (port_mux_t)mux );
-#if defined( CPU_MCXA156VLL )
+#if defined( CPU_MCXA153VLH ) || defined( CPU_MCXN947VDF ) || defined( CPU_MCXA156VLL )
 	input_buffer( true );	//	see the constructor
 #endif
 

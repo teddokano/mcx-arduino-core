@@ -7,12 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- FRDM-MCXA156 support: a third board, **FRDM-MCXA156 (mcx-arduino-core)** under Tools → Board.
+  The core assumes two changes to the board, both in [PIN_MAPPING_A156.md](PIN_MAPPING_A156.md):
+  R59/R60 moved to pins 2-3, so `SPI` reaches `D10`-`D13`, and R75/R76 removed, so `A4`/`A5` aren't
+  also wired to the CAN transceiver
+  - `Serial` over USB, `Serial1` on `D0`/`D1`, and `Serial2` on the MikroBus UART (`MB_TX`/`MB_RX`), with
+    `serialEvent2()`. `Serial2` is new, and this board is the only one with it
+  - `Wire` on `D18`/`D19`, where the on-board P3T1755 temperature sensor is (at `0x48`), and `Wire1` on the
+    MikroBus I2C (`MB_SDA`/`MB_SCL`). Both are plain I2C, so both have target mode and `setWireTimeout()`,
+    which the I3C-based `Wire1` of the other boards lacks
+  - `SPI` on `D10`-`D13` and `SPI1` on the MikroBus, `analogRead()` on `A0`-`A5`, `analogWrite()` on
+    `PWM0`-`PWM5`, `tone()`, interrupts, `EEPROM` (1KB), uploading and debugging
+- The example sketches that read the on-board sensor through `Wire1` use `Wire` on FRDM-MCXA156
+- New example sketches `test_attachInterrupt_keeps_pinMode` and `test_digitalRead_after_analogRead`
+  (the fixes below, no wiring), both also run by the new `release_check/08`
+- `release_check/15_wire_wire1_jumpered_A156`: FRDM-MCXA156's `Wire` and `Wire1` jumpered together
+  (`MB_SDA`-`D18`, `MB_SCL`-`D19`): the sensor from `Wire1`, each bus as the other's target, and a stuck bus
+
 ### Fixed
 - `attachInterrupt()` no longer undoes `pinMode()`. The first call on a pin set it to input with no
   pull, so `pinMode(pin, INPUT_PULLUP)` followed by `attachInterrupt()` (the usual way to wire a button
   or an open-drain INT line) left the pin floating unless something outside pulled it up, and an
   `OUTPUT` pin stopped driving. The pin now keeps its direction and pull, as on AVR
 - `attachInterrupt(pin, isr, CHANGE)` fired on the falling edge only. It now fires on both edges
+- A pin read with `analogRead()` could no longer be used as a digital pin: after `analogRead(A0)`,
+  `pinMode(A0, INPUT_PULLUP)` left `digitalRead(A0)` at 0, and an interrupt on the pin never fired.
+  `analogRead()` turns the pin's input buffer off, as the ADC needs, and nothing turned it back on
 
 ### Changed
 - Every board-specific branch in the core, the bundled libraries and the examples now names each
@@ -23,6 +44,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Debugging with several boards connected: gdb-bridge now also picks a probe that does not report
   its chip (the FRDM-MCXA156's on-board MCU-LINK leaves it blank), when it is the only such probe and
   no probe reports the board's chip
+- CI compiles every example for FRDM-MCXA156 too. A sketch whose directory name ends in a chip name
+  (`_N947`, `_A156`, ...) is built for that board only
 
 ## [0.7.1] - 2026-09-28
 

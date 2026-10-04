@@ -177,9 +177,9 @@ against it. Without them, the library stops the build with
    The area is used as two halves, and each half is erased whole, so
    each half must be a whole number of erase sectors
    (`FSL_FEATURE_SYSCON_FLASH_SECTOR_SIZE_BYTES` in the features header;
-   8KB on both existing chips). Each half must also hold the 128-byte
-   header, the 1KB image and a log of at least a few records. A153 uses
-   one 8KB sector per half (16KB); N947 uses 32KB per half (64KB).
+   8KB on every existing chip). Each half must also hold the 128-byte
+   header, the 1KB image and a log of at least a few records. A153 and
+   A156 use one 8KB sector per half (16KB); N947 uses 32KB per half (64KB).
    If the chip has two flash banks, put the area in the bank the program
    does not run from, as N947 does. Otherwise, interrupts are held off
    while flash is erased or written, as on A153.
@@ -342,9 +342,14 @@ FRDM-MCXA156 every pin's `PCR.IBE` reads 0 after reset except the ISP
 button's, and the SDK's template `pin_mux.c` turns it on only for the
 debug UART. FRDM-MCXA153 never showed this. With the buffer
 off, `digitalRead()` always returns 0, and `Wire` hangs on its first
-transfer, since the LPI2C never sees SCL go high. `DigitalInOut` turns
-the buffer on for that chip. If inputs read nothing or I2C stalls at
-once on a new board, print the pins' PCR values first.
+transfer, since the LPI2C never sees SCL go high. `AnalogIn` also turns
+the buffer off on its pins, on every board, so a pin that has been read
+with `analogRead()` needs it back before it works as a digital pin. Up to
+0.7.1 that was missing on FRDM-MCXA153 and FRDM-MCXN947 too. Now
+`DigitalInOut` turns the buffer on, in its constructor and in
+`pin_mux()`, on every MCX chip: add a new chip to that `#if`. If inputs
+read nothing or I2C stalls at once on a new board, print the pins' PCR
+values first.
 
 **A change in line count can break the binary comparison.** When a core
 change for the new board should leave the other boards untouched, their
@@ -391,7 +396,7 @@ Follow it; each step's tools depend on the previous one working.
 5. **All GPIO pins** — a walking-bit sketch over every named pin. This
    is what caught `pinMode()` failing to reclaim pins the boot code had
    muxed to a peripheral.
-6. **`examples/release_check/`** — the full sweep, both boards.
+6. **`examples/release_check/`** — the full sweep, every board.
 
 Do not trust a compile-clean sweep as evidence the board works. The
 source-distribution migration compiled 114 sketches on both boards and

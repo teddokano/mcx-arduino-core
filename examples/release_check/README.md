@@ -25,10 +25,12 @@ with one setup each:
 | 05 | `05_wire2_mikrobus_scan_N947` | none (N947 only -- `Wire2` doesn't exist on A153) | manual (confirm I2C traffic on a logic analyzer) |
 | 06 | `06_eeprom` | none | automatic, across one reset it does itself ("ALL OK" at the end). Run it again after: the new run checks the previous run's data came through the upload |
 | 07 | `07_eeprom_reset` | none | automatic, over 1000 resets it causes itself with the watchdog, about six minutes ("ALL OK" at the end). Run it after both runs of 06, since it overwrites the EEPROM |
+| 08 | `08_pin_modes_with_interrupts_and_analog` | none, with D2, D4, D5 and A0/A1 (A2/A3 on N947) left unconnected: it moves them with the internal pulls | automatic (reads "ALL OK"/"N FAILED") |
 | 11 | `11_serial1_and_gpio_loopback` | Serial1 TX/RX loopback jumper (D0-D1 on A153 and A156, MikroBus MB_TX-MB_RX on N947) + D2-D3 jumper | automatic |
 | 12 | `12_spi_loopback` | D11-D12 jumper + MikroBus MOSI-MISO jumper | automatic |
 | 13 | `13_shiftout_pulsein_loopback` | D0-D1, D2-D3, D4-D5, D6-D7 jumpers (4 adjacent pairs) + PWM0-D8 jumper | automatic |
 | 14 | `14_wire_timeout` | D19(SCL)-D8 + D18(SDA)-D7 jumpers, nothing else on `Wire`; on FRDM-MCXN947 also MB_SCL-MB_PWM + MB_SDA-MB_INT, for `Wire2`, and the same on FRDM-MCXA156, for `Wire1` | automatic |
+| 15 | `15_wire_wire1_jumpered_A156` | A156 only: MB_SDA-D18 + MB_SCL-D19, nothing else on either bus (joins `Wire` and `Wire1` into one bus) | automatic |
 | 21 | `21_combined_peripherals_external_module` | needs the external `P3T1755.h` library + (A153 and A156) D1-D0 jumper + (A156 only) MikroBus MB_TX-MB_RX jumper + MikroBus MOSI-MISO jumper | manual (watch the Serial log for WARNING lines) |
 | 22 | `22_wire_lm75b_external_module` | needs an external LM75-family sensor module on D18(SDA)/D19(SCL)/3V3/GND | manual (read the printed temperature) |
 | 23 | `23_waveshare_tft_touch_external_library` | needs the external `Waveshare_TFT_Touch` library + its LCD/SD hardware (see its own README) | manual (judge the rendered image + draw speed) |
@@ -50,6 +52,20 @@ exactly -- edit that one, then copy it here. It holds `Wire`'s SCL low
 from D8 in the middle of a transfer, standing in for a target that
 clock-stretches forever. D7/D8 run with internal pull-ups while released,
 alongside the ones `Wire.begin()` turns on for D18/D19.
+
+`08_pin_modes_with_interrupts_and_analog` runs
+[`Arduino_compatible_API/test_attachInterrupt_keeps_pinMode`](../Arduino_compatible_API/test_attachInterrupt_keeps_pinMode)
+and
+[`Arduino_compatible_API/test_digitalRead_after_analogRead`](../Arduino_compatible_API/test_digitalRead_after_analogRead)
+in one sketch. It is not part of `01` because `01` already fills
+FRDM-MCXA153's flash (99% before these were added).
+
+`15_wire_wire1_jumpered_A156` exists only here (FRDM-MCXA156 only, so
+CI builds it for that board alone). The two jumpers join `Wire` (D18/D19,
+where that board's on-board P3T1755 sits) and `Wire1` (the MikroBus I2C)
+into one bus, with both boards' pull-ups in parallel: `Wire1` reads the
+sensor, each bus is the other's target, and `Wire1` gives up at once when
+D18/D19 are held low as GPIOs.
 
 `04_mcxpinstate_audit` is a copy of the bundled `mcxPinState` library's
 own `CombinedPeripheralsAudit` example, kept here so a release check

@@ -1,4 +1,4 @@
-/** FRDM-MCXA156 only: Wire (D18/D19, LPI2C0) and Wire1 (MikroBus
+/** Release check 15 (FRDM-MCXA156 only): Wire (D18/D19, LPI2C0) and Wire1 (MikroBus
  *  MB_SDA/MB_SCL, LPI2C3) joined into one bus with two jumpers, so that
  *
  *    - Wire1 reaches the on-board P3T1755 (0x48), which sits on D18/D19
