@@ -23,7 +23,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.7.1</span>
+   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.8.0</span>
    </div>
    <div id="projectbrief">Arduino board support package for NXP FRDM MCX Series boards</div>
   </td>
@@ -239,11 +239,11 @@ Additional Inherited Members</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Arduino-compatible <a class="el" href="class_i2_c.html">I2C</a> (Wire) class.</p>
-<p>Wraps an r01lib <a class="el" href="class_i2_c.html">I2C</a> (or, when sda_pin/scl_pin are this board's <a class="el" href="class_i3_c.html">I3C</a> pins, an <a class="el" href="class_i3_c.html">I3C</a> running in legacy I2C_MODE) behind the classic Arduino two-phase Wire API: <a class="el" href="#a2a4cd89f6d0f239bba85c0d70a9c1969">beginTransmission()</a>/write()/ <a class="el" href="#aff155a1530c1bf8a5ad96e6e30c2821a">endTransmission()</a> buffer up a transaction locally, sent as one <a class="el" href="#ae7d4db93ec4f9cf27a81c9aea5629b0c">write()</a> to the target on <a class="el" href="#aff155a1530c1bf8a5ad96e6e30c2821a">endTransmission()</a>; <a class="el" href="#aea9b0478fb81b05bff3934e8a5044e5c">requestFrom()</a>/available()/read() work the same way for reads.</p>
+<p>Wraps an r01lib <a class="el" href="class_i2_c.html">I2C</a> (or, when sda_pin/scl_pin are this board's <a class="el" href="class_i3_c.html">I3C</a> pins, an <a class="el" href="class_i3_c.html">I3C</a> running in legacy I2C_MODE; not on FRDM-MCXA156, where every <a class="el" href="class_two_wire.html">TwoWire</a> is an LPI2C) behind the classic Arduino two-phase Wire API: <a class="el" href="#a2a4cd89f6d0f239bba85c0d70a9c1969">beginTransmission()</a>/write()/ <a class="el" href="#aff155a1530c1bf8a5ad96e6e30c2821a">endTransmission()</a> buffer up a transaction locally, sent as one <a class="el" href="#ae7d4db93ec4f9cf27a81c9aea5629b0c">write()</a> to the target on <a class="el" href="#aff155a1530c1bf8a5ad96e6e30c2821a">endTransmission()</a>; <a class="el" href="#aea9b0478fb81b05bff3934e8a5044e5c">requestFrom()</a>/available()/read() work the same way for reads.</p>
 <p>A <a class="el" href="class_stream.html">Stream</a>, as in every official core: <a class="el" href="class_print.html#a4ba8a908c5e7297f219849355d1c90f9">print()</a> goes into the transaction being built, and the parse/find/readBytes helpers read what the last <a class="el" href="#aea9b0478fb81b05bff3934e8a5044e5c">requestFrom()</a> got, so a Wire can be handed to code that takes a <a class="el" href="class_print.html">Print</a>&amp; or <a class="el" href="class_stream.html">Stream</a>&amp;. The outgoing and incoming data have separate buffers, so starting a transaction does not throw away bytes not yet read.</p>
-<p>begin(address) also makes it a target (slave), as on AVR: <a class="el" href="#a7a3448f4e65902faedff1eac8f5ac5cc">onReceive()</a> and <a class="el" href="#a957e81e816b2d5e7184c3a769e59a4e1">onRequest()</a> handlers run, from the interrupt, when a controller writes to or reads from that address, and the bus can still be used as a controller at the same time. Wire only: Wire1 runs on the <a class="el" href="class_i3_c.html">I3C</a> peripheral, and Wire2's LPI2C on FRDM-MCXN947 doesn't respond as a target (see <a class="el" href="#a96f2477bba1630c25b9e318ced8585ab">begin(uint8_t)</a>). </p>
+<p>begin(address) also makes it a target (slave), as on AVR: <a class="el" href="#a7a3448f4e65902faedff1eac8f5ac5cc">onReceive()</a> and <a class="el" href="#a957e81e816b2d5e7184c3a769e59a4e1">onRequest()</a> handlers run, from the interrupt, when a controller writes to or reads from that address, and the bus can still be used as a controller at the same time. Not on Wire1 where it runs on the <a class="el" href="class_i3_c.html">I3C</a> peripheral (FRDM-MCXA153 and FRDM-MCXN947), and not on FRDM-MCXN947's Wire2, whose LPI2C doesn't respond as a target (see <a class="el" href="#a96f2477bba1630c25b9e318ced8585ab">begin(uint8_t)</a>). </p>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00050">50</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00052">52</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 </div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a5fa75b7b2ac33b8a92a7fb0d4b8d4f41" name="a5fa75b7b2ac33b8a92a7fb0d4b8d4f41"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a5fa75b7b2ac33b8a92a7fb0d4b8d4f41">&#9670;&#160;</a></span>TwoWire()</h2>
@@ -271,7 +271,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00065">65</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00073">73</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -302,7 +302,7 @@ Additional Inherited Members</h2></td></tr>
 
 <p>Implements <a class="el" href="class_stream.html#a581d4e5d65d14b52406f65be388bae96">Stream</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00504">504</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00520">520</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -328,7 +328,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00108">108</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00124">124</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -346,7 +346,7 @@ Additional Inherited Members</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Join the bus as a target (slave) at the given address, as well as a controller, as in every official core. Controller transfers keep working alongside. Calls <a class="el" href="mcu_8cpp.html#ad3cdbe388204f1d2a626f695cf59ddbb">panic()</a> for an address over 127, and on any bus but Wire: Wire1 runs on the <a class="el" href="class_i3_c.html">I3C</a> peripheral, and FRDM-MCXN947's Wire2 (LPI2C3) never sees the bus as a target, though it works as a controller and is set up the same as Wire's LPI2C2, which does.</p>
+<p>Join the bus as a target (slave) at the given address, as well as a controller, as in every official core. Controller transfers keep working alongside. Calls <a class="el" href="mcu_8cpp.html#ad3cdbe388204f1d2a626f695cf59ddbb">panic()</a> for an address over 127, and on Wire1 where it runs on the <a class="el" href="class_i3_c.html">I3C</a> peripheral (FRDM-MCXA153 and FRDM-MCXN947), and on FRDM-MCXN947's Wire2 (LPI2C3), which never sees the bus as a target, though it works as a controller and is set up the same as Wire's LPI2C2, which does.</p>
 <p>A later <a class="el" href="#aa66b28250a467de8ba1c7da97872e74a">begin()</a> with no address goes back to controller only. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">address</td><td>the target's own 7-bit address </td></tr>
@@ -354,7 +354,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00082">82</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00098">98</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -374,7 +374,7 @@ Additional Inherited Members</h2></td></tr>
 </div><div class="memdoc">
 <p>Join the bus as the controller (master), at 100kHz; <a class="el" href="#a1a575ef5585ac41f10b9d10de54b6bc6">setClock()</a> changes that. Lazily creates the underlying <a class="el" href="class_i2_c.html">I2C</a> or <a class="el" href="class_i3_c.html">I3C</a> instance (<a class="el" href="class_i3_c.html">I3C</a>, in I2C_MODE, if sda_pin/scl_pin are this board's I3C_SDA/I3C_SCL). On the LPI2C buses (Wire, Wire2) it also turns on the pins' internal pull-ups, as AVR and UNO R4 do. </p>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00076">76</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00092">92</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -399,7 +399,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00374">374</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00390">390</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -426,7 +426,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00487">487</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00503">503</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -446,7 +446,7 @@ Additional Inherited Members</h2></td></tr>
 </div><div class="memdoc">
 <p>Clear the flag <a class="el" href="#a8276178adf940a550b8d71082c735c44">getWireTimeoutFlag()</a> reports. </p>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00482">482</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00498">498</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -466,7 +466,7 @@ Additional Inherited Members</h2></td></tr>
 </div><div class="memdoc">
 <p>Deinitialize the bus, target side included, turn the internal pull-ups off again (as AVR does), and free the underlying I2C/I3C instance. </p>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00350">350</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00366">366</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -492,7 +492,7 @@ Additional Inherited Members</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>0 on success, non-zero status code on failure </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00414">414</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00430">430</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -522,7 +522,7 @@ Additional Inherited Members</h2></td></tr>
 
 <p>Reimplemented from <a class="el" href="class_print.html#a26dfe3ee0d55233c117464b91b9b9cdc">Print</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00198">198</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00201">201</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -542,7 +542,7 @@ Additional Inherited Members</h2></td></tr>
 </div><div class="memdoc">
 <dl class="section return"><dt>Returns</dt><dd>true if a transfer has timed out since the flag was last cleared </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00477">477</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00493">493</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -569,7 +569,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00071">71</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00079">79</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -595,7 +595,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00121">121</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00137">137</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -620,7 +620,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00126">126</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00142">142</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -650,7 +650,7 @@ Additional Inherited Members</h2></td></tr>
 
 <p>Implements <a class="el" href="class_stream.html#ae32bb452cfa163b14bde00ce292737f5">Stream</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00516">516</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00532">532</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -680,7 +680,7 @@ Additional Inherited Members</h2></td></tr>
 
 <p>Implements <a class="el" href="class_stream.html#a58207b97e74e5500a85f1ac88199636f">Stream</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00509">509</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00525">525</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -717,7 +717,7 @@ Additional Inherited Members</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>number of bytes actually read (0 on failure) </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00422">422</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00438">438</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -767,7 +767,7 @@ Additional Inherited Members</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>number of bytes actually read; 0 if the target did not acknowledge the register address, where AVR goes on to attempt the read anyway </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00444">444</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00460">460</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -792,7 +792,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00361">361</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00377">377</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -817,7 +817,7 @@ Additional Inherited Members</h2></td></tr>
 <p>Abort a transfer instead of hanging when a target holds the bus.</p>
 <p>Same signature and defaults as ArduinoCore-avr. Disabled until called, as on AVR. Can be called before or after <a class="el" href="#aa66b28250a467de8ba1c7da97872e74a">begin()</a>.</p>
 <p>What is timed is how long SCL or SDA stays low in one stretch (the LPI2C's hardware pin-low timeout), not the whole transaction: a target clock-stretching or holding SDA past the limit trips it; a long transfer that keeps the bus moving does not. The hardware counter caps the limit: ~87ms on FRDM-MCXN947 at any speed, but on FRDM-MCXA153 ~87ms at 100kHz and only ~21.8ms at 400kHz, so even the 25ms default is clamped there. Longer values are clamped to the cap.</p>
-<p>No effect on Wire1: that bus runs on the <a class="el" href="class_i3_c.html">I3C</a> peripheral rather than LPI2C, and is not covered, so <a class="el" href="#a8276178adf940a550b8d71082c735c44">getWireTimeoutFlag()</a> stays false there.</p>
+<p>No effect on Wire1 where it runs on the <a class="el" href="class_i3_c.html">I3C</a> peripheral rather than LPI2C (FRDM-MCXA153 and FRDM-MCXN947): it is not covered, so <a class="el" href="#a8276178adf940a550b8d71082c735c44">getWireTimeoutFlag()</a> stays false there. FRDM-MCXA156's Wire1 is an LPI2C and is covered.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">timeout</td><td>limit in microseconds, 0 to disable (default 25ms) </td></tr>
@@ -826,7 +826,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00467">467</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00483">483</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -853,7 +853,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00263">263</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00279">279</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -880,7 +880,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00131">131</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00147">147</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -900,7 +900,7 @@ Additional Inherited Members</h2></td></tr>
 </div><div class="memdoc">
 <p>Internal: target-side event from the LPI2C slave interrupt. </p>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00174">174</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00190">190</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -927,7 +927,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00158">158</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00174">174</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -1012,7 +1012,7 @@ Additional Inherited Members</h2></td></tr>
 
 <p>Reimplemented from <a class="el" href="class_print.html#ad98d820df11e2697be1e4b1ea30b4a23">Print</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00404">404</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00420">420</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -1039,7 +1039,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00150">150</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00153">153</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -1066,7 +1066,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00148">148</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00151">151</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -1102,7 +1102,7 @@ Additional Inherited Members</h2></td></tr>
 
 <p>Implements <a class="el" href="class_print.html#ab9195b97274029f693aaddce6c7a0021">Print</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00380">380</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00396">396</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -1129,7 +1129,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00149">149</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00152">152</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -1156,7 +1156,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00147">147</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00150">150</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -1181,7 +1181,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00238">238</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00243">243</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -1205,7 +1205,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00237">237</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00242">242</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -1229,7 +1229,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00241">241</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00246">246</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -1253,7 +1253,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00239">239</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00244">244</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -1277,7 +1277,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00253">253</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00258">258</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -1301,7 +1301,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00244">244</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00249">249</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -1325,7 +1325,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00245">245</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00250">250</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -1349,7 +1349,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00247">247</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00252">252</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -1373,7 +1373,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00248">248</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00253">253</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -1397,7 +1397,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00240">240</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00245">245</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -1421,7 +1421,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00249">249</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00254">254</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -1445,7 +1445,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00254">254</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00259">259</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -1469,7 +1469,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00252">252</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00257">257</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -1493,7 +1493,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00242">242</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00247">247</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -1517,7 +1517,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00243">243</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00248">248</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -1541,7 +1541,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00250">250</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00255">255</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -1565,7 +1565,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00251">251</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00256">256</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>

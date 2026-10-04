@@ -23,7 +23,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.7.1</span>
+   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.8.0</span>
    </div>
    <div id="projectbrief">Arduino board support package for NXP FRDM MCX Series boards</div>
   </td>
@@ -98,6 +98,8 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 </div><!-- top -->
 <div id="doc-content">
 <div class="header">
+  <div class="summary">
+<a href="#define-members">Macros</a>  </div>
   <div class="headertitle"><div class="title">AnalogIn.cpp File Reference</div></div>
 </div><!--header-->
 <div class="contents">
@@ -110,6 +112,15 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 <code>#include &quot;<a class="el" href="pin__registry_8h_source.html">pin_registry.h</a>&quot;</code><br />
 </div>
 <p><a href="_analog_in_8cpp_source.html">Go to the source code of this file.</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-define-members" class="groupheader"><a id="define-members" name="define-members"></a>
+Macros</h2></td></tr>
+<tr class="memitem:a62a6834eb87a672b6b197a2d1d59b7e0" id="r_a62a6834eb87a672b6b197a2d1d59b7e0"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#a62a6834eb87a672b6b197a2d1d59b7e0">ANALOGIN_ADC</a>&#160;&#160;&#160;ADC0</td></tr>
+<tr class="memitem:a1b681b0f1e81c7af8b13129ac580a808" id="r_a1b681b0f1e81c7af8b13129ac580a808"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#a1b681b0f1e81c7af8b13129ac580a808">ANALOGIN_ADC_GATE</a>&#160;&#160;&#160;kCLOCK_GateADC0</td></tr>
+<tr class="memitem:a87b925ef727e41eccd3536cd05cd88b7" id="r_a87b925ef727e41eccd3536cd05cd88b7"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#a87b925ef727e41eccd3536cd05cd88b7">ANALOGIN_ADC_RST</a>&#160;&#160;&#160;kADC0_RST_SHIFT_RSTn</td></tr>
+<tr class="memitem:a7d4d5693ae77ca77146c0c2b62e80dc1" id="r_a7d4d5693ae77ca77146c0c2b62e80dc1"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#a7d4d5693ae77ca77146c0c2b62e80dc1">ANALOGIN_ADC_DIV</a>&#160;&#160;&#160;kCLOCK_DivADC0</td></tr>
+<tr class="memitem:a33eb91802861c4184661346c0a94ac55" id="r_a33eb91802861c4184661346c0a94ac55"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#a33eb91802861c4184661346c0a94ac55">ANALOGIN_ADC_CLK</a>&#160;&#160;&#160;kFRO12M_to_ADC0</td></tr>
+</table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Mbed-compatible <a class="el" href="class_analog_in.html" title="Mbed-compatible single-shot ADC input class.">AnalogIn</a> implementation for r01lib (FRDM-MCXA153). </p>
 <p>Verified against the FRDM-MCXA153 SDK LPADC polling example (examples/driver_examples/lpadc/polling) before writing this file:</p><ul>
@@ -122,7 +133,88 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 <dl class="section copyright"><dt>Copyright</dt><dd>MIT License </dd></dl>
 
 <p class="definition">Definition in file <a class="el" href="_analog_in_8cpp_source.html">AnalogIn.cpp</a>.</p>
-</div></div><!-- contents -->
+</div><a name="doc-define-members" id="doc-define-members"></a><h2 id="header-doc-define-members" class="groupheader">Macro Definition Documentation</h2>
+<a id="a62a6834eb87a672b6b197a2d1d59b7e0" name="a62a6834eb87a672b6b197a2d1d59b7e0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a62a6834eb87a672b6b197a2d1d59b7e0">&#9670;&#160;</a></span>ANALOGIN_ADC</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ANALOGIN_ADC&#160;&#160;&#160;ADC0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="_analog_in_8cpp_source.html#l00041">41</a> of file <a class="el" href="_analog_in_8cpp_source.html">AnalogIn.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a33eb91802861c4184661346c0a94ac55" name="a33eb91802861c4184661346c0a94ac55"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a33eb91802861c4184661346c0a94ac55">&#9670;&#160;</a></span>ANALOGIN_ADC_CLK</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ANALOGIN_ADC_CLK&#160;&#160;&#160;kFRO12M_to_ADC0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="_analog_in_8cpp_source.html#l00045">45</a> of file <a class="el" href="_analog_in_8cpp_source.html">AnalogIn.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a7d4d5693ae77ca77146c0c2b62e80dc1" name="a7d4d5693ae77ca77146c0c2b62e80dc1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7d4d5693ae77ca77146c0c2b62e80dc1">&#9670;&#160;</a></span>ANALOGIN_ADC_DIV</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ANALOGIN_ADC_DIV&#160;&#160;&#160;kCLOCK_DivADC0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="_analog_in_8cpp_source.html#l00044">44</a> of file <a class="el" href="_analog_in_8cpp_source.html">AnalogIn.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a1b681b0f1e81c7af8b13129ac580a808" name="a1b681b0f1e81c7af8b13129ac580a808"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1b681b0f1e81c7af8b13129ac580a808">&#9670;&#160;</a></span>ANALOGIN_ADC_GATE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ANALOGIN_ADC_GATE&#160;&#160;&#160;kCLOCK_GateADC0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="_analog_in_8cpp_source.html#l00042">42</a> of file <a class="el" href="_analog_in_8cpp_source.html">AnalogIn.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a87b925ef727e41eccd3536cd05cd88b7" name="a87b925ef727e41eccd3536cd05cd88b7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a87b925ef727e41eccd3536cd05cd88b7">&#9670;&#160;</a></span>ANALOGIN_ADC_RST</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ANALOGIN_ADC_RST&#160;&#160;&#160;kADC0_RST_SHIFT_RSTn</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="_analog_in_8cpp_source.html#l00043">43</a> of file <a class="el" href="_analog_in_8cpp_source.html">AnalogIn.cpp</a>.</p>
+
+</div>
+</div>
+</div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.18.0

@@ -23,7 +23,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.7.1</span>
+   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.8.0</span>
    </div>
    <div id="projectbrief">Arduino board support package for NXP FRDM MCX Series boards</div>
   </td>
@@ -605,471 +605,482 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 <div class="line"><a id="l00531" name="l00531"></a><span class="lineno">  531</span><span class="preprocessor">    #define D7      P1_14</span></div>
 <div class="line"><a id="l00532" name="l00532"></a><span class="lineno">  532</span><span class="preprocessor">    #define D8      P1_15</span></div>
 <div class="line"><a id="l00533" name="l00533"></a><span class="lineno">  533</span><span class="preprocessor">    #define D9      P3_17</span></div>
-<div class="line"><a id="l00534" name="l00534"></a><span class="lineno">  534</span><span class="preprocessor">    #define D10     P3_13</span></div>
-<div class="line"><a id="l00535" name="l00535"></a><span class="lineno">  535</span><span class="preprocessor">    #define D11     P3_15</span></div>
-<div class="line"><a id="l00536" name="l00536"></a><span class="lineno">  536</span><span class="preprocessor">    #define D12     P2_16</span></div>
-<div class="line"><a id="l00537" name="l00537"></a><span class="lineno">  537</span><span class="preprocessor">    #define D13     P2_12</span></div>
-<div class="line"><a id="l00538" name="l00538"></a><span class="lineno">  538</span><span class="preprocessor">    #define D18     P0_16</span></div>
-<div class="line"><a id="l00539" name="l00539"></a><span class="lineno">  539</span><span class="preprocessor">    #define D19     P0_17</span></div>
-<div class="line"><a id="l00540" name="l00540"></a><span class="lineno">  540</span><span class="preprocessor">    #define A0      P1_10</span></div>
-<div class="line"><a id="l00541" name="l00541"></a><span class="lineno">  541</span><span class="preprocessor">    #define A1      P2_5</span></div>
-<div class="line"><a id="l00542" name="l00542"></a><span class="lineno">  542</span><span class="preprocessor">    #define A2      P2_3</span></div>
-<div class="line"><a id="l00543" name="l00543"></a><span class="lineno">  543</span><span class="preprocessor">    #define A3      P2_4</span></div>
-<div class="line"><a id="l00544" name="l00544"></a><span class="lineno">  544</span><span class="preprocessor">    #define A4      P1_12</span></div>
-<div class="line"><a id="l00545" name="l00545"></a><span class="lineno">  545</span><span class="preprocessor">    #define A5      P1_13</span></div>
-<div class="line"><a id="l00546" name="l00546"></a><span class="lineno">  546</span><span class="preprocessor">    #define SW2     P1_7</span></div>
-<div class="line"><a id="l00547" name="l00547"></a><span class="lineno">  547</span><span class="preprocessor">    #define SW3     P0_6</span></div>
-<div class="line"><a id="l00548" name="l00548"></a><span class="lineno">  548</span><span class="preprocessor">    #define MB_AN   P3_30</span></div>
-<div class="line"><a id="l00549" name="l00549"></a><span class="lineno">  549</span><span class="preprocessor">    #define MB_RST  P3_29</span></div>
-<div class="line"><a id="l00550" name="l00550"></a><span class="lineno">  550</span><span class="preprocessor">    #define MB_CS   P1_3</span></div>
-<div class="line"><a id="l00551" name="l00551"></a><span class="lineno">  551</span><span class="preprocessor">    #define MB_SCK  P1_1</span></div>
-<div class="line"><a id="l00552" name="l00552"></a><span class="lineno">  552</span><span class="preprocessor">    #define MB_MISO P1_2</span></div>
-<div class="line"><a id="l00553" name="l00553"></a><span class="lineno">  553</span><span class="preprocessor">    #define MB_MOSI P1_0</span></div>
-<div class="line"><a id="l00554" name="l00554"></a><span class="lineno">  554</span><span class="preprocessor">    #define MB_PWM  P3_18</span></div>
-<div class="line"><a id="l00555" name="l00555"></a><span class="lineno">  555</span><span class="preprocessor">    #define MB_INT  P3_19</span></div>
-<div class="line"><a id="l00556" name="l00556"></a><span class="lineno">  556</span><span class="preprocessor">    #define MB_RX   P3_20</span></div>
-<div class="line"><a id="l00557" name="l00557"></a><span class="lineno">  557</span><span class="preprocessor">    #define MB_TX   P3_21</span></div>
-<div class="line"><a id="l00558" name="l00558"></a><span class="lineno">  558</span><span class="preprocessor">    #define MB_SCL  P3_27</span></div>
-<div class="line"><a id="l00559" name="l00559"></a><span class="lineno">  559</span><span class="preprocessor">    #define MB_SDA  P3_28</span></div>
-<div class="line"><a id="l00560" name="l00560"></a><span class="lineno">  560</span><span class="preprocessor">    #define RED     D3</span></div>
-<div class="line"><a id="l00561" name="l00561"></a><span class="lineno">  561</span><span class="preprocessor">    #define GREEN   D10</span></div>
-<div class="line"><a id="l00562" name="l00562"></a><span class="lineno">  562</span><span class="preprocessor">    #define BLUE    P3_0</span></div>
-<div class="line"><a id="l00563" name="l00563"></a><span class="lineno">  563</span> </div>
-<div class="line"><a id="l00564" name="l00564"></a><span class="lineno">  564</span><span class="preprocessor">    #define I3C_SDA     D18</span></div>
-<div class="line"><a id="l00565" name="l00565"></a><span class="lineno">  565</span><span class="preprocessor">    #define I3C_SCL     D19</span></div>
-<div class="line"><a id="l00566" name="l00566"></a><span class="lineno">  566</span><span class="preprocessor">    #define I2C_SDA     D18</span></div>
-<div class="line"><a id="l00567" name="l00567"></a><span class="lineno">  567</span><span class="preprocessor">    #define I2C_SCL     D19</span></div>
-<div class="line"><a id="l00568" name="l00568"></a><span class="lineno">  568</span><span class="preprocessor">    #define SPI_CS      MB_CS</span></div>
-<div class="line"><a id="l00569" name="l00569"></a><span class="lineno">  569</span><span class="preprocessor">    #define SPI_MOSI    MB_MOSI</span></div>
-<div class="line"><a id="l00570" name="l00570"></a><span class="lineno">  570</span><span class="preprocessor">    #define SPI_MISO    MB_MISO</span></div>
-<div class="line"><a id="l00571" name="l00571"></a><span class="lineno">  571</span><span class="preprocessor">    #define SPI_SCLK    MB_SCK</span></div>
-<div class="line"><a id="l00572" name="l00572"></a><span class="lineno">  572</span><span class="preprocessor">    #define ARD_CS      P2_6</span></div>
-<div class="line"><a id="l00573" name="l00573"></a><span class="lineno">  573</span><span class="preprocessor">    #define ARD_MOSI    P2_13</span></div>
-<div class="line"><a id="l00574" name="l00574"></a><span class="lineno">  574</span><span class="preprocessor">    #define ARD_MISO    D12</span></div>
-<div class="line"><a id="l00575" name="l00575"></a><span class="lineno">  575</span><span class="preprocessor">    #define ARD_SCK     D13</span></div>
-<div class="line"><a id="l00576" name="l00576"></a><span class="lineno">  576</span> </div>
-<div class="line"><a id="l00577" name="l00577"></a><span class="lineno">  577</span><span class="preprocessor">    #define USBTX       P0_3</span></div>
-<div class="line"><a id="l00578" name="l00578"></a><span class="lineno">  578</span><span class="preprocessor">    #define USBRX       P0_2</span></div>
-<div class="line"><a id="l00579" name="l00579"></a><span class="lineno">  579</span> </div>
-<div class="line"><a id="l00580" name="l00580"></a><span class="lineno">  580</span><span class="preprocessor">    #define PIN_LED_OFF true</span></div>
-<div class="line"><a id="l00581" name="l00581"></a><span class="lineno">  581</span><span class="preprocessor">    #define PIN_LED_ON  false</span></div>
-<div class="line"><a id="l00582" name="l00582"></a><span class="lineno">  582</span> </div>
-<div class="line"><a id="l00583" name="l00583"></a><span class="lineno">  583</span><span class="preprocessor">#elif   CPU_MCXA153VLH</span></div>
-<div class="line"><a id="l00584" name="l00584"></a><span class="lineno">  584</span> </div>
-<div class="line"><a id="l00585" name="l00585"></a><span class="lineno">  585</span> </div>
-<div class="line"><a id="l00586" name="l00586"></a><span class="lineno">  586</span><span class="keyword">enum</span> {  </div>
-<div class="line"><a id="l00587" name="l00587"></a><span class="lineno">  587</span>    <a class="code hl_define" href="io_8cpp.html#ac1ce626a969ca4e6c05c76611217dd92">DISABLED_PIN</a>, </div>
-<div class="line"><a id="l00588" name="l00588"></a><span class="lineno">  588</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a23d505c049c81443b12e53d5b00b1be9">P0_0</a>,</div>
-<div class="line"><a id="l00589" name="l00589"></a><span class="lineno">  589</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a8c239764fe5c947cad341b176d49eb73">P0_1</a>,</div>
-<div class="line"><a id="l00590" name="l00590"></a><span class="lineno">  590</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a950df72443b521531bc3be8f4058fd85">P0_2</a>,</div>
-<div class="line"><a id="l00591" name="l00591"></a><span class="lineno">  591</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a7dd012609401076ec68c99a41fcf12bc">P0_3</a>,</div>
-<div class="line"><a id="l00592" name="l00592"></a><span class="lineno">  592</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a5429399e7b50e30b878487fc4512a1c8">P0_6</a>,</div>
-<div class="line"><a id="l00593" name="l00593"></a><span class="lineno">  593</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611abb74b4352a026355d8bc0a3fb1225c1f">P0_16</a>,</div>
-<div class="line"><a id="l00594" name="l00594"></a><span class="lineno">  594</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a0a9ad951bc08aaf6f0da9d82a5e32bd3">P0_17</a>,</div>
-<div class="line"><a id="l00595" name="l00595"></a><span class="lineno">  595</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611aa25f499b57adc3dae9ca1a877f47f2af">P1_0</a>,</div>
-<div class="line"><a id="l00596" name="l00596"></a><span class="lineno">  596</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611ab0d32687fab06c4263f65b6741adf308">P1_1</a>,</div>
-<div class="line"><a id="l00597" name="l00597"></a><span class="lineno">  597</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a12c69ba58f68ac9252a9e84170e354c7">P1_2</a>,</div>
-<div class="line"><a id="l00598" name="l00598"></a><span class="lineno">  598</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611ac964ac363209c16f9e842d139f1821df">P1_3</a>,</div>
-<div class="line"><a id="l00599" name="l00599"></a><span class="lineno">  599</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a2712fb6be5ef97fd9f5a9b42baaf5f05">P1_4</a>,</div>
-<div class="line"><a id="l00600" name="l00600"></a><span class="lineno">  600</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611adb0a4a23b91349a0f85a26ee16c2299c">P1_5</a>,</div>
-<div class="line"><a id="l00601" name="l00601"></a><span class="lineno">  601</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a1c09e634fa0f157f766022d25ea2860d">P1_6</a>,</div>
-<div class="line"><a id="l00602" name="l00602"></a><span class="lineno">  602</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a4e756b641c82fc50cd1e02b5b2645d60">P1_7</a>,</div>
-<div class="line"><a id="l00603" name="l00603"></a><span class="lineno">  603</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611af542b4d5d90d5003c47f4d6b889426de">P1_8</a>,</div>
-<div class="line"><a id="l00604" name="l00604"></a><span class="lineno">  604</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a021517e6ff32864840f418b0eab9a585">P1_9</a>,</div>
-<div class="line"><a id="l00605" name="l00605"></a><span class="lineno">  605</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a03b64a5c9ea8e09183c92d07a27f0477">P1_10</a>,</div>
-<div class="line"><a id="l00606" name="l00606"></a><span class="lineno">  606</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a420e23165eac11e06a535f82c07d9da0">P1_11</a>,</div>
-<div class="line"><a id="l00607" name="l00607"></a><span class="lineno">  607</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611ad862965e553531678890af8f2168a139">P1_12</a>,</div>
-<div class="line"><a id="l00608" name="l00608"></a><span class="lineno">  608</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611ab0bcc4b16519b87bbfd92a1a720eaa5d">P1_13</a>,</div>
-<div class="line"><a id="l00609" name="l00609"></a><span class="lineno">  609</span>    P1_29,</div>
-<div class="line"><a id="l00610" name="l00610"></a><span class="lineno">  610</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a665527bf5a59afd41af694cd9cc900bb">P1_30</a>,</div>
-<div class="line"><a id="l00611" name="l00611"></a><span class="lineno">  611</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a3e8a2381b895967ef4a85171d0ebac0e">P1_31</a>,</div>
-<div class="line"><a id="l00612" name="l00612"></a><span class="lineno">  612</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611aeeaaeb6232b5bd27b3d18c1699737e31">P2_0</a>,</div>
-<div class="line"><a id="l00613" name="l00613"></a><span class="lineno">  613</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a33daef487e90b1d8ee897624249d060e">P2_1</a>,</div>
-<div class="line"><a id="l00614" name="l00614"></a><span class="lineno">  614</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a10b4a9ccdcdec6c07ceedf09708bed1a">P2_2</a>,</div>
-<div class="line"><a id="l00615" name="l00615"></a><span class="lineno">  615</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611ae1949ab941c558f0c66b48e8463bbada">P2_3</a>,</div>
-<div class="line"><a id="l00616" name="l00616"></a><span class="lineno">  616</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611aa1814d6db2865c42fb3c7fc7688ab5c5">P2_4</a>,</div>
-<div class="line"><a id="l00617" name="l00617"></a><span class="lineno">  617</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a40df3c1aee5d74c3877d7b8d8bccb69e">P2_5</a>,</div>
-<div class="line"><a id="l00618" name="l00618"></a><span class="lineno">  618</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611af7da371a007188db645f365f367a10a8">P2_6</a>,</div>
-<div class="line"><a id="l00619" name="l00619"></a><span class="lineno">  619</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a583cbcc11d71b44face70c1fadefc9c0">P2_7</a>,</div>
-<div class="line"><a id="l00620" name="l00620"></a><span class="lineno">  620</span>    P2_12,</div>
-<div class="line"><a id="l00621" name="l00621"></a><span class="lineno">  621</span>    P2_13,</div>
-<div class="line"><a id="l00622" name="l00622"></a><span class="lineno">  622</span>    P2_16,</div>
-<div class="line"><a id="l00623" name="l00623"></a><span class="lineno">  623</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a2a52d7696dc09e50106e86c3c5d17553">P3_0</a>,</div>
-<div class="line"><a id="l00624" name="l00624"></a><span class="lineno">  624</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611aecc7f0ac8642bc54d5263aa885d41908">P3_1</a>,</div>
-<div class="line"><a id="l00625" name="l00625"></a><span class="lineno">  625</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611afd215d1efb45e70398433193f49c307c">P3_6</a>,</div>
-<div class="line"><a id="l00626" name="l00626"></a><span class="lineno">  626</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a526941c3135107781ce25d01b016b23e">P3_7</a>,</div>
-<div class="line"><a id="l00627" name="l00627"></a><span class="lineno">  627</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a9050b432d98d91ff0eddf3c94bdc54b1">P3_8</a>,</div>
-<div class="line"><a id="l00628" name="l00628"></a><span class="lineno">  628</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a76b1f0c7dbacedc2555bdeeaff3f977a">P3_9</a>,</div>
-<div class="line"><a id="l00629" name="l00629"></a><span class="lineno">  629</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a3303e44cbf260a1c51d951f7fc0db0d5">P3_10</a>,</div>
-<div class="line"><a id="l00630" name="l00630"></a><span class="lineno">  630</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a1327ebb8eb645f0e989342860ed1c03d">P3_11</a>,</div>
-<div class="line"><a id="l00631" name="l00631"></a><span class="lineno">  631</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a6da99e726653fa76dc64902235555288">P3_12</a>,</div>
-<div class="line"><a id="l00632" name="l00632"></a><span class="lineno">  632</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a0453aab7727a4f5df1eb008ba8440dd6">P3_13</a>,</div>
-<div class="line"><a id="l00633" name="l00633"></a><span class="lineno">  633</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a7ffb047f7793f0dba05a6f636f146611">P3_14</a>,</div>
-<div class="line"><a id="l00634" name="l00634"></a><span class="lineno">  634</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611af026f27ef4834b718504d5157fac6388">P3_15</a>,</div>
-<div class="line"><a id="l00635" name="l00635"></a><span class="lineno">  635</span>    P3_27,</div>
-<div class="line"><a id="l00636" name="l00636"></a><span class="lineno">  636</span>    P3_28,</div>
-<div class="line"><a id="l00637" name="l00637"></a><span class="lineno">  637</span>    P3_29,</div>
-<div class="line"><a id="l00638" name="l00638"></a><span class="lineno">  638</span>    P3_30,</div>
-<div class="line"><a id="l00639" name="l00639"></a><span class="lineno">  639</span>    P3_31,</div>
-<div class="line"><a id="l00640" name="l00640"></a><span class="lineno">  640</span>};</div>
-<div class="line"><a id="l00641" name="l00641"></a><span class="lineno">  641</span> </div>
-<div class="line"><a id="l00642" name="l00642"></a><span class="lineno">  642</span><span class="preprocessor">    #define D0      P1_4</span></div>
-<div class="line"><a id="l00643" name="l00643"></a><span class="lineno">  643</span><span class="preprocessor">    #define D1      P1_5</span></div>
-<div class="line"><a id="l00644" name="l00644"></a><span class="lineno">  644</span><span class="preprocessor">    #define D2      P2_4</span></div>
-<div class="line"><a id="l00645" name="l00645"></a><span class="lineno">  645</span><span class="preprocessor">    #define D3      P3_0</span></div>
-<div class="line"><a id="l00646" name="l00646"></a><span class="lineno">  646</span><span class="preprocessor">    #define D4      P2_5</span></div>
-<div class="line"><a id="l00647" name="l00647"></a><span class="lineno">  647</span><span class="preprocessor">    #define D5      P3_12</span></div>
-<div class="line"><a id="l00648" name="l00648"></a><span class="lineno">  648</span><span class="preprocessor">    #define D6      P3_13</span></div>
-<div class="line"><a id="l00649" name="l00649"></a><span class="lineno">  649</span><span class="preprocessor">    #define D7      P3_1</span></div>
-<div class="line"><a id="l00650" name="l00650"></a><span class="lineno">  650</span><span class="preprocessor">    #define D8      P3_15</span></div>
-<div class="line"><a id="l00651" name="l00651"></a><span class="lineno">  651</span><span class="preprocessor">    #define D9      P3_14</span></div>
-<div class="line"><a id="l00652" name="l00652"></a><span class="lineno">  652</span><span class="preprocessor">    #define D10     P2_6</span></div>
-<div class="line"><a id="l00653" name="l00653"></a><span class="lineno">  653</span><span class="preprocessor">    #define D11     P2_13</span></div>
-<div class="line"><a id="l00654" name="l00654"></a><span class="lineno">  654</span><span class="preprocessor">    #define D12     P2_16</span></div>
-<div class="line"><a id="l00655" name="l00655"></a><span class="lineno">  655</span><span class="preprocessor">    #define D13     P2_12</span></div>
-<div class="line"><a id="l00656" name="l00656"></a><span class="lineno">  656</span><span class="preprocessor">    #define D18     P1_8</span></div>
-<div class="line"><a id="l00657" name="l00657"></a><span class="lineno">  657</span><span class="preprocessor">    #define D19     P1_9</span></div>
-<div class="line"><a id="l00658" name="l00658"></a><span class="lineno">  658</span><span class="preprocessor">    #define A0      P1_10</span></div>
-<div class="line"><a id="l00659" name="l00659"></a><span class="lineno">  659</span><span class="preprocessor">    #define A1      P1_12</span></div>
-<div class="line"><a id="l00660" name="l00660"></a><span class="lineno">  660</span><span class="preprocessor">    #define A2      P1_13</span></div>
-<div class="line"><a id="l00661" name="l00661"></a><span class="lineno">  661</span><span class="preprocessor">    #define A3      P2_0</span></div>
-<div class="line"><a id="l00662" name="l00662"></a><span class="lineno">  662</span><span class="preprocessor">    #define A4      P3_31</span></div>
-<div class="line"><a id="l00663" name="l00663"></a><span class="lineno">  663</span><span class="preprocessor">    #define A5      P3_30</span></div>
-<div class="line"><a id="l00664" name="l00664"></a><span class="lineno">  664</span><span class="preprocessor">    #define PWM0    P3_11   </span><span class="comment">/* FlexPWM0 sm2 chB */</span><span class="preprocessor"></span></div>
-<div class="line"><a id="l00665" name="l00665"></a><span class="lineno">  665</span><span class="preprocessor">    #define PWM1    P3_10   </span><span class="comment">/* FlexPWM0 sm2 chA */</span><span class="preprocessor"></span></div>
-<div class="line"><a id="l00666" name="l00666"></a><span class="lineno">  666</span><span class="preprocessor">    #define PWM2    P3_9    </span><span class="comment">/* FlexPWM0 sm1 chB */</span><span class="preprocessor"></span></div>
-<div class="line"><a id="l00667" name="l00667"></a><span class="lineno">  667</span><span class="preprocessor">    #define PWM3    P3_8    </span><span class="comment">/* FlexPWM0 sm1 chA */</span><span class="preprocessor"></span></div>
-<div class="line"><a id="l00668" name="l00668"></a><span class="lineno">  668</span><span class="preprocessor">    #define PWM4    P3_7    </span><span class="comment">/* FlexPWM0 sm0 chB */</span><span class="preprocessor"></span></div>
-<div class="line"><a id="l00669" name="l00669"></a><span class="lineno">  669</span><span class="preprocessor">    #define PWM5    P3_6    </span><span class="comment">/* FlexPWM0 sm0 chA */</span><span class="preprocessor"></span></div>
-<div class="line"><a id="l00670" name="l00670"></a><span class="lineno">  670</span><span class="preprocessor">    #define SW2     P3_29</span></div>
-<div class="line"><a id="l00671" name="l00671"></a><span class="lineno">  671</span><span class="preprocessor">    #define SW3     P1_7</span></div>
-<div class="line"><a id="l00672" name="l00672"></a><span class="lineno">  672</span><span class="preprocessor">    #define MB_AN   P3_30</span></div>
-<div class="line"><a id="l00673" name="l00673"></a><span class="lineno">  673</span><span class="preprocessor">    #define MB_RST  P3_1</span></div>
-<div class="line"><a id="l00674" name="l00674"></a><span class="lineno">  674</span><span class="preprocessor">    #define MB_CS   P1_3</span></div>
-<div class="line"><a id="l00675" name="l00675"></a><span class="lineno">  675</span><span class="preprocessor">    #define MB_SCK  P1_1</span></div>
-<div class="line"><a id="l00676" name="l00676"></a><span class="lineno">  676</span><span class="preprocessor">    #define MB_MISO P1_2</span></div>
-<div class="line"><a id="l00677" name="l00677"></a><span class="lineno">  677</span><span class="preprocessor">    #define MB_MOSI P1_0</span></div>
-<div class="line"><a id="l00678" name="l00678"></a><span class="lineno">  678</span><span class="preprocessor">    #define MB_PWM  P3_12</span></div>
-<div class="line"><a id="l00679" name="l00679"></a><span class="lineno">  679</span><span class="preprocessor">    #define MB_INT  P2_5</span></div>
-<div class="line"><a id="l00680" name="l00680"></a><span class="lineno">  680</span><span class="preprocessor">    #define MB_RX   P3_14</span></div>
-<div class="line"><a id="l00681" name="l00681"></a><span class="lineno">  681</span><span class="preprocessor">    #define MB_TX   P3_15</span></div>
-<div class="line"><a id="l00682" name="l00682"></a><span class="lineno">  682</span><span class="preprocessor">    #define MB_SCL  P3_27</span></div>
-<div class="line"><a id="l00683" name="l00683"></a><span class="lineno">  683</span><span class="preprocessor">    #define MB_SDA  P3_28</span></div>
-<div class="line"><a id="l00684" name="l00684"></a><span class="lineno">  684</span><span class="preprocessor">    #define RED     D5</span></div>
-<div class="line"><a id="l00685" name="l00685"></a><span class="lineno">  685</span><span class="preprocessor">    #define GREEN   D6</span></div>
-<div class="line"><a id="l00686" name="l00686"></a><span class="lineno">  686</span><span class="preprocessor">    #define BLUE    D3</span></div>
-<div class="line"><a id="l00687" name="l00687"></a><span class="lineno">  687</span> </div>
-<div class="line"><a id="l00688" name="l00688"></a><span class="lineno">  688</span><span class="preprocessor">    #define I3C_SDA     P0_16</span></div>
-<div class="line"><a id="l00689" name="l00689"></a><span class="lineno">  689</span><span class="preprocessor">    #define I3C_SCL     P0_17</span></div>
-<div class="line"><a id="l00690" name="l00690"></a><span class="lineno">  690</span><span class="preprocessor">    #define I2C_SDA     D18</span></div>
-<div class="line"><a id="l00691" name="l00691"></a><span class="lineno">  691</span><span class="preprocessor">    #define I2C_SCL     D19</span></div>
-<div class="line"><a id="l00692" name="l00692"></a><span class="lineno">  692</span><span class="preprocessor">    #define SPI_CS      D10</span></div>
-<div class="line"><a id="l00693" name="l00693"></a><span class="lineno">  693</span><span class="preprocessor">    #define SPI_MOSI    D11</span></div>
-<div class="line"><a id="l00694" name="l00694"></a><span class="lineno">  694</span><span class="preprocessor">    #define SPI_MISO    D12</span></div>
-<div class="line"><a id="l00695" name="l00695"></a><span class="lineno">  695</span><span class="preprocessor">    #define SPI_SCLK    D13</span></div>
-<div class="line"><a id="l00696" name="l00696"></a><span class="lineno">  696</span><span class="preprocessor">    #define ARD_CS      SPI_CS</span></div>
-<div class="line"><a id="l00697" name="l00697"></a><span class="lineno">  697</span><span class="preprocessor">    #define ARD_MOSI    SPI_MOSI</span></div>
-<div class="line"><a id="l00698" name="l00698"></a><span class="lineno">  698</span><span class="preprocessor">    #define ARD_MISO    SPI_MISO</span></div>
-<div class="line"><a id="l00699" name="l00699"></a><span class="lineno">  699</span><span class="preprocessor">    #define ARD_SCK     SPI_SCLK</span></div>
-<div class="line"><a id="l00700" name="l00700"></a><span class="lineno">  700</span> </div>
-<div class="line"><a id="l00701" name="l00701"></a><span class="lineno">  701</span><span class="preprocessor">    #define USBTX       P0_3</span></div>
-<div class="line"><a id="l00702" name="l00702"></a><span class="lineno">  702</span><span class="preprocessor">    #define USBRX       P0_2</span></div>
-<div class="line"><a id="l00703" name="l00703"></a><span class="lineno">  703</span> </div>
-<div class="line"><a id="l00704" name="l00704"></a><span class="lineno">  704</span><span class="preprocessor">    #define PIN_LED_OFF true</span></div>
-<div class="line"><a id="l00705" name="l00705"></a><span class="lineno">  705</span><span class="preprocessor">    #define PIN_LED_ON  false</span></div>
-<div class="line"><a id="l00706" name="l00706"></a><span class="lineno">  706</span> </div>
-<div class="line"><a id="l00707" name="l00707"></a><span class="lineno">  707</span> </div>
-<div class="line"><a id="l00708" name="l00708"></a><span class="lineno">  708</span><span class="preprocessor">#elif   CPU_MCXC444VLH</span></div>
-<div class="line"><a id="l00709" name="l00709"></a><span class="lineno">  709</span><span class="keyword">enum</span> {</div>
-<div class="line"><a id="l00710" name="l00710"></a><span class="lineno">  710</span>    <a class="code hl_define" href="io_8cpp.html#ac1ce626a969ca4e6c05c76611217dd92">DISABLED_PIN</a>,</div>
-<div class="line"><a id="l00711" name="l00711"></a><span class="lineno">  711</span>    PTA0,</div>
-<div class="line"><a id="l00712" name="l00712"></a><span class="lineno">  712</span>    PTA1,</div>
-<div class="line"><a id="l00713" name="l00713"></a><span class="lineno">  713</span>    PTA2,</div>
-<div class="line"><a id="l00714" name="l00714"></a><span class="lineno">  714</span>    PTA3,</div>
-<div class="line"><a id="l00715" name="l00715"></a><span class="lineno">  715</span>    PTA4,</div>
-<div class="line"><a id="l00716" name="l00716"></a><span class="lineno">  716</span>    PTA5,</div>
-<div class="line"><a id="l00717" name="l00717"></a><span class="lineno">  717</span>    PTA12,</div>
-<div class="line"><a id="l00718" name="l00718"></a><span class="lineno">  718</span>    PTA13,</div>
-<div class="line"><a id="l00719" name="l00719"></a><span class="lineno">  719</span>    PTA18,</div>
-<div class="line"><a id="l00720" name="l00720"></a><span class="lineno">  720</span>    PTA19,</div>
-<div class="line"><a id="l00721" name="l00721"></a><span class="lineno">  721</span>    PTA20,</div>
-<div class="line"><a id="l00722" name="l00722"></a><span class="lineno">  722</span>    PTB0,</div>
-<div class="line"><a id="l00723" name="l00723"></a><span class="lineno">  723</span>    PTB1,</div>
-<div class="line"><a id="l00724" name="l00724"></a><span class="lineno">  724</span>    PTB2,</div>
-<div class="line"><a id="l00725" name="l00725"></a><span class="lineno">  725</span>    PTB3,</div>
-<div class="line"><a id="l00726" name="l00726"></a><span class="lineno">  726</span>    PTB16,</div>
-<div class="line"><a id="l00727" name="l00727"></a><span class="lineno">  727</span>    PTB17,</div>
-<div class="line"><a id="l00728" name="l00728"></a><span class="lineno">  728</span>    PTB18,</div>
-<div class="line"><a id="l00729" name="l00729"></a><span class="lineno">  729</span>    PTB19,</div>
-<div class="line"><a id="l00730" name="l00730"></a><span class="lineno">  730</span>    PTC0,</div>
-<div class="line"><a id="l00731" name="l00731"></a><span class="lineno">  731</span>    PTC1,</div>
-<div class="line"><a id="l00732" name="l00732"></a><span class="lineno">  732</span>    PTC2,</div>
-<div class="line"><a id="l00733" name="l00733"></a><span class="lineno">  733</span>    PTC3,</div>
-<div class="line"><a id="l00734" name="l00734"></a><span class="lineno">  734</span>    PTC4,</div>
-<div class="line"><a id="l00735" name="l00735"></a><span class="lineno">  735</span>    PTC5,</div>
-<div class="line"><a id="l00736" name="l00736"></a><span class="lineno">  736</span>    PTC6,</div>
-<div class="line"><a id="l00737" name="l00737"></a><span class="lineno">  737</span>    PTC7,</div>
-<div class="line"><a id="l00738" name="l00738"></a><span class="lineno">  738</span>    PTC20,</div>
-<div class="line"><a id="l00739" name="l00739"></a><span class="lineno">  739</span>    PTC21,</div>
-<div class="line"><a id="l00740" name="l00740"></a><span class="lineno">  740</span>    PTC22,</div>
-<div class="line"><a id="l00741" name="l00741"></a><span class="lineno">  741</span>    PTC23,</div>
-<div class="line"><a id="l00742" name="l00742"></a><span class="lineno">  742</span>    PTD0,</div>
-<div class="line"><a id="l00743" name="l00743"></a><span class="lineno">  743</span>    PTD1,</div>
-<div class="line"><a id="l00744" name="l00744"></a><span class="lineno">  744</span>    PTD2,</div>
-<div class="line"><a id="l00745" name="l00745"></a><span class="lineno">  745</span>    PTD3,</div>
-<div class="line"><a id="l00746" name="l00746"></a><span class="lineno">  746</span>    PTD4,</div>
-<div class="line"><a id="l00747" name="l00747"></a><span class="lineno">  747</span>    PTD5,</div>
-<div class="line"><a id="l00748" name="l00748"></a><span class="lineno">  748</span>    PTD6,</div>
-<div class="line"><a id="l00749" name="l00749"></a><span class="lineno">  749</span>    PTD7,</div>
-<div class="line"><a id="l00750" name="l00750"></a><span class="lineno">  750</span>    PTE0,</div>
-<div class="line"><a id="l00751" name="l00751"></a><span class="lineno">  751</span>    PTE1,</div>
-<div class="line"><a id="l00752" name="l00752"></a><span class="lineno">  752</span>    PTE20,</div>
-<div class="line"><a id="l00753" name="l00753"></a><span class="lineno">  753</span>    PTE21,</div>
-<div class="line"><a id="l00754" name="l00754"></a><span class="lineno">  754</span>    PTE22,</div>
-<div class="line"><a id="l00755" name="l00755"></a><span class="lineno">  755</span>    PTE23,</div>
-<div class="line"><a id="l00756" name="l00756"></a><span class="lineno">  756</span>    PTE24,</div>
-<div class="line"><a id="l00757" name="l00757"></a><span class="lineno">  757</span>    PTE25,</div>
-<div class="line"><a id="l00758" name="l00758"></a><span class="lineno">  758</span>    PTE29,</div>
-<div class="line"><a id="l00759" name="l00759"></a><span class="lineno">  759</span>    PTE30,</div>
-<div class="line"><a id="l00760" name="l00760"></a><span class="lineno">  760</span>    PTE31,</div>
-<div class="line"><a id="l00761" name="l00761"></a><span class="lineno">  761</span>};</div>
-<div class="line"><a id="l00762" name="l00762"></a><span class="lineno">  762</span> </div>
-<div class="line"><a id="l00763" name="l00763"></a><span class="lineno">  763</span><span class="preprocessor">    #define D0      PTA1</span></div>
-<div class="line"><a id="l00764" name="l00764"></a><span class="lineno">  764</span><span class="preprocessor">    #define D1      PTA2</span></div>
-<div class="line"><a id="l00765" name="l00765"></a><span class="lineno">  765</span><span class="preprocessor">    #define D2      PTD3</span></div>
-<div class="line"><a id="l00766" name="l00766"></a><span class="lineno">  766</span><span class="preprocessor">    #define D3      PTA12</span></div>
-<div class="line"><a id="l00767" name="l00767"></a><span class="lineno">  767</span><span class="preprocessor">    #define D4      PTA4</span></div>
-<div class="line"><a id="l00768" name="l00768"></a><span class="lineno">  768</span><span class="preprocessor">    #define D5      PTA5</span></div>
-<div class="line"><a id="l00769" name="l00769"></a><span class="lineno">  769</span><span class="preprocessor">    #define D6      PTE29</span></div>
-<div class="line"><a id="l00770" name="l00770"></a><span class="lineno">  770</span><span class="preprocessor">    #define D7      PTE30</span></div>
-<div class="line"><a id="l00771" name="l00771"></a><span class="lineno">  771</span><span class="preprocessor">    #define D8      PTA13</span></div>
-<div class="line"><a id="l00772" name="l00772"></a><span class="lineno">  772</span><span class="preprocessor">    #define D9      PTD2</span></div>
-<div class="line"><a id="l00773" name="l00773"></a><span class="lineno">  773</span><span class="preprocessor">    #define D10     PTD4</span></div>
-<div class="line"><a id="l00774" name="l00774"></a><span class="lineno">  774</span><span class="preprocessor">    #define D11     PTD6</span></div>
-<div class="line"><a id="l00775" name="l00775"></a><span class="lineno">  775</span><span class="preprocessor">    #define D12     PTD7</span></div>
-<div class="line"><a id="l00776" name="l00776"></a><span class="lineno">  776</span><span class="preprocessor">    #define D13     PTD5</span></div>
-<div class="line"><a id="l00777" name="l00777"></a><span class="lineno">  777</span><span class="preprocessor">    #define D18     PTE0</span></div>
-<div class="line"><a id="l00778" name="l00778"></a><span class="lineno">  778</span><span class="preprocessor">    #define D19     PTE1</span></div>
-<div class="line"><a id="l00779" name="l00779"></a><span class="lineno">  779</span><span class="preprocessor">    #define A0      PTB0</span></div>
-<div class="line"><a id="l00780" name="l00780"></a><span class="lineno">  780</span><span class="preprocessor">    #define A1      PTB1</span></div>
-<div class="line"><a id="l00781" name="l00781"></a><span class="lineno">  781</span><span class="preprocessor">    #define A2      PTB2</span></div>
-<div class="line"><a id="l00782" name="l00782"></a><span class="lineno">  782</span><span class="preprocessor">    #define A3      PTB3</span></div>
-<div class="line"><a id="l00783" name="l00783"></a><span class="lineno">  783</span><span class="preprocessor">    #define A4      PTC2</span></div>
-<div class="line"><a id="l00784" name="l00784"></a><span class="lineno">  784</span><span class="preprocessor">    #define A5      PTC1</span></div>
-<div class="line"><a id="l00785" name="l00785"></a><span class="lineno">  785</span><span class="preprocessor">    #define SW2     PTC3</span></div>
-<div class="line"><a id="l00786" name="l00786"></a><span class="lineno">  786</span><span class="preprocessor">    #define SW3     D4</span></div>
-<div class="line"><a id="l00787" name="l00787"></a><span class="lineno">  787</span><span class="preprocessor">    #define MB_AN   A0</span></div>
-<div class="line"><a id="l00788" name="l00788"></a><span class="lineno">  788</span><span class="preprocessor">    #define MB_RST  D7</span></div>
-<div class="line"><a id="l00789" name="l00789"></a><span class="lineno">  789</span><span class="preprocessor">    #define MB_CS   D10</span></div>
-<div class="line"><a id="l00790" name="l00790"></a><span class="lineno">  790</span><span class="preprocessor">    #define MB_SCK  D13</span></div>
-<div class="line"><a id="l00791" name="l00791"></a><span class="lineno">  791</span><span class="preprocessor">    #define MB_MISO D12</span></div>
-<div class="line"><a id="l00792" name="l00792"></a><span class="lineno">  792</span><span class="preprocessor">    #define MB_MOSI D11</span></div>
-<div class="line"><a id="l00793" name="l00793"></a><span class="lineno">  793</span><span class="preprocessor">    #define MB_PWM  D3</span></div>
-<div class="line"><a id="l00794" name="l00794"></a><span class="lineno">  794</span><span class="preprocessor">    #define MB_INT  D2</span></div>
-<div class="line"><a id="l00795" name="l00795"></a><span class="lineno">  795</span><span class="preprocessor">    #define MB_RX   D19</span></div>
-<div class="line"><a id="l00796" name="l00796"></a><span class="lineno">  796</span><span class="preprocessor">    #define MB_TX   D18</span></div>
-<div class="line"><a id="l00797" name="l00797"></a><span class="lineno">  797</span><span class="preprocessor">    #define MB_SCL  A5</span></div>
-<div class="line"><a id="l00798" name="l00798"></a><span class="lineno">  798</span><span class="preprocessor">    #define MB_SDA  A4</span></div>
-<div class="line"><a id="l00799" name="l00799"></a><span class="lineno">  799</span><span class="preprocessor">    #define RED     PTE31</span></div>
-<div class="line"><a id="l00800" name="l00800"></a><span class="lineno">  800</span><span class="preprocessor">    #define GREEN   D13</span></div>
-<div class="line"><a id="l00801" name="l00801"></a><span class="lineno">  801</span><span class="preprocessor">    #define BLUE    D6</span></div>
-<div class="line"><a id="l00802" name="l00802"></a><span class="lineno">  802</span> </div>
-<div class="line"><a id="l00803" name="l00803"></a><span class="lineno">  803</span><span class="preprocessor">    #define I2C_SDA     D18</span></div>
-<div class="line"><a id="l00804" name="l00804"></a><span class="lineno">  804</span><span class="preprocessor">    #define I2C_SCL     D19</span></div>
-<div class="line"><a id="l00805" name="l00805"></a><span class="lineno">  805</span><span class="preprocessor">    #define SPI_CS      D10</span></div>
-<div class="line"><a id="l00806" name="l00806"></a><span class="lineno">  806</span><span class="preprocessor">    #define SPI_MOSI    D11</span></div>
-<div class="line"><a id="l00807" name="l00807"></a><span class="lineno">  807</span><span class="preprocessor">    #define SPI_MISO    D12</span></div>
-<div class="line"><a id="l00808" name="l00808"></a><span class="lineno">  808</span><span class="preprocessor">    #define SPI_SCLK    D13</span></div>
-<div class="line"><a id="l00809" name="l00809"></a><span class="lineno">  809</span><span class="preprocessor">    #define ARD_CS      SPI_CS</span></div>
-<div class="line"><a id="l00810" name="l00810"></a><span class="lineno">  810</span><span class="preprocessor">    #define ARD_MOSI    SPI_MOSI</span></div>
-<div class="line"><a id="l00811" name="l00811"></a><span class="lineno">  811</span><span class="preprocessor">    #define ARD_MISO    SPI_MISO</span></div>
-<div class="line"><a id="l00812" name="l00812"></a><span class="lineno">  812</span><span class="preprocessor">    #define ARD_SCK     SPI_SCLK</span></div>
+<div class="line"><a id="l00534" name="l00534"></a><span class="lineno">  534</span>    <span class="comment">// D10/D11 as on a board with R59/R60 moved to 2-3, which this core</span></div>
+<div class="line"><a id="l00535" name="l00535"></a><span class="lineno">  535</span>    <span class="comment">// assumes (PIN_MAPPING_A156.md): LPSPI1&#39;s PCS1/SDO. As shipped, the</span></div>
+<div class="line"><a id="l00536" name="l00536"></a><span class="lineno">  536</span>    <span class="comment">// header&#39;s D10/D11 are P3_13/P3_15 instead.</span></div>
+<div class="line"><a id="l00537" name="l00537"></a><span class="lineno">  537</span><span class="preprocessor">    #define D10     P2_6</span></div>
+<div class="line"><a id="l00538" name="l00538"></a><span class="lineno">  538</span><span class="preprocessor">    #define D11     P2_13</span></div>
+<div class="line"><a id="l00539" name="l00539"></a><span class="lineno">  539</span><span class="preprocessor">    #define D12     P2_16</span></div>
+<div class="line"><a id="l00540" name="l00540"></a><span class="lineno">  540</span><span class="preprocessor">    #define D13     P2_12</span></div>
+<div class="line"><a id="l00541" name="l00541"></a><span class="lineno">  541</span><span class="preprocessor">    #define D18     P0_16</span></div>
+<div class="line"><a id="l00542" name="l00542"></a><span class="lineno">  542</span><span class="preprocessor">    #define D19     P0_17</span></div>
+<div class="line"><a id="l00543" name="l00543"></a><span class="lineno">  543</span><span class="preprocessor">    #define A0      P1_10</span></div>
+<div class="line"><a id="l00544" name="l00544"></a><span class="lineno">  544</span><span class="preprocessor">    #define A1      P2_5</span></div>
+<div class="line"><a id="l00545" name="l00545"></a><span class="lineno">  545</span><span class="preprocessor">    #define A2      P2_3</span></div>
+<div class="line"><a id="l00546" name="l00546"></a><span class="lineno">  546</span><span class="preprocessor">    #define A3      P2_4</span></div>
+<div class="line"><a id="l00547" name="l00547"></a><span class="lineno">  547</span><span class="preprocessor">    #define A4      P1_12</span></div>
+<div class="line"><a id="l00548" name="l00548"></a><span class="lineno">  548</span><span class="preprocessor">    #define A5      P1_13</span></div>
+<div class="line"><a id="l00549" name="l00549"></a><span class="lineno">  549</span><span class="preprocessor">    #define PWM0    P3_11   </span><span class="comment">/* FlexPWM0 sm2 chB */</span><span class="preprocessor"></span></div>
+<div class="line"><a id="l00550" name="l00550"></a><span class="lineno">  550</span><span class="preprocessor">    #define PWM1    P3_10   </span><span class="comment">/* FlexPWM0 sm2 chA */</span><span class="preprocessor"></span></div>
+<div class="line"><a id="l00551" name="l00551"></a><span class="lineno">  551</span><span class="preprocessor">    #define PWM2    P3_9    </span><span class="comment">/* FlexPWM0 sm1 chB */</span><span class="preprocessor"></span></div>
+<div class="line"><a id="l00552" name="l00552"></a><span class="lineno">  552</span><span class="preprocessor">    #define PWM3    P3_8    </span><span class="comment">/* FlexPWM0 sm1 chA */</span><span class="preprocessor"></span></div>
+<div class="line"><a id="l00553" name="l00553"></a><span class="lineno">  553</span><span class="preprocessor">    #define PWM4    P3_7    </span><span class="comment">/* FlexPWM0 sm0 chB */</span><span class="preprocessor"></span></div>
+<div class="line"><a id="l00554" name="l00554"></a><span class="lineno">  554</span><span class="preprocessor">    #define PWM5    P3_6    </span><span class="comment">/* FlexPWM0 sm0 chA */</span><span class="preprocessor"></span></div>
+<div class="line"><a id="l00555" name="l00555"></a><span class="lineno">  555</span><span class="preprocessor">    #define SW2     P1_7</span></div>
+<div class="line"><a id="l00556" name="l00556"></a><span class="lineno">  556</span><span class="preprocessor">    #define SW3     P0_6</span></div>
+<div class="line"><a id="l00557" name="l00557"></a><span class="lineno">  557</span><span class="preprocessor">    #define MB_AN   P3_30</span></div>
+<div class="line"><a id="l00558" name="l00558"></a><span class="lineno">  558</span><span class="preprocessor">    #define MB_RST  P3_29</span></div>
+<div class="line"><a id="l00559" name="l00559"></a><span class="lineno">  559</span><span class="preprocessor">    #define MB_CS   P1_3</span></div>
+<div class="line"><a id="l00560" name="l00560"></a><span class="lineno">  560</span><span class="preprocessor">    #define MB_SCK  P1_1</span></div>
+<div class="line"><a id="l00561" name="l00561"></a><span class="lineno">  561</span><span class="preprocessor">    #define MB_MISO P1_2</span></div>
+<div class="line"><a id="l00562" name="l00562"></a><span class="lineno">  562</span><span class="preprocessor">    #define MB_MOSI P1_0</span></div>
+<div class="line"><a id="l00563" name="l00563"></a><span class="lineno">  563</span><span class="preprocessor">    #define MB_PWM  P3_18</span></div>
+<div class="line"><a id="l00564" name="l00564"></a><span class="lineno">  564</span><span class="preprocessor">    #define MB_INT  P3_19</span></div>
+<div class="line"><a id="l00565" name="l00565"></a><span class="lineno">  565</span><span class="preprocessor">    #define MB_RX   P3_20</span></div>
+<div class="line"><a id="l00566" name="l00566"></a><span class="lineno">  566</span><span class="preprocessor">    #define MB_TX   P3_21</span></div>
+<div class="line"><a id="l00567" name="l00567"></a><span class="lineno">  567</span><span class="preprocessor">    #define MB_SCL  P3_27</span></div>
+<div class="line"><a id="l00568" name="l00568"></a><span class="lineno">  568</span><span class="preprocessor">    #define MB_SDA  P3_28</span></div>
+<div class="line"><a id="l00569" name="l00569"></a><span class="lineno">  569</span><span class="preprocessor">    #define RED     D3</span></div>
+<div class="line"><a id="l00570" name="l00570"></a><span class="lineno">  570</span><span class="preprocessor">    #define GREEN   P3_13</span></div>
+<div class="line"><a id="l00571" name="l00571"></a><span class="lineno">  571</span><span class="preprocessor">    #define BLUE    P3_0</span></div>
+<div class="line"><a id="l00572" name="l00572"></a><span class="lineno">  572</span> </div>
+<div class="line"><a id="l00573" name="l00573"></a><span class="lineno">  573</span>    <span class="comment">// The on-board P3T1755 is on D18/D19, and I3C0 reaches it only through</span></div>
+<div class="line"><a id="l00574" name="l00574"></a><span class="lineno">  574</span>    <span class="comment">// these same two pins; the Arduino layer uses them as LPI2C0 (Wire).</span></div>
+<div class="line"><a id="l00575" name="l00575"></a><span class="lineno">  575</span><span class="preprocessor">    #define I3C_SDA     P0_16</span></div>
+<div class="line"><a id="l00576" name="l00576"></a><span class="lineno">  576</span><span class="preprocessor">    #define I3C_SCL     P0_17</span></div>
+<div class="line"><a id="l00577" name="l00577"></a><span class="lineno">  577</span><span class="preprocessor">    #define I2C_SDA     D18</span></div>
+<div class="line"><a id="l00578" name="l00578"></a><span class="lineno">  578</span><span class="preprocessor">    #define I2C_SCL     D19</span></div>
+<div class="line"><a id="l00579" name="l00579"></a><span class="lineno">  579</span><span class="preprocessor">    #define SPI_CS      D10</span></div>
+<div class="line"><a id="l00580" name="l00580"></a><span class="lineno">  580</span><span class="preprocessor">    #define SPI_MOSI    D11</span></div>
+<div class="line"><a id="l00581" name="l00581"></a><span class="lineno">  581</span><span class="preprocessor">    #define SPI_MISO    D12</span></div>
+<div class="line"><a id="l00582" name="l00582"></a><span class="lineno">  582</span><span class="preprocessor">    #define SPI_SCLK    D13</span></div>
+<div class="line"><a id="l00583" name="l00583"></a><span class="lineno">  583</span><span class="preprocessor">    #define ARD_CS      SPI_CS</span></div>
+<div class="line"><a id="l00584" name="l00584"></a><span class="lineno">  584</span><span class="preprocessor">    #define ARD_MOSI    SPI_MOSI</span></div>
+<div class="line"><a id="l00585" name="l00585"></a><span class="lineno">  585</span><span class="preprocessor">    #define ARD_MISO    SPI_MISO</span></div>
+<div class="line"><a id="l00586" name="l00586"></a><span class="lineno">  586</span><span class="preprocessor">    #define ARD_SCK     SPI_SCLK</span></div>
+<div class="line"><a id="l00587" name="l00587"></a><span class="lineno">  587</span> </div>
+<div class="line"><a id="l00588" name="l00588"></a><span class="lineno">  588</span><span class="preprocessor">    #define USBTX       P0_3</span></div>
+<div class="line"><a id="l00589" name="l00589"></a><span class="lineno">  589</span><span class="preprocessor">    #define USBRX       P0_2</span></div>
+<div class="line"><a id="l00590" name="l00590"></a><span class="lineno">  590</span> </div>
+<div class="line"><a id="l00591" name="l00591"></a><span class="lineno">  591</span><span class="preprocessor">    #define PIN_LED_OFF true</span></div>
+<div class="line"><a id="l00592" name="l00592"></a><span class="lineno">  592</span><span class="preprocessor">    #define PIN_LED_ON  false</span></div>
+<div class="line"><a id="l00593" name="l00593"></a><span class="lineno">  593</span> </div>
+<div class="line"><a id="l00594" name="l00594"></a><span class="lineno">  594</span><span class="preprocessor">#elif   CPU_MCXA153VLH</span></div>
+<div class="line"><a id="l00595" name="l00595"></a><span class="lineno">  595</span> </div>
+<div class="line"><a id="l00596" name="l00596"></a><span class="lineno">  596</span> </div>
+<div class="line"><a id="l00597" name="l00597"></a><span class="lineno">  597</span><span class="keyword">enum</span> {  </div>
+<div class="line"><a id="l00598" name="l00598"></a><span class="lineno">  598</span>    <a class="code hl_define" href="io_8cpp.html#ac1ce626a969ca4e6c05c76611217dd92">DISABLED_PIN</a>, </div>
+<div class="line"><a id="l00599" name="l00599"></a><span class="lineno">  599</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a23d505c049c81443b12e53d5b00b1be9">P0_0</a>,</div>
+<div class="line"><a id="l00600" name="l00600"></a><span class="lineno">  600</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a8c239764fe5c947cad341b176d49eb73">P0_1</a>,</div>
+<div class="line"><a id="l00601" name="l00601"></a><span class="lineno">  601</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a950df72443b521531bc3be8f4058fd85">P0_2</a>,</div>
+<div class="line"><a id="l00602" name="l00602"></a><span class="lineno">  602</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a7dd012609401076ec68c99a41fcf12bc">P0_3</a>,</div>
+<div class="line"><a id="l00603" name="l00603"></a><span class="lineno">  603</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a5429399e7b50e30b878487fc4512a1c8">P0_6</a>,</div>
+<div class="line"><a id="l00604" name="l00604"></a><span class="lineno">  604</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611abb74b4352a026355d8bc0a3fb1225c1f">P0_16</a>,</div>
+<div class="line"><a id="l00605" name="l00605"></a><span class="lineno">  605</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a0a9ad951bc08aaf6f0da9d82a5e32bd3">P0_17</a>,</div>
+<div class="line"><a id="l00606" name="l00606"></a><span class="lineno">  606</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611aa25f499b57adc3dae9ca1a877f47f2af">P1_0</a>,</div>
+<div class="line"><a id="l00607" name="l00607"></a><span class="lineno">  607</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611ab0d32687fab06c4263f65b6741adf308">P1_1</a>,</div>
+<div class="line"><a id="l00608" name="l00608"></a><span class="lineno">  608</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a12c69ba58f68ac9252a9e84170e354c7">P1_2</a>,</div>
+<div class="line"><a id="l00609" name="l00609"></a><span class="lineno">  609</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611ac964ac363209c16f9e842d139f1821df">P1_3</a>,</div>
+<div class="line"><a id="l00610" name="l00610"></a><span class="lineno">  610</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a2712fb6be5ef97fd9f5a9b42baaf5f05">P1_4</a>,</div>
+<div class="line"><a id="l00611" name="l00611"></a><span class="lineno">  611</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611adb0a4a23b91349a0f85a26ee16c2299c">P1_5</a>,</div>
+<div class="line"><a id="l00612" name="l00612"></a><span class="lineno">  612</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a1c09e634fa0f157f766022d25ea2860d">P1_6</a>,</div>
+<div class="line"><a id="l00613" name="l00613"></a><span class="lineno">  613</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a4e756b641c82fc50cd1e02b5b2645d60">P1_7</a>,</div>
+<div class="line"><a id="l00614" name="l00614"></a><span class="lineno">  614</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611af542b4d5d90d5003c47f4d6b889426de">P1_8</a>,</div>
+<div class="line"><a id="l00615" name="l00615"></a><span class="lineno">  615</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a021517e6ff32864840f418b0eab9a585">P1_9</a>,</div>
+<div class="line"><a id="l00616" name="l00616"></a><span class="lineno">  616</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a03b64a5c9ea8e09183c92d07a27f0477">P1_10</a>,</div>
+<div class="line"><a id="l00617" name="l00617"></a><span class="lineno">  617</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a420e23165eac11e06a535f82c07d9da0">P1_11</a>,</div>
+<div class="line"><a id="l00618" name="l00618"></a><span class="lineno">  618</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611ad862965e553531678890af8f2168a139">P1_12</a>,</div>
+<div class="line"><a id="l00619" name="l00619"></a><span class="lineno">  619</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611ab0bcc4b16519b87bbfd92a1a720eaa5d">P1_13</a>,</div>
+<div class="line"><a id="l00620" name="l00620"></a><span class="lineno">  620</span>    P1_29,</div>
+<div class="line"><a id="l00621" name="l00621"></a><span class="lineno">  621</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a665527bf5a59afd41af694cd9cc900bb">P1_30</a>,</div>
+<div class="line"><a id="l00622" name="l00622"></a><span class="lineno">  622</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a3e8a2381b895967ef4a85171d0ebac0e">P1_31</a>,</div>
+<div class="line"><a id="l00623" name="l00623"></a><span class="lineno">  623</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611aeeaaeb6232b5bd27b3d18c1699737e31">P2_0</a>,</div>
+<div class="line"><a id="l00624" name="l00624"></a><span class="lineno">  624</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a33daef487e90b1d8ee897624249d060e">P2_1</a>,</div>
+<div class="line"><a id="l00625" name="l00625"></a><span class="lineno">  625</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a10b4a9ccdcdec6c07ceedf09708bed1a">P2_2</a>,</div>
+<div class="line"><a id="l00626" name="l00626"></a><span class="lineno">  626</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611ae1949ab941c558f0c66b48e8463bbada">P2_3</a>,</div>
+<div class="line"><a id="l00627" name="l00627"></a><span class="lineno">  627</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611aa1814d6db2865c42fb3c7fc7688ab5c5">P2_4</a>,</div>
+<div class="line"><a id="l00628" name="l00628"></a><span class="lineno">  628</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a40df3c1aee5d74c3877d7b8d8bccb69e">P2_5</a>,</div>
+<div class="line"><a id="l00629" name="l00629"></a><span class="lineno">  629</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611af7da371a007188db645f365f367a10a8">P2_6</a>,</div>
+<div class="line"><a id="l00630" name="l00630"></a><span class="lineno">  630</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a583cbcc11d71b44face70c1fadefc9c0">P2_7</a>,</div>
+<div class="line"><a id="l00631" name="l00631"></a><span class="lineno">  631</span>    P2_12,</div>
+<div class="line"><a id="l00632" name="l00632"></a><span class="lineno">  632</span>    P2_13,</div>
+<div class="line"><a id="l00633" name="l00633"></a><span class="lineno">  633</span>    P2_16,</div>
+<div class="line"><a id="l00634" name="l00634"></a><span class="lineno">  634</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a2a52d7696dc09e50106e86c3c5d17553">P3_0</a>,</div>
+<div class="line"><a id="l00635" name="l00635"></a><span class="lineno">  635</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611aecc7f0ac8642bc54d5263aa885d41908">P3_1</a>,</div>
+<div class="line"><a id="l00636" name="l00636"></a><span class="lineno">  636</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611afd215d1efb45e70398433193f49c307c">P3_6</a>,</div>
+<div class="line"><a id="l00637" name="l00637"></a><span class="lineno">  637</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a526941c3135107781ce25d01b016b23e">P3_7</a>,</div>
+<div class="line"><a id="l00638" name="l00638"></a><span class="lineno">  638</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a9050b432d98d91ff0eddf3c94bdc54b1">P3_8</a>,</div>
+<div class="line"><a id="l00639" name="l00639"></a><span class="lineno">  639</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a76b1f0c7dbacedc2555bdeeaff3f977a">P3_9</a>,</div>
+<div class="line"><a id="l00640" name="l00640"></a><span class="lineno">  640</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a3303e44cbf260a1c51d951f7fc0db0d5">P3_10</a>,</div>
+<div class="line"><a id="l00641" name="l00641"></a><span class="lineno">  641</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a1327ebb8eb645f0e989342860ed1c03d">P3_11</a>,</div>
+<div class="line"><a id="l00642" name="l00642"></a><span class="lineno">  642</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a6da99e726653fa76dc64902235555288">P3_12</a>,</div>
+<div class="line"><a id="l00643" name="l00643"></a><span class="lineno">  643</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a0453aab7727a4f5df1eb008ba8440dd6">P3_13</a>,</div>
+<div class="line"><a id="l00644" name="l00644"></a><span class="lineno">  644</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a7ffb047f7793f0dba05a6f636f146611">P3_14</a>,</div>
+<div class="line"><a id="l00645" name="l00645"></a><span class="lineno">  645</span>    <a class="code hl_enumvalue" href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611af026f27ef4834b718504d5157fac6388">P3_15</a>,</div>
+<div class="line"><a id="l00646" name="l00646"></a><span class="lineno">  646</span>    P3_27,</div>
+<div class="line"><a id="l00647" name="l00647"></a><span class="lineno">  647</span>    P3_28,</div>
+<div class="line"><a id="l00648" name="l00648"></a><span class="lineno">  648</span>    P3_29,</div>
+<div class="line"><a id="l00649" name="l00649"></a><span class="lineno">  649</span>    P3_30,</div>
+<div class="line"><a id="l00650" name="l00650"></a><span class="lineno">  650</span>    P3_31,</div>
+<div class="line"><a id="l00651" name="l00651"></a><span class="lineno">  651</span>};</div>
+<div class="line"><a id="l00652" name="l00652"></a><span class="lineno">  652</span> </div>
+<div class="line"><a id="l00653" name="l00653"></a><span class="lineno">  653</span><span class="preprocessor">    #define D0      P1_4</span></div>
+<div class="line"><a id="l00654" name="l00654"></a><span class="lineno">  654</span><span class="preprocessor">    #define D1      P1_5</span></div>
+<div class="line"><a id="l00655" name="l00655"></a><span class="lineno">  655</span><span class="preprocessor">    #define D2      P2_4</span></div>
+<div class="line"><a id="l00656" name="l00656"></a><span class="lineno">  656</span><span class="preprocessor">    #define D3      P3_0</span></div>
+<div class="line"><a id="l00657" name="l00657"></a><span class="lineno">  657</span><span class="preprocessor">    #define D4      P2_5</span></div>
+<div class="line"><a id="l00658" name="l00658"></a><span class="lineno">  658</span><span class="preprocessor">    #define D5      P3_12</span></div>
+<div class="line"><a id="l00659" name="l00659"></a><span class="lineno">  659</span><span class="preprocessor">    #define D6      P3_13</span></div>
+<div class="line"><a id="l00660" name="l00660"></a><span class="lineno">  660</span><span class="preprocessor">    #define D7      P3_1</span></div>
+<div class="line"><a id="l00661" name="l00661"></a><span class="lineno">  661</span><span class="preprocessor">    #define D8      P3_15</span></div>
+<div class="line"><a id="l00662" name="l00662"></a><span class="lineno">  662</span><span class="preprocessor">    #define D9      P3_14</span></div>
+<div class="line"><a id="l00663" name="l00663"></a><span class="lineno">  663</span><span class="preprocessor">    #define D10     P2_6</span></div>
+<div class="line"><a id="l00664" name="l00664"></a><span class="lineno">  664</span><span class="preprocessor">    #define D11     P2_13</span></div>
+<div class="line"><a id="l00665" name="l00665"></a><span class="lineno">  665</span><span class="preprocessor">    #define D12     P2_16</span></div>
+<div class="line"><a id="l00666" name="l00666"></a><span class="lineno">  666</span><span class="preprocessor">    #define D13     P2_12</span></div>
+<div class="line"><a id="l00667" name="l00667"></a><span class="lineno">  667</span><span class="preprocessor">    #define D18     P1_8</span></div>
+<div class="line"><a id="l00668" name="l00668"></a><span class="lineno">  668</span><span class="preprocessor">    #define D19     P1_9</span></div>
+<div class="line"><a id="l00669" name="l00669"></a><span class="lineno">  669</span><span class="preprocessor">    #define A0      P1_10</span></div>
+<div class="line"><a id="l00670" name="l00670"></a><span class="lineno">  670</span><span class="preprocessor">    #define A1      P1_12</span></div>
+<div class="line"><a id="l00671" name="l00671"></a><span class="lineno">  671</span><span class="preprocessor">    #define A2      P1_13</span></div>
+<div class="line"><a id="l00672" name="l00672"></a><span class="lineno">  672</span><span class="preprocessor">    #define A3      P2_0</span></div>
+<div class="line"><a id="l00673" name="l00673"></a><span class="lineno">  673</span><span class="preprocessor">    #define A4      P3_31</span></div>
+<div class="line"><a id="l00674" name="l00674"></a><span class="lineno">  674</span><span class="preprocessor">    #define A5      P3_30</span></div>
+<div class="line"><a id="l00675" name="l00675"></a><span class="lineno">  675</span><span class="preprocessor">    #define PWM0    P3_11   </span><span class="comment">/* FlexPWM0 sm2 chB */</span><span class="preprocessor"></span></div>
+<div class="line"><a id="l00676" name="l00676"></a><span class="lineno">  676</span><span class="preprocessor">    #define PWM1    P3_10   </span><span class="comment">/* FlexPWM0 sm2 chA */</span><span class="preprocessor"></span></div>
+<div class="line"><a id="l00677" name="l00677"></a><span class="lineno">  677</span><span class="preprocessor">    #define PWM2    P3_9    </span><span class="comment">/* FlexPWM0 sm1 chB */</span><span class="preprocessor"></span></div>
+<div class="line"><a id="l00678" name="l00678"></a><span class="lineno">  678</span><span class="preprocessor">    #define PWM3    P3_8    </span><span class="comment">/* FlexPWM0 sm1 chA */</span><span class="preprocessor"></span></div>
+<div class="line"><a id="l00679" name="l00679"></a><span class="lineno">  679</span><span class="preprocessor">    #define PWM4    P3_7    </span><span class="comment">/* FlexPWM0 sm0 chB */</span><span class="preprocessor"></span></div>
+<div class="line"><a id="l00680" name="l00680"></a><span class="lineno">  680</span><span class="preprocessor">    #define PWM5    P3_6    </span><span class="comment">/* FlexPWM0 sm0 chA */</span><span class="preprocessor"></span></div>
+<div class="line"><a id="l00681" name="l00681"></a><span class="lineno">  681</span><span class="preprocessor">    #define SW2     P3_29</span></div>
+<div class="line"><a id="l00682" name="l00682"></a><span class="lineno">  682</span><span class="preprocessor">    #define SW3     P1_7</span></div>
+<div class="line"><a id="l00683" name="l00683"></a><span class="lineno">  683</span><span class="preprocessor">    #define MB_AN   P3_30</span></div>
+<div class="line"><a id="l00684" name="l00684"></a><span class="lineno">  684</span><span class="preprocessor">    #define MB_RST  P3_1</span></div>
+<div class="line"><a id="l00685" name="l00685"></a><span class="lineno">  685</span><span class="preprocessor">    #define MB_CS   P1_3</span></div>
+<div class="line"><a id="l00686" name="l00686"></a><span class="lineno">  686</span><span class="preprocessor">    #define MB_SCK  P1_1</span></div>
+<div class="line"><a id="l00687" name="l00687"></a><span class="lineno">  687</span><span class="preprocessor">    #define MB_MISO P1_2</span></div>
+<div class="line"><a id="l00688" name="l00688"></a><span class="lineno">  688</span><span class="preprocessor">    #define MB_MOSI P1_0</span></div>
+<div class="line"><a id="l00689" name="l00689"></a><span class="lineno">  689</span><span class="preprocessor">    #define MB_PWM  P3_12</span></div>
+<div class="line"><a id="l00690" name="l00690"></a><span class="lineno">  690</span><span class="preprocessor">    #define MB_INT  P2_5</span></div>
+<div class="line"><a id="l00691" name="l00691"></a><span class="lineno">  691</span><span class="preprocessor">    #define MB_RX   P3_14</span></div>
+<div class="line"><a id="l00692" name="l00692"></a><span class="lineno">  692</span><span class="preprocessor">    #define MB_TX   P3_15</span></div>
+<div class="line"><a id="l00693" name="l00693"></a><span class="lineno">  693</span><span class="preprocessor">    #define MB_SCL  P3_27</span></div>
+<div class="line"><a id="l00694" name="l00694"></a><span class="lineno">  694</span><span class="preprocessor">    #define MB_SDA  P3_28</span></div>
+<div class="line"><a id="l00695" name="l00695"></a><span class="lineno">  695</span><span class="preprocessor">    #define RED     D5</span></div>
+<div class="line"><a id="l00696" name="l00696"></a><span class="lineno">  696</span><span class="preprocessor">    #define GREEN   D6</span></div>
+<div class="line"><a id="l00697" name="l00697"></a><span class="lineno">  697</span><span class="preprocessor">    #define BLUE    D3</span></div>
+<div class="line"><a id="l00698" name="l00698"></a><span class="lineno">  698</span> </div>
+<div class="line"><a id="l00699" name="l00699"></a><span class="lineno">  699</span><span class="preprocessor">    #define I3C_SDA     P0_16</span></div>
+<div class="line"><a id="l00700" name="l00700"></a><span class="lineno">  700</span><span class="preprocessor">    #define I3C_SCL     P0_17</span></div>
+<div class="line"><a id="l00701" name="l00701"></a><span class="lineno">  701</span><span class="preprocessor">    #define I2C_SDA     D18</span></div>
+<div class="line"><a id="l00702" name="l00702"></a><span class="lineno">  702</span><span class="preprocessor">    #define I2C_SCL     D19</span></div>
+<div class="line"><a id="l00703" name="l00703"></a><span class="lineno">  703</span><span class="preprocessor">    #define SPI_CS      D10</span></div>
+<div class="line"><a id="l00704" name="l00704"></a><span class="lineno">  704</span><span class="preprocessor">    #define SPI_MOSI    D11</span></div>
+<div class="line"><a id="l00705" name="l00705"></a><span class="lineno">  705</span><span class="preprocessor">    #define SPI_MISO    D12</span></div>
+<div class="line"><a id="l00706" name="l00706"></a><span class="lineno">  706</span><span class="preprocessor">    #define SPI_SCLK    D13</span></div>
+<div class="line"><a id="l00707" name="l00707"></a><span class="lineno">  707</span><span class="preprocessor">    #define ARD_CS      SPI_CS</span></div>
+<div class="line"><a id="l00708" name="l00708"></a><span class="lineno">  708</span><span class="preprocessor">    #define ARD_MOSI    SPI_MOSI</span></div>
+<div class="line"><a id="l00709" name="l00709"></a><span class="lineno">  709</span><span class="preprocessor">    #define ARD_MISO    SPI_MISO</span></div>
+<div class="line"><a id="l00710" name="l00710"></a><span class="lineno">  710</span><span class="preprocessor">    #define ARD_SCK     SPI_SCLK</span></div>
+<div class="line"><a id="l00711" name="l00711"></a><span class="lineno">  711</span> </div>
+<div class="line"><a id="l00712" name="l00712"></a><span class="lineno">  712</span><span class="preprocessor">    #define USBTX       P0_3</span></div>
+<div class="line"><a id="l00713" name="l00713"></a><span class="lineno">  713</span><span class="preprocessor">    #define USBRX       P0_2</span></div>
+<div class="line"><a id="l00714" name="l00714"></a><span class="lineno">  714</span> </div>
+<div class="line"><a id="l00715" name="l00715"></a><span class="lineno">  715</span><span class="preprocessor">    #define PIN_LED_OFF true</span></div>
+<div class="line"><a id="l00716" name="l00716"></a><span class="lineno">  716</span><span class="preprocessor">    #define PIN_LED_ON  false</span></div>
+<div class="line"><a id="l00717" name="l00717"></a><span class="lineno">  717</span> </div>
+<div class="line"><a id="l00718" name="l00718"></a><span class="lineno">  718</span> </div>
+<div class="line"><a id="l00719" name="l00719"></a><span class="lineno">  719</span><span class="preprocessor">#elif   CPU_MCXC444VLH</span></div>
+<div class="line"><a id="l00720" name="l00720"></a><span class="lineno">  720</span><span class="keyword">enum</span> {</div>
+<div class="line"><a id="l00721" name="l00721"></a><span class="lineno">  721</span>    <a class="code hl_define" href="io_8cpp.html#ac1ce626a969ca4e6c05c76611217dd92">DISABLED_PIN</a>,</div>
+<div class="line"><a id="l00722" name="l00722"></a><span class="lineno">  722</span>    PTA0,</div>
+<div class="line"><a id="l00723" name="l00723"></a><span class="lineno">  723</span>    PTA1,</div>
+<div class="line"><a id="l00724" name="l00724"></a><span class="lineno">  724</span>    PTA2,</div>
+<div class="line"><a id="l00725" name="l00725"></a><span class="lineno">  725</span>    PTA3,</div>
+<div class="line"><a id="l00726" name="l00726"></a><span class="lineno">  726</span>    PTA4,</div>
+<div class="line"><a id="l00727" name="l00727"></a><span class="lineno">  727</span>    PTA5,</div>
+<div class="line"><a id="l00728" name="l00728"></a><span class="lineno">  728</span>    PTA12,</div>
+<div class="line"><a id="l00729" name="l00729"></a><span class="lineno">  729</span>    PTA13,</div>
+<div class="line"><a id="l00730" name="l00730"></a><span class="lineno">  730</span>    PTA18,</div>
+<div class="line"><a id="l00731" name="l00731"></a><span class="lineno">  731</span>    PTA19,</div>
+<div class="line"><a id="l00732" name="l00732"></a><span class="lineno">  732</span>    PTA20,</div>
+<div class="line"><a id="l00733" name="l00733"></a><span class="lineno">  733</span>    PTB0,</div>
+<div class="line"><a id="l00734" name="l00734"></a><span class="lineno">  734</span>    PTB1,</div>
+<div class="line"><a id="l00735" name="l00735"></a><span class="lineno">  735</span>    PTB2,</div>
+<div class="line"><a id="l00736" name="l00736"></a><span class="lineno">  736</span>    PTB3,</div>
+<div class="line"><a id="l00737" name="l00737"></a><span class="lineno">  737</span>    PTB16,</div>
+<div class="line"><a id="l00738" name="l00738"></a><span class="lineno">  738</span>    PTB17,</div>
+<div class="line"><a id="l00739" name="l00739"></a><span class="lineno">  739</span>    PTB18,</div>
+<div class="line"><a id="l00740" name="l00740"></a><span class="lineno">  740</span>    PTB19,</div>
+<div class="line"><a id="l00741" name="l00741"></a><span class="lineno">  741</span>    PTC0,</div>
+<div class="line"><a id="l00742" name="l00742"></a><span class="lineno">  742</span>    PTC1,</div>
+<div class="line"><a id="l00743" name="l00743"></a><span class="lineno">  743</span>    PTC2,</div>
+<div class="line"><a id="l00744" name="l00744"></a><span class="lineno">  744</span>    PTC3,</div>
+<div class="line"><a id="l00745" name="l00745"></a><span class="lineno">  745</span>    PTC4,</div>
+<div class="line"><a id="l00746" name="l00746"></a><span class="lineno">  746</span>    PTC5,</div>
+<div class="line"><a id="l00747" name="l00747"></a><span class="lineno">  747</span>    PTC6,</div>
+<div class="line"><a id="l00748" name="l00748"></a><span class="lineno">  748</span>    PTC7,</div>
+<div class="line"><a id="l00749" name="l00749"></a><span class="lineno">  749</span>    PTC20,</div>
+<div class="line"><a id="l00750" name="l00750"></a><span class="lineno">  750</span>    PTC21,</div>
+<div class="line"><a id="l00751" name="l00751"></a><span class="lineno">  751</span>    PTC22,</div>
+<div class="line"><a id="l00752" name="l00752"></a><span class="lineno">  752</span>    PTC23,</div>
+<div class="line"><a id="l00753" name="l00753"></a><span class="lineno">  753</span>    PTD0,</div>
+<div class="line"><a id="l00754" name="l00754"></a><span class="lineno">  754</span>    PTD1,</div>
+<div class="line"><a id="l00755" name="l00755"></a><span class="lineno">  755</span>    PTD2,</div>
+<div class="line"><a id="l00756" name="l00756"></a><span class="lineno">  756</span>    PTD3,</div>
+<div class="line"><a id="l00757" name="l00757"></a><span class="lineno">  757</span>    PTD4,</div>
+<div class="line"><a id="l00758" name="l00758"></a><span class="lineno">  758</span>    PTD5,</div>
+<div class="line"><a id="l00759" name="l00759"></a><span class="lineno">  759</span>    PTD6,</div>
+<div class="line"><a id="l00760" name="l00760"></a><span class="lineno">  760</span>    PTD7,</div>
+<div class="line"><a id="l00761" name="l00761"></a><span class="lineno">  761</span>    PTE0,</div>
+<div class="line"><a id="l00762" name="l00762"></a><span class="lineno">  762</span>    PTE1,</div>
+<div class="line"><a id="l00763" name="l00763"></a><span class="lineno">  763</span>    PTE20,</div>
+<div class="line"><a id="l00764" name="l00764"></a><span class="lineno">  764</span>    PTE21,</div>
+<div class="line"><a id="l00765" name="l00765"></a><span class="lineno">  765</span>    PTE22,</div>
+<div class="line"><a id="l00766" name="l00766"></a><span class="lineno">  766</span>    PTE23,</div>
+<div class="line"><a id="l00767" name="l00767"></a><span class="lineno">  767</span>    PTE24,</div>
+<div class="line"><a id="l00768" name="l00768"></a><span class="lineno">  768</span>    PTE25,</div>
+<div class="line"><a id="l00769" name="l00769"></a><span class="lineno">  769</span>    PTE29,</div>
+<div class="line"><a id="l00770" name="l00770"></a><span class="lineno">  770</span>    PTE30,</div>
+<div class="line"><a id="l00771" name="l00771"></a><span class="lineno">  771</span>    PTE31,</div>
+<div class="line"><a id="l00772" name="l00772"></a><span class="lineno">  772</span>};</div>
+<div class="line"><a id="l00773" name="l00773"></a><span class="lineno">  773</span> </div>
+<div class="line"><a id="l00774" name="l00774"></a><span class="lineno">  774</span><span class="preprocessor">    #define D0      PTA1</span></div>
+<div class="line"><a id="l00775" name="l00775"></a><span class="lineno">  775</span><span class="preprocessor">    #define D1      PTA2</span></div>
+<div class="line"><a id="l00776" name="l00776"></a><span class="lineno">  776</span><span class="preprocessor">    #define D2      PTD3</span></div>
+<div class="line"><a id="l00777" name="l00777"></a><span class="lineno">  777</span><span class="preprocessor">    #define D3      PTA12</span></div>
+<div class="line"><a id="l00778" name="l00778"></a><span class="lineno">  778</span><span class="preprocessor">    #define D4      PTA4</span></div>
+<div class="line"><a id="l00779" name="l00779"></a><span class="lineno">  779</span><span class="preprocessor">    #define D5      PTA5</span></div>
+<div class="line"><a id="l00780" name="l00780"></a><span class="lineno">  780</span><span class="preprocessor">    #define D6      PTE29</span></div>
+<div class="line"><a id="l00781" name="l00781"></a><span class="lineno">  781</span><span class="preprocessor">    #define D7      PTE30</span></div>
+<div class="line"><a id="l00782" name="l00782"></a><span class="lineno">  782</span><span class="preprocessor">    #define D8      PTA13</span></div>
+<div class="line"><a id="l00783" name="l00783"></a><span class="lineno">  783</span><span class="preprocessor">    #define D9      PTD2</span></div>
+<div class="line"><a id="l00784" name="l00784"></a><span class="lineno">  784</span><span class="preprocessor">    #define D10     PTD4</span></div>
+<div class="line"><a id="l00785" name="l00785"></a><span class="lineno">  785</span><span class="preprocessor">    #define D11     PTD6</span></div>
+<div class="line"><a id="l00786" name="l00786"></a><span class="lineno">  786</span><span class="preprocessor">    #define D12     PTD7</span></div>
+<div class="line"><a id="l00787" name="l00787"></a><span class="lineno">  787</span><span class="preprocessor">    #define D13     PTD5</span></div>
+<div class="line"><a id="l00788" name="l00788"></a><span class="lineno">  788</span><span class="preprocessor">    #define D18     PTE0</span></div>
+<div class="line"><a id="l00789" name="l00789"></a><span class="lineno">  789</span><span class="preprocessor">    #define D19     PTE1</span></div>
+<div class="line"><a id="l00790" name="l00790"></a><span class="lineno">  790</span><span class="preprocessor">    #define A0      PTB0</span></div>
+<div class="line"><a id="l00791" name="l00791"></a><span class="lineno">  791</span><span class="preprocessor">    #define A1      PTB1</span></div>
+<div class="line"><a id="l00792" name="l00792"></a><span class="lineno">  792</span><span class="preprocessor">    #define A2      PTB2</span></div>
+<div class="line"><a id="l00793" name="l00793"></a><span class="lineno">  793</span><span class="preprocessor">    #define A3      PTB3</span></div>
+<div class="line"><a id="l00794" name="l00794"></a><span class="lineno">  794</span><span class="preprocessor">    #define A4      PTC2</span></div>
+<div class="line"><a id="l00795" name="l00795"></a><span class="lineno">  795</span><span class="preprocessor">    #define A5      PTC1</span></div>
+<div class="line"><a id="l00796" name="l00796"></a><span class="lineno">  796</span><span class="preprocessor">    #define SW2     PTC3</span></div>
+<div class="line"><a id="l00797" name="l00797"></a><span class="lineno">  797</span><span class="preprocessor">    #define SW3     D4</span></div>
+<div class="line"><a id="l00798" name="l00798"></a><span class="lineno">  798</span><span class="preprocessor">    #define MB_AN   A0</span></div>
+<div class="line"><a id="l00799" name="l00799"></a><span class="lineno">  799</span><span class="preprocessor">    #define MB_RST  D7</span></div>
+<div class="line"><a id="l00800" name="l00800"></a><span class="lineno">  800</span><span class="preprocessor">    #define MB_CS   D10</span></div>
+<div class="line"><a id="l00801" name="l00801"></a><span class="lineno">  801</span><span class="preprocessor">    #define MB_SCK  D13</span></div>
+<div class="line"><a id="l00802" name="l00802"></a><span class="lineno">  802</span><span class="preprocessor">    #define MB_MISO D12</span></div>
+<div class="line"><a id="l00803" name="l00803"></a><span class="lineno">  803</span><span class="preprocessor">    #define MB_MOSI D11</span></div>
+<div class="line"><a id="l00804" name="l00804"></a><span class="lineno">  804</span><span class="preprocessor">    #define MB_PWM  D3</span></div>
+<div class="line"><a id="l00805" name="l00805"></a><span class="lineno">  805</span><span class="preprocessor">    #define MB_INT  D2</span></div>
+<div class="line"><a id="l00806" name="l00806"></a><span class="lineno">  806</span><span class="preprocessor">    #define MB_RX   D19</span></div>
+<div class="line"><a id="l00807" name="l00807"></a><span class="lineno">  807</span><span class="preprocessor">    #define MB_TX   D18</span></div>
+<div class="line"><a id="l00808" name="l00808"></a><span class="lineno">  808</span><span class="preprocessor">    #define MB_SCL  A5</span></div>
+<div class="line"><a id="l00809" name="l00809"></a><span class="lineno">  809</span><span class="preprocessor">    #define MB_SDA  A4</span></div>
+<div class="line"><a id="l00810" name="l00810"></a><span class="lineno">  810</span><span class="preprocessor">    #define RED     PTE31</span></div>
+<div class="line"><a id="l00811" name="l00811"></a><span class="lineno">  811</span><span class="preprocessor">    #define GREEN   D13</span></div>
+<div class="line"><a id="l00812" name="l00812"></a><span class="lineno">  812</span><span class="preprocessor">    #define BLUE    D6</span></div>
 <div class="line"><a id="l00813" name="l00813"></a><span class="lineno">  813</span> </div>
-<div class="line"><a id="l00814" name="l00814"></a><span class="lineno">  814</span><span class="preprocessor">    #define USBTX       D1</span></div>
-<div class="line"><a id="l00815" name="l00815"></a><span class="lineno">  815</span><span class="preprocessor">    #define USBRX       D0</span></div>
-<div class="line"><a id="l00816" name="l00816"></a><span class="lineno">  816</span> </div>
-<div class="line"><a id="l00817" name="l00817"></a><span class="lineno">  817</span><span class="preprocessor">    #define PIN_LED_OFF true</span></div>
-<div class="line"><a id="l00818" name="l00818"></a><span class="lineno">  818</span><span class="preprocessor">    #define PIN_LED_ON  false</span></div>
-<div class="line"><a id="l00819" name="l00819"></a><span class="lineno">  819</span> </div>
-<div class="line"><a id="l00820" name="l00820"></a><span class="lineno">  820</span><span class="preprocessor">#else</span></div>
-<div class="line"><a id="l00821" name="l00821"></a><span class="lineno">  821</span><span class="preprocessor">#error Target CPU is not supported</span></div>
-<div class="line"><a id="l00822" name="l00822"></a><span class="lineno">  822</span><span class="preprocessor">#endif </span><span class="comment">// CPU_MCXN947VDF</span></div>
-<div class="line"><a id="l00823" name="l00823"></a><span class="lineno">  823</span> </div>
+<div class="line"><a id="l00814" name="l00814"></a><span class="lineno">  814</span><span class="preprocessor">    #define I2C_SDA     D18</span></div>
+<div class="line"><a id="l00815" name="l00815"></a><span class="lineno">  815</span><span class="preprocessor">    #define I2C_SCL     D19</span></div>
+<div class="line"><a id="l00816" name="l00816"></a><span class="lineno">  816</span><span class="preprocessor">    #define SPI_CS      D10</span></div>
+<div class="line"><a id="l00817" name="l00817"></a><span class="lineno">  817</span><span class="preprocessor">    #define SPI_MOSI    D11</span></div>
+<div class="line"><a id="l00818" name="l00818"></a><span class="lineno">  818</span><span class="preprocessor">    #define SPI_MISO    D12</span></div>
+<div class="line"><a id="l00819" name="l00819"></a><span class="lineno">  819</span><span class="preprocessor">    #define SPI_SCLK    D13</span></div>
+<div class="line"><a id="l00820" name="l00820"></a><span class="lineno">  820</span><span class="preprocessor">    #define ARD_CS      SPI_CS</span></div>
+<div class="line"><a id="l00821" name="l00821"></a><span class="lineno">  821</span><span class="preprocessor">    #define ARD_MOSI    SPI_MOSI</span></div>
+<div class="line"><a id="l00822" name="l00822"></a><span class="lineno">  822</span><span class="preprocessor">    #define ARD_MISO    SPI_MISO</span></div>
+<div class="line"><a id="l00823" name="l00823"></a><span class="lineno">  823</span><span class="preprocessor">    #define ARD_SCK     SPI_SCLK</span></div>
 <div class="line"><a id="l00824" name="l00824"></a><span class="lineno">  824</span> </div>
-<div class="line"><a id="l00825" name="l00825"></a><span class="lineno"><a class="line" href="io_8h.html#a910e7b106634246c117ad8d7e1a2b7fc">  825</a></span><span class="preprocessor">#define ARD_D0  D0</span></div>
-<div class="line"><a id="l00826" name="l00826"></a><span class="lineno"><a class="line" href="io_8h.html#aa7d999182b1bf3014ebb6bd632b4cf20">  826</a></span><span class="preprocessor">#define ARD_D1  D1</span></div>
-<div class="line"><a id="l00827" name="l00827"></a><span class="lineno"><a class="line" href="io_8h.html#a05ab043c648ec843c8216aed1f13c997">  827</a></span><span class="preprocessor">#define ARD_D2  D2</span></div>
-<div class="line"><a id="l00828" name="l00828"></a><span class="lineno"><a class="line" href="io_8h.html#aa5e5c8b5deeb856cecc2aa69ed908196">  828</a></span><span class="preprocessor">#define ARD_D3  D3</span></div>
-<div class="line"><a id="l00829" name="l00829"></a><span class="lineno"><a class="line" href="io_8h.html#a0b6aaf7ac0d9ce5139e26d2161383469">  829</a></span><span class="preprocessor">#define ARD_D4  D4</span></div>
-<div class="line"><a id="l00830" name="l00830"></a><span class="lineno"><a class="line" href="io_8h.html#a4acbdddcc6fef23d5a623ea717d7978d">  830</a></span><span class="preprocessor">#define ARD_D5  D5</span></div>
-<div class="line"><a id="l00831" name="l00831"></a><span class="lineno"><a class="line" href="io_8h.html#a40b4912642f5a14475dea7b6821e1b6c">  831</a></span><span class="preprocessor">#define ARD_D6  D6</span></div>
-<div class="line"><a id="l00832" name="l00832"></a><span class="lineno"><a class="line" href="io_8h.html#a6496915a3ac8c480506abe5bdbbae73e">  832</a></span><span class="preprocessor">#define ARD_D7  D7</span></div>
-<div class="line"><a id="l00833" name="l00833"></a><span class="lineno"><a class="line" href="io_8h.html#a814f07760a35c6c3ec8a530b4c193a86">  833</a></span><span class="preprocessor">#define ARD_D8  D8</span></div>
-<div class="line"><a id="l00834" name="l00834"></a><span class="lineno"><a class="line" href="io_8h.html#a0b4df36d3b55fa1a3da1312663174d9c">  834</a></span><span class="preprocessor">#define ARD_D9  D9</span></div>
-<div class="line"><a id="l00835" name="l00835"></a><span class="lineno"><a class="line" href="io_8h.html#a3345bacb39b4cecb6b4e64a9832c1444">  835</a></span><span class="preprocessor">#define ARD_D10 D10</span></div>
-<div class="line"><a id="l00836" name="l00836"></a><span class="lineno"><a class="line" href="io_8h.html#a226286eb63786bc0ab8772f1eafb5c7d">  836</a></span><span class="preprocessor">#define ARD_D11 D11</span></div>
-<div class="line"><a id="l00837" name="l00837"></a><span class="lineno"><a class="line" href="io_8h.html#a1c75f5756b7529d28773892f582b2a65">  837</a></span><span class="preprocessor">#define ARD_D12 D12</span></div>
-<div class="line"><a id="l00838" name="l00838"></a><span class="lineno"><a class="line" href="io_8h.html#ab6f4a2a182f51013ef33a5fc3dbf5c12">  838</a></span><span class="preprocessor">#define ARD_D13 D13</span></div>
-<div class="line"><a id="l00839" name="l00839"></a><span class="lineno"><a class="line" href="io_8h.html#a268c437579e44a8cd782b8e87161dfc0">  839</a></span><span class="preprocessor">#define ARD_D18 D18</span></div>
-<div class="line"><a id="l00840" name="l00840"></a><span class="lineno"><a class="line" href="io_8h.html#a45f7f9890a6bc8afed7666bf0947c821">  840</a></span><span class="preprocessor">#define ARD_D19 D19</span></div>
-<div class="line"><a id="l00841" name="l00841"></a><span class="lineno"><a class="line" href="io_8h.html#a37e5265e5fc1a10340a33904b6bb01d1">  841</a></span><span class="preprocessor">#define ARD_A0  A0</span></div>
-<div class="line"><a id="l00842" name="l00842"></a><span class="lineno"><a class="line" href="io_8h.html#ad8527fbbca42041b7f786391ec89f2ac">  842</a></span><span class="preprocessor">#define ARD_A1  A1</span></div>
-<div class="line"><a id="l00843" name="l00843"></a><span class="lineno"><a class="line" href="io_8h.html#a4fc646208cb08375429aa64789bec4af">  843</a></span><span class="preprocessor">#define ARD_A2  A2</span></div>
-<div class="line"><a id="l00844" name="l00844"></a><span class="lineno"><a class="line" href="io_8h.html#a3838af3f95a823bb5018359e2dad6343">  844</a></span><span class="preprocessor">#define ARD_A3  A3</span></div>
-<div class="line"><a id="l00845" name="l00845"></a><span class="lineno"><a class="line" href="io_8h.html#a145261b9015c1a92fe8439f9d36dd56d">  845</a></span><span class="preprocessor">#define ARD_A4  A4</span></div>
-<div class="line"><a id="l00846" name="l00846"></a><span class="lineno"><a class="line" href="io_8h.html#ae8418330f44b6d0ffb7d19f7c54055b4">  846</a></span><span class="preprocessor">#define ARD_A5  A5</span></div>
-<div class="line"><a id="l00847" name="l00847"></a><span class="lineno">  847</span></div>
-<div class="line"><a id="l00854" name="l00854"></a><span class="lineno">  854</span> </div>
-<div class="foldopen" id="foldopen00855" data-start="{" data-end="};">
-<div class="line"><a id="l00855" name="l00855"></a><span class="lineno"><a class="line" href="class_digital_in_out.html">  855</a></span><span class="keyword">class </span><a class="code hl_function" href="class_digital_in_out.html#a020a631fa7eb46952d7a28e80b716931">DigitalInOut</a>: <span class="keyword">public</span> <a class="code hl_function" href="class_obj.html#a963b6bbaf9c2b6c3c401ac02131744fa">Obj</a></div>
-<div class="line"><a id="l00856" name="l00856"></a><span class="lineno">  856</span>{</div>
-<div class="line"><a id="l00857" name="l00857"></a><span class="lineno">  857</span><span class="keyword">public</span>:</div>
-<div class="foldopen" id="foldopen00858" data-start="{" data-end="};">
-<div class="line"><a id="l00858" name="l00858"></a><span class="lineno"><a class="line" href="class_digital_in_out.html#a6042e4468e550347265bda8db2325be4">  858</a></span>    <span class="keyword">enum</span>    <a class="code hl_enumeration" href="class_digital_in_out.html#a6042e4468e550347265bda8db2325be4">direction</a> {</div>
-<div class="line"><a id="l00859" name="l00859"></a><span class="lineno"><a class="line" href="class_digital_in_out.html#a6042e4468e550347265bda8db2325be4a0225c92c4cb1366066e9c456022ff453">  859</a></span>        <a class="code hl_enumvalue" href="class_digital_in_out.html#a6042e4468e550347265bda8db2325be4a0225c92c4cb1366066e9c456022ff453">INPUT</a>   = kGPIO_DigitalInput, </div>
-<div class="line"><a id="l00860" name="l00860"></a><span class="lineno"><a class="line" href="class_digital_in_out.html#a6042e4468e550347265bda8db2325be4a703c4f934619ea7ff966f011771439c2">  860</a></span>        <a class="code hl_enumvalue" href="class_digital_in_out.html#a6042e4468e550347265bda8db2325be4a703c4f934619ea7ff966f011771439c2">OUTPUT</a>  = kGPIO_DigitalOutput</div>
-<div class="line"><a id="l00861" name="l00861"></a><span class="lineno">  861</span>    };</div>
+<div class="line"><a id="l00825" name="l00825"></a><span class="lineno">  825</span><span class="preprocessor">    #define USBTX       D1</span></div>
+<div class="line"><a id="l00826" name="l00826"></a><span class="lineno">  826</span><span class="preprocessor">    #define USBRX       D0</span></div>
+<div class="line"><a id="l00827" name="l00827"></a><span class="lineno">  827</span> </div>
+<div class="line"><a id="l00828" name="l00828"></a><span class="lineno">  828</span><span class="preprocessor">    #define PIN_LED_OFF true</span></div>
+<div class="line"><a id="l00829" name="l00829"></a><span class="lineno">  829</span><span class="preprocessor">    #define PIN_LED_ON  false</span></div>
+<div class="line"><a id="l00830" name="l00830"></a><span class="lineno">  830</span> </div>
+<div class="line"><a id="l00831" name="l00831"></a><span class="lineno">  831</span><span class="preprocessor">#else</span></div>
+<div class="line"><a id="l00832" name="l00832"></a><span class="lineno">  832</span><span class="preprocessor">#error Target CPU is not supported</span></div>
+<div class="line"><a id="l00833" name="l00833"></a><span class="lineno">  833</span><span class="preprocessor">#endif </span><span class="comment">// CPU_MCXN947VDF</span></div>
+<div class="line"><a id="l00834" name="l00834"></a><span class="lineno">  834</span> </div>
+<div class="line"><a id="l00835" name="l00835"></a><span class="lineno">  835</span> </div>
+<div class="line"><a id="l00836" name="l00836"></a><span class="lineno"><a class="line" href="io_8h.html#a910e7b106634246c117ad8d7e1a2b7fc">  836</a></span><span class="preprocessor">#define ARD_D0  D0</span></div>
+<div class="line"><a id="l00837" name="l00837"></a><span class="lineno"><a class="line" href="io_8h.html#aa7d999182b1bf3014ebb6bd632b4cf20">  837</a></span><span class="preprocessor">#define ARD_D1  D1</span></div>
+<div class="line"><a id="l00838" name="l00838"></a><span class="lineno"><a class="line" href="io_8h.html#a05ab043c648ec843c8216aed1f13c997">  838</a></span><span class="preprocessor">#define ARD_D2  D2</span></div>
+<div class="line"><a id="l00839" name="l00839"></a><span class="lineno"><a class="line" href="io_8h.html#aa5e5c8b5deeb856cecc2aa69ed908196">  839</a></span><span class="preprocessor">#define ARD_D3  D3</span></div>
+<div class="line"><a id="l00840" name="l00840"></a><span class="lineno"><a class="line" href="io_8h.html#a0b6aaf7ac0d9ce5139e26d2161383469">  840</a></span><span class="preprocessor">#define ARD_D4  D4</span></div>
+<div class="line"><a id="l00841" name="l00841"></a><span class="lineno"><a class="line" href="io_8h.html#a4acbdddcc6fef23d5a623ea717d7978d">  841</a></span><span class="preprocessor">#define ARD_D5  D5</span></div>
+<div class="line"><a id="l00842" name="l00842"></a><span class="lineno"><a class="line" href="io_8h.html#a40b4912642f5a14475dea7b6821e1b6c">  842</a></span><span class="preprocessor">#define ARD_D6  D6</span></div>
+<div class="line"><a id="l00843" name="l00843"></a><span class="lineno"><a class="line" href="io_8h.html#a6496915a3ac8c480506abe5bdbbae73e">  843</a></span><span class="preprocessor">#define ARD_D7  D7</span></div>
+<div class="line"><a id="l00844" name="l00844"></a><span class="lineno"><a class="line" href="io_8h.html#a814f07760a35c6c3ec8a530b4c193a86">  844</a></span><span class="preprocessor">#define ARD_D8  D8</span></div>
+<div class="line"><a id="l00845" name="l00845"></a><span class="lineno"><a class="line" href="io_8h.html#a0b4df36d3b55fa1a3da1312663174d9c">  845</a></span><span class="preprocessor">#define ARD_D9  D9</span></div>
+<div class="line"><a id="l00846" name="l00846"></a><span class="lineno"><a class="line" href="io_8h.html#a3345bacb39b4cecb6b4e64a9832c1444">  846</a></span><span class="preprocessor">#define ARD_D10 D10</span></div>
+<div class="line"><a id="l00847" name="l00847"></a><span class="lineno"><a class="line" href="io_8h.html#a226286eb63786bc0ab8772f1eafb5c7d">  847</a></span><span class="preprocessor">#define ARD_D11 D11</span></div>
+<div class="line"><a id="l00848" name="l00848"></a><span class="lineno"><a class="line" href="io_8h.html#a1c75f5756b7529d28773892f582b2a65">  848</a></span><span class="preprocessor">#define ARD_D12 D12</span></div>
+<div class="line"><a id="l00849" name="l00849"></a><span class="lineno"><a class="line" href="io_8h.html#ab6f4a2a182f51013ef33a5fc3dbf5c12">  849</a></span><span class="preprocessor">#define ARD_D13 D13</span></div>
+<div class="line"><a id="l00850" name="l00850"></a><span class="lineno"><a class="line" href="io_8h.html#a268c437579e44a8cd782b8e87161dfc0">  850</a></span><span class="preprocessor">#define ARD_D18 D18</span></div>
+<div class="line"><a id="l00851" name="l00851"></a><span class="lineno"><a class="line" href="io_8h.html#a45f7f9890a6bc8afed7666bf0947c821">  851</a></span><span class="preprocessor">#define ARD_D19 D19</span></div>
+<div class="line"><a id="l00852" name="l00852"></a><span class="lineno"><a class="line" href="io_8h.html#a37e5265e5fc1a10340a33904b6bb01d1">  852</a></span><span class="preprocessor">#define ARD_A0  A0</span></div>
+<div class="line"><a id="l00853" name="l00853"></a><span class="lineno"><a class="line" href="io_8h.html#ad8527fbbca42041b7f786391ec89f2ac">  853</a></span><span class="preprocessor">#define ARD_A1  A1</span></div>
+<div class="line"><a id="l00854" name="l00854"></a><span class="lineno"><a class="line" href="io_8h.html#a4fc646208cb08375429aa64789bec4af">  854</a></span><span class="preprocessor">#define ARD_A2  A2</span></div>
+<div class="line"><a id="l00855" name="l00855"></a><span class="lineno"><a class="line" href="io_8h.html#a3838af3f95a823bb5018359e2dad6343">  855</a></span><span class="preprocessor">#define ARD_A3  A3</span></div>
+<div class="line"><a id="l00856" name="l00856"></a><span class="lineno"><a class="line" href="io_8h.html#a145261b9015c1a92fe8439f9d36dd56d">  856</a></span><span class="preprocessor">#define ARD_A4  A4</span></div>
+<div class="line"><a id="l00857" name="l00857"></a><span class="lineno"><a class="line" href="io_8h.html#ae8418330f44b6d0ffb7d19f7c54055b4">  857</a></span><span class="preprocessor">#define ARD_A5  A5</span></div>
+<div class="line"><a id="l00858" name="l00858"></a><span class="lineno">  858</span></div>
+<div class="line"><a id="l00865" name="l00865"></a><span class="lineno">  865</span> </div>
+<div class="foldopen" id="foldopen00866" data-start="{" data-end="};">
+<div class="line"><a id="l00866" name="l00866"></a><span class="lineno"><a class="line" href="class_digital_in_out.html">  866</a></span><span class="keyword">class </span><a class="code hl_function" href="class_digital_in_out.html#a020a631fa7eb46952d7a28e80b716931">DigitalInOut</a>: <span class="keyword">public</span> <a class="code hl_function" href="class_obj.html#a963b6bbaf9c2b6c3c401ac02131744fa">Obj</a></div>
+<div class="line"><a id="l00867" name="l00867"></a><span class="lineno">  867</span>{</div>
+<div class="line"><a id="l00868" name="l00868"></a><span class="lineno">  868</span><span class="keyword">public</span>:</div>
+<div class="foldopen" id="foldopen00869" data-start="{" data-end="};">
+<div class="line"><a id="l00869" name="l00869"></a><span class="lineno"><a class="line" href="class_digital_in_out.html#a6042e4468e550347265bda8db2325be4">  869</a></span>    <span class="keyword">enum</span>    <a class="code hl_enumeration" href="class_digital_in_out.html#a6042e4468e550347265bda8db2325be4">direction</a> {</div>
+<div class="line"><a id="l00870" name="l00870"></a><span class="lineno"><a class="line" href="class_digital_in_out.html#a6042e4468e550347265bda8db2325be4a0225c92c4cb1366066e9c456022ff453">  870</a></span>        <a class="code hl_enumvalue" href="class_digital_in_out.html#a6042e4468e550347265bda8db2325be4a0225c92c4cb1366066e9c456022ff453">INPUT</a>   = kGPIO_DigitalInput, </div>
+<div class="line"><a id="l00871" name="l00871"></a><span class="lineno"><a class="line" href="class_digital_in_out.html#a6042e4468e550347265bda8db2325be4a703c4f934619ea7ff966f011771439c2">  871</a></span>        <a class="code hl_enumvalue" href="class_digital_in_out.html#a6042e4468e550347265bda8db2325be4a703c4f934619ea7ff966f011771439c2">OUTPUT</a>  = kGPIO_DigitalOutput</div>
+<div class="line"><a id="l00872" name="l00872"></a><span class="lineno">  872</span>    };</div>
 </div>
-<div class="line"><a id="l00862" name="l00862"></a><span class="lineno">  862</span>    </div>
-<div class="foldopen" id="foldopen00863" data-start="{" data-end="};">
-<div class="line"><a id="l00863" name="l00863"></a><span class="lineno"><a class="line" href="class_digital_in_out.html#a7756405060ef1a62957346ba262f9982">  863</a></span>    <span class="keyword">enum</span>    <a class="code hl_enumeration" href="class_digital_in_out.html#a7756405060ef1a62957346ba262f9982">PinMode</a> {</div>
-<div class="line"><a id="l00864" name="l00864"></a><span class="lineno"><a class="line" href="class_digital_in_out.html#a7756405060ef1a62957346ba262f9982a2e721ab48b4a95f9fea8ebbbdfc3fd96">  864</a></span>        <a class="code hl_enumvalue" href="class_digital_in_out.html#a7756405060ef1a62957346ba262f9982a2e721ab48b4a95f9fea8ebbbdfc3fd96">PullNone</a>    = 0x0,</div>
-<div class="line"><a id="l00865" name="l00865"></a><span class="lineno"><a class="line" href="class_digital_in_out.html#a7756405060ef1a62957346ba262f9982a38f889197cb81549b4ce8d7d03a64be6">  865</a></span>        <a class="code hl_enumvalue" href="class_digital_in_out.html#a7756405060ef1a62957346ba262f9982a38f889197cb81549b4ce8d7d03a64be6">PullUp</a>      = 0x1,</div>
-<div class="line"><a id="l00866" name="l00866"></a><span class="lineno"><a class="line" href="class_digital_in_out.html#a7756405060ef1a62957346ba262f9982a5bcc3b6fa517d6b426a42c42d20c2919">  866</a></span>        <a class="code hl_enumvalue" href="class_digital_in_out.html#a7756405060ef1a62957346ba262f9982a5bcc3b6fa517d6b426a42c42d20c2919">PullDown</a>    = 0x2,</div>
-<div class="line"><a id="l00867" name="l00867"></a><span class="lineno"><a class="line" href="class_digital_in_out.html#a7756405060ef1a62957346ba262f9982a12ec6588a809d2e2d728619a12a290a4">  867</a></span>        <a class="code hl_enumvalue" href="class_digital_in_out.html#a7756405060ef1a62957346ba262f9982a12ec6588a809d2e2d728619a12a290a4">OpenDrain</a>   = 0x8</div>
-<div class="line"><a id="l00868" name="l00868"></a><span class="lineno">  868</span>    };</div>
+<div class="line"><a id="l00873" name="l00873"></a><span class="lineno">  873</span>    </div>
+<div class="foldopen" id="foldopen00874" data-start="{" data-end="};">
+<div class="line"><a id="l00874" name="l00874"></a><span class="lineno"><a class="line" href="class_digital_in_out.html#a7756405060ef1a62957346ba262f9982">  874</a></span>    <span class="keyword">enum</span>    <a class="code hl_enumeration" href="class_digital_in_out.html#a7756405060ef1a62957346ba262f9982">PinMode</a> {</div>
+<div class="line"><a id="l00875" name="l00875"></a><span class="lineno"><a class="line" href="class_digital_in_out.html#a7756405060ef1a62957346ba262f9982a2e721ab48b4a95f9fea8ebbbdfc3fd96">  875</a></span>        <a class="code hl_enumvalue" href="class_digital_in_out.html#a7756405060ef1a62957346ba262f9982a2e721ab48b4a95f9fea8ebbbdfc3fd96">PullNone</a>    = 0x0,</div>
+<div class="line"><a id="l00876" name="l00876"></a><span class="lineno"><a class="line" href="class_digital_in_out.html#a7756405060ef1a62957346ba262f9982a38f889197cb81549b4ce8d7d03a64be6">  876</a></span>        <a class="code hl_enumvalue" href="class_digital_in_out.html#a7756405060ef1a62957346ba262f9982a38f889197cb81549b4ce8d7d03a64be6">PullUp</a>      = 0x1,</div>
+<div class="line"><a id="l00877" name="l00877"></a><span class="lineno"><a class="line" href="class_digital_in_out.html#a7756405060ef1a62957346ba262f9982a5bcc3b6fa517d6b426a42c42d20c2919">  877</a></span>        <a class="code hl_enumvalue" href="class_digital_in_out.html#a7756405060ef1a62957346ba262f9982a5bcc3b6fa517d6b426a42c42d20c2919">PullDown</a>    = 0x2,</div>
+<div class="line"><a id="l00878" name="l00878"></a><span class="lineno"><a class="line" href="class_digital_in_out.html#a7756405060ef1a62957346ba262f9982a12ec6588a809d2e2d728619a12a290a4">  878</a></span>        <a class="code hl_enumvalue" href="class_digital_in_out.html#a7756405060ef1a62957346ba262f9982a12ec6588a809d2e2d728619a12a290a4">OpenDrain</a>   = 0x8</div>
+<div class="line"><a id="l00879" name="l00879"></a><span class="lineno">  879</span>    };</div>
 </div>
-<div class="line"><a id="l00869" name="l00869"></a><span class="lineno">  869</span></div>
-<div class="line"><a id="l00877" name="l00877"></a><span class="lineno">  877</span>    <a class="code hl_function" href="class_digital_in_out.html#a020a631fa7eb46952d7a28e80b716931">DigitalInOut</a>( uint8_t pin_num, <span class="keywordtype">bool</span> <a class="code hl_enumeration" href="class_digital_in_out.html#a6042e4468e550347265bda8db2325be4">direction</a> = kGPIO_DigitalInput, <span class="keywordtype">bool</span> <a class="code hl_function" href="class_digital_in_out.html#a0b8136561d03090fee66c09f467bc65a">value</a> = 0, <span class="keywordtype">int</span> pin_mode = <a class="code hl_enumvalue" href="class_digital_in_out.html#a7756405060ef1a62957346ba262f9982a2e721ab48b4a95f9fea8ebbbdfc3fd96">PullNone</a> );</div>
-<div class="line"><a id="l00878" name="l00878"></a><span class="lineno">  878</span></div>
-<div class="line"><a id="l00881" name="l00881"></a><span class="lineno">  881</span>    <span class="keyword">virtual</span> <a class="code hl_class" href="class_digital_in_out.html">~DigitalInOut</a>();</div>
-<div class="line"><a id="l00882" name="l00882"></a><span class="lineno">  882</span>    </div>
-<div class="line"><a id="l00887" name="l00887"></a><span class="lineno">  887</span>    <span class="keywordtype">void</span>    <a class="code hl_function" href="class_digital_in_out.html#a0b8136561d03090fee66c09f467bc65a">value</a>( <span class="keywordtype">bool</span> <a class="code hl_function" href="class_digital_in_out.html#a0b8136561d03090fee66c09f467bc65a">value</a> );</div>
-<div class="line"><a id="l00888" name="l00888"></a><span class="lineno">  888</span></div>
-<div class="line"><a id="l00893" name="l00893"></a><span class="lineno">  893</span>    <span class="keywordtype">bool</span>    <a class="code hl_function" href="class_digital_in_out.html#a0b8136561d03090fee66c09f467bc65a">value</a>( <span class="keywordtype">void</span> );</div>
-<div class="line"><a id="l00894" name="l00894"></a><span class="lineno">  894</span>    </div>
-<div class="line"><a id="l00897" name="l00897"></a><span class="lineno">  897</span>    <span class="keywordtype">void</span>    <a class="code hl_function" href="class_digital_in_out.html#a589c26e742fc17ffec0cadad06b968ae">output</a>( <span class="keywordtype">void</span> );</div>
-<div class="line"><a id="l00898" name="l00898"></a><span class="lineno">  898</span></div>
-<div class="line"><a id="l00901" name="l00901"></a><span class="lineno">  901</span>    <span class="keywordtype">void</span>    <a class="code hl_function" href="class_digital_in_out.html#a44ed72d16af2f1113d621e54cff5302e">input</a>( <span class="keywordtype">void</span> );</div>
-<div class="line"><a id="l00902" name="l00902"></a><span class="lineno">  902</span></div>
-<div class="line"><a id="l00909" name="l00909"></a><span class="lineno">  909</span>    <span class="keywordtype">void</span>    <a class="code hl_function" href="class_digital_in_out.html#a846215455a9b085e5e17cf9581a79163">pin_mux</a>( <span class="keywordtype">int</span> mux );</div>
-<div class="line"><a id="l00910" name="l00910"></a><span class="lineno">  910</span></div>
-<div class="line"><a id="l00922" name="l00922"></a><span class="lineno">  922</span>    <span class="keywordtype">void</span>    <a class="code hl_function" href="class_digital_in_out.html#a501a5c4fceaafa559a142451385fc7b8">input_buffer</a>( <span class="keywordtype">bool</span> enable );</div>
-<div class="line"><a id="l00923" name="l00923"></a><span class="lineno">  923</span></div>
-<div class="line"><a id="l00927" name="l00927"></a><span class="lineno">  927</span>    <span class="keywordtype">void</span>    <a class="code hl_function" href="class_digital_in_out.html#a31d64fc67c448c48dba55b6a62981e5a">mode</a>( <span class="keywordtype">int</span> pin_mode );</div>
-<div class="line"><a id="l00928" name="l00928"></a><span class="lineno">  928</span></div>
-<div class="line"><a id="l00932" name="l00932"></a><span class="lineno">  932</span>    uint32_t <a class="code hl_function" href="class_digital_in_out.html#a31d64fc67c448c48dba55b6a62981e5a">mode</a>( <span class="keywordtype">void</span> );</div>
-<div class="line"><a id="l00933" name="l00933"></a><span class="lineno">  933</span></div>
-<div class="line"><a id="l00941" name="l00941"></a><span class="lineno"><a class="line" href="class_digital_in_out.html#aac090a0c05fa0682687f49e4432b4b92">  941</a></span>    GPIO_Type*  <a class="code hl_function" href="class_digital_in_out.html#aac090a0c05fa0682687f49e4432b4b92">gpio_base</a>( <span class="keywordtype">void</span> )<span class="keyword"> const </span>{ <span class="keywordflow">return</span> <a class="code hl_variable" href="class_digital_in_out.html#a9bdab338c9f749340114fb97aa4e4c0b">gpio_n</a>; }</div>
-<div class="line"><a id="l00942" name="l00942"></a><span class="lineno"><a class="line" href="class_digital_in_out.html#ac5bef1de4ef8e38e1e8e4c8d5d01e79b">  942</a></span>    uint8_t     <a class="code hl_function" href="class_digital_in_out.html#ac5bef1de4ef8e38e1e8e4c8d5d01e79b">gpio_bit</a>( <span class="keywordtype">void</span> )<span class="keyword"> const  </span>{ <span class="keywordflow">return</span> <a class="code hl_variable" href="class_digital_in_out.html#a44740bc823e3945773f1423ec63803fa">gpio_pin</a>; }</div>
-<div class="line"><a id="l00943" name="l00943"></a><span class="lineno">  943</span></div>
-<div class="line"><a id="l00946" name="l00946"></a><span class="lineno">  946</span>    <a class="code hl_class" href="class_digital_in_out.html">DigitalInOut</a>&amp;   <a class="code hl_function" href="class_digital_in_out.html#a56c36041f23efd75cf7acbca7fadca38">operator=</a>( <span class="keywordtype">bool</span> v );</div>
-<div class="line"><a id="l00947" name="l00947"></a><span class="lineno">  947</span>    <a class="code hl_class" href="class_digital_in_out.html">DigitalInOut</a>&amp;   <a class="code hl_function" href="class_digital_in_out.html#a56c36041f23efd75cf7acbca7fadca38">operator=</a>( <a class="code hl_class" href="class_digital_in_out.html">DigitalInOut</a>&amp; rhs );</div>
-<div class="line"><a id="l00948" name="l00948"></a><span class="lineno">  948</span></div>
-<div class="line"><a id="l00951" name="l00951"></a><span class="lineno">  951</span>    <span class="keyword">operator</span>    bool();</div>
-<div class="line"><a id="l00952" name="l00952"></a><span class="lineno">  952</span> </div>
-<div class="line"><a id="l00953" name="l00953"></a><span class="lineno">  953</span><span class="keyword">protected</span>:</div>
-<div class="line"><a id="l00954" name="l00954"></a><span class="lineno">  954</span>    <span class="keywordtype">void</span> <a class="code hl_enumeration" href="class_digital_in_out.html#a6042e4468e550347265bda8db2325be4">direction</a>( <span class="keywordtype">bool</span> dir );</div>
-<div class="line"><a id="l00955" name="l00955"></a><span class="lineno">  955</span>    </div>
-<div class="line"><a id="l00956" name="l00956"></a><span class="lineno"><a class="line" href="class_digital_in_out.html#af5882a5caf483c4f66647e2285634e37">  956</a></span>    uint8_t     <a class="code hl_variable" href="class_digital_in_out.html#af5882a5caf483c4f66647e2285634e37">_pn</a>; </div>
-<div class="line"><a id="l00957" name="l00957"></a><span class="lineno"><a class="line" href="class_digital_in_out.html#a9bdab338c9f749340114fb97aa4e4c0b">  957</a></span>    GPIO_Type   *<a class="code hl_variable" href="class_digital_in_out.html#a9bdab338c9f749340114fb97aa4e4c0b">gpio_n</a>;</div>
-<div class="line"><a id="l00958" name="l00958"></a><span class="lineno"><a class="line" href="class_digital_in_out.html#a1b495b857a3087a92dd4ed0ecfc9eb9a">  958</a></span>    PORT_Type   *<a class="code hl_variable" href="class_digital_in_out.html#a1b495b857a3087a92dd4ed0ecfc9eb9a">port_n</a>;</div>
-<div class="line"><a id="l00959" name="l00959"></a><span class="lineno"><a class="line" href="class_digital_in_out.html#a44740bc823e3945773f1423ec63803fa">  959</a></span>    uint8_t     <a class="code hl_variable" href="class_digital_in_out.html#a44740bc823e3945773f1423ec63803fa">gpio_pin</a>; </div>
-<div class="line"><a id="l00960" name="l00960"></a><span class="lineno">  960</span>    </div>
-<div class="line"><a id="l00961" name="l00961"></a><span class="lineno">  961</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00962" name="l00962"></a><span class="lineno"><a class="line" href="class_digital_in_out.html#aadf6dbd35e84c26a6a440cde082a1996">  962</a></span>    <span class="keywordtype">bool</span>    <a class="code hl_variable" href="class_digital_in_out.html#aadf6dbd35e84c26a6a440cde082a1996">_dir</a>; </div>
-<div class="line"><a id="l00963" name="l00963"></a><span class="lineno"><a class="line" href="class_digital_in_out.html#a8c80e99be8680936898ebe12f706e8aa">  963</a></span>    <span class="keywordtype">bool</span>    <a class="code hl_variable" href="class_digital_in_out.html#a8c80e99be8680936898ebe12f706e8aa">_value</a>;</div>
-<div class="line"><a id="l00964" name="l00964"></a><span class="lineno">  964</span>};</div>
+<div class="line"><a id="l00880" name="l00880"></a><span class="lineno">  880</span></div>
+<div class="line"><a id="l00888" name="l00888"></a><span class="lineno">  888</span>    <a class="code hl_function" href="class_digital_in_out.html#a020a631fa7eb46952d7a28e80b716931">DigitalInOut</a>( uint8_t pin_num, <span class="keywordtype">bool</span> <a class="code hl_enumeration" href="class_digital_in_out.html#a6042e4468e550347265bda8db2325be4">direction</a> = kGPIO_DigitalInput, <span class="keywordtype">bool</span> <a class="code hl_function" href="class_digital_in_out.html#a0b8136561d03090fee66c09f467bc65a">value</a> = 0, <span class="keywordtype">int</span> pin_mode = <a class="code hl_enumvalue" href="class_digital_in_out.html#a7756405060ef1a62957346ba262f9982a2e721ab48b4a95f9fea8ebbbdfc3fd96">PullNone</a> );</div>
+<div class="line"><a id="l00889" name="l00889"></a><span class="lineno">  889</span></div>
+<div class="line"><a id="l00892" name="l00892"></a><span class="lineno">  892</span>    <span class="keyword">virtual</span> <a class="code hl_class" href="class_digital_in_out.html">~DigitalInOut</a>();</div>
+<div class="line"><a id="l00893" name="l00893"></a><span class="lineno">  893</span>    </div>
+<div class="line"><a id="l00898" name="l00898"></a><span class="lineno">  898</span>    <span class="keywordtype">void</span>    <a class="code hl_function" href="class_digital_in_out.html#a0b8136561d03090fee66c09f467bc65a">value</a>( <span class="keywordtype">bool</span> <a class="code hl_function" href="class_digital_in_out.html#a0b8136561d03090fee66c09f467bc65a">value</a> );</div>
+<div class="line"><a id="l00899" name="l00899"></a><span class="lineno">  899</span></div>
+<div class="line"><a id="l00904" name="l00904"></a><span class="lineno">  904</span>    <span class="keywordtype">bool</span>    <a class="code hl_function" href="class_digital_in_out.html#a0b8136561d03090fee66c09f467bc65a">value</a>( <span class="keywordtype">void</span> );</div>
+<div class="line"><a id="l00905" name="l00905"></a><span class="lineno">  905</span>    </div>
+<div class="line"><a id="l00908" name="l00908"></a><span class="lineno">  908</span>    <span class="keywordtype">void</span>    <a class="code hl_function" href="class_digital_in_out.html#a589c26e742fc17ffec0cadad06b968ae">output</a>( <span class="keywordtype">void</span> );</div>
+<div class="line"><a id="l00909" name="l00909"></a><span class="lineno">  909</span></div>
+<div class="line"><a id="l00912" name="l00912"></a><span class="lineno">  912</span>    <span class="keywordtype">void</span>    <a class="code hl_function" href="class_digital_in_out.html#a44ed72d16af2f1113d621e54cff5302e">input</a>( <span class="keywordtype">void</span> );</div>
+<div class="line"><a id="l00913" name="l00913"></a><span class="lineno">  913</span></div>
+<div class="line"><a id="l00920" name="l00920"></a><span class="lineno">  920</span>    <span class="keywordtype">void</span>    <a class="code hl_function" href="class_digital_in_out.html#a846215455a9b085e5e17cf9581a79163">pin_mux</a>( <span class="keywordtype">int</span> mux );</div>
+<div class="line"><a id="l00921" name="l00921"></a><span class="lineno">  921</span></div>
+<div class="line"><a id="l00933" name="l00933"></a><span class="lineno">  933</span>    <span class="keywordtype">void</span>    <a class="code hl_function" href="class_digital_in_out.html#a501a5c4fceaafa559a142451385fc7b8">input_buffer</a>( <span class="keywordtype">bool</span> enable );</div>
+<div class="line"><a id="l00934" name="l00934"></a><span class="lineno">  934</span></div>
+<div class="line"><a id="l00938" name="l00938"></a><span class="lineno">  938</span>    <span class="keywordtype">void</span>    <a class="code hl_function" href="class_digital_in_out.html#a31d64fc67c448c48dba55b6a62981e5a">mode</a>( <span class="keywordtype">int</span> pin_mode );</div>
+<div class="line"><a id="l00939" name="l00939"></a><span class="lineno">  939</span></div>
+<div class="line"><a id="l00943" name="l00943"></a><span class="lineno">  943</span>    uint32_t <a class="code hl_function" href="class_digital_in_out.html#a31d64fc67c448c48dba55b6a62981e5a">mode</a>( <span class="keywordtype">void</span> );</div>
+<div class="line"><a id="l00944" name="l00944"></a><span class="lineno">  944</span></div>
+<div class="line"><a id="l00952" name="l00952"></a><span class="lineno"><a class="line" href="class_digital_in_out.html#aac090a0c05fa0682687f49e4432b4b92">  952</a></span>    GPIO_Type*  <a class="code hl_function" href="class_digital_in_out.html#aac090a0c05fa0682687f49e4432b4b92">gpio_base</a>( <span class="keywordtype">void</span> )<span class="keyword"> const </span>{ <span class="keywordflow">return</span> <a class="code hl_variable" href="class_digital_in_out.html#a9bdab338c9f749340114fb97aa4e4c0b">gpio_n</a>; }</div>
+<div class="line"><a id="l00953" name="l00953"></a><span class="lineno"><a class="line" href="class_digital_in_out.html#ac5bef1de4ef8e38e1e8e4c8d5d01e79b">  953</a></span>    uint8_t     <a class="code hl_function" href="class_digital_in_out.html#ac5bef1de4ef8e38e1e8e4c8d5d01e79b">gpio_bit</a>( <span class="keywordtype">void</span> )<span class="keyword"> const  </span>{ <span class="keywordflow">return</span> <a class="code hl_variable" href="class_digital_in_out.html#a44740bc823e3945773f1423ec63803fa">gpio_pin</a>; }</div>
+<div class="line"><a id="l00954" name="l00954"></a><span class="lineno">  954</span></div>
+<div class="line"><a id="l00957" name="l00957"></a><span class="lineno">  957</span>    <a class="code hl_class" href="class_digital_in_out.html">DigitalInOut</a>&amp;   <a class="code hl_function" href="class_digital_in_out.html#a56c36041f23efd75cf7acbca7fadca38">operator=</a>( <span class="keywordtype">bool</span> v );</div>
+<div class="line"><a id="l00958" name="l00958"></a><span class="lineno">  958</span>    <a class="code hl_class" href="class_digital_in_out.html">DigitalInOut</a>&amp;   <a class="code hl_function" href="class_digital_in_out.html#a56c36041f23efd75cf7acbca7fadca38">operator=</a>( <a class="code hl_class" href="class_digital_in_out.html">DigitalInOut</a>&amp; rhs );</div>
+<div class="line"><a id="l00959" name="l00959"></a><span class="lineno">  959</span></div>
+<div class="line"><a id="l00962" name="l00962"></a><span class="lineno">  962</span>    <span class="keyword">operator</span>    bool();</div>
+<div class="line"><a id="l00963" name="l00963"></a><span class="lineno">  963</span> </div>
+<div class="line"><a id="l00964" name="l00964"></a><span class="lineno">  964</span><span class="keyword">protected</span>:</div>
+<div class="line"><a id="l00965" name="l00965"></a><span class="lineno">  965</span>    <span class="keywordtype">void</span> <a class="code hl_enumeration" href="class_digital_in_out.html#a6042e4468e550347265bda8db2325be4">direction</a>( <span class="keywordtype">bool</span> dir );</div>
+<div class="line"><a id="l00966" name="l00966"></a><span class="lineno">  966</span>    </div>
+<div class="line"><a id="l00967" name="l00967"></a><span class="lineno"><a class="line" href="class_digital_in_out.html#af5882a5caf483c4f66647e2285634e37">  967</a></span>    uint8_t     <a class="code hl_variable" href="class_digital_in_out.html#af5882a5caf483c4f66647e2285634e37">_pn</a>; </div>
+<div class="line"><a id="l00968" name="l00968"></a><span class="lineno"><a class="line" href="class_digital_in_out.html#a9bdab338c9f749340114fb97aa4e4c0b">  968</a></span>    GPIO_Type   *<a class="code hl_variable" href="class_digital_in_out.html#a9bdab338c9f749340114fb97aa4e4c0b">gpio_n</a>;</div>
+<div class="line"><a id="l00969" name="l00969"></a><span class="lineno"><a class="line" href="class_digital_in_out.html#a1b495b857a3087a92dd4ed0ecfc9eb9a">  969</a></span>    PORT_Type   *<a class="code hl_variable" href="class_digital_in_out.html#a1b495b857a3087a92dd4ed0ecfc9eb9a">port_n</a>;</div>
+<div class="line"><a id="l00970" name="l00970"></a><span class="lineno"><a class="line" href="class_digital_in_out.html#a44740bc823e3945773f1423ec63803fa">  970</a></span>    uint8_t     <a class="code hl_variable" href="class_digital_in_out.html#a44740bc823e3945773f1423ec63803fa">gpio_pin</a>; </div>
+<div class="line"><a id="l00971" name="l00971"></a><span class="lineno">  971</span>    </div>
+<div class="line"><a id="l00972" name="l00972"></a><span class="lineno">  972</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00973" name="l00973"></a><span class="lineno"><a class="line" href="class_digital_in_out.html#aadf6dbd35e84c26a6a440cde082a1996">  973</a></span>    <span class="keywordtype">bool</span>    <a class="code hl_variable" href="class_digital_in_out.html#aadf6dbd35e84c26a6a440cde082a1996">_dir</a>; </div>
+<div class="line"><a id="l00974" name="l00974"></a><span class="lineno"><a class="line" href="class_digital_in_out.html#a8c80e99be8680936898ebe12f706e8aa">  974</a></span>    <span class="keywordtype">bool</span>    <a class="code hl_variable" href="class_digital_in_out.html#a8c80e99be8680936898ebe12f706e8aa">_value</a>;</div>
+<div class="line"><a id="l00975" name="l00975"></a><span class="lineno">  975</span>};</div>
 </div>
-<div class="line"><a id="l00965" name="l00965"></a><span class="lineno">  965</span></div>
-<div class="line"><a id="l00972" name="l00972"></a><span class="lineno">  972</span> </div>
-<div class="foldopen" id="foldopen00973" data-start="{" data-end="};">
-<div class="line"><a id="l00973" name="l00973"></a><span class="lineno"><a class="line" href="class_digital_out.html">  973</a></span><span class="keyword">class </span><a class="code hl_function" href="class_digital_out.html#a0cca6a9bcbced230b94cd2a33526e00d">DigitalOut</a> : <span class="keyword">public</span> <a class="code hl_function" href="class_digital_in_out.html#a020a631fa7eb46952d7a28e80b716931">DigitalInOut</a></div>
-<div class="line"><a id="l00974" name="l00974"></a><span class="lineno">  974</span>{</div>
-<div class="line"><a id="l00975" name="l00975"></a><span class="lineno">  975</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00976" name="l00976"></a><span class="lineno">  976</span>    <span class="keyword">using </span>DigitalInOut::operator=;</div>
-<div class="line"><a id="l00977" name="l00977"></a><span class="lineno">  977</span></div>
-<div class="line"><a id="l00984" name="l00984"></a><span class="lineno">  984</span>    <a class="code hl_function" href="class_digital_out.html#a0cca6a9bcbced230b94cd2a33526e00d">DigitalOut</a>( uint8_t pin_num, <span class="keywordtype">bool</span> <a class="code hl_function" href="class_digital_in_out.html#a76be5769a0ae1e0ca854213ddca005a4">value</a> = 0, <span class="keywordtype">int</span> pin_mode = <a class="code hl_enumvalue" href="class_digital_in_out.html#a7756405060ef1a62957346ba262f9982a2e721ab48b4a95f9fea8ebbbdfc3fd96">PullNone</a> );</div>
-<div class="line"><a id="l00985" name="l00985"></a><span class="lineno">  985</span>    <span class="keyword">virtual</span> <a class="code hl_function" href="class_digital_out.html#a0cca6a9bcbced230b94cd2a33526e00d">~DigitalOut</a>();</div>
-<div class="line"><a id="l00986" name="l00986"></a><span class="lineno">  986</span>};</div>
+<div class="line"><a id="l00976" name="l00976"></a><span class="lineno">  976</span></div>
+<div class="line"><a id="l00983" name="l00983"></a><span class="lineno">  983</span> </div>
+<div class="foldopen" id="foldopen00984" data-start="{" data-end="};">
+<div class="line"><a id="l00984" name="l00984"></a><span class="lineno"><a class="line" href="class_digital_out.html">  984</a></span><span class="keyword">class </span><a class="code hl_function" href="class_digital_out.html#a0cca6a9bcbced230b94cd2a33526e00d">DigitalOut</a> : <span class="keyword">public</span> <a class="code hl_function" href="class_digital_in_out.html#a020a631fa7eb46952d7a28e80b716931">DigitalInOut</a></div>
+<div class="line"><a id="l00985" name="l00985"></a><span class="lineno">  985</span>{</div>
+<div class="line"><a id="l00986" name="l00986"></a><span class="lineno">  986</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00987" name="l00987"></a><span class="lineno">  987</span>    <span class="keyword">using </span>DigitalInOut::operator=;</div>
+<div class="line"><a id="l00988" name="l00988"></a><span class="lineno">  988</span></div>
+<div class="line"><a id="l00995" name="l00995"></a><span class="lineno">  995</span>    <a class="code hl_function" href="class_digital_out.html#a0cca6a9bcbced230b94cd2a33526e00d">DigitalOut</a>( uint8_t pin_num, <span class="keywordtype">bool</span> <a class="code hl_function" href="class_digital_in_out.html#a76be5769a0ae1e0ca854213ddca005a4">value</a> = 0, <span class="keywordtype">int</span> pin_mode = <a class="code hl_enumvalue" href="class_digital_in_out.html#a7756405060ef1a62957346ba262f9982a2e721ab48b4a95f9fea8ebbbdfc3fd96">PullNone</a> );</div>
+<div class="line"><a id="l00996" name="l00996"></a><span class="lineno">  996</span>    <span class="keyword">virtual</span> <a class="code hl_function" href="class_digital_out.html#a0cca6a9bcbced230b94cd2a33526e00d">~DigitalOut</a>();</div>
+<div class="line"><a id="l00997" name="l00997"></a><span class="lineno">  997</span>};</div>
 </div>
-<div class="line"><a id="l00987" name="l00987"></a><span class="lineno">  987</span></div>
-<div class="line"><a id="l00994" name="l00994"></a><span class="lineno">  994</span> </div>
-<div class="foldopen" id="foldopen00995" data-start="{" data-end="};">
-<div class="line"><a id="l00995" name="l00995"></a><span class="lineno"><a class="line" href="class_digital_in.html">  995</a></span><span class="keyword">class </span><a class="code hl_function" href="class_digital_in.html#a4c92a94513c5f55fdcc99789ae35d84a">DigitalIn</a> : <span class="keyword">public</span> <a class="code hl_function" href="class_digital_in_out.html#a020a631fa7eb46952d7a28e80b716931">DigitalInOut</a></div>
-<div class="line"><a id="l00996" name="l00996"></a><span class="lineno">  996</span>{</div>
-<div class="line"><a id="l00997" name="l00997"></a><span class="lineno">  997</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00998" name="l00998"></a><span class="lineno">  998</span>    <span class="keyword">using </span>DigitalInOut::operator=;</div>
-<div class="line"><a id="l00999" name="l00999"></a><span class="lineno">  999</span></div>
-<div class="line"><a id="l01005" name="l01005"></a><span class="lineno"> 1005</span>    <a class="code hl_function" href="class_digital_in.html#a4c92a94513c5f55fdcc99789ae35d84a">DigitalIn</a>( uint8_t pin_num, <span class="keywordtype">int</span> pin_mode = <a class="code hl_enumvalue" href="class_digital_in_out.html#a7756405060ef1a62957346ba262f9982a2e721ab48b4a95f9fea8ebbbdfc3fd96">PullNone</a> );</div>
-<div class="line"><a id="l01006" name="l01006"></a><span class="lineno"> 1006</span>    <span class="keyword">virtual</span> <a class="code hl_function" href="class_digital_in.html#a4c92a94513c5f55fdcc99789ae35d84a">~DigitalIn</a>();</div>
-<div class="line"><a id="l01007" name="l01007"></a><span class="lineno"> 1007</span>};</div>
+<div class="line"><a id="l00998" name="l00998"></a><span class="lineno">  998</span></div>
+<div class="line"><a id="l01005" name="l01005"></a><span class="lineno"> 1005</span> </div>
+<div class="foldopen" id="foldopen01006" data-start="{" data-end="};">
+<div class="line"><a id="l01006" name="l01006"></a><span class="lineno"><a class="line" href="class_digital_in.html"> 1006</a></span><span class="keyword">class </span><a class="code hl_function" href="class_digital_in.html#a4c92a94513c5f55fdcc99789ae35d84a">DigitalIn</a> : <span class="keyword">public</span> <a class="code hl_function" href="class_digital_in_out.html#a020a631fa7eb46952d7a28e80b716931">DigitalInOut</a></div>
+<div class="line"><a id="l01007" name="l01007"></a><span class="lineno"> 1007</span>{</div>
+<div class="line"><a id="l01008" name="l01008"></a><span class="lineno"> 1008</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l01009" name="l01009"></a><span class="lineno"> 1009</span>    <span class="keyword">using </span>DigitalInOut::operator=;</div>
+<div class="line"><a id="l01010" name="l01010"></a><span class="lineno"> 1010</span></div>
+<div class="line"><a id="l01016" name="l01016"></a><span class="lineno"> 1016</span>    <a class="code hl_function" href="class_digital_in.html#a4c92a94513c5f55fdcc99789ae35d84a">DigitalIn</a>( uint8_t pin_num, <span class="keywordtype">int</span> pin_mode = <a class="code hl_enumvalue" href="class_digital_in_out.html#a7756405060ef1a62957346ba262f9982a2e721ab48b4a95f9fea8ebbbdfc3fd96">PullNone</a> );</div>
+<div class="line"><a id="l01017" name="l01017"></a><span class="lineno"> 1017</span>    <span class="keyword">virtual</span> <a class="code hl_function" href="class_digital_in.html#a4c92a94513c5f55fdcc99789ae35d84a">~DigitalIn</a>();</div>
+<div class="line"><a id="l01018" name="l01018"></a><span class="lineno"> 1018</span>};</div>
 </div>
-<div class="line"><a id="l01008" name="l01008"></a><span class="lineno"> 1008</span> </div>
-<div class="line"><a id="l01009" name="l01009"></a><span class="lineno"> 1009</span></div>
-<div class="foldopen" id="foldopen01019" data-start="{" data-end="}">
-<div class="line"><a id="l01019" name="l01019"></a><span class="lineno"><a class="line" href="io_8h.html#a7365aba03f8f153d580d94e677847529"> 1019</a></span><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">void</span> <a class="code hl_function" href="io_8h.html#a7365aba03f8f153d580d94e677847529">PORT_SetPinPullUpDown</a>( PORT_Type *base, uint32_t pin, <span class="keywordtype">int</span> enable, <span class="keywordtype">int</span> logic )</div>
-<div class="line"><a id="l01020" name="l01020"></a><span class="lineno"> 1020</span>{</div>
-<div class="line"><a id="l01021" name="l01021"></a><span class="lineno"> 1021</span>    <span class="comment">// `enable`/`logic` go into PE/PS respectively, matching the doc comment</span></div>
-<div class="line"><a id="l01022" name="l01022"></a><span class="lineno"> 1022</span>    <span class="comment">// above -- these were previously swapped (enable into PS, logic into</span></div>
-<div class="line"><a id="l01023" name="l01023"></a><span class="lineno"> 1023</span>    <span class="comment">// PE), which meant PullDown (enable=1, logic=0) wrote PE=0 and left</span></div>
-<div class="line"><a id="l01024" name="l01024"></a><span class="lineno"> 1024</span>    <span class="comment">// the pin with no pull enabled at all. Found via mcxPinState reading</span></div>
-<div class="line"><a id="l01025" name="l01025"></a><span class="lineno"> 1025</span>    <span class="comment">// back the live PCR register on real hardware: INPUT_PULLUP correctly</span></div>
-<div class="line"><a id="l01026" name="l01026"></a><span class="lineno"> 1026</span>    <span class="comment">// showed a pull-up (enable=1, logic=1 happened to still land on the</span></div>
-<div class="line"><a id="l01027" name="l01027"></a><span class="lineno"> 1027</span>    <span class="comment">// right bits before this fix), but INPUT_PULLDOWN showed no pull</span></div>
-<div class="line"><a id="l01028" name="l01028"></a><span class="lineno"> 1028</span>    <span class="comment">// whatsoever.</span></div>
-<div class="line"><a id="l01029" name="l01029"></a><span class="lineno"> 1029</span>    base-&gt;PCR[pin] = (base-&gt;PCR[pin] &amp; ~PORT_PCR_PE_MASK) | PORT_PCR_PE( enable );</div>
-<div class="line"><a id="l01030" name="l01030"></a><span class="lineno"> 1030</span>    base-&gt;PCR[pin] = (base-&gt;PCR[pin] &amp; ~PORT_PCR_PS_MASK) | PORT_PCR_PS( logic );</div>
-<div class="line"><a id="l01031" name="l01031"></a><span class="lineno"> 1031</span>}</div>
+<div class="line"><a id="l01019" name="l01019"></a><span class="lineno"> 1019</span> </div>
+<div class="line"><a id="l01020" name="l01020"></a><span class="lineno"> 1020</span></div>
+<div class="foldopen" id="foldopen01030" data-start="{" data-end="}">
+<div class="line"><a id="l01030" name="l01030"></a><span class="lineno"><a class="line" href="io_8h.html#a7365aba03f8f153d580d94e677847529"> 1030</a></span><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">void</span> <a class="code hl_function" href="io_8h.html#a7365aba03f8f153d580d94e677847529">PORT_SetPinPullUpDown</a>( PORT_Type *base, uint32_t pin, <span class="keywordtype">int</span> enable, <span class="keywordtype">int</span> logic )</div>
+<div class="line"><a id="l01031" name="l01031"></a><span class="lineno"> 1031</span>{</div>
+<div class="line"><a id="l01032" name="l01032"></a><span class="lineno"> 1032</span>    <span class="comment">// `enable`/`logic` go into PE/PS respectively, matching the doc comment</span></div>
+<div class="line"><a id="l01033" name="l01033"></a><span class="lineno"> 1033</span>    <span class="comment">// above -- these were previously swapped (enable into PS, logic into</span></div>
+<div class="line"><a id="l01034" name="l01034"></a><span class="lineno"> 1034</span>    <span class="comment">// PE), which meant PullDown (enable=1, logic=0) wrote PE=0 and left</span></div>
+<div class="line"><a id="l01035" name="l01035"></a><span class="lineno"> 1035</span>    <span class="comment">// the pin with no pull enabled at all. Found via mcxPinState reading</span></div>
+<div class="line"><a id="l01036" name="l01036"></a><span class="lineno"> 1036</span>    <span class="comment">// back the live PCR register on real hardware: INPUT_PULLUP correctly</span></div>
+<div class="line"><a id="l01037" name="l01037"></a><span class="lineno"> 1037</span>    <span class="comment">// showed a pull-up (enable=1, logic=1 happened to still land on the</span></div>
+<div class="line"><a id="l01038" name="l01038"></a><span class="lineno"> 1038</span>    <span class="comment">// right bits before this fix), but INPUT_PULLDOWN showed no pull</span></div>
+<div class="line"><a id="l01039" name="l01039"></a><span class="lineno"> 1039</span>    <span class="comment">// whatsoever.</span></div>
+<div class="line"><a id="l01040" name="l01040"></a><span class="lineno"> 1040</span>    base-&gt;PCR[pin] = (base-&gt;PCR[pin] &amp; ~PORT_PCR_PE_MASK) | PORT_PCR_PE( enable );</div>
+<div class="line"><a id="l01041" name="l01041"></a><span class="lineno"> 1041</span>    base-&gt;PCR[pin] = (base-&gt;PCR[pin] &amp; ~PORT_PCR_PS_MASK) | PORT_PCR_PS( logic );</div>
+<div class="line"><a id="l01042" name="l01042"></a><span class="lineno"> 1042</span>}</div>
 </div>
-<div class="line"><a id="l01032" name="l01032"></a><span class="lineno"> 1032</span></div>
-<div class="foldopen" id="foldopen01041" data-start="{" data-end="}">
-<div class="line"><a id="l01041" name="l01041"></a><span class="lineno"><a class="line" href="io_8h.html#ae3af5ab6f26b64eba59ce0d75f26ba02"> 1041</a></span><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">void</span> <a class="code hl_function" href="io_8h.html#ae3af5ab6f26b64eba59ce0d75f26ba02">PORT_SetPinOpenDrain</a>( PORT_Type *base, uint32_t pin, <span class="keywordtype">int</span> enable )</div>
-<div class="line"><a id="l01042" name="l01042"></a><span class="lineno"> 1042</span>{</div>
-<div class="line"><a id="l01043" name="l01043"></a><span class="lineno"> 1043</span><span class="preprocessor">#ifndef CPU_MCXC444VLH</span></div>
-<div class="line"><a id="l01044" name="l01044"></a><span class="lineno"> 1044</span>    base-&gt;PCR[pin] = (base-&gt;PCR[pin] &amp; ~PORT_PCR_ODE_MASK) | PORT_PCR_ODE( enable );</div>
-<div class="line"><a id="l01045" name="l01045"></a><span class="lineno"> 1045</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l01046" name="l01046"></a><span class="lineno"> 1046</span>}</div>
-</div>
-<div class="line"><a id="l01047" name="l01047"></a><span class="lineno"> 1047</span></div>
-<div class="foldopen" id="foldopen01054" data-start="{" data-end="}">
-<div class="line"><a id="l01054" name="l01054"></a><span class="lineno"><a class="line" href="io_8h.html#a51c2a0b45fde5ab6b2fdc06ff4a41dc9"> 1054</a></span><span class="keyword">static</span> <span class="keyword">inline</span> uint32_t <a class="code hl_function" href="io_8h.html#a51c2a0b45fde5ab6b2fdc06ff4a41dc9">PORT_GetPinMode</a>( PORT_Type *base, uint32_t pin )</div>
-<div class="line"><a id="l01055" name="l01055"></a><span class="lineno"> 1055</span>{</div>
-<div class="line"><a id="l01056" name="l01056"></a><span class="lineno"> 1056</span>    <span class="keywordflow">return</span> base-&gt;PCR[pin];</div>
+<div class="line"><a id="l01043" name="l01043"></a><span class="lineno"> 1043</span></div>
+<div class="foldopen" id="foldopen01052" data-start="{" data-end="}">
+<div class="line"><a id="l01052" name="l01052"></a><span class="lineno"><a class="line" href="io_8h.html#ae3af5ab6f26b64eba59ce0d75f26ba02"> 1052</a></span><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">void</span> <a class="code hl_function" href="io_8h.html#ae3af5ab6f26b64eba59ce0d75f26ba02">PORT_SetPinOpenDrain</a>( PORT_Type *base, uint32_t pin, <span class="keywordtype">int</span> enable )</div>
+<div class="line"><a id="l01053" name="l01053"></a><span class="lineno"> 1053</span>{</div>
+<div class="line"><a id="l01054" name="l01054"></a><span class="lineno"> 1054</span><span class="preprocessor">#ifndef CPU_MCXC444VLH</span></div>
+<div class="line"><a id="l01055" name="l01055"></a><span class="lineno"> 1055</span>    base-&gt;PCR[pin] = (base-&gt;PCR[pin] &amp; ~PORT_PCR_ODE_MASK) | PORT_PCR_ODE( enable );</div>
+<div class="line"><a id="l01056" name="l01056"></a><span class="lineno"> 1056</span><span class="preprocessor">#endif</span></div>
 <div class="line"><a id="l01057" name="l01057"></a><span class="lineno"> 1057</span>}</div>
 </div>
-<div class="line"><a id="l01058" name="l01058"></a><span class="lineno"> 1058</span> </div>
-<div class="line"><a id="l01059" name="l01059"></a><span class="lineno"> 1059</span> </div>
-<div class="line"><a id="l01060" name="l01060"></a><span class="lineno"> 1060</span> </div>
-<div class="line"><a id="l01061" name="l01061"></a><span class="lineno"> 1061</span><span class="preprocessor">#endif </span><span class="comment">// R01LIB_IO_H</span></div>
-<div class="ttc" id="aclass_digital_in_html_a4c92a94513c5f55fdcc99789ae35d84a"><div class="ttname"><a href="class_digital_in.html#a4c92a94513c5f55fdcc99789ae35d84a">DigitalIn::DigitalIn</a></div><div class="ttdeci">DigitalIn(uint8_t pin_num, int pin_mode=PullNone)</div><div class="ttdef"><b>Definition</b> <a href="io_8cpp_source.html#l00600">io.cpp:600</a></div></div>
-<div class="ttc" id="aclass_digital_in_out_html"><div class="ttname"><a href="class_digital_in_out.html">DigitalInOut</a></div><div class="ttdef"><b>Definition</b> <a href="#l00855">io.h:856</a></div></div>
+<div class="line"><a id="l01058" name="l01058"></a><span class="lineno"> 1058</span></div>
+<div class="foldopen" id="foldopen01065" data-start="{" data-end="}">
+<div class="line"><a id="l01065" name="l01065"></a><span class="lineno"><a class="line" href="io_8h.html#a51c2a0b45fde5ab6b2fdc06ff4a41dc9"> 1065</a></span><span class="keyword">static</span> <span class="keyword">inline</span> uint32_t <a class="code hl_function" href="io_8h.html#a51c2a0b45fde5ab6b2fdc06ff4a41dc9">PORT_GetPinMode</a>( PORT_Type *base, uint32_t pin )</div>
+<div class="line"><a id="l01066" name="l01066"></a><span class="lineno"> 1066</span>{</div>
+<div class="line"><a id="l01067" name="l01067"></a><span class="lineno"> 1067</span>    <span class="keywordflow">return</span> base-&gt;PCR[pin];</div>
+<div class="line"><a id="l01068" name="l01068"></a><span class="lineno"> 1068</span>}</div>
+</div>
+<div class="line"><a id="l01069" name="l01069"></a><span class="lineno"> 1069</span> </div>
+<div class="line"><a id="l01070" name="l01070"></a><span class="lineno"> 1070</span> </div>
+<div class="line"><a id="l01071" name="l01071"></a><span class="lineno"> 1071</span> </div>
+<div class="line"><a id="l01072" name="l01072"></a><span class="lineno"> 1072</span><span class="preprocessor">#endif </span><span class="comment">// R01LIB_IO_H</span></div>
+<div class="ttc" id="aclass_digital_in_html_a4c92a94513c5f55fdcc99789ae35d84a"><div class="ttname"><a href="class_digital_in.html#a4c92a94513c5f55fdcc99789ae35d84a">DigitalIn::DigitalIn</a></div><div class="ttdeci">DigitalIn(uint8_t pin_num, int pin_mode=PullNone)</div><div class="ttdef"><b>Definition</b> <a href="io_8cpp_source.html#l00614">io.cpp:614</a></div></div>
+<div class="ttc" id="aclass_digital_in_out_html"><div class="ttname"><a href="class_digital_in_out.html">DigitalInOut</a></div><div class="ttdef"><b>Definition</b> <a href="#l00866">io.h:867</a></div></div>
 <div class="ttc" id="aclass_digital_in_out_html_a020a631fa7eb46952d7a28e80b716931"><div class="ttname"><a href="class_digital_in_out.html#a020a631fa7eb46952d7a28e80b716931">DigitalInOut::DigitalInOut</a></div><div class="ttdeci">DigitalInOut(uint8_t pin_num, bool direction=kGPIO_DigitalInput, bool value=0, int pin_mode=PullNone)</div><div class="ttdef"><b>Definition</b> <a href="io_8cpp_source.html#l00477">io.cpp:477</a></div></div>
-<div class="ttc" id="aclass_digital_in_out_html_a0b8136561d03090fee66c09f467bc65a"><div class="ttname"><a href="class_digital_in_out.html#a0b8136561d03090fee66c09f467bc65a">DigitalInOut::value</a></div><div class="ttdeci">bool value(void)</div><div class="ttdef"><b>Definition</b> <a href="io_8cpp_source.html#l00513">io.cpp:513</a></div></div>
-<div class="ttc" id="aclass_digital_in_out_html_a1b495b857a3087a92dd4ed0ecfc9eb9a"><div class="ttname"><a href="class_digital_in_out.html#a1b495b857a3087a92dd4ed0ecfc9eb9a">DigitalInOut::port_n</a></div><div class="ttdeci">PORT_Type * port_n</div><div class="ttdef"><b>Definition</b> <a href="#l00958">io.h:958</a></div></div>
-<div class="ttc" id="aclass_digital_in_out_html_a31d64fc67c448c48dba55b6a62981e5a"><div class="ttname"><a href="class_digital_in_out.html#a31d64fc67c448c48dba55b6a62981e5a">DigitalInOut::mode</a></div><div class="ttdeci">uint32_t mode(void)</div><div class="ttdef"><b>Definition</b> <a href="io_8cpp_source.html#l00572">io.cpp:572</a></div></div>
-<div class="ttc" id="aclass_digital_in_out_html_a44740bc823e3945773f1423ec63803fa"><div class="ttname"><a href="class_digital_in_out.html#a44740bc823e3945773f1423ec63803fa">DigitalInOut::gpio_pin</a></div><div class="ttdeci">uint8_t gpio_pin</div><div class="ttdef"><b>Definition</b> <a href="#l00959">io.h:959</a></div></div>
-<div class="ttc" id="aclass_digital_in_out_html_a44ed72d16af2f1113d621e54cff5302e"><div class="ttname"><a href="class_digital_in_out.html#a44ed72d16af2f1113d621e54cff5302e">DigitalInOut::input</a></div><div class="ttdeci">void input(void)</div><div class="ttdef"><b>Definition</b> <a href="io_8cpp_source.html#l00530">io.cpp:530</a></div></div>
-<div class="ttc" id="aclass_digital_in_out_html_a501a5c4fceaafa559a142451385fc7b8"><div class="ttname"><a href="class_digital_in_out.html#a501a5c4fceaafa559a142451385fc7b8">DigitalInOut::input_buffer</a></div><div class="ttdeci">void input_buffer(bool enable)</div><div class="ttdef"><b>Definition</b> <a href="io_8cpp_source.html#l00558">io.cpp:558</a></div></div>
-<div class="ttc" id="aclass_digital_in_out_html_a56c36041f23efd75cf7acbca7fadca38"><div class="ttname"><a href="class_digital_in_out.html#a56c36041f23efd75cf7acbca7fadca38">DigitalInOut::operator=</a></div><div class="ttdeci">DigitalInOut &amp; operator=(bool v)</div><div class="ttdef"><b>Definition</b> <a href="io_8cpp_source.html#l00577">io.cpp:577</a></div></div>
-<div class="ttc" id="aclass_digital_in_out_html_a589c26e742fc17ffec0cadad06b968ae"><div class="ttname"><a href="class_digital_in_out.html#a589c26e742fc17ffec0cadad06b968ae">DigitalInOut::output</a></div><div class="ttdeci">void output(void)</div><div class="ttdef"><b>Definition</b> <a href="io_8cpp_source.html#l00524">io.cpp:524</a></div></div>
-<div class="ttc" id="aclass_digital_in_out_html_a6042e4468e550347265bda8db2325be4"><div class="ttname"><a href="class_digital_in_out.html#a6042e4468e550347265bda8db2325be4">DigitalInOut::direction</a></div><div class="ttdeci">direction</div><div class="ttdef"><b>Definition</b> <a href="#l00858">io.h:858</a></div></div>
-<div class="ttc" id="aclass_digital_in_out_html_a6042e4468e550347265bda8db2325be4a0225c92c4cb1366066e9c456022ff453"><div class="ttname"><a href="class_digital_in_out.html#a6042e4468e550347265bda8db2325be4a0225c92c4cb1366066e9c456022ff453">DigitalInOut::INPUT</a></div><div class="ttdeci">@ INPUT</div><div class="ttdef"><b>Definition</b> <a href="#l00859">io.h:859</a></div></div>
-<div class="ttc" id="aclass_digital_in_out_html_a6042e4468e550347265bda8db2325be4a703c4f934619ea7ff966f011771439c2"><div class="ttname"><a href="class_digital_in_out.html#a6042e4468e550347265bda8db2325be4a703c4f934619ea7ff966f011771439c2">DigitalInOut::OUTPUT</a></div><div class="ttdeci">@ OUTPUT</div><div class="ttdef"><b>Definition</b> <a href="#l00860">io.h:860</a></div></div>
-<div class="ttc" id="aclass_digital_in_out_html_a76be5769a0ae1e0ca854213ddca005a4"><div class="ttname"><a href="class_digital_in_out.html#a76be5769a0ae1e0ca854213ddca005a4">DigitalInOut::value</a></div><div class="ttdeci">void value(bool value)</div><div class="ttdef"><b>Definition</b> <a href="io_8cpp_source.html#l00502">io.cpp:502</a></div></div>
-<div class="ttc" id="aclass_digital_in_out_html_a7756405060ef1a62957346ba262f9982"><div class="ttname"><a href="class_digital_in_out.html#a7756405060ef1a62957346ba262f9982">DigitalInOut::PinMode</a></div><div class="ttdeci">PinMode</div><div class="ttdef"><b>Definition</b> <a href="#l00863">io.h:863</a></div></div>
-<div class="ttc" id="aclass_digital_in_out_html_a7756405060ef1a62957346ba262f9982a12ec6588a809d2e2d728619a12a290a4"><div class="ttname"><a href="class_digital_in_out.html#a7756405060ef1a62957346ba262f9982a12ec6588a809d2e2d728619a12a290a4">DigitalInOut::OpenDrain</a></div><div class="ttdeci">@ OpenDrain</div><div class="ttdef"><b>Definition</b> <a href="#l00867">io.h:867</a></div></div>
-<div class="ttc" id="aclass_digital_in_out_html_a7756405060ef1a62957346ba262f9982a2e721ab48b4a95f9fea8ebbbdfc3fd96"><div class="ttname"><a href="class_digital_in_out.html#a7756405060ef1a62957346ba262f9982a2e721ab48b4a95f9fea8ebbbdfc3fd96">DigitalInOut::PullNone</a></div><div class="ttdeci">@ PullNone</div><div class="ttdef"><b>Definition</b> <a href="#l00864">io.h:864</a></div></div>
-<div class="ttc" id="aclass_digital_in_out_html_a7756405060ef1a62957346ba262f9982a38f889197cb81549b4ce8d7d03a64be6"><div class="ttname"><a href="class_digital_in_out.html#a7756405060ef1a62957346ba262f9982a38f889197cb81549b4ce8d7d03a64be6">DigitalInOut::PullUp</a></div><div class="ttdeci">@ PullUp</div><div class="ttdef"><b>Definition</b> <a href="#l00865">io.h:865</a></div></div>
-<div class="ttc" id="aclass_digital_in_out_html_a7756405060ef1a62957346ba262f9982a5bcc3b6fa517d6b426a42c42d20c2919"><div class="ttname"><a href="class_digital_in_out.html#a7756405060ef1a62957346ba262f9982a5bcc3b6fa517d6b426a42c42d20c2919">DigitalInOut::PullDown</a></div><div class="ttdeci">@ PullDown</div><div class="ttdef"><b>Definition</b> <a href="#l00866">io.h:866</a></div></div>
-<div class="ttc" id="aclass_digital_in_out_html_a846215455a9b085e5e17cf9581a79163"><div class="ttname"><a href="class_digital_in_out.html#a846215455a9b085e5e17cf9581a79163">DigitalInOut::pin_mux</a></div><div class="ttdeci">void pin_mux(int mux)</div><div class="ttdef"><b>Definition</b> <a href="io_8cpp_source.html#l00542">io.cpp:542</a></div></div>
-<div class="ttc" id="aclass_digital_in_out_html_a8c80e99be8680936898ebe12f706e8aa"><div class="ttname"><a href="class_digital_in_out.html#a8c80e99be8680936898ebe12f706e8aa">DigitalInOut::_value</a></div><div class="ttdeci">bool _value</div><div class="ttdef"><b>Definition</b> <a href="#l00963">io.h:963</a></div></div>
-<div class="ttc" id="aclass_digital_in_out_html_a9bdab338c9f749340114fb97aa4e4c0b"><div class="ttname"><a href="class_digital_in_out.html#a9bdab338c9f749340114fb97aa4e4c0b">DigitalInOut::gpio_n</a></div><div class="ttdeci">GPIO_Type * gpio_n</div><div class="ttdef"><b>Definition</b> <a href="#l00957">io.h:957</a></div></div>
-<div class="ttc" id="aclass_digital_in_out_html_aac090a0c05fa0682687f49e4432b4b92"><div class="ttname"><a href="class_digital_in_out.html#aac090a0c05fa0682687f49e4432b4b92">DigitalInOut::gpio_base</a></div><div class="ttdeci">GPIO_Type * gpio_base(void) const</div><div class="ttdef"><b>Definition</b> <a href="#l00941">io.h:941</a></div></div>
-<div class="ttc" id="aclass_digital_in_out_html_aadf6dbd35e84c26a6a440cde082a1996"><div class="ttname"><a href="class_digital_in_out.html#aadf6dbd35e84c26a6a440cde082a1996">DigitalInOut::_dir</a></div><div class="ttdeci">bool _dir</div><div class="ttdef"><b>Definition</b> <a href="#l00962">io.h:962</a></div></div>
-<div class="ttc" id="aclass_digital_in_out_html_ac5bef1de4ef8e38e1e8e4c8d5d01e79b"><div class="ttname"><a href="class_digital_in_out.html#ac5bef1de4ef8e38e1e8e4c8d5d01e79b">DigitalInOut::gpio_bit</a></div><div class="ttdeci">uint8_t gpio_bit(void) const</div><div class="ttdef"><b>Definition</b> <a href="#l00942">io.h:942</a></div></div>
-<div class="ttc" id="aclass_digital_in_out_html_af5882a5caf483c4f66647e2285634e37"><div class="ttname"><a href="class_digital_in_out.html#af5882a5caf483c4f66647e2285634e37">DigitalInOut::_pn</a></div><div class="ttdeci">uint8_t _pn</div><div class="ttdef"><b>Definition</b> <a href="#l00956">io.h:956</a></div></div>
-<div class="ttc" id="aclass_digital_out_html_a0cca6a9bcbced230b94cd2a33526e00d"><div class="ttname"><a href="class_digital_out.html#a0cca6a9bcbced230b94cd2a33526e00d">DigitalOut::DigitalOut</a></div><div class="ttdeci">DigitalOut(uint8_t pin_num, bool value=0, int pin_mode=PullNone)</div><div class="ttdef"><b>Definition</b> <a href="io_8cpp_source.html#l00593">io.cpp:593</a></div></div>
+<div class="ttc" id="aclass_digital_in_out_html_a0b8136561d03090fee66c09f467bc65a"><div class="ttname"><a href="class_digital_in_out.html#a0b8136561d03090fee66c09f467bc65a">DigitalInOut::value</a></div><div class="ttdeci">bool value(void)</div><div class="ttdef"><b>Definition</b> <a href="io_8cpp_source.html#l00524">io.cpp:524</a></div></div>
+<div class="ttc" id="aclass_digital_in_out_html_a1b495b857a3087a92dd4ed0ecfc9eb9a"><div class="ttname"><a href="class_digital_in_out.html#a1b495b857a3087a92dd4ed0ecfc9eb9a">DigitalInOut::port_n</a></div><div class="ttdeci">PORT_Type * port_n</div><div class="ttdef"><b>Definition</b> <a href="#l00969">io.h:969</a></div></div>
+<div class="ttc" id="aclass_digital_in_out_html_a31d64fc67c448c48dba55b6a62981e5a"><div class="ttname"><a href="class_digital_in_out.html#a31d64fc67c448c48dba55b6a62981e5a">DigitalInOut::mode</a></div><div class="ttdeci">uint32_t mode(void)</div><div class="ttdef"><b>Definition</b> <a href="io_8cpp_source.html#l00586">io.cpp:586</a></div></div>
+<div class="ttc" id="aclass_digital_in_out_html_a44740bc823e3945773f1423ec63803fa"><div class="ttname"><a href="class_digital_in_out.html#a44740bc823e3945773f1423ec63803fa">DigitalInOut::gpio_pin</a></div><div class="ttdeci">uint8_t gpio_pin</div><div class="ttdef"><b>Definition</b> <a href="#l00970">io.h:970</a></div></div>
+<div class="ttc" id="aclass_digital_in_out_html_a44ed72d16af2f1113d621e54cff5302e"><div class="ttname"><a href="class_digital_in_out.html#a44ed72d16af2f1113d621e54cff5302e">DigitalInOut::input</a></div><div class="ttdeci">void input(void)</div><div class="ttdef"><b>Definition</b> <a href="io_8cpp_source.html#l00541">io.cpp:541</a></div></div>
+<div class="ttc" id="aclass_digital_in_out_html_a501a5c4fceaafa559a142451385fc7b8"><div class="ttname"><a href="class_digital_in_out.html#a501a5c4fceaafa559a142451385fc7b8">DigitalInOut::input_buffer</a></div><div class="ttdeci">void input_buffer(bool enable)</div><div class="ttdef"><b>Definition</b> <a href="io_8cpp_source.html#l00572">io.cpp:572</a></div></div>
+<div class="ttc" id="aclass_digital_in_out_html_a56c36041f23efd75cf7acbca7fadca38"><div class="ttname"><a href="class_digital_in_out.html#a56c36041f23efd75cf7acbca7fadca38">DigitalInOut::operator=</a></div><div class="ttdeci">DigitalInOut &amp; operator=(bool v)</div><div class="ttdef"><b>Definition</b> <a href="io_8cpp_source.html#l00591">io.cpp:591</a></div></div>
+<div class="ttc" id="aclass_digital_in_out_html_a589c26e742fc17ffec0cadad06b968ae"><div class="ttname"><a href="class_digital_in_out.html#a589c26e742fc17ffec0cadad06b968ae">DigitalInOut::output</a></div><div class="ttdeci">void output(void)</div><div class="ttdef"><b>Definition</b> <a href="io_8cpp_source.html#l00535">io.cpp:535</a></div></div>
+<div class="ttc" id="aclass_digital_in_out_html_a6042e4468e550347265bda8db2325be4"><div class="ttname"><a href="class_digital_in_out.html#a6042e4468e550347265bda8db2325be4">DigitalInOut::direction</a></div><div class="ttdeci">direction</div><div class="ttdef"><b>Definition</b> <a href="#l00869">io.h:869</a></div></div>
+<div class="ttc" id="aclass_digital_in_out_html_a6042e4468e550347265bda8db2325be4a0225c92c4cb1366066e9c456022ff453"><div class="ttname"><a href="class_digital_in_out.html#a6042e4468e550347265bda8db2325be4a0225c92c4cb1366066e9c456022ff453">DigitalInOut::INPUT</a></div><div class="ttdeci">@ INPUT</div><div class="ttdef"><b>Definition</b> <a href="#l00870">io.h:870</a></div></div>
+<div class="ttc" id="aclass_digital_in_out_html_a6042e4468e550347265bda8db2325be4a703c4f934619ea7ff966f011771439c2"><div class="ttname"><a href="class_digital_in_out.html#a6042e4468e550347265bda8db2325be4a703c4f934619ea7ff966f011771439c2">DigitalInOut::OUTPUT</a></div><div class="ttdeci">@ OUTPUT</div><div class="ttdef"><b>Definition</b> <a href="#l00871">io.h:871</a></div></div>
+<div class="ttc" id="aclass_digital_in_out_html_a76be5769a0ae1e0ca854213ddca005a4"><div class="ttname"><a href="class_digital_in_out.html#a76be5769a0ae1e0ca854213ddca005a4">DigitalInOut::value</a></div><div class="ttdeci">void value(bool value)</div><div class="ttdef"><b>Definition</b> <a href="io_8cpp_source.html#l00513">io.cpp:513</a></div></div>
+<div class="ttc" id="aclass_digital_in_out_html_a7756405060ef1a62957346ba262f9982"><div class="ttname"><a href="class_digital_in_out.html#a7756405060ef1a62957346ba262f9982">DigitalInOut::PinMode</a></div><div class="ttdeci">PinMode</div><div class="ttdef"><b>Definition</b> <a href="#l00874">io.h:874</a></div></div>
+<div class="ttc" id="aclass_digital_in_out_html_a7756405060ef1a62957346ba262f9982a12ec6588a809d2e2d728619a12a290a4"><div class="ttname"><a href="class_digital_in_out.html#a7756405060ef1a62957346ba262f9982a12ec6588a809d2e2d728619a12a290a4">DigitalInOut::OpenDrain</a></div><div class="ttdeci">@ OpenDrain</div><div class="ttdef"><b>Definition</b> <a href="#l00878">io.h:878</a></div></div>
+<div class="ttc" id="aclass_digital_in_out_html_a7756405060ef1a62957346ba262f9982a2e721ab48b4a95f9fea8ebbbdfc3fd96"><div class="ttname"><a href="class_digital_in_out.html#a7756405060ef1a62957346ba262f9982a2e721ab48b4a95f9fea8ebbbdfc3fd96">DigitalInOut::PullNone</a></div><div class="ttdeci">@ PullNone</div><div class="ttdef"><b>Definition</b> <a href="#l00875">io.h:875</a></div></div>
+<div class="ttc" id="aclass_digital_in_out_html_a7756405060ef1a62957346ba262f9982a38f889197cb81549b4ce8d7d03a64be6"><div class="ttname"><a href="class_digital_in_out.html#a7756405060ef1a62957346ba262f9982a38f889197cb81549b4ce8d7d03a64be6">DigitalInOut::PullUp</a></div><div class="ttdeci">@ PullUp</div><div class="ttdef"><b>Definition</b> <a href="#l00876">io.h:876</a></div></div>
+<div class="ttc" id="aclass_digital_in_out_html_a7756405060ef1a62957346ba262f9982a5bcc3b6fa517d6b426a42c42d20c2919"><div class="ttname"><a href="class_digital_in_out.html#a7756405060ef1a62957346ba262f9982a5bcc3b6fa517d6b426a42c42d20c2919">DigitalInOut::PullDown</a></div><div class="ttdeci">@ PullDown</div><div class="ttdef"><b>Definition</b> <a href="#l00877">io.h:877</a></div></div>
+<div class="ttc" id="aclass_digital_in_out_html_a846215455a9b085e5e17cf9581a79163"><div class="ttname"><a href="class_digital_in_out.html#a846215455a9b085e5e17cf9581a79163">DigitalInOut::pin_mux</a></div><div class="ttdeci">void pin_mux(int mux)</div><div class="ttdef"><b>Definition</b> <a href="io_8cpp_source.html#l00553">io.cpp:553</a></div></div>
+<div class="ttc" id="aclass_digital_in_out_html_a8c80e99be8680936898ebe12f706e8aa"><div class="ttname"><a href="class_digital_in_out.html#a8c80e99be8680936898ebe12f706e8aa">DigitalInOut::_value</a></div><div class="ttdeci">bool _value</div><div class="ttdef"><b>Definition</b> <a href="#l00974">io.h:974</a></div></div>
+<div class="ttc" id="aclass_digital_in_out_html_a9bdab338c9f749340114fb97aa4e4c0b"><div class="ttname"><a href="class_digital_in_out.html#a9bdab338c9f749340114fb97aa4e4c0b">DigitalInOut::gpio_n</a></div><div class="ttdeci">GPIO_Type * gpio_n</div><div class="ttdef"><b>Definition</b> <a href="#l00968">io.h:968</a></div></div>
+<div class="ttc" id="aclass_digital_in_out_html_aac090a0c05fa0682687f49e4432b4b92"><div class="ttname"><a href="class_digital_in_out.html#aac090a0c05fa0682687f49e4432b4b92">DigitalInOut::gpio_base</a></div><div class="ttdeci">GPIO_Type * gpio_base(void) const</div><div class="ttdef"><b>Definition</b> <a href="#l00952">io.h:952</a></div></div>
+<div class="ttc" id="aclass_digital_in_out_html_aadf6dbd35e84c26a6a440cde082a1996"><div class="ttname"><a href="class_digital_in_out.html#aadf6dbd35e84c26a6a440cde082a1996">DigitalInOut::_dir</a></div><div class="ttdeci">bool _dir</div><div class="ttdef"><b>Definition</b> <a href="#l00973">io.h:973</a></div></div>
+<div class="ttc" id="aclass_digital_in_out_html_ac5bef1de4ef8e38e1e8e4c8d5d01e79b"><div class="ttname"><a href="class_digital_in_out.html#ac5bef1de4ef8e38e1e8e4c8d5d01e79b">DigitalInOut::gpio_bit</a></div><div class="ttdeci">uint8_t gpio_bit(void) const</div><div class="ttdef"><b>Definition</b> <a href="#l00953">io.h:953</a></div></div>
+<div class="ttc" id="aclass_digital_in_out_html_af5882a5caf483c4f66647e2285634e37"><div class="ttname"><a href="class_digital_in_out.html#af5882a5caf483c4f66647e2285634e37">DigitalInOut::_pn</a></div><div class="ttdeci">uint8_t _pn</div><div class="ttdef"><b>Definition</b> <a href="#l00967">io.h:967</a></div></div>
+<div class="ttc" id="aclass_digital_out_html_a0cca6a9bcbced230b94cd2a33526e00d"><div class="ttname"><a href="class_digital_out.html#a0cca6a9bcbced230b94cd2a33526e00d">DigitalOut::DigitalOut</a></div><div class="ttdeci">DigitalOut(uint8_t pin_num, bool value=0, int pin_mode=PullNone)</div><div class="ttdef"><b>Definition</b> <a href="io_8cpp_source.html#l00607">io.cpp:607</a></div></div>
 <div class="ttc" id="aclass_obj_html_a963b6bbaf9c2b6c3c401ac02131744fa"><div class="ttname"><a href="class_obj.html#a963b6bbaf9c2b6c3c401ac02131744fa">Obj::Obj</a></div><div class="ttdeci">Obj(bool done=false)</div><div class="ttdef"><b>Definition</b> <a href="obj_8cpp_source.html#l00013">obj.cpp:13</a></div></div>
 <div class="ttc" id="aio_8cpp_html_ac1ce626a969ca4e6c05c76611217dd92"><div class="ttname"><a href="io_8cpp.html#ac1ce626a969ca4e6c05c76611217dd92">DISABLED_PIN</a></div><div class="ttdeci">#define DISABLED_PIN</div><div class="ttdef"><b>Definition</b> <a href="io_8cpp_source.html#l00017">io.cpp:17</a></div></div>
 <div class="ttc" id="aio_8h_html_a082b7004cb5ef8e2c32d4f28af612611a021517e6ff32864840f418b0eab9a585"><div class="ttname"><a href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611a021517e6ff32864840f418b0eab9a585">P1_9</a></div><div class="ttdeci">@ P1_9</div><div class="ttdef"><b>Definition</b> <a href="#l00091">io.h:91</a></div></div>
@@ -1196,9 +1207,9 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 <div class="ttc" id="aio_8h_html_a082b7004cb5ef8e2c32d4f28af612611af63d6c0524b1c205fd59dbb1d3b7ba8e"><div class="ttname"><a href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611af63d6c0524b1c205fd59dbb1d3b7ba8e">P4_4</a></div><div class="ttdeci">@ P4_4</div><div class="ttdef"><b>Definition</b> <a href="#l00148">io.h:148</a></div></div>
 <div class="ttc" id="aio_8h_html_a082b7004cb5ef8e2c32d4f28af612611af7da371a007188db645f365f367a10a8"><div class="ttname"><a href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611af7da371a007188db645f365f367a10a8">P2_6</a></div><div class="ttdeci">@ P2_6</div><div class="ttdef"><b>Definition</b> <a href="#l00114">io.h:114</a></div></div>
 <div class="ttc" id="aio_8h_html_a082b7004cb5ef8e2c32d4f28af612611afd215d1efb45e70398433193f49c307c"><div class="ttname"><a href="io_8h.html#a082b7004cb5ef8e2c32d4f28af612611afd215d1efb45e70398433193f49c307c">P3_6</a></div><div class="ttdeci">@ P3_6</div><div class="ttdef"><b>Definition</b> <a href="#l00126">io.h:126</a></div></div>
-<div class="ttc" id="aio_8h_html_a51c2a0b45fde5ab6b2fdc06ff4a41dc9"><div class="ttname"><a href="io_8h.html#a51c2a0b45fde5ab6b2fdc06ff4a41dc9">PORT_GetPinMode</a></div><div class="ttdeci">static uint32_t PORT_GetPinMode(PORT_Type *base, uint32_t pin)</div><div class="ttdef"><b>Definition</b> <a href="#l01054">io.h:1054</a></div></div>
-<div class="ttc" id="aio_8h_html_a7365aba03f8f153d580d94e677847529"><div class="ttname"><a href="io_8h.html#a7365aba03f8f153d580d94e677847529">PORT_SetPinPullUpDown</a></div><div class="ttdeci">static void PORT_SetPinPullUpDown(PORT_Type *base, uint32_t pin, int enable, int logic)</div><div class="ttdef"><b>Definition</b> <a href="#l01019">io.h:1019</a></div></div>
-<div class="ttc" id="aio_8h_html_ae3af5ab6f26b64eba59ce0d75f26ba02"><div class="ttname"><a href="io_8h.html#ae3af5ab6f26b64eba59ce0d75f26ba02">PORT_SetPinOpenDrain</a></div><div class="ttdeci">static void PORT_SetPinOpenDrain(PORT_Type *base, uint32_t pin, int enable)</div><div class="ttdef"><b>Definition</b> <a href="#l01041">io.h:1041</a></div></div>
+<div class="ttc" id="aio_8h_html_a51c2a0b45fde5ab6b2fdc06ff4a41dc9"><div class="ttname"><a href="io_8h.html#a51c2a0b45fde5ab6b2fdc06ff4a41dc9">PORT_GetPinMode</a></div><div class="ttdeci">static uint32_t PORT_GetPinMode(PORT_Type *base, uint32_t pin)</div><div class="ttdef"><b>Definition</b> <a href="#l01065">io.h:1065</a></div></div>
+<div class="ttc" id="aio_8h_html_a7365aba03f8f153d580d94e677847529"><div class="ttname"><a href="io_8h.html#a7365aba03f8f153d580d94e677847529">PORT_SetPinPullUpDown</a></div><div class="ttdeci">static void PORT_SetPinPullUpDown(PORT_Type *base, uint32_t pin, int enable, int logic)</div><div class="ttdef"><b>Definition</b> <a href="#l01030">io.h:1030</a></div></div>
+<div class="ttc" id="aio_8h_html_ae3af5ab6f26b64eba59ce0d75f26ba02"><div class="ttname"><a href="io_8h.html#ae3af5ab6f26b64eba59ce0d75f26ba02">PORT_SetPinOpenDrain</a></div><div class="ttdeci">static void PORT_SetPinOpenDrain(PORT_Type *base, uint32_t pin, int enable)</div><div class="ttdef"><b>Definition</b> <a href="#l01052">io.h:1052</a></div></div>
 <div class="ttc" id="aobj_8h_html"><div class="ttname"><a href="obj_8h.html">obj.h</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->

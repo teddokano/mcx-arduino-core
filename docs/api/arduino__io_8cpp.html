@@ -23,7 +23,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.7.1</span>
+   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.8.0</span>
    </div>
    <div id="projectbrief">Arduino board support package for NXP FRDM MCX Series boards</div>
   </td>
@@ -116,6 +116,7 @@ Macros</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:ac342c81e91ea8bbc3210a0d5789f1c51" id="r_ac342c81e91ea8bbc3210a0d5789f1c51"><td class="memItemLeft">static void&#160;</td><td class="memItemRight"><a class="el" href="#ac342c81e91ea8bbc3210a0d5789f1c51">set_pin_mode</a> (int pin_num, int mode)</td></tr>
 <tr class="memitem:a2bf1cdfe3caa1e897b3511044b7b9bac" id="r_a2bf1cdfe3caa1e897b3511044b7b9bac"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a2bf1cdfe3caa1e897b3511044b7b9bac">pinMode</a> (int pin_num, int mode)</td></tr>
 <tr class="memitem:aa1373e51643406f2dd3598f16684e1c6" id="r_aa1373e51643406f2dd3598f16684e1c6"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#aa1373e51643406f2dd3598f16684e1c6">digitalWrite</a> (int pin_num, bool state)</td></tr>
 <tr class="memitem:a3d31358c7ab10dac7ec82be57d4c2c40" id="r_a3d31358c7ab10dac7ec82be57d4c2c40"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a3d31358c7ab10dac7ec82be57d4c2c40">digitalRead</a> (int pin_num)</td></tr>
@@ -136,6 +137,7 @@ Functions</h2></td></tr>
 Variables</h2></td></tr>
 <tr class="memitem:a5c4ba46498fac7bdf056dd50be368e49" id="r_a5c4ba46498fac7bdf056dd50be368e49"><td class="memItemLeft">static <a class="el" href="class_digital_in_out.html">DigitalInOut</a> *&#160;</td><td class="memItemRight"><a class="el" href="#a5c4ba46498fac7bdf056dd50be368e49">digital_pins</a> [<a class="el" href="#accc8cde4a1fed2f4511d8a28ae302872">MAX_DIGITAL_PINS</a>] = {}</td></tr>
 <tr class="memitem:a311cb9ef09cac6f367fe9dd755e09465" id="r_a311cb9ef09cac6f367fe9dd755e09465"><td class="memItemLeft">static <a class="el" href="class_interrupt_in.html">InterruptIn</a> *&#160;</td><td class="memItemRight"><a class="el" href="#a311cb9ef09cac6f367fe9dd755e09465">interrupt_pins</a> [<a class="el" href="#accc8cde4a1fed2f4511d8a28ae302872">MAX_DIGITAL_PINS</a>] = {}</td></tr>
+<tr class="memitem:aa5c730d556ad90667bb85fdca173045a" id="r_aa5c730d556ad90667bb85fdca173045a"><td class="memItemLeft">static uint8_t&#160;</td><td class="memItemRight"><a class="el" href="#aa5c730d556ad90667bb85fdca173045a">pin_modes</a> [<a class="el" href="#accc8cde4a1fed2f4511d8a28ae302872">MAX_DIGITAL_PINS</a>] = {}</td></tr>
 </table>
 <a name="doc-define-members" id="doc-define-members"></a><h2 id="header-doc-define-members" class="groupheader">Macro Definition Documentation</h2>
 <a id="accc8cde4a1fed2f4511d8a28ae302872" name="accc8cde4a1fed2f4511d8a28ae302872"></a>
@@ -178,7 +180,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Register a callback to run on a digital pin's edge (or level, for LOW). Lazily creates the pin's <a class="el" href="class_interrupt_in.html">InterruptIn</a> instance if this is the first attach() on it; a later call re-registers on the existing instance (no leak).</p>
+<p>Register a callback to run on a digital pin's edge (or level, for LOW). Lazily creates the pin's <a class="el" href="class_interrupt_in.html">InterruptIn</a> instance if this is the first attach() on it; a later call re-registers on the existing instance (no leak). The pin keeps what <a class="el" href="arduino__io_8h.html#a2bf1cdfe3caa1e897b3511044b7b9bac">pinMode()</a> set &ndash; direction, pull-up or pull-down &ndash; as on AVR.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">int_num</td><td>Arduino pin number (despite the name, a pin number, not an interrupt index &ndash; pass digitalPinToInterrupt(pin) or the pin number directly, they're equivalent here) </td></tr>
@@ -188,7 +190,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__io_8cpp_source.html#l00083">83</a> of file <a class="el" href="arduino__io_8cpp_source.html">arduino_io.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__io_8cpp_source.html#l00091">91</a> of file <a class="el" href="arduino__io_8cpp_source.html">arduino_io.cpp</a>.</p>
 
 </div>
 </div>
@@ -213,7 +215,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__io_8cpp_source.html#l00129">129</a> of file <a class="el" href="arduino__io_8cpp_source.html">arduino_io.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__io_8cpp_source.html#l00144">144</a> of file <a class="el" href="arduino__io_8cpp_source.html">arduino_io.cpp</a>.</p>
 
 </div>
 </div>
@@ -239,7 +241,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__io_8cpp_source.html#l00159">159</a> of file <a class="el" href="arduino__io_8cpp_source.html">arduino_io.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__io_8cpp_source.html#l00174">174</a> of file <a class="el" href="arduino__io_8cpp_source.html">arduino_io.cpp</a>.</p>
 
 </div>
 </div>
@@ -265,7 +267,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__io_8cpp_source.html#l00142">142</a> of file <a class="el" href="arduino__io_8cpp_source.html">arduino_io.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__io_8cpp_source.html#l00157">157</a> of file <a class="el" href="arduino__io_8cpp_source.html">arduino_io.cpp</a>.</p>
 
 </div>
 </div>
@@ -291,7 +293,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__io_8cpp_source.html#l00147">147</a> of file <a class="el" href="arduino__io_8cpp_source.html">arduino_io.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__io_8cpp_source.html#l00162">162</a> of file <a class="el" href="arduino__io_8cpp_source.html">arduino_io.cpp</a>.</p>
 
 </div>
 </div>
@@ -318,7 +320,7 @@ Variables</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>HIGH or LOW </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__io_8cpp_source.html#l00068">68</a> of file <a class="el" href="arduino__io_8cpp_source.html">arduino_io.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__io_8cpp_source.html#l00076">76</a> of file <a class="el" href="arduino__io_8cpp_source.html">arduino_io.cpp</a>.</p>
 
 </div>
 </div>
@@ -349,7 +351,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__io_8cpp_source.html#l00055">55</a> of file <a class="el" href="arduino__io_8cpp_source.html">arduino_io.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__io_8cpp_source.html#l00063">63</a> of file <a class="el" href="arduino__io_8cpp_source.html">arduino_io.cpp</a>.</p>
 
 </div>
 </div>
@@ -380,7 +382,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__io_8cpp_source.html#l00015">15</a> of file <a class="el" href="arduino__io_8cpp_source.html">arduino_io.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__io_8cpp_source.html#l00051">51</a> of file <a class="el" href="arduino__io_8cpp_source.html">arduino_io.cpp</a>.</p>
 
 </div>
 </div>
@@ -400,7 +402,7 @@ Variables</h2></td></tr>
 </div><div class="memdoc">
 <dl class="section return"><dt>Returns</dt><dd>the given GPIO port's data-input register (PDIR), read-only, or nullptr if port is nullptr </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__io_8cpp_source.html#l00176">176</a> of file <a class="el" href="arduino__io_8cpp_source.html">arduino_io.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__io_8cpp_source.html#l00191">191</a> of file <a class="el" href="arduino__io_8cpp_source.html">arduino_io.cpp</a>.</p>
 
 </div>
 </div>
@@ -420,7 +422,7 @@ Variables</h2></td></tr>
 </div><div class="memdoc">
 <dl class="section return"><dt>Returns</dt><dd>the given GPIO port's data-direction register (PDDR, 1=OUTPUT), or nullptr if port is nullptr </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__io_8cpp_source.html#l00181">181</a> of file <a class="el" href="arduino__io_8cpp_source.html">arduino_io.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__io_8cpp_source.html#l00196">196</a> of file <a class="el" href="arduino__io_8cpp_source.html">arduino_io.cpp</a>.</p>
 
 </div>
 </div>
@@ -440,7 +442,7 @@ Variables</h2></td></tr>
 </div><div class="memdoc">
 <dl class="section return"><dt>Returns</dt><dd>the given GPIO port's data-output register (PDOR), read/write, or nullptr if port is nullptr </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__io_8cpp_source.html#l00171">171</a> of file <a class="el" href="arduino__io_8cpp_source.html">arduino_io.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__io_8cpp_source.html#l00186">186</a> of file <a class="el" href="arduino__io_8cpp_source.html">arduino_io.cpp</a>.</p>
 
 </div>
 </div>
@@ -479,7 +481,7 @@ Variables</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>pulse length in microseconds, or 0 on timeout </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__io_8cpp_source.html#l00219">219</a> of file <a class="el" href="arduino__io_8cpp_source.html">arduino_io.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__io_8cpp_source.html#l00234">234</a> of file <a class="el" href="arduino__io_8cpp_source.html">arduino_io.cpp</a>.</p>
 
 </div>
 </div>
@@ -516,7 +518,38 @@ Variables</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>pulse length in microseconds, or 0 on timeout </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__io_8cpp_source.html#l00240">240</a> of file <a class="el" href="arduino__io_8cpp_source.html">arduino_io.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__io_8cpp_source.html#l00255">255</a> of file <a class="el" href="arduino__io_8cpp_source.html">arduino_io.cpp</a>.</p>
+
+</div>
+</div>
+<a id="ac342c81e91ea8bbc3210a0d5789f1c51" name="ac342c81e91ea8bbc3210a0d5789f1c51"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac342c81e91ea8bbc3210a0d5789f1c51">&#9670;&#160;</a></span>set_pin_mode()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void set_pin_mode </td>
+          <td>(</td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>pin_num</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>mode</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="arduino__io_8cpp_source.html#l00016">16</a> of file <a class="el" href="arduino__io_8cpp_source.html">arduino_io.cpp</a>.</p>
 
 </div>
 </div>
@@ -553,7 +586,7 @@ Variables</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>the byte read </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__io_8cpp_source.html#l00200">200</a> of file <a class="el" href="arduino__io_8cpp_source.html">arduino_io.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__io_8cpp_source.html#l00215">215</a> of file <a class="el" href="arduino__io_8cpp_source.html">arduino_io.cpp</a>.</p>
 
 </div>
 </div>
@@ -595,7 +628,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__io_8cpp_source.html#l00186">186</a> of file <a class="el" href="arduino__io_8cpp_source.html">arduino_io.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__io_8cpp_source.html#l00201">201</a> of file <a class="el" href="arduino__io_8cpp_source.html">arduino_io.cpp</a>.</p>
 
 </div>
 </div>
@@ -645,6 +678,30 @@ Variables</h2></td></tr>
 </div><div class="memdoc">
 
 <p class="definition">Definition at line <a class="el" href="arduino__io_8cpp_source.html#l00013">13</a> of file <a class="el" href="arduino__io_8cpp_source.html">arduino_io.cpp</a>.</p>
+
+</div>
+</div>
+<a id="aa5c730d556ad90667bb85fdca173045a" name="aa5c730d556ad90667bb85fdca173045a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa5c730d556ad90667bb85fdca173045a">&#9670;&#160;</a></span>pin_modes</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint8_t pin_modes[<a class="el" href="#accc8cde4a1fed2f4511d8a28ae302872">MAX_DIGITAL_PINS</a>] = {}</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="arduino__io_8cpp_source.html#l00014">14</a> of file <a class="el" href="arduino__io_8cpp_source.html">arduino_io.cpp</a>.</p>
 
 </div>
 </div>

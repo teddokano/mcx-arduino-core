@@ -23,7 +23,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.7.1</span>
+   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.8.0</span>
    </div>
    <div id="projectbrief">Arduino board support package for NXP FRDM MCX Series boards</div>
   </td>
@@ -109,34 +109,11 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 <div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span> </div>
 <div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#ifndef R01LIB_IRQ_H</span></div>
 <div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="preprocessor">#define R01LIB_IRQ_H</span></div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span> </div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="preprocessor">#if 0</span></div>
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="preprocessor">#ifdef  CPU_MCXN947VDF</span></div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="keywordtype">void</span> <a class="code hl_function" href="irq_8c.html#a6ba5537a0896e9272eaa7897fcdca415">GPIO00_IRQHandler</a>( <span class="keywordtype">void</span> );</div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="keywordtype">void</span> <a class="code hl_function" href="irq_8c.html#a44a59d39ea5c45e31b348e7531ebfaf9">GPIO10_IRQHandler</a>( <span class="keywordtype">void</span> );</div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span><span class="keywordtype">void</span> <a class="code hl_function" href="irq_8c.html#afc9ebcdc3873b95ee545852a3f2878be">GPIO20_IRQHandler</a>( <span class="keywordtype">void</span> );</div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span><span class="keywordtype">void</span> <a class="code hl_function" href="irq_8c.html#a050d169d392babe40d921a1ee2f4d1fd">GPIO30_IRQHandler</a>( <span class="keywordtype">void</span> );</div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span><span class="keywordtype">void</span> <a class="code hl_function" href="irq_8c.html#a87ff892e5ee7ffd9a781d43cab7f18f8">GPIO40_IRQHandler</a>( <span class="keywordtype">void</span> );</div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="keywordtype">void</span> <a class="code hl_function" href="irq_8c.html#a709a8db9e6faf83130617cf8ca5d93ca">GPIO50_IRQHandler</a>( <span class="keywordtype">void</span> );</div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span> </div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span><span class="preprocessor">#else   </span><span class="comment">// CPU_MCXN947VDF</span></div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span><span class="keywordtype">void</span> GPIO0_IRQHandler( <span class="keywordtype">void</span> );</div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span><span class="keywordtype">void</span> GPIO1_IRQHandler( <span class="keywordtype">void</span> );</div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span><span class="keywordtype">void</span> GPIO2_IRQHandler( <span class="keywordtype">void</span> );</div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><span class="keywordtype">void</span> GPIO3_IRQHandler( <span class="keywordtype">void</span> );</div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="preprocessor">#endif  </span><span class="comment">// CPU_MCXN947VDF</span></div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span><span class="preprocessor">#endif  </span><span class="comment">// 0</span></div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span></div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="keywordtype">void</span> <a class="code hl_function" href="_interrupt_in_8cpp.html#aee5a3a2071748701d285256e2420e4b8">irq_handler</a>( <span class="keywordtype">int</span> num );</div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span> </div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span><span class="preprocessor">#endif </span><span class="comment">// R01LIB_IRQ_H</span></div>
-<div class="ttc" id="a_interrupt_in_8cpp_html_aee5a3a2071748701d285256e2420e4b8"><div class="ttname"><a href="_interrupt_in_8cpp.html#aee5a3a2071748701d285256e2420e4b8">irq_handler</a></div><div class="ttdeci">void irq_handler(int num)</div><div class="ttdef"><b>Definition</b> <a href="_interrupt_in_8cpp_source.html#l00071">InterruptIn.cpp:71</a></div></div>
-<div class="ttc" id="airq_8c_html_a050d169d392babe40d921a1ee2f4d1fd"><div class="ttname"><a href="irq_8c.html#a050d169d392babe40d921a1ee2f4d1fd">GPIO30_IRQHandler</a></div><div class="ttdeci">void GPIO30_IRQHandler(void)</div><div class="ttdef"><b>Definition</b> <a href="irq_8c_source.html#l00026">irq.c:26</a></div></div>
-<div class="ttc" id="airq_8c_html_a44a59d39ea5c45e31b348e7531ebfaf9"><div class="ttname"><a href="irq_8c.html#a44a59d39ea5c45e31b348e7531ebfaf9">GPIO10_IRQHandler</a></div><div class="ttdeci">void GPIO10_IRQHandler(void)</div><div class="ttdef"><b>Definition</b> <a href="irq_8c_source.html#l00018">irq.c:18</a></div></div>
-<div class="ttc" id="airq_8c_html_a6ba5537a0896e9272eaa7897fcdca415"><div class="ttname"><a href="irq_8c.html#a6ba5537a0896e9272eaa7897fcdca415">GPIO00_IRQHandler</a></div><div class="ttdeci">void GPIO00_IRQHandler(void)</div><div class="ttdef"><b>Definition</b> <a href="irq_8c_source.html#l00014">irq.c:14</a></div></div>
-<div class="ttc" id="airq_8c_html_a709a8db9e6faf83130617cf8ca5d93ca"><div class="ttname"><a href="irq_8c.html#a709a8db9e6faf83130617cf8ca5d93ca">GPIO50_IRQHandler</a></div><div class="ttdeci">void GPIO50_IRQHandler(void)</div><div class="ttdef"><b>Definition</b> <a href="irq_8c_source.html#l00034">irq.c:34</a></div></div>
-<div class="ttc" id="airq_8c_html_a87ff892e5ee7ffd9a781d43cab7f18f8"><div class="ttname"><a href="irq_8c.html#a87ff892e5ee7ffd9a781d43cab7f18f8">GPIO40_IRQHandler</a></div><div class="ttdeci">void GPIO40_IRQHandler(void)</div><div class="ttdef"><b>Definition</b> <a href="irq_8c_source.html#l00030">irq.c:30</a></div></div>
-<div class="ttc" id="airq_8c_html_afc9ebcdc3873b95ee545852a3f2878be"><div class="ttname"><a href="irq_8c.html#afc9ebcdc3873b95ee545852a3f2878be">GPIO20_IRQHandler</a></div><div class="ttdeci">void GPIO20_IRQHandler(void)</div><div class="ttdef"><b>Definition</b> <a href="irq_8c_source.html#l00022">irq.c:22</a></div></div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span></div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span><span class="keywordtype">void</span> <a class="code hl_function" href="_interrupt_in_8cpp.html#aee5a3a2071748701d285256e2420e4b8">irq_handler</a>( <span class="keywordtype">int</span> num );</div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span> </div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><span class="preprocessor">#endif </span><span class="comment">// R01LIB_IRQ_H</span></div>
+<div class="ttc" id="a_interrupt_in_8cpp_html_aee5a3a2071748701d285256e2420e4b8"><div class="ttname"><a href="_interrupt_in_8cpp.html#aee5a3a2071748701d285256e2420e4b8">irq_handler</a></div><div class="ttdeci">void irq_handler(int num)</div><div class="ttdef"><b>Definition</b> <a href="_interrupt_in_8cpp_source.html#l00082">InterruptIn.cpp:82</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
