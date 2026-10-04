@@ -1,7 +1,8 @@
 # Porting a new FRDM-MCX board
 
-Written from the FRDM-MCXN947 port, which is the only board added since
-the core's structure settled. It is meant to be followed in order: the
+Written from the FRDM-MCXN947 port, the first board added after the
+core's structure settled, and checked against the FRDM-MCXA156 port of
+0.8.0, which followed it step by step. It is meant to be followed in order: the
 early steps are cheap and the later ones need hardware, so a mistake
 caught early saves a lot.
 
@@ -16,8 +17,8 @@ Sibling boards are cheap; a different silicon family is a rewrite.
 
 | Board | Relationship | What that means |
 |-------|--------------|-----------------|
-| FRDM-MCXA156 | A153's sibling | Same LPADC/FlexPWM/LPI2C/LPSPI/LPUART. Mostly pin tables |
-| FRDM-MCXN236 | N947's sibling | Same peripherals, but **no I3C temperature sensor** — an accelerometer instead, so every example built around `Wire1` + P3T1755 needs generalizing |
+| FRDM-MCXA156 | A153's sibling | Same LPADC/FlexPWM/LPI2C/LPSPI/LPUART. Mostly pin tables. Done in 0.8.0 |
+| FRDM-MCXN236 | N947's sibling | Same peripherals, but **no I3C temperature sensor** — an accelerometer instead, so every example built around `Wire1` + P3T1755 needs generalizing. A156 already moved the sensor examples to a per-board `SENSOR_WIRE` macro, which is the place to start |
 | FRDM-MCXC444 | Not a sibling | Kinetis: Cortex-M0+, no FPU, ADC16/TPM instead of LPADC/FlexPWM, `fsl_i2c` instead of `fsl_lpi2c`. `analogRead`/`analogWrite`/`tone` are all unimplemented for it. Budget a whole release |
 
 Check this before promising a timeline. `r01lib` already carries a
@@ -147,7 +148,7 @@ is the LPI2C/LPSPI peripheral family the other chips share.
 
 | File | What to add |
 |------|-------------|
-| `arduino_api/arduino_i2c.{h,cpp}`, `arduino_serial.{h,cpp}` | Which of `Wire2`/`Serial1` exist at all. On A153 `Wire2` **does not exist as a symbol**, so anything referencing it unconditionally fails to compile |
+| `arduino_api/arduino_i2c.{h,cpp}`, `arduino_serial.{h,cpp}` | Which of `Wire2`/`Serial1`/`Serial2` exist at all (`Serial2` only on A156). On A153 `Wire2` **does not exist as a symbol**, so anything referencing it unconditionally fails to compile |
 
 Work out peripheral availability from the device header before writing
 code. A153 has exactly one LPI2C, so an independent `Wire2` is
@@ -218,7 +219,7 @@ Then, on hardware:
   way, and only this finds out. The WWDT0 setup there has an `#if` per
   board for its clock, which the new board needs too.
 - Dump the area before and after an upload and after an IDE Debug
-  launch, e.g. with LinkServer's memory read. The two existing chips'
+  launch, e.g. with LinkServer's memory read. The existing chips'
   flash loaders erase only the sectors the program occupies. A new
   chip's loader might mass-erase, and then the data would survive a
   reset but not an upload.
@@ -285,25 +286,28 @@ rows.
 `mcu.cpp`'s `init_mcu()` and the variant's `clock_config.c` can attach
 clocks. `init_mcu()` calls `BOARD_InitBootClocks()` — and therefore
 `clock_config.c` — *after* its own setup, so `clock_config.c` wins on
-anything it touches. The two existing boards do opposite things:
+anything it touches. The first two boards do opposite things, and
+FRDM-MCXA156 is like N947 here, since its `clock_config.c` is the SDK's
+template unchanged:
 
-| | A153 | N947 |
-|---|---|---|
-| Boot clock | `BOARD_BootClockFRO96M()` | `BOARD_BootClockPLL150M()` |
-| `clock_config.c` peripheral attaches | **re-attaches all of them** to FRO_HF_DIV | **touches none** |
-| `mcu.cpp`'s attaches | all overridden — **dead code** | the only thing setting them |
-| Per-peripheral dividers | `mcu.cpp`'s survive (`clock_config.c` sets none) | same |
+| | A153 | N947 | A156 |
+|---|---|---|---|
+| Boot clock | `BOARD_BootClockFRO96M()` | `BOARD_BootClockPLL150M()` | `BOARD_BootClockFRO96M()` |
+| `clock_config.c` peripheral attaches | **re-attaches all of them** to FRO_HF_DIV | **touches none** | **touches none** |
+| `mcu.cpp`'s attaches | all overridden — **dead code** | the only thing setting them | the only thing setting them |
+| Per-peripheral dividers | `mcu.cpp`'s survive (`clock_config.c` sets none) | same | same |
 
 So the effective sources are:
 
-| Peripheral | A153 | N947 |
-|---|---|---|
-| `Wire` | LPI2C0 @ 96MHz | FlexComm2 @ 12MHz |
-| `Wire1` | I3C0 @ 48MHz (96/2) | I3C1 @ 25MHz (PLL0 150/6) |
-| `Wire2` | — | FlexComm3 @ 12MHz |
-| `SPI` | LPSPI1 @ 96MHz | FlexComm1 @ 48MHz |
-| `SPI1` | LPSPI0 @ 96MHz | FlexComm6 @ 48MHz |
-| `Serial1` | LPUART2 @ 12MHz | FlexComm5 @ 12MHz |
+| Peripheral | A153 | N947 | A156 |
+|---|---|---|---|
+| `Wire` | LPI2C0 @ 96MHz | FlexComm2 @ 12MHz | LPI2C0 @ 96MHz |
+| `Wire1` | I3C0 @ 48MHz (96/2) | I3C1 @ 25MHz (PLL0 150/6) | LPI2C3 @ 96MHz |
+| `Wire2` | — | FlexComm3 @ 12MHz | — |
+| `SPI` | LPSPI1 @ 96MHz | FlexComm1 @ 48MHz | LPSPI1 @ 96MHz |
+| `SPI1` | LPSPI0 @ 96MHz | FlexComm6 @ 48MHz | LPSPI0 @ 96MHz |
+| `Serial1` | LPUART2 @ 12MHz | FlexComm5 @ 12MHz | LPUART2 @ 12MHz |
+| `Serial2` | — | — | LPUART1 @ 12MHz |
 
 That asymmetry produced the same bug three times on N947 (default `SPI`,
 then `SPI1`, then suspected on `Wire2`), each time surfacing as
@@ -405,5 +409,6 @@ then hung on the first hardware run.
 ## See also
 
 - [`variants/frdm_mcxn947/README.md`](../hardware/nxp/mcx/variants/frdm_mcxn947/README.md) — the N947 port's own record, including verified behaviour and known quirks
+- [`variants/frdm_mcxa156/README.md`](../hardware/nxp/mcx/variants/frdm_mcxa156/README.md) — the A156 port's record (in Japanese): where its files came from, and what was checked on hardware
 - [`docs/mcxpinstate_guide.md`](mcxpinstate_guide.md) — the pin-ownership auditor, which exists because of the conflicts described above
-- [`PIN_MAPPING_A153.md`](../PIN_MAPPING_A153.md), [`PIN_MAPPING_N947.md`](../PIN_MAPPING_N947.md) — the shape the new board's pin table should take
+- [`PIN_MAPPING_A153.md`](../PIN_MAPPING_A153.md), [`PIN_MAPPING_N947.md`](../PIN_MAPPING_N947.md), [`PIN_MAPPING_A156.md`](../PIN_MAPPING_A156.md) — the shape the new board's pin table should take; the last also shows how to state a board change the core assumes

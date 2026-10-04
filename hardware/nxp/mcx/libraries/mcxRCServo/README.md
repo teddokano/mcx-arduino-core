@@ -10,7 +10,9 @@ Drives a hobby RC servo from a PWM pin. Two servos come ready to use:
 **SG90** (positional rotation) and **FS90R** (continuous rotation), each
 carrying the pulse timing from its own datasheet.
 
-Every example has been run on both FRDM-MCXA153 and FRDM-MCXN947.
+Every example has been run on both FRDM-MCXA153 and FRDM-MCXN947. On
+FRDM-MCXA156 (mcx-arduino-core 0.8.0 and later) the library's pulse widths
+were measured on the `PWM0` pin, without a servo attached.
 
 ## Usage
 
@@ -146,18 +148,18 @@ Three wires, in the usual RC servo colours: brown to ground, red to the
 supply, orange or yellow to the signal pin.
 
 The signal line goes to any of the `PWM0`-`PWM5` pins -- the ones
-`analogWrite()` can drive, labelled on the board silkscreen. Both boards put
+`analogWrite()` can drive, labelled on the board silkscreen. Every board puts
 them in the same place on the headers, so the same wiring and the same sketch
-work on either; what differs is only the MCU pin behind the name.
+work on any of them; what differs is only the MCU pin behind the name.
 
-| Pin name | FRDM-MCXA153 | FRDM-MCXN947 |
-|---|---|---|
-| `PWM0` | P3_11 | P2_3 |
-| `PWM1` | P3_10 | P2_2 |
-| `PWM2` | P3_9  | P2_5 |
-| `PWM3` | P3_8  | P2_4 |
-| `PWM4` | P3_7  | P2_7 |
-| `PWM5` | P3_6  | P2_6 |
+| Pin name | FRDM-MCXA153 | FRDM-MCXN947 | FRDM-MCXA156 |
+|---|---|---|---|
+| `PWM0` | P3_11 | P2_3 | P3_11 |
+| `PWM1` | P3_10 | P2_2 | P3_10 |
+| `PWM2` | P3_9  | P2_5 | P3_9  |
+| `PWM3` | P3_8  | P2_4 | P3_8  |
+| `PWM4` | P3_7  | P2_7 | P3_7  |
+| `PWM5` | P3_6  | P2_6 | P3_6  |
 
 `PWM0`-`PWM5` pair up two to a FlexPWM submodule -- `PWM0`/`PWM1`,
 `PWM2`/`PWM3`, `PWM4`/`PWM5` -- and each pair shares one period register, so
@@ -185,7 +187,7 @@ board's own supply well before stall.
 
 Neither datasheet states an input threshold for the signal line. Both servos
 take the board's 3.3V logic level while running from a 5V supply, which is
-how the examples were verified on both boards.
+how the examples were verified on FRDM-MCXA153 and FRDM-MCXN947.
 
 ## Notes
 

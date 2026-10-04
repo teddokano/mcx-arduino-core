@@ -363,6 +363,8 @@ void loop() {
 
 ボードにはオンボードのP3T1755温度センサーがMCUのI3Cペリフェラルに接続されていますが、`Wire1`はこれを**I2C互換モード**で駆動するため、通常の`TwoWire`オブジェクトとして普通のI2C通信ができます（動的アドレッシングやIBIなどI3C固有の機能は一切使用しません）。この例には配線もライブラリも不要です——ドライバライブラリを持たないI2Cデバイスと同じように、標準の`beginTransmission()` / `write()` / `endTransmission()` / `requestFrom()` / `read()`でレジスタに直接アクセスします:
 
+> **FRDM-MCXA156**: このボードではセンサーが`Wire`（`D18`/`D19`）につながっていて、`Wire1`はMikroBusのI2Cです。以下の`Wire1`を`Wire`に置き換えてください。[PIN_MAPPING_A156.md](PIN_MAPPING_A156.md)を参照。
+
 ```cpp
 #include <Arduino.h>
 

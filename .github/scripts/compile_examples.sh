@@ -13,7 +13,7 @@
 # hardware/nxp/mcx/libraries/ puts its examples in the sweep by itself.
 #
 # Board-exclusive sketches (directory name ending in the board's chip, as
-# _N947 -- currently the only such suffix in use) are skipped on every
+# _N947 or _A156) are skipped on every
 # other board -- that's expected and not a failure; see
 # examples/release_check/README.md.
 set -uo pipefail

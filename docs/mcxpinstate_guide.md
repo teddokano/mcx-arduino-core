@@ -56,7 +56,7 @@ Constructing a `PinState` object anywhere in the sketch is what actually
 enables tracking — without one, the hooks mcx-arduino-core's classes call
 on construction/destruction stay empty stubs and cost nothing. There's
 nothing to configure beyond that: every `DigitalInOut`-based pin (plain
-GPIO, and I2C/I3C/SPI's data pins under the hood), `Serial`/`Serial1`, and
+GPIO, and I2C/I3C/SPI's data pins under the hood), `Serial`/`Serial1`/`Serial2`, and
 `SPI`/`SPI1`'s pins register themselves automatically.
 
 ## Reading the output

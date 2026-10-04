@@ -1,8 +1,9 @@
 # Advanced: Native I3C via r01lib (`Arduino_incompatible_API`)
 
-`Wire1` (see [TUTORIAL.md](../TUTORIAL.md)) gives you the on-board I3C bus
-as a plain I2C-shaped `TwoWire` object — it puts the I3C peripheral into
-`I2C_MODE` and never touches anything I3C-specific. That covers most uses
+On FRDM-MCXA153 and FRDM-MCXN947, `Wire1` (see [TUTORIAL.md](../TUTORIAL.md))
+gives you the on-board I3C bus as a plain I2C-shaped `TwoWire` object — it
+puts the I3C peripheral into `I2C_MODE` and never touches anything
+I3C-specific. That covers most uses
 (reading a sensor at a fixed address), but I3C itself is a different, richer
 protocol: dynamic addressing (a device gets assigned a runtime address
 instead of using a fixed static one), Common Command Codes (CCC) for
@@ -29,12 +30,20 @@ I3C i3c(I3C_SDA, I3C_SCL);
 which board you're on: unlike `D0`-`D19`/`A0`-`A5`/`MB_*`, these two names
 are deliberately excluded from `arduino_io.h`'s pin renumbering, so they
 always mean the same raw r01lib pin value whether or not `<Arduino.h>` has
-been included — one name, one value, both boards.
+been included — one name, one value, every board.
 
 Constructing an `I3C` this way defaults to native I3C SDR mode
-(`I3C::MODE::I3C_MODE`), the mode this whole guide is about. `Wire1`
-switches this same peripheral to `I3C::MODE::I2C_MODE` instead via
-`mode()`; don't mix the two on the same object in one sketch.
+(`I3C::MODE::I3C_MODE`), the mode this whole guide is about. On FRDM-MCXA153
+and FRDM-MCXN947, `Wire1` switches this same peripheral to
+`I3C::MODE::I2C_MODE` instead via `mode()`; don't mix the two on the same
+object in one sketch.
+
+**FRDM-MCXA156**: `Wire1` is a plain I2C bus on the MikroBus header there,
+not this peripheral. The I3C peripheral reaches the on-board sensor only
+through `D18`/`D19`, which `I3C_SDA`/`I3C_SCL` name on that board and which
+`Wire` also uses, so don't use `Wire` and an `I3C` object in the same
+sketch. This guide's example was run on FRDM-MCXA153 and FRDM-MCXN947, not
+on FRDM-MCXA156.
 
 **FRDM-MCXN947 only**: the on-board I3C bus's SDA/SCL pins are the same two
 physical pins as `Serial1` on the MikroBus header (`MB_TX`/`MB_RX`) —
@@ -139,7 +148,8 @@ being polled), start there.
 ## See also
 
 - [TUTORIAL.md](../TUTORIAL.md), §2.9 — `Wire1`, the Arduino-compatible
-  I2C-mode wrapper around this same peripheral, for the common case
+  I2C-mode wrapper around this same peripheral on FRDM-MCXA153 and
+  FRDM-MCXN947, for the common case
 - [advanced_sdk_tuning.md](advanced_sdk_tuning.md) — the same
   "drop below the Arduino layer" idea applied to GPIO instead of I3C
 - [mcxpinstate_guide.md](mcxpinstate_guide.md) — useful when debugging pin

@@ -2,8 +2,8 @@
 
 ## プロジェクト概要
 - **リポジトリ**: https://github.com/teddokano/mcx-arduino-core
-- **内容**: NXP FRDM-MCXA153 / FRDM-MCXN947（いずれもCortex-M33）向けのArduino IDEボードサポートパッケージ。
-  v0.4.0以降は**ソース配布方式**（プリビルド`.a`は廃止）で、`hardware/nxp/mcx/cores/arduino/`（両ボード共有）と
+- **内容**: NXP FRDM-MCXA153 / FRDM-MCXN947 / FRDM-MCXA156（0.8.0から。いずれもCortex-M33）向けのArduino IDEボードサポートパッケージ。
+  v0.4.0以降は**ソース配布方式**（プリビルド`.a`は廃止）で、`hardware/nxp/mcx/cores/arduino/`（全ボード共有）と
   `hardware/nxp/mcx/variants/<board>/src/`（ボード固有）が唯一の実体。編集すれば次のビルドにそのまま反映される
 - **同梱ライブラリ**: `mcxPinState`（ピン所有状況のデバッグ表示）、`mcxRCServo`（RCサーボ）、`EEPROM`（0.7.0で追加）。
   前の2つは別リポジトリが開発の本拠地で、`hardware/nxp/mcx/libraries/`配下はリリース時に同期する取り込みコピー。
@@ -25,7 +25,7 @@
 | 知りたいこと | 見る場所 |
 |---|---|
 | 対応APIの一覧・未対応項目 | [API_COMPATIBILITY.md](API_COMPATIBILITY.md) |
-| ピン配置（ボード別） | [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) / [PIN_MAPPING_N947.md](PIN_MAPPING_N947.md) / [PIN_MAPPING_A156.md](PIN_MAPPING_A156.md)（0.8.0で作成中） |
+| ピン配置（ボード別） | [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) / [PIN_MAPPING_N947.md](PIN_MAPPING_N947.md) / [PIN_MAPPING_A156.md](PIN_MAPPING_A156.md) |
 | リリースごとの変更点 | [CHANGELOG.md](CHANGELOG.md) |
 | 使い方の入門 | [TUTORIAL.md](TUTORIAL.md) / [TUTORIAL.ja.md](TUTORIAL.ja.md) |
 | クラス・関数のリファレンス | `docs/api/`（Doxygen生成、リリース前に再生成する） |
@@ -285,24 +285,24 @@ xPack checksums（正しい値）：
 | Print/Stream抽象基底クラス（新設） | ✅ | v0.2.1で追加。実機確認済み——ハードウェア非依存のPrint派生クラス、Stream&への多態性、print()/println()の実バイト数返却、Printableのn+=p.print(x)イディオムすべて動作確認 |
 | サードパーティライブラリ互換性（ArduinoJson/LiquidCrystal/DHT/NeoPixel/OneWire/Adafruit BusIO/Adafruit Unified Sensor） | ✅ | v0.2.1で最小スケッチのコンパイルを確認。0.7.0で各ライブラリの**同梱サンプル全47本×両ボード**に広げて再確認し、`BitOrder`の本物のenum化とavr-libcの文字列関数・`M_`定数の宣言を追加した。残る失敗8本は、BLE（4本）、ADXL343ドライバ（1本）、Ethernetが要求する`Client.h`（3本、coreにネットワーク基底クラスが無い）。Servoはライブラリ側のアーキテクチャ非対応で不可（既知の限界）。ライブラリはスクラッチパッドに`ARDUINO_DIRECTORIES_USER`で入れたので、`~/Documents/Arduino/libraries`には無い |
 | Wire (I2C) | ✅ | |
-| Wire1 (I3C, I2Cモード) | ✅ | オンボードP3T1755で確認、重大バグ修正済み |
+| Wire1 (I3C, I2Cモード) | ✅ | オンボードP3T1755で確認、重大バグ修正済み。A156の`Wire1`はI3CではなくMikroBusの`LPI2C3`（0.8.0） |
 | SPI | ✅ | |
 | attachInterrupt | ✅ | |
 | detachInterrupt | ✅ | v0.2.1で追加。SW2を使った実機確認済み |
-| analogRead | ✅ | LPADC。A153は`A0`-`A3`、N947は`A2`-`A5` |
-| analogWrite (PWM) | ✅ | A153はFlexPWM0、N947はFlexPWM1。`PWM0`-`PWM5`のみ |
+| analogRead | ✅ | LPADC。A153は`A0`-`A3`、N947は`A2`-`A5`、A156は`A0`-`A5`（`A4`・`A5`はR75・R76を外したボードで） |
+| analogWrite (PWM) | ✅ | A153・A156はFlexPWM0、N947はFlexPWM1。`PWM0`-`PWM5`のみ |
 | millis / micros | ✅ | SysTick(1ms) + DWT |
 | delayMicroseconds | ✅ | wait_us()ベース、v0.2.1で追加 |
 | tone / noTone | ✅ | CTIMER0, 任意のデジタルピン |
-| Serial1（A153はD0/D1、N947はMikroBusの`MB_TX`/`MB_RX`） | ✅ | 入力バッファ有効化・RX割り込み・available()の3バグ修正後、実機ループバックで確認 |
+| Serial1（A153・A156はD0/D1、N947はMikroBusの`MB_TX`/`MB_RX`）、Serial2（A156だけ、MikroBus、0.8.0） | ✅ | 入力バッファ有効化・RX割り込み・available()の3バグ修正後、実機ループバックで確認 |
 | shiftOut / shiftIn | ✅ | 割り込みベースの相互検証で確認 |
 | pulseIn / pulseInLong | ✅ | |
 | random / randomSeed | ✅ | |
 | UNO R3/R4互換マクロ・定数一式 | ✅ | `release_check/01`の「compat macros」節で実行時に値を確認 |
 | String クラス | ✅ | 独自実装（WString移植ではない）。連結・数値変換・検索・置換・大小文字変換・trim等を実機確認、全項目OK |
 | EEPROM（0.7.0） | ✅ | 1KB、内蔵フラッシュの末尾。`release_check/06`（API・書き込み・リセット後と書き込み後の保持）と`07`（ウォッチドッグで書き込み中に1000回リセット）で両ボード確認。CLIの`upload`とgdbの`load`、IDE（macOS）の書き込みボタンとDebugボタンで消えないことも確認 |
-| Wire.setWireTimeout / getWireTimeoutFlag / clearWireTimeoutFlag（0.7.0） | ✅ | LPI2Cのピンlowタイムアウト。`Wire`・N947の`Wire2`のみ（`Wire1`はI3Cで無効）。`release_check/14`（ジャンパ）で両ボード確認 |
-| I2Cターゲット（スレーブ）モード（0.7.0） | ✅ | `Wire`のみ（`Wire1`・`Wire2`は`begin(address)`で止まる）。自分自身をターゲットにする形（`release_check/01`）と2枚接続（`release_check/24`）で確認 |
+| Wire.setWireTimeout / getWireTimeoutFlag / clearWireTimeoutFlag（0.7.0） | ✅ | LPI2Cのピンlowタイムアウト。`Wire`・N947の`Wire2`・A156の`Wire1`（A153・N947の`Wire1`はI3Cで無効）。`release_check/14`（ジャンパ）で3ボードとも確認 |
+| I2Cターゲット（スレーブ）モード（0.7.0） | ✅ | `Wire`とA156の`Wire1`（A153・N947の`Wire1`とN947の`Wire2`は`begin(address)`で止まる）。自分自身をターゲットにする形（`release_check/01`）と2枚接続（`release_check/24`）で確認 |
 | Wire: begin()のオーバーロード・内部プルアップ・Stream化・5引数requestFrom・バッファ上限（0.7.0） | ✅ | `test_Wire_begin_address`と`test_Wire_Stream_requestFrom5`で両ボード確認（後者は`release_check/01`に統合） |
 | Serial.begin(baud, config) / end() / serialEvent（0.7.0） | ✅ | 12形式をRXピンからビット単位で読んで確認（`release_check/11`に統合） |
 | AVR互換の補助関数（0.7.0） | ✅ | `itoa`/`dtostrf`/`word`/`_BV`/`analogReference`の定数/`HardwareSerial`/avr-libcの文字列関数/`M_`定数/`SDA`・`SCL`/`BitOrder`のenum化。`test_avr_compat_helpers`（`release_check/01`に統合） |
@@ -319,7 +319,7 @@ xPack checksums（正しい値）：
 ## ローカル開発環境
 - **OS**: macOS（Saitama, Japan）
 - **リポジトリパス**: `~/dev/mcx-arduino-core`
-- **v0.4.0以降のソース構成**: `MCUXpresso_project/`ディレクトリは廃止（削除済み）。ソースの唯一の実体は`hardware/nxp/mcx/cores/arduino/`（両ボード共有）＋`hardware/nxp/mcx/variants/<board>/src/`（ボード固有）で、プリビルド`.a`のビルド・配置手順も不要になった——編集したソースはそのままarduino-cli/Arduino IDEのビルドに反映される（詳細は[docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md)の「`cores/arduino/`一本化・`platform.txt`書き換え完了」節）
+- **v0.4.0以降のソース構成**: `MCUXpresso_project/`ディレクトリは廃止（削除済み）。ソースの唯一の実体は`hardware/nxp/mcx/cores/arduino/`（全ボード共有）＋`hardware/nxp/mcx/variants/<board>/src/`（ボード固有）で、プリビルド`.a`のビルド・配置手順も不要になった——編集したソースはそのままarduino-cli/Arduino IDEのビルドに反映される（詳細は[docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md)の「`cores/arduino/`一本化・`platform.txt`書き換え完了」節）
 - **xPackツールチェーン**: `~/.xpacktools/xpack-arm-none-eabi-gcc-14.2.1-1.1/`（`package_nxp_mcx_index.json`記載のものと同一バイナリ、チェックサム確認済み）
 - **ローカルArduino IDE連携**: `~/Library/Arduino15/packages/nxp/hardware/mcx/<version>-dev`（今は`0.8.0-dev`。ブランチ名と同じ。パッチリリースのブランチを並行して進める間は、作業ツリーで切り替えたブランチに合わせてこの名前も付け替える）をこのリポジトリの`hardware/nxp/mcx/`へのシンボリックリンクとして設定済み（編集が即座に反映される）。ツールチェーンも`~/.xpacktools/`への symlink。`-dev`サフィックスにより、Boards Manager経由でインストールする実リリース版とはディレクトリ名が衝突せず共存できる（ただし下の項目のとおり、並んでいるとリリース版が選ばれる）
 - **リリース版を入れたままだと`-dev`が使われない**（0.7.0で踏んだ）: `packages/nxp/hardware/mcx/`に
@@ -370,12 +370,12 @@ v0.4.0の`main`マージ直前、ユーザーから「今回のリリース準�
 3. **`docs/api/`（Doxygen）の再生成**: `doxygen Doxyfile`を実行し、直近のソース変更（コメントを含む）が反映された状態にする。`docs/api/index.html`のタイムスタンプより新しいソースファイルがないか確認してから判断するとよい
 4. **ライセンスチェック**: `LICENSE`全文を読み返し、開発期間中に追加した新規ツール/ファイル（外部プロジェクトのソースを読んで挙動を参考にしたもの含む）で、帰属記載が漏れているものがないか確認する。「コードは一切コピーしていないが、他プロジェクトのソースを読んで互換動作を実装した」ケースは、コピーでなくても透明性のため記載する、というこのプロジェクトの既存の判断基準（`upload.sh`のArduinoCore-zephyr参照等）を毎回適用する
 5. **その他の機械チェック**: `git status`のクリーンさ、自コードの`TODO`/`FIXME`/`XXX`残存、GitHub Issuesのオープン状態、新規追加した実行ファイル・設定ファイル（今回なら`gdb-bridge`バイナリ群・`boards.txt`の`debug.*`設定）の整合性、`package_nxp_mcx_index.json`の妥当性（新バージョンエントリはまだ追加しない——それは実際のリリース作業段階）、リリースzipサイズの見積り、「暫定」「未確認」「実機確認待ち」等の古い表現が現行ドキュメントに残っていないか
-6. **全サンプル×両ボードの回帰コンパイルスイープ**（`examples/Arduino_compatible_API`・`Arduino_incompatible_API`・`release_check`配下の全`.ino`）を、上記1〜5の変更後に最終確認として実行し、新規リグレッションがないことを確認する
+6. **全サンプル×全ボードの回帰コンパイルスイープ**（`examples/Arduino_compatible_API`・`Arduino_incompatible_API`・`release_check`配下の全`.ino`）を、上記1〜5の変更後に最終確認として実行し、新規リグレッションがないことを確認する
 7. **`examples/release_check/`を実機で通す（全ボード）**——**コンパイルが通ったことを動作の証拠にしない**。項目6はコンパイルだけで、実行時にしか出ない不具合は一切見ていない（v0.4.0のソース配布移行では114サンプル×2ボードが通ったあと実機初回でハングした）。グループは`examples/release_check/README.md`の表に従い、番号体系は**`0n`=配線も外部部品も不要／`1n`=ジャンパ配線のみ／`2n`=外部ライブラリ・モジュール・ボードが必要**:
    - **`0n`**（`01`〜`08`）: 配線不要。`08`はD2・D4・D5とA0/A1（N947はA2/A3）を内部プルで動かすので空けておく（`01`はA153のフラッシュを99%使っていて、`08`の分が入らなかった）。`05`はN947限定。`06`（EEPROM）は自分で1回リセットしてから判定し、もう一度書き込むと前回のデータが書き込みをまたいで残ったかも確認する。
      `07`（EEPROMの書き込み中リセット）はウォッチドッグで1000回リセットをかけ、1ボード約6分。EEPROMを上書きするので`06`の2回が済んでから流す
    - **`1n`**（`11`〜`15`）: ジャンパのみ。`11`のSerial1配線は**ボードで違う**（A153・A156=D0-D1、N947=MikroBus `MB_TX`-`MB_RX`）。`14`（`setWireTimeout`）は全ボード共通で`D19`-`D8`＋`D18`-`D7`、N947は`Wire2`用に、A156は`Wire1`用に`MB_SCL`-`MB_PWM`＋`MB_SDA`-`MB_INT`も。`15`はA156限定で`MB_SDA`-`D18`＋`MB_SCL`-`D19`
-   - **`2n`**（`21`〜`24`）: 外部`P3T1755.h`＋MikroBus配線／外部LM75系センサー／`Waveshare_TFT_Touch`の`SDBitmapViewerDemo`（`SDBitmapViewer`ではない。A156だけはDemoが`#error`で止まるので、`/PLAYLIST.JSN`を外したカードで`SDBitmapViewer`）／もう1枚のボード（`24`はA153とN947をD18-D18、D19-D19、GND-GNDでつなぎ、両方に書き込む。どちらかが前から同じスケッチを動かしていたら、両方をほぼ同時にリセットしてから始める）。`21`/`22`は**CIスタブではなく実物のライブラリ**を`--library`で指定すること
+   - **`2n`**（`21`〜`24`）: 外部`P3T1755.h`＋MikroBus配線／外部LM75系センサー／`Waveshare_TFT_Touch`の`SDBitmapViewerDemo`（`SDBitmapViewer`ではない。A156だけはDemoが`#error`で止まるので、`/PLAYLIST.JSN`を外したカードで`SDBitmapViewer`）／もう1枚のボード（`24`は2枚（0.8.0ではA153とN947、A156とN947）をD18-D18、D19-D19、GND-GNDでつなぎ、両方に書き込む。どちらかが前から同じスケッチを動かしていたら、両方をほぼ同時にリセットしてから始める）。`21`/`22`は**CIスタブではなく実物のライブラリ**を`--library`で指定すること
    - **2枚同時接続での書き込みも各プラットフォームで1回**: A153とN947を両方つなぎ、ポートを切り替えて両方に書き込めること。
      `upload.sh`/`upload.bat`はポートのUSBシリアル番号（`{upload.port.properties.serialNumber}`）を
      LinkServerの`--probe`に渡すので、**Windows/Linuxのポート検出がこの番号を同じ形で返すか**が肝。0.7.0でmacOS・Windows・Linuxの全てで2枚での書き込みを確認した（どれもLinkServerと同じ形の番号を返す）。

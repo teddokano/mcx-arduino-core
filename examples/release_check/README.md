@@ -22,7 +22,7 @@ with one setup each:
 | 02 | `02_no_wiring_manual_observe` | none | manual (watch/listen -- scope, LA, multimeter, ears) |
 | 03 | `03_sw2_interrupts` | none (press the on-board SW2 button as prompted) | manual |
 | 04 | `04_mcxpinstate_audit` | none | manual (no `*** CONFLICT ***` / `*** MISMATCH ***` in the tables) |
-| 05 | `05_wire2_mikrobus_scan_N947` | none (N947 only -- `Wire2` doesn't exist on A153) | manual (confirm I2C traffic on a logic analyzer) |
+| 05 | `05_wire2_mikrobus_scan_N947` | none (N947 only -- `Wire2` doesn't exist on A153 or A156) | manual (confirm I2C traffic on a logic analyzer) |
 | 06 | `06_eeprom` | none | automatic, across one reset it does itself ("ALL OK" at the end). Run it again after: the new run checks the previous run's data came through the upload |
 | 07 | `07_eeprom_reset` | none | automatic, over 1000 resets it causes itself with the watchdog, about six minutes ("ALL OK" at the end). Run it after both runs of 06, since it overwrites the EEPROM |
 | 08 | `08_pin_modes_with_interrupts_and_analog` | none, with D2, D4, D5 and A0/A1 (A2/A3 on N947) left unconnected: it moves them with the internal pulls | automatic (reads "ALL OK"/"N FAILED") |

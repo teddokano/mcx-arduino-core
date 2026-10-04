@@ -448,6 +448,10 @@ this one — talk to its register interface directly with the standard
 `read()` calls, exactly as you would with any I2C device that doesn't have
 a driver library:
 
+> **FRDM-MCXA156**: the sensor is on `Wire` (`D18`/`D19`) on that board, and
+> `Wire1` is the MikroBus I2C. Use `Wire` in place of `Wire1` below. See
+> [PIN_MAPPING_A156.md](PIN_MAPPING_A156.md).
+
 ```cpp
 #include <Arduino.h>
 

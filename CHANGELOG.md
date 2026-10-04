@@ -5,13 +5,21 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.8.0] - 2026-10-05
+
+### Highlights
+- New board: FRDM-MCXA156, with two small changes to the board (see [PIN_MAPPING_A156.md](PIN_MAPPING_A156.md))
+- On FRDM-MCXA156: three hardware serial ports (`Serial2` is new), two plain I2C buses that can both be targets, and six analog inputs
+- Fixed on every board: `attachInterrupt()` no longer drops the pull-up that `pinMode()` set, and `CHANGE` fires on both edges
+- Fixed on every board: a pin read with `analogRead()` works as a digital pin again
 
 ### Added
 - FRDM-MCXA156 support: a third board, **FRDM-MCXA156 (mcx-arduino-core)** under Tools → Board.
   The core assumes two changes to the board, both in [PIN_MAPPING_A156.md](PIN_MAPPING_A156.md):
   R59/R60 moved to pins 2-3, so `SPI` reaches `D10`-`D13`, and R75/R76 removed, so `A4`/`A5` aren't
-  also wired to the CAN transceiver
+  also wired to the CAN transceiver. 1MB of flash, of which a sketch gets 1008KB (the top 16KB hold
+  `EEPROM`), and 120KB of RAM. A sketch can test for it with `ARDUINO_FRDM_MCXA156`. Every
+  `examples/release_check` item that applies to it passes on hardware, as on the other two boards
   - `Serial` over USB, `Serial1` on `D0`/`D1`, and `Serial2` on the MikroBus UART (`MB_TX`/`MB_RX`), with
     `serialEvent2()`. `Serial2` is new, and this board is the only one with it
   - `Wire` on `D18`/`D19`, where the on-board P3T1755 temperature sensor is (at `0x48`), and `Wire1` on the
@@ -24,6 +32,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   (the fixes below, no wiring), both also run by the new `release_check/08`
 - `release_check/15_wire_wire1_jumpered_A156`: FRDM-MCXA156's `Wire` and `Wire1` jumpered together
   (`MB_SDA`-`D18`, `MB_SCL`-`D19`): the sensor from `Wire1`, each bus as the other's target, and a stuck bus
+- The bundled `mcxPinState` knows FRDM-MCXA156's instances (`Wire1` on the MikroBus I2C, `Serial2`), and
+  the bundled `mcxRCServo`'s README lists its `PWM0`-`PWM5` pins (the library's pulse widths are checked
+  there by `release_check/13`)
+- [PIN_MAPPING_A156.md](PIN_MAPPING_A156.md), with the board changes and pin diagrams. `API_COMPATIBILITY.md`
+  covers all three boards. `docs/porting_a_new_board.md` gains what this board taught: pins that come out of
+  reset with their input buffer off, and a binary comparison broken by a change in line count
+- `release_check/23` names the example to run on FRDM-MCXA156, `SDBitmapViewer`: the library's
+  `SDBitmapViewerDemo` does not target this board
 
 ### Fixed
 - `attachInterrupt()` no longer undoes `pinMode()`. The first call on a pin set it to input with no
