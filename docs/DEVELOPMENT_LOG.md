@@ -2559,7 +2559,7 @@ Windows `.exe`、macOS `.aarch64.pkg`・`.x86-64.pkg`（Intelはハイフン。`
 
 ---
 
-## v0.8.0（`0.8.0-dev` ブランチ、開発開始 2026-09-26）
+## v0.8.0（`0.8.0-dev` ブランチ、開発開始 2026-09-26、2026-10-05リリース）
 `platform.txt`のversion系3行・`Doxyfile`のPROJECT_NUMBER・同梱`mcxPinState`の`MCXPINSTATE_VERIFIED_AGAINST`を0.8.0へ。
 `arduino_io.h`は0.7.0の完了（`74c1239`でのバンプ）以降`de27445`（`SDA`/`SCL`追加）・`aed3145`（`NUM_ANALOG_INPUTS`修正）の2回変わっているが、
 どちらもピン名・並びには触れておらず、hygieneチェックも53個の一致を保ったまま——0.7.0で行った監査がそのまま有効なので、定数だけ動かした。
@@ -2682,3 +2682,97 @@ A156はこの3組もSDKの`devices/MCXA156/project_template/`のものにした�
 - `regression_check.yml`の`board`に`frdm_mcxa156`を追加。`compile_examples.sh`の「`_N947`で終わるサンプルは他のボードで飛ばす」を、
   末尾がチップ名（`_A153`・`_N947`・`_A156`など）ならそのボード以外で飛ばす形にした。3ボード分のドライランで、`_N947`の7本がA153・A156だけで飛ぶことを確認
 - 同じスクリプトでA156のfast tierをローカルで流し、24本すべて通った。`--warnings all`での警告はA153・A156とも0件
+
+### 実機確認と不具合の修正（2026-10-03〜10-05）
+開発中は`CLAUDE.md`の「0.8.0の方針」節に書いていたもの。リリース時にここへ移した。
+
+- **ジャンパの要る確認は済んだ**（2026-10-04）: `release_check/11`・`12`・`13`・`21`がALL OK（`21`は`Serial2`のループバックを含めて欠落なし）、`14`がALL PASS（`Wire1`も）。
+  `MB_SDA`-D18・`MB_SCL`-D19でつなぐ`test_Wire_Wire1_jumpered_A156`（新規。のちに`release_check/15_wire_wire1_jumpered_A156`へ移した）もALL OK（`Wire1`からのセンサー、`Wire`↔`Wire1`のターゲットモードの両方向、D18・D19をLOWに押さえたときの`Wire1`）。
+  `13`のサーボの項目で`PWM0`（J3の5番）の16ビット分解能のパルス幅も確かめた
+- **配線の要らない`release_check/04`・`06`・`07`も通った**（2026-10-04）: `04`はCONFLICT・MISMATCHなし、`06`は2回ともALL OK（書き込みをまたいだ保持も）、
+  `07`はALL OK（1000回中759回が書き込み中に切られ、読めないフラッシュでの起動は0回）
+- **`release_check/03`も通った**（2026-10-04、SW2＝`P1_7`）。1回目はPhase 1が時間切れになったが、押すのが30秒の窓に間に合わなかっただけ
+  （エッジ割り込みと`digitalRead()`の監視を並べた切り分けで、取りこぼしが無いことを確かめた）。対話型のスケッチは、書き込み後に**RESETを押してもらってから**操作してもらうと窓に収まる
+- **`attachInterrupt()`の2つの不具合を0.8.0で直す**（2026-10-04、ユーザー判断。全ボード共通）:
+  (1) 初回に作る`InterruptIn`が`DigitalIn(pin)`＝入力・`PullNone`でピンを設定し直し、`pinMode()`のプルと向きを消していた（A156のSW2で`PCR=0x1000`を見て発覚）。
+  `arduino_io.cpp`が`pinMode()`のモードを覚えておき、`InterruptIn`を作った直後にかけ直す。
+  (2) `CHANGE`が`rise()`→`fall()`の順に設定していて、ピンの割り込み設定は1つなので立ち下がりだけになっていた。`InterruptIn::change()`（EitherEdge）を足した。
+  テストは`test_attachInterrupt_keeps_pinMode`（配線不要）。プルの有無は**ピンを逆に駆動して離し、引き戻されるかで見る**（読むだけだと浮いたピンでも通る。
+  最初の版は修正前のコアでも読み取りの項目が通った）。3ボードとも修正前8 FAIL→修正後ALL OK。
+  `release_check/03`（SW2を`INPUT_PULLUP`にしてから`attachInterrupt()`）も修正後のコアで3ボードとも通った
+- **`analogRead()`のあとのピンがデジタルで読めない不具合を直した**（2026-10-04、全ボード）。`AnalogIn`がIBEを切り、A156以外は誰も入れ直していなかった。
+  `io.cpp`の`DigitalInOut`がMCXの3チップでIBEを入れる。テストは`test_digitalRead_after_analogRead`（配線不要、プルアップで読む）。A153・N947で修正前5 FAIL→修正後ALL OK、
+  A153の`release_check/01`もALL OK。2つのテストは`release_check/08`にまとめ（`01`はA153のフラッシュを99%使っていて入らない）、3ボードともALL OK
+- **N947の`release_check/01`は、SJ14・SJ15が正しい別のN947でALL OK**（2026-10-05、112項目）。1枚目（2026-10-04）でFAILしたのは基板の設定のためで、そのN947は**SJ14・SJ15が1-2-3とも橋渡しされたボード**だった。
+  D18/D19が`Wire`（`P4_0`/`P4_1`）とI3C1（`P1_16`/`P1_17`＝`MB_RX`/`MB_TX`、P3T1755）の両方につながっている。
+  そのため`Wire`から`0x48`が見え、`Wire1`の直後の`Wire`のターゲットの3項目が調停負け（`137`）でFAILした（0.7.1相当のバイナリでも同じ）。
+  コアはSJ14・SJ15がA側（1-2）であることを前提にしている。2枚目では`Wire`のターゲットの3項目も通った
+- **`release_check/22`・`24`と、IDE（macOS）での書き込み・Debugボタンも通った**（2026-10-04、ユーザーが実施して問題なし）。
+  `22`はA156のD18/D19に外付けのLM75系モジュール（オンボードのP3T1755と同じバス）、`24`はA156とN947の2枚接続。
+  IDEは3枚つないだまま、A156への書き込み、ポートを切り替えてA153への書き込み、A156でDebugボタン（`Device`列が空のプローブが選ばれる）
+- **A156で`attachInterrupt()`の修正後に配線の要らない`01`・`04`・`06`・`07`を流し直した**（2026-10-05、R75・R76を外したあとの基板）。
+  `01`はALL OK（112項目）、`04`はCONFLICT・MISMATCHなし、`06`は2回ともALL OK（2回目で前回のデータが書き込みのあとも残った）、
+  `07`はALL OK（1000回中792回が書き込み中に切られ、読めないフラッシュでの起動は0回）
+- **`release_check/23`はA156では`SDBitmapViewer`で行い、問題なく表示された**（2026-10-05、ユーザーが確認）。
+  `SDBitmapViewerDemo`はライブラリ側がA153・N947だけを対象にしていて、A156では`#error`で止まる。
+  カードの`/PLAYLIST.JSN`はDemo用の書式で、`SDBitmapViewer`はキー名をファイル名として読むので、外してからルートのBMPを表示させる
+- **A156の`release_check/02`は目視で問題なし**（2026-10-05、ユーザーが確認。ロジアナをMCPから操作するのはプローブの付け替えが手間なのでやめた）。
+  全ピンの巡回、`PWM0`〜`PWM5`のduty、`PWM0`を変えても`PWM1`が50%のまま、`analogWriteFrequency()`の4つの周波数、`D13`の`tone()`、`D2`のトグル。
+  シリアルに出る速さは`digitalWrite()`が1.274MHz、SDKのAPIが43.619MHz（34.23倍）
+- **A156の`release_check`は修正後の流し直しまで済んだ**（2026-10-05、R59・R60付け替え、R75・R76を外した開発用の基板）。
+  ジャンパと外部の要るものも流し直した: `11`・`12`・`13`がALL OK、`21`は約62秒・307周でWARNINGなし（`Serial1`・`Serial2`の欠落なし）、
+  `14`がALL PASS（400kHzの上限は約22.4ms）、`15`がALL OK、`22`は外付けのモジュールを44回読んで全部成功（23.25℃）、
+  `24`はSJ14・SJ15が正しいN947との2枚接続で両方ALL OK
+- **N947の`release_check`も修正後の流し直しまで済んだ**（2026-10-05、SJ14・SJ15が正しい基板）。
+  `01`〜`08`・`11`〜`14`・`21`〜`24`（`15`はA156だけ）がすべて通った。`01`・`06`（2回）・`08`・`11`〜`13`はALL OK、`04`はCONFLICT・MISMATCHなし、`03`はSW2で3回＋LOWレベルで約553万回、
+  `02`・`05`は目視、`07`は1000回中802回が書き込み中に切られ、読めないフラッシュでの起動288回・失敗0、
+  `21`は約61秒・303周でWARNINGなし（`MB_TX`-`MB_RX`は外して）、`14`はALL PASS（400kHzの上限は約88ms）、`22`は42回とも成功、
+  `23`は`SDBitmapViewerDemo`で問題なし（1枚0.58〜0.86秒）、`24`はA153との2枚接続で両方ALL OK（A153の分も兼ねる）
+- **A153の`release_check`も修正後の流し直しまで済んだ**（2026-10-05、プローブ`AM1N3ZFSNDWRL3`の基板。それまで使っていた`VZPF1KW3WACLY3`とは別の1枚）。
+  `01`〜`04`・`06`〜`08`・`11`〜`14`・`21`〜`24`（`05`はN947だけ、`15`はA156だけ）がすべて通った。`01`（110項目）・`06`（2回）・`08`・`11`〜`13`はALL OK、
+  `04`はCONFLICT・MISMATCHなし、`03`はSW2で3回＋LOWレベルで約211万回、`02`は目視（`digitalWrite()`のトグルは1.274MHz）、
+  `07`は1000回中797回が書き込み中に切られ、読めないフラッシュでの起動0回・失敗0、`21`は約62秒・308周でWARNINGなし（`Serial1`の欠落なし）、
+  `14`はALL PASS（400kHzの上限は約22.4ms）、`22`は44回とも成功、`23`は`SDBitmapViewerDemo`で問題なし（1枚約0.75秒）、`24`はN947の分と兼ねてALL OK。
+  **これで3ボードとも、0.8.0のコードで`release_check`の全項目が通った**
+- **`mcxPinState`の照合と上流への反映が済んだ**（2026-10-05）。`arduino_io.h`の0.7.1からの変更は`attachInterrupt()`のコメントとA156の`NUM_ANALOG_INPUTS`だけで、
+  どちらも`mcxPinState`は使っていない。A156の`KNOWN_INSTANCES`（c0e3790で入れた）は3ボードの`04`の結果と一致した。
+  `MCXPINSTATE_VERIFIED_AGAINST`は0.8.0の開発を始めたとき（23a8d25）に上がっていて、そのままでよい。
+  READMEの2ボード前提の書き方を直し、上流（`teddokano/mcxPinState`）にも同じ3ファイルを入れてpushした（8e66c37）。同梱側と上流は同じ内容
+- **READMEの対応表でA156を✅にした**（2026-10-03、ユーザー判断。配線の要る実機確認はリリース前に済ませる前提）。
+  表の下にR59/R60・R75/R76の改造が前提である旨の注記、ピン配置の文書へのリンク（README・`PIN_MAPPING_A153/N947.md`）も足した
+
+### リリース準備
+`CLAUDE.md`のリリース準備チェックリストの1〜6（7の実機確認は上の節で済んでいる）。
+
+**1. CHANGELOG**: `[Unreleased]`を`[0.8.0] - 2026-10-05`に確定。`### Highlights`を4行（A156の追加、A156の`Serial2`・I2C 2本・アナログ6本、`attachInterrupt()`の修正、`analogRead()`のあとのデジタル読みの修正）。
+Addedに、A156のフラッシュとRAM・`ARDUINO_FRDM_MCXA156`、同梱`mcxPinState`・`mcxRCServo`のA156、文書の追加、`release_check/23`のA156を足した。
+
+**2. ドキュメントの監査**: Explore agentで全`.md`を監査。A156のピンの値は`io.h`と全文書で一致し、リンク切れ・古い表現は無かった。「2ボード」前提で書かれていた所を直した:
+`docs/porting_a_new_board.md`（冒頭、クロックの表にA156の列、`Serial2`、`SENSOR_WIRE`、参照先）、`docs/advanced_r01lib_i3c.md`（`Wire1`＝I3CはA153・N947だけ、A156のI3Cは`D18`/`D19`で`Wire`と共有）、
+`TUTORIAL.md`・`TUTORIAL.ja.md`の§2.9（A156ではセンサーが`Wire`）、`docs/advanced_sdk_tuning.md`（トグル速度にA156の列）、`API_COMPATIBILITY.md`・`docs/mcxpinstate_guide.md`の`Serial2`、`release_check/README.md`の`05`、CLAUDE.mdの動作確認表。
+同梱`mcxRCServo`のREADME（英・日）にA156のピンを足し、上流にもpush（`81b3cd7`）。A156では実物のサーボを回していないので、「全サンプルで確認」にはA156を含めず、`release_check/13`でパルス幅を測った旨だけを書いた
+
+**3. Doxygen**: 再生成（警告0、287ファイル）
+
+**4. ライセンス**: 変更不要。0.8.0で増えたのはA156のSDKファイルとSVDで、既存のNXP SDKの記載に含まれる。ALT値をZephyrのpinctrlで確かめるのは以前からのやり方
+
+**5. 機械チェック**: `TODO`/`FIXME`は0件、オープンなIssueも0件。リリースzipの見積もりは約9.8MB（0.7.1は9.1MB）。`--release`のhygieneは`package-index-entry`だけが残った（ステージング後に`main`へ足すので想定どおり）
+
+**6. 全サンプルのコンパイル**: 3ボードのfull tierを逐次で流し、全部通った（A153 88本・N947 95本・A156 89本、警告0）
+
+### v0.8.0リリース完了
+- `0.8.0-dev`を`main`へfast-forwardでマージ（`8d0ca62`→`b763704`、29コミット）
+- リリースzip: `git archive --format=zip --prefix=mcx/ b763704:hardware/nxp/mcx`。SHA-256 `8efdce6b3e525f13138738f061d184d2d916776c2f9818fb821bae363ba742f7`、9804859 bytes。
+  公開前に、実行ビット・`upload.bat`のCRLF・`version=0.8.0`を確認し、開発用symlinkを退避してzipを`0.8.0`として展開して、3ボードのコンパイル（警告0）・`debug --info`、
+  3枚つないだままA153→N947→A156の書き込みを3周（9回とも成功、すべてLinkServer 26.6.137、`--probe`も正しい番号）、`release_check/01`が3ボードともALL OKを確認
+- `gh release create 0.8.0`（Latest）。ノートはCHANGELOGの0.8.0の節で、`PIN_MAPPING_A156.md`への相対リンクだけタグ`0.8.0`の絶対URLにした。公開前にノートのファイルの中身（55行）を確かめ、ダウンロードし直したchecksumが一致
+- `staging-0.8.0`（`main`から、0.8.0エントリを追加。ボードの一覧にFRDM-MCXA156を足した）でmacOS・Windows・Linuxを確認: Boards Managerからのインストール、ビルド、書き込み、
+  **A153・N947・A156の3枚をつないだまま、3つのボードを同時にデバッガで動かせた**（3つのOSとも）。macOSは`packages/nxp`とダウンロード済みのツールチェーンを退避し、ツールチェーンのダウンロードから確かめた
+- `main`を`staging-0.8.0`の`12f9307`までfast-forward、`update_package_index.yml`を`main`に対して手動実行して成功。計算値がエントリと一致したので書き換えなし。`--release`付きhygieneは`main`で全項目pass
+- その後、3つのOSで本番の`main`のURLから入れ直し、3枚つないだまま全ボードでデバッガが動くことをユーザーが確認
+- タグ`0.8.0`のpushで動いた`update_package_index.yml`と、エントリ追加前の`main`・タグの回帰チェック（`package-index-entry`だけ、3ボードのコンパイルは成功）が失敗したのは想定どおり
+- `staging-0.8.0`・`0.8.0-dev`ブランチはリモート・ローカルとも削除。開発環境（`packages/nxp`）を戻し、symlinkを`0.9.0-dev`に付け替えた。
+  本番URLから入れた0.8.0は`~/Library/Arduino15/nxp-0.8.0-release-installed`に退避
+- ローカルリポジトリに0.7.1のリリース作業のcherry-pickの途中状態（`.git/sequencer`、9月28日）が残っていて、ブランチを切り替えられなかった。残っていた2コミットはすでに`main`に入っていたので`git cherry-pick --quit`で記録だけを消した。cherry-pickのあとは`git status`で終わったことを確かめる
+
+これでv0.8.0のリリース作業が全て完了。
