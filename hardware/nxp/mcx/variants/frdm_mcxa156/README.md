@@ -86,6 +86,9 @@ FRDM-MCXA153のvariantとの違い:
 | `release_check/06` | 2回ともALL OK（自分でかけるリセットをまたいだ保持、前回のデータが書き込みのあとも残る） |
 | `release_check/07` | ALL OK（1000回のうち書き込み中に切られたのが759回、すべて書く前か書いた後の値に戻り、読めないフラッシュで起動したのは0回） |
 | `release_check/08` | ALL OK（`attachInterrupt()`のあとも`pinMode()`のプルと出力が残る、`CHANGE`が両エッジ、`analogRead()`のあとの`pinMode()`で入力バッファが戻る） |
+| `release_check/22`（外付けのLM75系モジュールをD18/D19に） | 温度が読めた（オンボードのP3T1755と同じバスで） |
+| `release_check/24`（N947とD18-D18、D19-D19、GND-GND） | 両ボードともALL OK |
+| Arduino IDE（macOS） | 3枚つないだまま書き込みとDebugボタン（ブレークポイント、ステップ実行）が動く。このボードのプローブは`LinkServer probes`の`Device`列が空で、gdb-bridgeはそれを選ぶ |
 | `release_check/03`（SW2＝`P1_7`） | 立ち下がりエッジで3回とも数え青LEDが切り替わる、`detachInterrupt()`後は反応しない、LOWレベルで押している間に数百万回 |
 
-まだのもの: `analogRead`・`analogWrite`（`PWM0`以外）の波形、`release_check`の残り（`02`・`22`・`24`）。
+まだのもの: `analogRead`・`analogWrite`（`PWM0`以外）の波形（`release_check/02`）。

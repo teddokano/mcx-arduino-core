@@ -30,6 +30,11 @@ physical MCU port pin.
 > CAN transceiver (TJA1057), whose receive output drives `A4`. The schematic
 > says to remove both when the Arduino `A4`/`A5` are used. `A0`-`A3` are not
 > affected.
+>
+> | Resistor | Header pin | As shipped | Modified to use A4 and A5 |
+> |---|---|---|---|
+> | R75 | `A4` | Short | Open |
+> | R76 | `A5` | Short | Open |
 
 ![pins-FRDM-MCXA156](img/pins-FRDM-MCXA156-ard.png)  
 *FRDM-MCXA156 Arduino shield socket pins*
