@@ -2821,3 +2821,16 @@ Addedに、A156のフラッシュとRAM・`ARDUINO_FRDM_MCXA156`、同梱`mcxPin
 - `mcxPinState`のREADMEが「three real bugs」と書いて4つ挙げていたのを「four」に（上流で直して同梱へコピー）
 - A153・N947のvariantのREADMEのディレクトリ図に`svd/`が無かったので足した（A156のREADMEと同じ書き方）
 - `~/Library/Arduino15/nxp-0.8.0-dev-backup`（ダウンロードのキャッシュと同じxPackのtarballだけ、SHA-256一致）をゴミ箱へ移した
+
+### 0.9.0の範囲とN236の前提を決定（2026-10-05）
+**範囲はFRDM-MCXN236の対応と、FRDM-MCXA156のD3/D5/D6/D9での`analogWrite`の2つ**。
+ネットワーク基底クラスはボードの移植と無関係で実機の通信確認が別に要るので入れない。Serial RXバッファ（64バイト、Unoと同じ）は具体的な必要が出るまで保留。
+A156のD-ピンのPWMは、N236でD3/D5/D6/D9がJ3のPWMと同じピンになり「PWMは`PWM0`〜`PWM5`だけ」という前提をどのみち書き換えるので、同じ版に入れる。
+
+N236の準備として確かめたこと:
+- SDK（`ref/SDK_2_16_000_FRDM-MCXN236.zip`、2.16.000）の共有ドライバ32ファイルが`cores/arduino/sdk/`とバイト単位で一致
+- オンボードMCU-LINKは`LinkServer probes`の`Device`列に`MCXN236`を返す（A156の空の`Device`列と区別できる）
+- 回路図（Rev C、ユーザーの基板もRev C）をページを画像として読み、I²C・UART・SPI・PWM・アナログピンのつながりを洗い出した。結果と決定は`CLAUDE.md`の「FRDM-MCXN236の前提と決定事項（0.9.0、作業中）」節。
+  要点は、D0/D1（FC2のLPUART）と加速度センサー・MikroBusのI2C（FC2のLPI2C）が同じLP_FLEXCOMM2を使うこと、
+  A1・A3がCANトランシーバ・青色LEDとつながっていること（A0・A4・A5だけを使い、A1〜A3の`analogRead()`は`-1`）、
+  `Serial2`と独立した`SPI1`は作れないこと
