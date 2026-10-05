@@ -2776,3 +2776,19 @@ Addedに、A156のフラッシュとRAM・`ARDUINO_FRDM_MCXA156`、同梱`mcxPin
 - ローカルリポジトリに0.7.1のリリース作業のcherry-pickの途中状態（`.git/sequencer`、9月28日）が残っていて、ブランチを切り替えられなかった。残っていた2コミットはすでに`main`に入っていたので`git cherry-pick --quit`で記録だけを消した。cherry-pickのあとは`git status`で終わったことを確かめる
 
 これでv0.8.0のリリース作業が全て完了。
+
+---
+
+
+## v0.9.0（`0.9.0-dev` ブランチ、開発開始 2026-10-05）
+`platform.txt`のversion系3行・`Doxyfile`のPROJECT_NUMBER・同梱`mcxPinState`の`MCXPINSTATE_VERIFIED_AGAINST`を0.9.0へ。
+`arduino_io.h`は0.8.0での照合（`afefbff`）以降変わっておらず、hygieneチェックも53個の一致を保っている——0.8.0の照合がそのまま有効なので、定数だけ動かした。
+上流mcxPinStateリポジトリにも同じバンプを入れる。
+ローカルIDE連携のsymlinkは、0.8.0のリリース作業の最後に`0.9.0-dev`へ付け替え済み。
+
+**0.8.0完了時点で保留にした候補**（`CLAUDE.md`の「残りのPendingタスク」参照）:
+- ボード追加はN236（合意済みの順番でA156の次）
+- 上流`r01lib`への反映（他ボード対応が揃うまで保留）
+- ネットワーク基底クラス（`Client`/`Server`/`UDP`/`IPAddress`）
+- A156のD3/D5/D6/D9での`analogWrite`（FlexPWM1）
+- Serial RX バッファの拡張
