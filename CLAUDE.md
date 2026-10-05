@@ -274,8 +274,7 @@ xPack checksums（正しい値）：
   実機確認の前に`arduino-cli compile -v`の`Using core ... from platform in folder:`が`-dev`を指しているか確かめること。
   2026-09-24から`0.6.0`は`~/Library/Arduino15/mcx-0.6.0-backup`に退避中（Boards Manager検証で使うときは戻す）。
   0.8.0のリリース確認で本番の`main`のURLから入れた`packages/nxp`（0.8.0とツールチェーン）は
-  `~/Library/Arduino15/nxp-0.8.0-release-installed`に退避してある（開発環境は元に戻した）。
-  `nxp-0.8.0-dev-backup`には、ダウンロードのキャッシュから移したxPackのtarballだけが残っている（キャッシュには入れ直しで同じものがある）
+  `~/Library/Arduino15/nxp-0.8.0-release-installed`に退避してある（開発環境は元に戻した）
 - **注意（Boards Manager経由の実インストール検証時のハマりどころ）**: 上記symlink環境を無効化する際、`~/Library/Arduino15/packages/nxp`を同じ`packages/`直下で別名（例: `nxp.dev-backup`）にリネームしただけでは不十分 — arduino-cliは`packages/*`配下の全ディレクトリ名をpackager IDとして解釈するため、リネーム後も`nxp.dev-backup:mcx`という別パッケージとして「0.1.9-dev installed」表示が残ってしまう（`arduino-cli core list --all`で再現・特定）。無効化する際は`packages/`の外（例: スクラッチパッド等）に完全に退避すること。v0.2.0リリース後、この手順でBoards Manager経由のGitHubからの実インストールを検証済み
 
 ## GitHub Actions

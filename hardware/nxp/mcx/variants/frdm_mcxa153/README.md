@@ -9,8 +9,10 @@ variants/frdm_mcxa153/
 ├── include/   ← ボード固有ヘッダ群
 ├── linker/
 │   └── MCXA153.ld    ← リンカスクリプト（メモリマップ定義）
-└── src/       ← ボード固有ソース（pin_mux, clock_config, board, デバイス
-                  スタートアップ, チップごとに内容が異なるSDKドライバ）
+├── src/       ← ボード固有ソース（pin_mux, clock_config, board, デバイス
+│                 スタートアップ, チップごとに内容が異なるSDKドライバ）
+└── svd/
+    └── MCXA153.svd   ← IDEのCORTEX PERIPHERALS表示用
 ```
 
 このファイル以降は、このボード固有の実機検証・実機バグ修正の記録。

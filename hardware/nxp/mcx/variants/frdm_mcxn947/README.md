@@ -11,8 +11,10 @@ variants/frdm_mcxn947/
 │   └── MCXN947.ld    ← リンカスクリプト（メモリマップ定義。A153の
 │                        MCXA153.ldのセクション配置ロジックをベースに、
 │                        MCXN947の実メモリマップに合わせて手書きしたもの）
-└── src/       ← ボード固有ソース（pin_mux, clock_config, board, デバイス
-                  スタートアップ, チップごとに内容が異なるSDKドライバ）
+├── src/       ← ボード固有ソース（pin_mux, clock_config, board, デバイス
+│                 スタートアップ, チップごとに内容が異なるSDKドライバ）
+└── svd/
+    └── MCXN947_cm33_core0.svd   ← IDEのCORTEX PERIPHERALS表示用
 ```
 
 このファイル以降は、このボード固有の実機検証・実機バグ修正の記録。

@@ -147,7 +147,7 @@ Functional and verified on real hardware (FRDM-MCXA153, FRDM-MCXN947
 and, from mcx-arduino-core 0.8.0, FRDM-MCXA156) -- ownership tracking
 (conflict detection), the MUX expectation cross-check, and
 IBE/open-drain/pull-resistor reporting.
-Development turned up three real bugs in mcx-arduino-core along the way,
+Development turned up four real bugs in mcx-arduino-core along the way,
 all fixed and confirmed on hardware there:
 
 - A false-positive CONFLICT on SPI's CS pin (its internal bookkeeping

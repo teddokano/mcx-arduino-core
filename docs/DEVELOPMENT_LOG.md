@@ -2816,3 +2816,8 @@ Addedに、A156のフラッシュとRAM・`ARDUINO_FRDM_MCXA156`、同梱`mcxPin
   3ボードともfull tierの96本が通り、hygieneも通った。所要時間はA153 4分45秒・A156 5分00秒・N947 10分37秒で、
   24.04での直前の`main`の実行（5分22秒・4分48秒・8分55秒）と同程度。移行後は最初のpushのCIだけ見ればよく、
   壊れたら`runs-on`を`ubuntu-24.04`に固定して逃げられる
+
+### 0.8.0より前からの小さな片付け（2026-10-05）
+- `mcxPinState`のREADMEが「three real bugs」と書いて4つ挙げていたのを「four」に（上流で直して同梱へコピー）
+- A153・N947のvariantのREADMEのディレクトリ図に`svd/`が無かったので足した（A156のREADMEと同じ書き方）
+- `~/Library/Arduino15/nxp-0.8.0-dev-backup`（ダウンロードのキャッシュと同じxPackのtarballだけ、SHA-256一致）をゴミ箱へ移した
