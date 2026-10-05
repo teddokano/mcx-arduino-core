@@ -2792,3 +2792,18 @@ Addedに、A156のフラッシュとRAM・`ARDUINO_FRDM_MCXA156`、同梱`mcxPin
 - ネットワーク基底クラス（`Client`/`Server`/`UDP`/`IPAddress`）
 - A156のD3/D5/D6/D9での`analogWrite`（FlexPWM1）
 - Serial RX バッファの拡張
+
+上流mcxPinStateのバンプは`0bef888`。
+
+### A156で`release_check`の外のテストを確認（2026-10-05）
+0.8.0では`release_check`に入っていない単体のテストをA156で流していなかったので、3本を確認した。
+- `test_fault_report`: `FAULT_KIND`を1〜8に変えたコピーで1つずつ書き込み、8種類とも期待どおりの`error: HardFault: ...`が出た
+  （6は`setup()`より前なので`crash kind`・`about to crash`が無いのも期待どおり、4は`stack overflow`でPCなし）。
+  PCを`addr2line`にかけると、1・2・7・8は`setup()`の該当行、5は`SVC_Handler`、6は`CrashEarly`のコンストラクタを指した。
+  A156はFPUがありハードフロートなので、例外のスタックフレームが拡張形式になりうるが、PCの取り出しは正しかった
+- `test_print_float_rounding`: ALL PASS（44項目）
+- `test_avr_compat_helpers`: ALL PASS（45項目）
+
+### CLAUDE.mdの手順書の古い記述を修正
+ステージングの節の「`platforms[0]`を書き換える」（v0.3.1当時の手順）を「末尾に追加する」へ、
+リリース準備チェックリスト7の「A153とN947の2枚同時接続」を「全ボード（0.8.0では3枚）」へ。

@@ -251,9 +251,9 @@ xPack checksums（正しい値）：
 | I2Cターゲット（スレーブ）モード（0.7.0） | ✅ | `Wire`とA156の`Wire1`（A153・N947の`Wire1`とN947の`Wire2`は`begin(address)`で止まる）。自分自身をターゲットにする形（`release_check/01`）と2枚接続（`release_check/24`）で確認 |
 | Wire: begin()のオーバーロード・内部プルアップ・Stream化・5引数requestFrom・バッファ上限（0.7.0） | ✅ | `test_Wire_begin_address`と`test_Wire_Stream_requestFrom5`で両ボード確認（後者は`release_check/01`に統合） |
 | Serial.begin(baud, config) / end() / serialEvent（0.7.0） | ✅ | 12形式をRXピンからビット単位で読んで確認（`release_check/11`に統合） |
-| AVR互換の補助関数（0.7.0） | ✅ | `itoa`/`dtostrf`/`word`/`_BV`/`analogReference`の定数/`HardwareSerial`/avr-libcの文字列関数/`M_`定数/`SDA`・`SCL`/`BitOrder`のenum化。`test_avr_compat_helpers`（`release_check/01`に統合） |
-| print(double)・String(double)の丸め（0.7.0） | ✅ | `test_print_float_rounding`で両ボード確認（代表的な項目は`release_check/01`にも入っている） |
-| panic()のメッセージ・HardFaultの報告・スタック上限（0.7.0） | ✅ | `error: ...`をUSBシリアルへ。`test_fault_report`で8種類のクラッシュを両ボード確認。スタックはヒープの終わりで`MSPLIM`により止まり、IDEの「ローカル変数で使える」表示はその量と一致する |
+| AVR互換の補助関数（0.7.0） | ✅ | `itoa`/`dtostrf`/`word`/`_BV`/`analogReference`の定数/`HardwareSerial`/avr-libcの文字列関数/`M_`定数/`SDA`・`SCL`/`BitOrder`のenum化。`test_avr_compat_helpers`（`release_check/01`に統合。単体でもA156を含む3ボードでALL PASS） |
+| print(double)・String(double)の丸め（0.7.0） | ✅ | `test_print_float_rounding`で3ボード確認（A156は0.9.0の開発開始時。代表的な項目は`release_check/01`にも入っている） |
+| panic()のメッセージ・HardFaultの報告・スタック上限（0.7.0） | ✅ | `error: ...`をUSBシリアルへ。`test_fault_report`で8種類のクラッシュを3ボード確認（A156は0.9.0の開発開始時。FPUのあるA156でもPCが正しい行を指す）。スタックはヒープの終わりで`MSPLIM`により止まり、IDEの「ローカル変数で使える」表示はその量と一致する |
 | 複数ボード同時接続での書き込み・デバッグ（0.7.0、0.8.0で3枚） | ✅ | macOS（IDEとarduino-cli）、Windows・Linux（IDE、`0.7.0-rc1`のステージング経由）の全てで、2枚つないだままの書き込み（ポートを切り替えてそれぞれ）とデバッグ（1枚ずつ順番に）を確認。0.8.0で、A153・N947・A156の3枚をつないだまま3つのボードを同時にデバッガで動かせることを、macOS・Windows・Linuxの全てで、ステージング（`staging-0.8.0`）と本番の`main`のURLから入れた両方で確認（A156のプローブは`Device`列が空） |
 | 上記全機能の同時使用 | ✅ | `test_combined_peripherals.ino`（Serial1込み）で実機確認済み。WARNINGなし、`serial1`ループバック欠落なし |
 | ボードマネージャーインストール | ✅ | v0.1.5時点で確認済み。v0.2.0リリース後、実際にGitHubの`package_nxp_mcx_index.json`経由でBoards Managerからインストールし直し、macOS/Windows 11双方でビルド・書き込み・実行まで動作確認済み |
@@ -287,7 +287,7 @@ xPack checksums（正しい値）：
 これまでは「タグpush→`main`のchecksum確定→ユーザーが各OSで実機インストール検証」という順序で、`main`の`package_nxp_mcx_index.json`が確定してから初めて検証していた。ユーザーから「リリース前に各OSでのインストールを確認する方法はないか」と相談があり、以下の手順を提案・採用が決定:
 
 1. いつも通り`gh release create`でリリースzipを添付（この時点でダウンロードURLは実在・安定する。`main`のインデックスをまだ更新していなくても関係ない）
-2. `main`とは別に**ステージング用ブランチ**（例: `staging-0.3.1`）を作り、`package_nxp_mcx_index.json`だけをそこにpush——`platforms[0]`のurl/checksumを、今作ったリリースの実際の値に書き換えたもの
+2. `main`とは別に**ステージング用ブランチ**（例: `staging-0.3.1`）を作り、`package_nxp_mcx_index.json`だけをそこにpush——今作ったリリースのエントリ（url/checksum/sizeは実際の値）を`platforms[]`の末尾に追加したもの（既存エントリは書き換えない。v0.3.1当時は`platforms[0]`を書き換えていたが、0.4以降は過去バージョンも選べるよう追加にしている）
 3. 各OS（macOS/Windows/Linux）で、Arduino IDEの**Additional Boards Manager URLsを一時的にこのステージングブランチのraw URL**に切り替えてインストール検証
 4. 全OSで問題なければ、いつも通り`main`に対して`update_package_index.yml`を手動実行してchecksum確定
 
@@ -323,10 +323,10 @@ v0.4.0の`main`マージ直前、ユーザーから「今回のリリース準�
      `07`（EEPROMの書き込み中リセット）はウォッチドッグで1000回リセットをかけ、1ボード約6分。EEPROMを上書きするので`06`の2回が済んでから流す
    - **`1n`**（`11`〜`15`）: ジャンパのみ。`11`のSerial1配線は**ボードで違う**（A153・A156=D0-D1、N947=MikroBus `MB_TX`-`MB_RX`）。`14`（`setWireTimeout`）は全ボード共通で`D19`-`D8`＋`D18`-`D7`、N947は`Wire2`用に、A156は`Wire1`用に`MB_SCL`-`MB_PWM`＋`MB_SDA`-`MB_INT`も。`15`はA156限定で`MB_SDA`-`D18`＋`MB_SCL`-`D19`
    - **`2n`**（`21`〜`24`）: 外部`P3T1755.h`＋MikroBus配線／外部LM75系センサー／`Waveshare_TFT_Touch`の`SDBitmapViewerDemo`（`SDBitmapViewer`ではない。A156だけはDemoが`#error`で止まるので、`/PLAYLIST.JSN`を外したカードで`SDBitmapViewer`）／もう1枚のボード（`24`は2枚（0.8.0ではA153とN947、A156とN947）をD18-D18、D19-D19、GND-GNDでつなぎ、両方に書き込む。どちらかが前から同じスケッチを動かしていたら、両方をほぼ同時にリセットしてから始める）。`21`/`22`は**CIスタブではなく実物のライブラリ**を`--library`で指定すること
-   - **2枚同時接続での書き込みも各プラットフォームで1回**: A153とN947を両方つなぎ、ポートを切り替えて両方に書き込めること。
+   - **全ボード同時接続での書き込みも各プラットフォームで1回**: 対応ボードをすべて（0.8.0ではA153・N947・A156の3枚）つなぎ、ポートを切り替えてそれぞれに書き込めること。
      `upload.sh`/`upload.bat`はポートのUSBシリアル番号（`{upload.port.properties.serialNumber}`）を
      LinkServerの`--probe`に渡すので、**Windows/Linuxのポート検出がこの番号を同じ形で返すか**が肝。0.7.0でmacOS・Windows・Linuxの全てで2枚での書き込みを確認した（どれもLinkServerと同じ形の番号を返す）。
-     **デバッグも同じく2枚つないで両ボードで1回ずつ**（IDEのDebugボタンで）。IDEはデバッグ時にポートを渡さないので、
+     **デバッグも同じく全ボードをつないだまま、各ボードで1回ずつ**（IDEのDebugボタンで。0.8.0では3枚を同時にデバッガで動かせることも確認した）。IDEはデバッグ時にポートを渡さないので、
      gdb-bridgeは`LinkServer probes`の`Device`列のチップ名でプローブを選ぶ。種類の違う2枚は区別できるが、同じ種類の2枚は区別できない（エラーで止まるのが正しい動作）。
      チップ名が一致するプローブが無く、`Device`列が空のプローブがちょうど1つなら、それを選ぶ（A156のプローブが空のため、0.8.0から）
    - **IDE内蔵デバッガも各プラットフォームで1回**（`gdb-bridge`の起動経路はOSごとに別物——macOS/Linuxは`launch.sh`から`uname -s`で選ぶ別バイナリ＋別の`findLinkServer()`分岐、Windowsは共有exeを直接起動）
