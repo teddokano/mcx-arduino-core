@@ -238,6 +238,7 @@ xPack checksums（正しい値）：
   `S`はR185（100kΩ）でGNDに引かれてノーマルモードなので、`RXD`はバスが無いとレセッシブ（High）を出し続ける。
   A2はR67でトランシーバの`TXD`（入力、VIOへの内部プルアップがある）につながる。`USB1_OTG_PWR`（NX5P3090の`EN`）との間のR92は未実装（DNP）で、A3と`USB1_OTG_OC`の間のR88も未実装。
   **N236のボードはR25・R67を外すことを前提にする**（2026-10-06に決定。A156のR75・R76と同じ扱い）。外すとA1・A2はトランシーバから切り離され、FlexCANは使えなくなる。
+  開発用のN236（Rev C）からはR25・R67を外した（2026-10-06、ユーザーが実施）。`analogRead()`でA1・A2を読む確認は、ポーティングのあとに行う。
   ピン関連の文書（`PIN_MAPPING_N236.md`、variantのREADMEなど）に必ず明記する
 - **UARTは`Serial`（USB、FC4、`P1_8`/`P1_9`）と`Serial1`（D0/D1）の2つ、SPIは`SPI`だけ（2026-10-05に決定）**。
   MikroBusのUART（`MB_RX`/`MB_TX`）はD0/D1と同じピンなので`Serial2`は無い。MikroBusのSPIはArduinoのSPIと同じ線（FC3）で、
