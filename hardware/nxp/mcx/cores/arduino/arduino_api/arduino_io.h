@@ -434,12 +434,15 @@ static const uint8_t	SCL	= PIN_WIRE_SCL;
 #define	NUM_DIGITAL_PINS	16
 
 /** Working analog-input pins: 4 on FRDM-MCXA153 and FRDM-MCXN947, but not
- *  the same 4, and all 6 on FRDM-MCXA156.
+ *  the same 4, all 6 on FRDM-MCXA156, and 5 on FRDM-MCXN236.
  *  FRDM-MCXA153 has LPADC channels on A0-A3 only; A4/A5 are digital I/O
  *  (see PIN_MAPPING_A153.md). FRDM-MCXN947 has them on A2-A5; its A0/A1
  *  have no LPADC channel routed to them at all (fixed to io.h's
  *  DISABLED_PIN sentinel -- see PIN_MAPPING_N947.md). FRDM-MCXA156 has
  *  them on A0-A5, A4/A5 once R75/R76 are removed (PIN_MAPPING_A156.md).
+ *  FRDM-MCXN236 has them on A0-A2, A4 and A5, A1/A2 once R25/R67 are
+ *  removed (PIN_MAPPING_N236.md); its A3 is the blue LED's pin too, and
+ *  analogRead( A3 ) returns -1 there.
  *  analogRead() on a pin without one panics. A portable library looping
  *  over NUM_ANALOG_INPUTS pins from A0 works on the two FRDM-MCXA boards,
  *  but still not on FRDM-MCXN947, where A0 itself is the missing one;
@@ -451,6 +454,8 @@ static const uint8_t	SCL	= PIN_WIRE_SCL;
 #define	NUM_ANALOG_INPUTS	4
 #elif	defined( FRDM_MCXA156 )
 #define	NUM_ANALOG_INPUTS	6
+#elif	defined( FRDM_MCXN236 )
+#define	NUM_ANALOG_INPUTS	5
 #else
 #error "arduino_io.h: NUM_ANALOG_INPUTS is not set for this board"
 #endif

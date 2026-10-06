@@ -40,5 +40,20 @@ void	wait_us( unsigned int microseconds );
  */
 void 	panic( const char *s );
 
+#if defined( CPU_MCXN236VDF )
+/** Set LP_FLEXCOMM2 back to running its LPI2C and its LPUART at once.
+ *
+ *  On FRDM-MCXN236, FlexComm2 is Wire1's LPI2C2 (FC2_P0/P1, P4_0/P4_1) and
+ *  Serial1's LPUART2 (FC2_P2/P3, D1/D0). The LPUART reaches P2/P3 only in
+ *  that combined mode, and every SDK init on this FlexComm --
+ *  LPUART_Init(), LPI2C_MasterInit(), LPI2C_SlaveInit() -- selects its own
+ *  peripheral alone, which cuts the other one off. So each of them is
+ *  followed by this. Other instances are left alone.
+ *
+ * @param instance the LP_FLEXCOMM instance just initialized
+ */
+void	flexcomm_keep_shared( uint32_t instance );
+#endif
+
 
 #endif // R01LIB_MCU_H

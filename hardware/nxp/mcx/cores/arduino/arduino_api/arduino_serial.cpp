@@ -83,6 +83,11 @@ SerialClass	Serial1( arduino_pin_by_number[ D1 ], arduino_pin_by_number[ D0 ] );
 //          Serial1.
 SerialClass	Serial1( arduino_pin_by_number[ D1 ], arduino_pin_by_number[ D0 ] );
 SerialClass	Serial2( arduino_pin_by_number[ MB_TX ], arduino_pin_by_number[ MB_RX ] );
+#elif defined( CPU_MCXN236VDF )
+// Serial1: hardware UART on D0(RX)/D1(TX), LPUART2. The MikroBus UART is
+//          these same two pins, so there is no Serial2. LP_FLEXCOMM2 is
+//          also Wire1's LPI2C2, and runs both at once (Serial.cpp).
+SerialClass	Serial1( arduino_pin_by_number[ D1 ], arduino_pin_by_number[ D0 ] );
 #else
 #error "arduino_serial.cpp: say where this board's Serial1 is"
 #endif

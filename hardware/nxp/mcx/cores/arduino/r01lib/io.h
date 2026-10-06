@@ -390,12 +390,28 @@ enum {
 	#define	D13		P1_1
 	#define	D18		P1_16
 	#define	D19		P1_17
+	// A1/A2 as on a board with R25/R67 removed, which this core assumes
+	// (PIN_MAPPING_N236.md): as shipped, they also reach the CAN
+	// transceiver's RXD/TXD. A3 is the blue LED's pin too, so analogRead()
+	// does not use it (arduino_analog.cpp).
 	#define	A0		P4_6
 	#define	A1		P4_15
 	#define	A2		P4_16
 	#define	A3		P4_17
 	#define	A4		P4_12
 	#define	A5		P4_13
+	// The six FlexPWM1 outputs on the motor-control header J3, numbered as
+	// on the other boards (PWM0/PWM1 on sm2, PWM2/PWM3 on sm1, PWM4/PWM5 on
+	// sm0). Four of them are D-pins too. The SDK's own PWM0/PWM1 (the
+	// FlexPWM instances) give way here, as on MCXN947.
+	#undef	PWM0
+	#undef	PWM1
+	#define	PWM0	P3_17	/* PWM1 sm2 chB, D6 */
+	#define	PWM1	P3_16	/* PWM1 sm2 chA */
+	#define	PWM2	P3_15	/* PWM1 sm1 chB */
+	#define	PWM3	P3_14	/* PWM1 sm1 chA, D9 */
+	#define	PWM4	P2_7	/* PWM1 sm0 chB, D5 */
+	#define	PWM5	P3_12	/* PWM1 sm0 chA, D3 */
 	#define	SW2		P0_20
 	#define	SW3		P0_6
 	#define	MB_AN	P5_3
@@ -414,10 +430,13 @@ enum {
 	#define	GREEN	P4_19
 	#define	BLUE	A3
 
+	// Rev C board: D18/D19 are P1_16/P1_17 (LPI2C5, Wire). I3C1 reaches
+	// these same two pins only, and nothing on the board speaks I3C, so the
+	// Arduino layer does not use it.
 	#define	I3C_SDA		D18
 	#define	I3C_SCL		D19
-	#define	I2C_SDA		A4
-	#define	I2C_SCL		A5
+	#define	I2C_SDA		D18
+	#define	I2C_SCL		D19
 	#define	SPI_CS		D10
 	#define	SPI_MOSI	D11
 	#define	SPI_MISO	D12

@@ -19,8 +19,8 @@
  *  A record is [address low, address high, length, CRC-8, data...]. The
  *  programming unit, and so a record, is the smallest the flash takes:
  *  16 bytes on FRDM-MCXA153 (12 of data), a 128-byte page on
- *  FRDM-MCXN947 (124 of data). Each unit is programmed once between
- *  erases.
+ *  FRDM-MCXN947 and FRDM-MCXN236 (124 of data). Each unit is programmed
+ *  once between erases.
  *
  *  At the first access the current half (valid header, highest sequence
  *  number) is read into RAM: the image, then every record with a good
@@ -49,7 +49,7 @@
 #include "fsl_romapi.h"
 #define	EEPROM_ROM_FLASH_API		//	the boot ROM's (FLASH_API->...), by phrase or page
 static const uint32_t	UNIT	= 16;	// phrase
-#elif defined( CPU_MCXN947VDF )
+#elif defined( CPU_MCXN947VDF ) || defined( CPU_MCXN236VDF )
 #include "fsl_flash.h"
 static const uint32_t	UNIT	= 128;	// page
 #else

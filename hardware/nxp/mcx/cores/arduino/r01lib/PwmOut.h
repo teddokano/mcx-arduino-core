@@ -142,7 +142,13 @@ private:
     uint32_t _pulse_us;
 };
 
-#elif defined( CPU_MCXN947VDF )
+#elif defined( CPU_MCXN947VDF ) || defined( CPU_MCXN236VDF )
+
+/*
+ *  FRDM-MCXN236 uses this same class, on the same FlexPWM1 (Alt5): its
+ *  PWM0-PWM5 are P3_17, P3_16, P3_15, P3_14, P2_7, P3_12 on the
+ *  motor-control header J3, with the same submodules and channels as here.
+ */
 
 /**
  * FRDM-MCXN947 PwmOut.

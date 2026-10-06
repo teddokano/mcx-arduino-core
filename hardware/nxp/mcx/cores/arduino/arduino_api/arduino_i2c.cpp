@@ -18,6 +18,10 @@ TwoWire	Wire2( MB_SDA,  MB_SCL );
 // The on-board sensor is on Wire's own D18/D19 here (I3C0 reaches it only
 // through those pins), so Wire1 is the MikroBus I2C, on LPI2C3.
 TwoWire	Wire1( MB_SDA,  MB_SCL );
+#elif defined( CPU_MCXN236VDF )
+// No I3C sensor on this board. Wire1 is LPI2C2 (P4_0/P4_1), the bus of the
+// on-board accelerometer and of the MikroBus I2C.
+TwoWire	Wire1( MB_SDA,  MB_SCL );
 #else
 #error "arduino_i2c.cpp: say which pins this board's Wire1 is on"
 #endif
@@ -80,9 +84,9 @@ bool TwoWire::on_i3c_pins( void ) const
 {
 #if defined( CPU_MCXA153VLH ) || defined( CPU_MCXN947VDF )
 	return ( I3C_SDA == _sda ) && ( I3C_SCL == _scl );
-#elif defined( CPU_MCXA156VLL )
+#elif defined( CPU_MCXA156VLL ) || defined( CPU_MCXN236VDF )
 	// No TwoWire runs on I3C here: I3C_SDA/I3C_SCL are Wire's D18/D19,
-	// which Wire drives through LPI2C0.
+	// which Wire drives through LPI2C0 (LPI2C5 on FRDM-MCXN236).
 	return false;
 #else
 #error "arduino_i2c.cpp: say whether any TwoWire here runs on I3C"
@@ -162,6 +166,9 @@ void TwoWire::target_arm( void )
 	cfg.sclStall.enableAck	= true;		// ACKSTALL, so a full buffer can NAK
 
 	LPI2C_SlaveInit( base, &cfg, i2c->lpi2c_clock() );
+#if defined( CPU_MCXN236VDF )
+	flexcomm_keep_shared( LPI2C_GetInstance( base ) );	// Serial1's FlexComm too
+#endif
 	LPI2C_SlaveTransferCreateHandle( base, &t->handle, target_callback, this );
 	LPI2C_SlaveTransferNonBlocking( base, &t->handle,
 		kLPI2C_SlaveAddressMatchEvent | kLPI2C_SlaveTransmitAckEvent |

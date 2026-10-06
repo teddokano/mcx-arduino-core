@@ -2,7 +2,7 @@
 # Compile-checks every example sketch for one board.
 #
 # Usage: compile_examples.sh <board> <mode>
-#   board: frdm_mcxa153 | frdm_mcxn947 | frdm_mcxa156
+#   board: frdm_mcxa153 | frdm_mcxn947 | frdm_mcxa156 | frdm_mcxn236
 #   mode:  fast | full
 #     fast - examples/release_check/** + hello_world + the bundled
 #            libraries' examples (runs on every push/PR; a few minutes)

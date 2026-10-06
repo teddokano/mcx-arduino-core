@@ -184,7 +184,20 @@ static Serial *s_instances[ 8 ] = {};
 
 extern "C"
 {
+    void LP_FLEXCOMM2_DriverIRQHandler( void );   // fsl_lpflexcomm.c
+
     void LP_FLEXCOMM4_IRQHandler( void ) { if ( s_instances[4] ) s_instances[4]->_irq_handler(); SDK_ISR_EXIT_BARRIER; }
+
+    // FlexComm2 runs Serial1's LPUART2 and Wire1's LPI2C2 on one interrupt.
+    // Serial1 takes the LPUART's part here; the SDK's handler takes the
+    // LPI2C target's (Wire1.begin(address)).
+    void LP_FLEXCOMM2_IRQHandler( void )
+    {
+        if ( s_instances[2] && ( LP_FLEXCOMM_GetInterruptStatus( 2U ) &
+                ( kLPFLEXCOMM_UartRxInterruptFlag | kLPFLEXCOMM_UartTxInterruptFlag ) ) )
+            s_instances[2]->_irq_handler();
+        LP_FLEXCOMM2_DriverIRQHandler();
+    }
 }
 
 struct lpuart_pin_map_t {
@@ -200,6 +213,11 @@ struct lpuart_pin_map_t {
 static const lpuart_pin_map_t s_pinMap[] = {
     //  USBTX=P1_9(TX) / USBRX=P1_8(RX) -> FC4 LPUART4, Alt2
     { USBTX, USBRX, LPUART4, 4U, kPORT_MuxAlt2, kPORT_MuxAlt2, kFC4_RST_SHIFT_RSTn, LP_FLEXCOMM4_IRQn, kFRO12M_to_FLEXCOMM4 },
+    //  D1=P4_2(TX, FC2_P2) / D0=P4_3(RX, FC2_P3) -> FC2 LPUART2, Alt2. The
+    //  LPUART reaches P2/P3 only with FlexComm2 in its combined LPI2C and
+    //  LPUART mode (flexcomm_keep_shared()). MikroBus's MB_TX/MB_RX are the
+    //  same two pins.
+    { D1,    D0,    LPUART2, 2U, kPORT_MuxAlt2, kPORT_MuxAlt2, kFC2_RST_SHIFT_RSTn, LP_FLEXCOMM2_IRQn, kFRO12M_to_FLEXCOMM2 },
 };
 
 void Serial::resolve_pins( int tx, int rx )
@@ -223,9 +241,22 @@ void Serial::resolve_pins( int tx, int rx )
 
 void     Serial::_setup_clock( void )    { CLOCK_AttachClk( _clk_attach ); }
 uint32_t Serial::_get_clk_freq( void )   { return CLOCK_GetLPFlexCommClkFreq( _instance ); }
-void     Serial::_release_reset( void )  { RESET_PeripheralReset( _rst ); RESET_ReleasePeripheralReset( _rst ); LP_FLEXCOMM_Init( _instance, LP_FLEXCOMM_PERIPH_LPUART ); }
 void     Serial::_register_instance( void )   { s_instances[ _instance ] = this; }
 void     Serial::_unregister_instance( void ) { s_instances[ _instance ] = nullptr; }
+
+void Serial::_release_reset( void )
+{
+    // Resetting FlexComm2 would reset Wire1's LPI2C2 with it, which may
+    // already be running: a global I2C object in a sketch can be built
+    // before Serial1. LPUART_Init() resets the LPUART alone anyway.
+    if ( 2U == _instance )
+    {
+        flexcomm_keep_shared( _instance );
+        return;
+    }
+
+    RESET_PeripheralReset( _rst ); RESET_ReleasePeripheralReset( _rst ); LP_FLEXCOMM_Init( _instance, LP_FLEXCOMM_PERIPH_LPUART );
+}
 
 
 // ===========================================================================
@@ -409,6 +440,9 @@ Serial::Serial( int tx, int rx, int baud )
 
     _clk_freq = _get_clk_freq();
     LPUART_Init( _base, &_config, _clk_freq );
+#if defined( CPU_MCXN236VDF )
+    flexcomm_keep_shared( _instance );
+#endif
 }
 
 void Serial::apply_pin_mux( void )
@@ -612,8 +646,16 @@ void Serial::reinit( void )
         kLPUART_RxDataRegFullInterruptEnable |
         kLPUART_TxDataRegEmptyInterruptEnable );
 
+#if defined( CPU_MCXN236VDF )
+    // LPUART_Deinit() resets the whole FlexComm, and FlexComm2 is Wire1's
+    // LPI2C2 too. LPUART_Init() resets the LPUART alone anyway.
+    if ( 2U != _instance )
+#endif
     LPUART_Deinit( _base );
     LPUART_Init( _base, &_config, _clk_freq );
+#if defined( CPU_MCXN236VDF )
+    flexcomm_keep_shared( _instance );
+#endif
 
     update_irq_enables();
 

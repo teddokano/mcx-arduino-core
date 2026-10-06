@@ -22,7 +22,7 @@ struct PinInfo {
 };
 
 PinInfo pins[] = {
-#if defined(FRDM_MCXA153) || defined(FRDM_MCXA156)
+#if defined(FRDM_MCXA153) || defined(FRDM_MCXA156) || defined(FRDM_MCXN236)
   { MB_AN, "MB_AN" },
 #endif
   { MB_RST, "MB_RST" }, { MB_CS, "MB_CS" },

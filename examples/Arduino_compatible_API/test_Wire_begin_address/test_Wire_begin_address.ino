@@ -22,7 +22,8 @@
  *  FRDM-MCXA156 has no bus that refuses: its Wire1 is an LPI2C (the
  *  MikroBus I2C) and can be a target, as test_Wire_target_self checks.
  *  There only the first part runs, on Wire, where that board's sensor is,
- *  and the last line says so.
+ *  and the last line says so. FRDM-MCXN236 is the same, except that its
+ *  sensor (the accelerometer) is on Wire1.
  */
 
 #include <Arduino.h>
@@ -52,6 +53,16 @@ void setup() {
   Wire.beginTransmission(0x48);
   Wire.write(0x00);
   bool ok = Wire.endTransmission(false) == 0 && Wire.requestFrom((uint8_t)0x48, (size_t)2) == 2;
+  Serial.print("begin(400000) still starts a controller: ");
+  Serial.println(ok ? "OK" : "FAIL");
+
+  Serial.println("no bus on this board refuses begin(address): nothing more to check");
+#elif defined(FRDM_MCXN236)
+  // No sensor on Wire here: the on-board accelerometer (0x18) is on Wire1
+  Wire1.begin(400000);  // deprecated form: a value over 127 is a frequency
+  Wire1.beginTransmission(0x18);
+  Wire1.write(0x00);
+  bool ok = Wire1.endTransmission(false) == 0 && Wire1.requestFrom((uint8_t)0x18, (size_t)1) == 1;
   Serial.print("begin(400000) still starts a controller: ");
   Serial.println(ok ? "OK" : "FAIL");
 

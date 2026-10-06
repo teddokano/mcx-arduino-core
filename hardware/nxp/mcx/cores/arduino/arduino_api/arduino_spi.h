@@ -165,10 +165,13 @@ private:
 /** Global SPI instance on this board's Arduino-header SPI pins (ARD_MOSI/ARD_MISO/ARD_SCK/ARD_CS). */
 extern SPIClass	SPI;
 
+#if !defined( CPU_MCXN236VDF )
 /** Global SPI instance on this board's MikroBus header pins, its own
  *  independent physical SPI peripheral (see each board's PIN_MAPPING_*.md
- *  for which one).
+ *  for which one). Not on FRDM-MCXN236, whose MikroBus SPI is SPI's own
+ *  D11-D13 lines with CS on D18.
  */
 extern SPIClass	SPI1;
+#endif
 
 #endif // !R01LIB_ARDUINO_SPI_H

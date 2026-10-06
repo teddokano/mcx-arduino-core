@@ -267,7 +267,9 @@ extern TwoWire	Wire;
  *  on-board sensor rather than an external header.
  *
  *  On FRDM-MCXA156 it is the MikroBus I2C (MB_SDA/MB_SCL) instead, on its
- *  own LPI2C3: that board's on-board sensor is on Wire's D18/D19.
+ *  own LPI2C3: that board's on-board sensor is on Wire's D18/D19. On
+ *  FRDM-MCXN236, which has no I3C sensor, it is the MikroBus I2C too, on
+ *  LPI2C2, the same bus as the on-board accelerometer.
  */
 extern TwoWire	Wire1;
 

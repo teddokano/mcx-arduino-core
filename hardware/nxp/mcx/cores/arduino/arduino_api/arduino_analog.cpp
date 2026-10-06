@@ -61,6 +61,15 @@ int analogRead( int pin_num )
 	if ( pin < 0 || pin >= MAX_ANALOG_PINS )
 		return	0;
 
+#if	defined( FRDM_MCXN236 )
+	//	A3 is also the blue LED's pin, which cannot be cut off, so the core
+	//	keeps it a digital pin. The chip does have an ADC input there, so
+	//	rather than stopping in panic() as for a pin with none, say so with
+	//	a value no reading at any resolution can take.
+	if ( pin == arduino_pin_by_number[ A3 ] )
+		return	-1;
+#endif
+
 	if ( analog_in_pins[ pin ] == nullptr )
 	{
 		analog_in_pins[ pin ]	= new AnalogIn( pin );

@@ -18,6 +18,13 @@
  *  sensor checks use that; their messages still say Wire1. Its Wire1, the
  *  MikroBus I2C, gets the bus scan FRDM-MCXN947's Wire2 does.
  *
+ *  FRDM-MCXN236 has no temperature sensor: its on-board sensor is an
+ *  FXLS8974CF accelerometer, on Wire1 (the MikroBus I2C). The sensor
+ *  section reads its WHO_AM_I and checks that the board, lying still,
+ *  measures about 1g. The Wire-as-a-Stream checks write its OFF_X/OFF_Y
+ *  registers where the other boards use the temperature sensor's T_LOW,
+ *  and their messages still say T_LOW. Keep the board still while it runs.
+ *
  *  Every check here is fully automatic -- read the final "ALL OK"/
  *  "N FAILED" line, no jumpers, no scope, no button presses. Sketches
  *  that need a human to watch a scope/LED/piezo, press a button, or
@@ -33,11 +40,26 @@
 #include "fsl_clock.h"
 
 // The on-board P3T1755's bus: Wire1 on FRDM-MCXA153 and FRDM-MCXN947,
-// Wire (D18/D19) on FRDM-MCXA156, whose sensor is on the Arduino I2C pins
-#if defined(FRDM_MCXA153) || defined(FRDM_MCXN947)
+// Wire (D18/D19) on FRDM-MCXA156, whose sensor is on the Arduino I2C pins.
+// On FRDM-MCXN236 the on-board sensor is the accelerometer, on Wire1
+#if defined(FRDM_MCXA153) || defined(FRDM_MCXN947) || defined(FRDM_MCXN236)
 #define SENSOR_WIRE Wire1
 #elif defined(FRDM_MCXA156)
 #define SENSOR_WIRE Wire
+#else
+#error "This sketch has no settings for this board yet"
+#endif
+
+// The on-board sensor's address, and a register pair the Wire-as-a-Stream
+// checks may write and then put back: the P3T1755's T_LOW, or on
+// FRDM-MCXN236 the accelerometer's OFF_X/OFF_Y (output offsets, written
+// while it is in standby)
+#if defined(FRDM_MCXN236)
+#define SENSOR_I2C_ADDR 0x18
+#define SCRATCH_REG 0x22
+#elif defined(FRDM_MCXA153) || defined(FRDM_MCXA156) || defined(FRDM_MCXN947)
+#define SENSOR_I2C_ADDR 0x48
+#define SCRATCH_REG 0x02
 #else
 #error "This sketch has no settings for this board yet"
 #endif
@@ -96,9 +118,9 @@ void checkClock(const char *label, uint32_t actual, uint32_t expect) {
 // on Wire1's on-board sensor, to compare the new forms against.
 // 0xFFFFFFFF if the read failed, which no 16-bit register value can be.
 uint32_t readSensorReg16(uint8_t reg) {
-  SENSOR_WIRE.beginTransmission(0x48);
+  SENSOR_WIRE.beginTransmission(SENSOR_I2C_ADDR);
   SENSOR_WIRE.write(reg);
-  if (SENSOR_WIRE.endTransmission(false) != 0 || SENSOR_WIRE.requestFrom((uint8_t)0x48, (size_t)2) != 2)
+  if (SENSOR_WIRE.endTransmission(false) != 0 || SENSOR_WIRE.requestFrom((uint8_t)SENSOR_I2C_ADDR, (size_t)2) != 2)
     return 0xFFFFFFFF;
   uint16_t v = SENSOR_WIRE.read() << 8;
   return v | SENSOR_WIRE.read();
@@ -210,6 +232,13 @@ void setup() {
     checkClock("SPI1    (LPSPI0) ", CLOCK_GetLpspiClkFreq(0u), 96000000u);
     checkClock("Serial1 (LPUART2)", CLOCK_GetLpuartClkFreq(2u), 12000000u);
     checkClock("Serial2 (LPUART1)", CLOCK_GetLpuartClkFreq(1u), 12000000u);
+#elif defined(FRDM_MCXN236)
+    // As on FRDM-MCXN947, clock_config.c attaches nothing and mcu.cpp
+    // decides these. Wire1 and Serial1 share FlexComm2.
+    checkClock("core", CLOCK_GetCoreSysClkFreq(), 150000000u);
+    checkClock("Wire          (FlexComm5)", CLOCK_GetLPFlexCommClkFreq(5u), 12000000u);
+    checkClock("Wire1/Serial1 (FlexComm2)", CLOCK_GetLPFlexCommClkFreq(2u), 12000000u);
+    checkClock("SPI           (FlexComm3)", CLOCK_GetLPFlexCommClkFreq(3u), 48000000u);
 #else
 #error "This sketch has no settings for this board yet"
 #endif
@@ -470,6 +499,65 @@ void setup() {
     // it by accident -- so there is nothing to check for here.
   }
 
+#if defined(FRDM_MCXN236)
+  // ---- Wire1 on-board accelerometer (FXLS8974CF), raw registers ----
+  Serial.println("--- Wire1 on-board accelerometer (raw registers) ---");
+  {
+    const uint8_t WHO_AM_I = 0x13;
+    const uint8_t SENS_CONFIG1 = 0x15;  // bit 0 ACTIVE; FSR (bits 2:1) 0 is +/-2g
+    const uint8_t OUT_X_LSB = 0x04;     // X, Y, Z, each LSB then MSB, 12-bit two's complement
+
+    SENSOR_WIRE.begin();
+    SENSOR_WIRE.beginTransmission(SENSOR_I2C_ADDR);
+    SENSOR_WIRE.write(WHO_AM_I);
+    uint8_t err = SENSOR_WIRE.endTransmission(false);
+    check("Wire1 endTransmission(false)", err == 0);
+
+    uint8_t n = SENSOR_WIRE.requestFrom((uint8_t)SENSOR_I2C_ADDR, (size_t)1);
+    check("Wire1 requestFrom() got 1 byte", n == 1);
+    int id = SENSOR_WIRE.read();
+    Serial.print("WHO_AM_I = 0x");
+    Serial.println(id, HEX);
+    check("WHO_AM_I is FXLS8974CF's (0x86)", id == 0x86);
+
+    // Measure at +/-2g, 0.98mg per count, then back to standby
+    SENSOR_WIRE.beginTransmission(SENSOR_I2C_ADDR);
+    SENSOR_WIRE.write(SENS_CONFIG1);
+    SENSOR_WIRE.write(0x01);
+    err = SENSOR_WIRE.endTransmission();
+    delay(50);  // several output periods at the rate it resets to
+
+    SENSOR_WIRE.beginTransmission(SENSOR_I2C_ADDR);
+    SENSOR_WIRE.write(OUT_X_LSB);
+    SENSOR_WIRE.endTransmission(false);
+    n = SENSOR_WIRE.requestFrom((uint8_t)SENSOR_I2C_ADDR, (size_t)6);
+    float mg[3] = { 0.0f, 0.0f, 0.0f };
+    for (int i = 0; i < 3 && n == 6; i++) {
+      uint8_t lsb = SENSOR_WIRE.read();
+      uint8_t msb = SENSOR_WIRE.read();
+      int16_t raw = (int16_t)((msb << 12) | (lsb << 4)) >> 4;
+      mg[i] = raw * 0.98f;
+    }
+
+    SENSOR_WIRE.beginTransmission(SENSOR_I2C_ADDR);
+    SENSOR_WIRE.write(SENS_CONFIG1);
+    SENSOR_WIRE.write(0x00);
+    SENSOR_WIRE.endTransmission();
+
+    float g = sqrtf(mg[0] * mg[0] + mg[1] * mg[1] + mg[2] * mg[2]) / 1000.0f;
+    Serial.print("x, y, z = ");
+    Serial.print(mg[0], 0);
+    Serial.print(", ");
+    Serial.print(mg[1], 0);
+    Serial.print(", ");
+    Serial.print(mg[2], 0);
+    Serial.print(" mg, |a| = ");
+    Serial.print(g, 3);
+    Serial.println(" g");
+    check("activated, and the 6 output bytes read", err == 0 && n == 6);
+    check("lying still, it measures about 1g", g > 0.8f && g < 1.2f);
+  }
+#elif defined(FRDM_MCXA153) || defined(FRDM_MCXA156) || defined(FRDM_MCXN947)
   // ---- Wire1 on-board I3C-in-I2C-mode sensor, raw registers
   //      (was test_Wire1_onboard_sensor_raw) ----
   Serial.println("--- Wire1 on-board temperature sensor (raw registers) ---");
@@ -496,14 +584,17 @@ void setup() {
       check("on-board sensor reads a sane temperature", celsius > -20.0f && celsius < 60.0f);
     }
   }
+#else
+#error "This sketch has no settings for this board yet"
+#endif
 
   // ---- Wire as a Stream, five-argument requestFrom(), buffer limits
   //      (was test_Wire_Stream_requestFrom5). Writes the sensor's T_LOW
   //      register, which nothing else depends on, and puts it back ----
   Serial.println("--- Wire as a Stream / five-argument requestFrom() ---");
   {
-    const uint8_t SENSOR = 0x48;
-    const uint8_t T_LOW = 0x02;
+    const uint8_t SENSOR = SENSOR_I2C_ADDR;
+    const uint8_t T_LOW = SCRATCH_REG;
 
     uint32_t saved = readSensorReg16(T_LOW);
     check("T_LOW readable", saved <= 0xFFFF);
@@ -521,9 +612,16 @@ void setup() {
     int lsb = SENSOR_WIRE.read();
     check("requestFrom(addr, 2, T_LOW, 1, true) reads the register", got == 2 && msb == 0x50 && lsb == 0x00);
 
-    got = SENSOR_WIRE.requestFrom(0x48, 2, 0x02, 1, 1);
+    got = SENSOR_WIRE.requestFrom(SENSOR_I2C_ADDR, 2, SCRATCH_REG, 1, 1);
     check("the same with int arguments", got == 2 && SENSOR_WIRE.read() == 0x50);
 
+#if defined(FRDM_MCXN236)
+    // FXLS8974CF advances its register pointer past the bytes it has sent
+    // (to 0x24 here), where P3T1755 keeps it; point it back at OFF_X first
+    SENSOR_WIRE.beginTransmission(SENSOR);
+    SENSOR_WIRE.write(T_LOW);
+    SENSOR_WIRE.endTransmission();
+#endif
     got = SENSOR_WIRE.requestFrom(SENSOR, (uint8_t)2, (uint32_t)0, (uint8_t)0, (uint8_t)true);
     check("isize 0 just reads (pointer still at T_LOW)", got == 2 && SENSOR_WIRE.read() == 0x50);
 
@@ -649,6 +747,24 @@ void setup() {
     }
     Serial.print(found);
     Serial.println(" device(s) found (0 is fine -- nothing needs to be plugged in)");
+    check("Wire1 bus scan completed without hanging", true);
+  }
+#elif defined(FRDM_MCXN236)
+  // ---- Wire1 (MikroBus I2C, LPI2C2) bus scan: the on-board accelerometer
+  //      and the other on-board parts on this bus answer ----
+  Serial.println("--- Wire1 (MikroBus I2C) bus scan (N236 only) ---");
+  {
+    int found = 0;
+    for (uint8_t addr = 0x08; addr <= 0x77; addr++) {
+      Wire1.beginTransmission(addr);
+      if (Wire1.endTransmission() == 0) {
+        Serial.print("found device at 0x");
+        Serial.println(addr, HEX);
+        found++;
+      }
+    }
+    Serial.print(found);
+    Serial.println(" device(s) found");
     check("Wire1 bus scan completed without hanging", true);
   }
 #endif

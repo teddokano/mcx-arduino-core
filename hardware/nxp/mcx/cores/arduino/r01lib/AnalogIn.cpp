@@ -230,7 +230,7 @@ AnalogIn::operator float()
     return read();
 }
 
-#elif defined( CPU_MCXN947VDF )
+#elif defined( CPU_MCXN947VDF ) || defined( CPU_MCXN236VDF )
 
 #include "AnalogIn.h"
 #include "mcu.h"
@@ -249,6 +249,7 @@ struct AnalogPinDescriptor {
     lpadc_sample_channel_mode_t  side;
 };
 
+#if defined( CPU_MCXN947VDF )
 const AnalogPinDescriptor s_pins[] = {
     //  pin  port    pin#  channel  side
     { A2,  PORT0, 14u, 14u, kLPADC_SampleChannelSingleEndSideB },
@@ -256,6 +257,18 @@ const AnalogPinDescriptor s_pins[] = {
     { A4,  PORT0, 15u, 15u, kLPADC_SampleChannelSingleEndSideB },
     { A5,  PORT0, 23u, 15u, kLPADC_SampleChannelSingleEndSideA },
 };
+#elif defined( CPU_MCXN236VDF )
+// ADC0 inputs per Zephyr's MCXN236VDF-pinctrl.h. A1/A2 read correctly only
+// with R25/R67 removed (PIN_MAPPING_N236.md).
+const AnalogPinDescriptor s_pins[] = {
+    //  pin  port    pin#  channel  side
+    { A0,  PORT4,  6u,  3u, kLPADC_SampleChannelSingleEndSideA },
+    { A1,  PORT4, 15u,  1u, kLPADC_SampleChannelSingleEndSideA },
+    { A2,  PORT4, 16u,  6u, kLPADC_SampleChannelSingleEndSideA },
+    { A4,  PORT4, 12u,  5u, kLPADC_SampleChannelSingleEndSideA },
+    { A5,  PORT4, 13u,  5u, kLPADC_SampleChannelSingleEndSideB },
+};
+#endif
 
 } // namespace
 

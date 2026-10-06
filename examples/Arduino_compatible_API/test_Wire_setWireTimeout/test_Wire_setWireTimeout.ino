@@ -3,12 +3,14 @@
  *  Wiring, both boards:
  *    D19 (Wire SCL) -- D8
  *    D18 (Wire SDA) -- D7
- *  and on FRDM-MCXN947 also, for Wire2, and on FRDM-MCXA156, for Wire1
- *  (an LPI2C there, on the MikroBus I2C pins):
+ *  and on FRDM-MCXN947 also, for Wire2, and on FRDM-MCXA156 and
+ *  FRDM-MCXN236, for Wire1 (an LPI2C there, on the MikroBus I2C pins):
  *    MB_SCL -- MB_PWM
  *    MB_SDA -- MB_INT
  *  Nothing else on those buses. (FRDM-MCXA156's D18/D19 also carry its
- *  on-board P3T1755, at 0x48; nothing here addresses it.)
+ *  on-board P3T1755, at 0x48, and FRDM-MCXN236's MikroBus I2C its on-board
+ *  accelerometer, at 0x18; nothing here addresses them. FRDM-MCXN236's
+ *  MB_PWM is also the red LED, which lights while the bus is held.)
  *
  *  D8/D7 (MB_PWM/MB_INT) hold either bus line low on cue (open-drain
  *  output) -- standing in for a target that stretches the clock or holds
@@ -282,8 +284,8 @@ void setup() {
 
   // The counter's cap at 400kHz: 4095 x 256 x prescaler / functional clock,
   // with the prescaler the baud rate picked -- 2 on FRDM-MCXA153 and
-  // FRDM-MCXA156 (96MHz), 1 on FRDM-MCXN947 (12MHz)
-#if defined(FRDM_MCXN947)
+  // FRDM-MCXA156 (96MHz), 1 on FRDM-MCXN947 and FRDM-MCXN236 (12MHz)
+#if defined(FRDM_MCXN947) || defined(FRDM_MCXN236)
   const uint32_t cap400k = 87360;
 #elif defined(FRDM_MCXA153) || defined(FRDM_MCXA156)
   const uint32_t cap400k = 21840;
@@ -296,7 +298,7 @@ void setup() {
 
 #if defined(FRDM_MCXN947)
   suite(Wire2, "Wire2 (MB_SCL-MB_PWM, MB_SDA-MB_INT)", MB_PWM, MB_INT, cap400k);
-#elif defined(FRDM_MCXA156)
+#elif defined(FRDM_MCXA156) || defined(FRDM_MCXN236)
   suite(Wire1, "Wire1 (MB_SCL-MB_PWM, MB_SDA-MB_INT)", MB_PWM, MB_INT, cap400k);
 #endif
 

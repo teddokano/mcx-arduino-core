@@ -108,7 +108,15 @@ private:
     int     _pin;
 };
 
-#elif defined( CPU_MCXN947VDF )
+#elif defined( CPU_MCXN947VDF ) || defined( CPU_MCXN236VDF )
+
+/*
+ *  FRDM-MCXN236 uses this same class, on the same ADC0 with the same VREF
+ *  setup (the SDK's FRDM-MCXN236 LPADC polling example matches the N947
+ *  one): A0, A1, A2, A4, A5 are P4_6, P4_15, P4_16, P4_12, P4_13, on
+ *  ADC0_A3, A1, A6, A5, B5. A3 (P4_17, ADC0_B6) is left out: it is the
+ *  blue LED's pin too.
+ */
 
 /**
  * FRDM-MCXN947 AnalogIn.

@@ -28,8 +28,7 @@ extern "C" {
 	#define EXAMPLE_I2C_MASTER_BASE			(LPI2C2_BASE)
 	#define EXAMPLE_I2C_MASTER				((LPI2C_Type *)EXAMPLE_I2C_MASTER_BASE)
 #elif	CPU_MCXN236VDF
-	#define EXAMPLE_I2C_MASTER_BASE			(LPI2C2_BASE)
-	#define EXAMPLE_I2C_MASTER				((LPI2C_Type *)EXAMPLE_I2C_MASTER_BASE)
+	/* every pin combination picks its own instance -- see the constructor */
 #elif	CPU_MCXA156VLL
 	/* every pin combination picks its own instance -- see the constructor */
 #elif	CPU_MCXA153VLH
@@ -66,9 +65,12 @@ extern "C" {
  */
 static uint32_t lpi2c_source_clock( LPI2C_Type *base )
 {
-#if defined( CPU_MCXN947VDF ) || defined( CPU_MCXN236VDF )
+#if defined( CPU_MCXN947VDF )
 	if ( base == LPI2C2 )	return CLOCK_GetLPFlexCommClkFreq( 2u );
 	if ( base == LPI2C3 )	return CLOCK_GetLPFlexCommClkFreq( 3u );
+#elif defined( CPU_MCXN236VDF )
+	if ( base == LPI2C2 )	return CLOCK_GetLPFlexCommClkFreq( 2u );
+	if ( base == LPI2C5 )	return CLOCK_GetLPFlexCommClkFreq( 5u );
 #elif defined( CPU_MCXA156VLL )
 	if ( base == LPI2C0 )	return CLOCK_GetLpi2cClkFreq( 0u );
 	if ( base == LPI2C1 )	return CLOCK_GetLpi2cClkFreq( 1u );
@@ -120,16 +122,19 @@ I2C::I2C( int sda, int scl, bool no_hw ) : Obj( true ), _sda( sda ), _scl( scl )
 		panic( "FRDM-MCXN947 supports I2C_SDA(D18)/I2C_SCL(D19) or MB_SDA/MB_SCL pins for I2C" );
 
 #elif	CPU_MCXN236VDF
-	if ( (sda == A4) && (scl == A5) )
-		;
+	/* Rev C board. ALT2 for both pairs, per Zephyr's MCXN236VDF-pinctrl.h.
+	 * D18/D19 (P1_16/P1_17) are FC5_P0/P1. MB_SDA/MB_SCL (P4_0/P4_1) are
+	 * FC2_P0/P1, the bus of the on-board accelerometer; FlexComm2 is also
+	 * Serial1's LPUART2 (flexcomm_keep_shared() in mcu.h). */
+	constexpr int	mux_setting	= kPORT_MuxAlt2;
+
+	if ( (sda == I2C_SDA) && (scl == I2C_SCL) )
+		unit_base	= LPI2C5;
 	else if ( (sda == MB_SDA) && (scl == MB_SCL) )
-		;
+		unit_base	= LPI2C2;
 	else
-		panic( "FRDM-MCXN236 only support I2C_SDA(D18)/I2C_SCL(D19) pins for I2C" );
-	
-	constexpr int	mux_setting	= 2;
-	unit_base	= EXAMPLE_I2C_MASTER;
-	
+		panic( "FRDM-MCXN236 supports I2C_SDA(D18)/I2C_SCL(D19) or MB_SDA/MB_SCL pins for I2C" );
+
 #elif	CPU_MCXA156VLL
 	/* ALTs from Zephyr's MCXA156VLL-pinctrl.h. I3C_SDA/I3C_SCL are the
 	 * same two pins as I2C_SDA/I2C_SCL (D18/D19) on this board. */
@@ -220,6 +225,9 @@ I2C::I2C( int sda, int scl, bool no_hw ) : Obj( true ), _sda( sda ), _scl( scl )
 	LPI2C_MasterGetDefaultConfig( &masterConfig );
 	LPI2C_MasterInit( unit_base, &masterConfig, lpi2c_source_clock( unit_base ) );
 #endif
+#if	CPU_MCXN236VDF
+	flexcomm_keep_shared( LPI2C_GetInstance( unit_base ) );
+#endif
 	
 //	frequency( I2C_FREQ );
 	
@@ -243,8 +251,17 @@ I2C::~I2C()
 
 #if	CPU_MCXC444VLH
 	I2C_MasterDeinit( unit_base );
-#else
+#elif	CPU_MCXN236VDF
+	//	LPI2C_MasterDeinit() resets the whole FlexComm, and FlexComm2 is
+	//	Serial1's LPUART2 too. Reset the LPI2C master alone there.
+	if ( LPI2C2 == unit_base )
+		LPI2C_MasterReset( unit_base );
+	else
+		LPI2C_MasterDeinit( unit_base );
+#elif	CPU_MCXA153VLH || CPU_MCXA156VLL || CPU_MCXN947VDF
 	LPI2C_MasterDeinit( unit_base );
+#else
+#error "I2C::~I2C(): no deinit for this chip"
 #endif
 }
 

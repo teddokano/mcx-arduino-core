@@ -162,6 +162,52 @@ frdm_mcxa156.debug.svd_file={runtime.platform.path}/variants/frdm_mcxa156/svd/MC
 
 
 ##############################################################
-# （将来追加予定）
-# frdm_mcxn236.name=FRDM-MCXN236 ...
+# FRDM-MCXN236
 ##############################################################
+
+frdm_mcxn236.name=FRDM-MCXN236 (mcx-arduino-core)
+
+# CPU
+frdm_mcxn236.build.mcu=cortex-m33
+frdm_mcxn236.build.fpu_flags=-mfpu=fpv5-sp-d16 -mfloat-abi=hard
+frdm_mcxn236.build.f_cpu=150000000UL
+
+# Arduino IDE internal identifiers
+frdm_mcxn236.build.board=FRDM_MCXN236
+frdm_mcxn236.build.core=arduino
+frdm_mcxn236.build.variant=frdm_mcxn236
+
+# Board-specific preprocessor defines
+frdm_mcxn236.build.board_defines=-DCPU_MCXN236VDF -DTARGET_N236 -DFRDM_MCXN236
+
+# Optimization (release build)
+frdm_mcxn236.build.opt_flags=-O2
+
+# Flash / RAM
+frdm_mcxn236.upload.maximum_size=983040
+frdm_mcxn236.upload.maximum_data_size=229376
+
+# Linker script filename (inside variants/frdm_mcxn236/linker/)
+frdm_mcxn236.build.ldscript=MCXN236.ld
+
+# Upload
+# build.pyocd_target is currently unused (see the same note on A153's entry
+# above).
+frdm_mcxn236.build.pyocd_target=mcxn236
+frdm_mcxn236.build.linkserver_target=MCXN236:FRDM-MCXN236
+frdm_mcxn236.upload.tool=linkserver
+frdm_mcxn236.upload.tool.default=linkserver
+frdm_mcxn236.upload.protocol=
+
+frdm_mcxn236.vid.0=0x1FC9
+frdm_mcxn236.pid.0=0x0143
+frdm_mcxn236.upload_port.0.vid=0x1FC9
+frdm_mcxn236.upload_port.0.pid=0x0143
+
+# Debug (see platform.txt's debug.* section and tools/gdb-bridge/src/main.go).
+# The launcher and the binaries are board-agnostic; the script below is
+# what tells gdb-bridge which board this is.
+frdm_mcxn236.debug.server.openocd.path={runtime.platform.path}/tools/gdb-bridge/launch.sh
+frdm_mcxn236.debug.server.openocd.path.windows={runtime.platform.path}\tools\gdb-bridge\gdb-bridge-windows-amd64.exe
+frdm_mcxn236.debug.server.openocd.script=n236.cfg
+frdm_mcxn236.debug.svd_file={runtime.platform.path}/variants/frdm_mcxn236/svd/MCXN236.svd

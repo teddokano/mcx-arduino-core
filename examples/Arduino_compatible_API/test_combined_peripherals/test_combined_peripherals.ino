@@ -36,6 +36,12 @@
  *  (MB_TX->MB_RX jumper), Wire1 on the MikroBus I2C probed like
  *  FRDM-MCXN947's Wire2, and SPI1.
  *
+ *  FRDM-MCXN236 has no sensor of this kind on board: it reads a P3T1755
+ *  connected to its MikroBus I2C (Wire1). It runs Serial1 on D0/D1 (D1->D0
+ *  jumper), which shares its FlexComm with Wire1, and loops SPI back
+ *  instead of SPI1, which it has none of (its MikroBus MOSI/MISO are D11/
+ *  D12, so it is the same MB_MOSI->MB_MISO jumper).
+ *
  *  If any of these peripherals share a clock/interrupt resource incorrectly,
  *  expect symptoms here: I2C/I3C read errors or hangs, out-of-range ADC
  *  values, PWM/tone glitches, millis()/micros() drifting/stalling, Serial1
@@ -49,7 +55,8 @@
 
 // The on-board P3T1755's bus: Wire1 on FRDM-MCXA153 and FRDM-MCXN947,
 // Wire (D18/D19) on FRDM-MCXA156, whose sensor is on the Arduino I2C pins
-#if defined(FRDM_MCXA153) || defined(FRDM_MCXN947)
+// FRDM-MCXN236 has none on board: connect one to its MikroBus I2C (Wire1)
+#if defined(FRDM_MCXA153) || defined(FRDM_MCXN947) || defined(FRDM_MCXN236)
 #define SENSOR_WIRE Wire1
 #elif defined(FRDM_MCXA156)
 #define SENSOR_WIRE Wire
@@ -59,7 +66,20 @@
 
 #define BUZZER_PIN  D13
 #define PWM_PIN     PWM0
-#if defined(FRDM_MCXA153) || defined(FRDM_MCXA156)
+
+// The SPI loopback: SPI1, on the MikroBus header. FRDM-MCXN236 has no SPI1:
+// its MikroBus MOSI/MISO are SPI's own D11/D12, so the same jumper loops
+// SPI back, with D10 as chip select (MB_CS is D18 there).
+#if defined(FRDM_MCXN236)
+#define LOOP_SPI    SPI
+#define LOOP_CS     D10
+#elif defined(FRDM_MCXA153) || defined(FRDM_MCXA156) || defined(FRDM_MCXN947)
+#define LOOP_SPI    SPI1
+#define LOOP_CS     MB_CS
+#else
+#error "This sketch has no settings for this board yet"
+#endif
+#if defined(FRDM_MCXA153) || defined(FRDM_MCXA156) || defined(FRDM_MCXN236)
 #define ADC_PIN     A0
 #elif defined(FRDM_MCXN947)
 #define ADC_PIN     A2
@@ -72,7 +92,7 @@ P3T1755 sensor(SENSOR_WIRE, 0x48);
 int pwmDuty = 0;
 int pwmStep = 5;
 int loopCount = 0;
-#if defined(FRDM_MCXA153)
+#if defined(FRDM_MCXA153) || defined(FRDM_MCXN236)
 char serial1Rx[32];
 #elif defined(FRDM_MCXA156)
 char serial1Rx[32];
@@ -85,7 +105,7 @@ void setup() {
     ;
 
   SENSOR_WIRE.begin();
-#if defined(FRDM_MCXA153)
+#if defined(FRDM_MCXA153) || defined(FRDM_MCXN236)
   Serial1.begin(9600);  // D0/D1 hardware UART -- jumper D1->D0 to loop back
 #elif defined(FRDM_MCXN947)
   Wire2.begin();  // MikroBus I2C -- no device required, see header comment
@@ -95,12 +115,14 @@ void setup() {
   Wire1.begin();        // MikroBus I2C -- no device required, see header comment
 #endif
 
-  pinMode(MB_CS, OUTPUT);
-  digitalWrite(MB_CS, HIGH);
-  SPI1.begin();  // MikroBus SPI -- jumper MB_MOSI->MB_MISO to loop back
-  SPI1.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
+  pinMode(LOOP_CS, OUTPUT);
+  digitalWrite(LOOP_CS, HIGH);
+  LOOP_SPI.begin();  // MikroBus SPI -- jumper MB_MOSI->MB_MISO to loop back
+  LOOP_SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
 
-#if defined(FRDM_MCXA153)
+#if defined(FRDM_MCXN236)
+  Serial.println("Combined peripheral test (N236): sensor(Wire1) + analogRead + analogWrite + tone + millis/micros + Serial1 + SPI");
+#elif defined(FRDM_MCXA153)
   Serial.println("Combined peripheral test: I3C(Wire1) + analogRead + analogWrite + tone + millis/micros + Serial1 + SPI1");
 #elif defined(FRDM_MCXN947)
   Serial.println("Combined peripheral test (N947): I3C(Wire1) + analogRead + analogWrite + tone + millis/micros + Wire2 + SPI1");
@@ -113,7 +135,7 @@ void loop() {
   unsigned long ms = millis();
   unsigned long us = micros();
 
-#if defined(FRDM_MCXA153)
+#if defined(FRDM_MCXA153) || defined(FRDM_MCXN236)
   // Serial1 -- read back whatever was sent at the end of the previous loop
   // iteration; the 200ms loop period gives it time to arrive over the
   // D1->D0 jumper.
@@ -150,9 +172,9 @@ void loop() {
   analogWrite(PWM_PIN, pwmDuty);
 
   // SPI1 (MikroBus) -- loopback via MB_MOSI->MB_MISO jumper
-  digitalWrite(MB_CS, LOW);
-  uint16_t spi1Echo = SPI1.transfer16(0x1234);
-  digitalWrite(MB_CS, HIGH);
+  digitalWrite(LOOP_CS, LOW);
+  uint16_t spi1Echo = LOOP_SPI.transfer16(0x1234);
+  digitalWrite(LOOP_CS, HIGH);
 
 #if defined(FRDM_MCXN947)
   // Wire2 (MikroBus I2C) -- no device expected, just probing that the bus
@@ -177,7 +199,7 @@ void loop() {
   Serial.print(pwmDuty);
   Serial.print(" spi1Echo=0x");
   Serial.print(spi1Echo, HEX);
-#if defined(FRDM_MCXA153)
+#if defined(FRDM_MCXA153) || defined(FRDM_MCXN236)
   Serial.print(" serial1=\"");
   Serial.print(serial1Rx);
   Serial.print("\"");
@@ -202,7 +224,7 @@ void loop() {
   if (spi1Echo != 0x1234)
     Serial.print("  <-- WARNING: SPI1 loopback echo mismatch!");
 
-#if defined(FRDM_MCXA153)
+#if defined(FRDM_MCXA153) || defined(FRDM_MCXN236)
   if (loopCount > 0 && serial1Avail == 0)
     Serial.print("  <-- WARNING: Serial1 loopback got nothing!");
 #elif defined(FRDM_MCXA156)
@@ -218,7 +240,7 @@ void loop() {
   if ((loopCount % 4) == 0)
     tone(BUZZER_PIN, 880, 150);
 
-#if defined(FRDM_MCXA153)
+#if defined(FRDM_MCXA153) || defined(FRDM_MCXN236)
   // Serial1 -- send this loop's marker; read back at the top of the next
   // iteration
   Serial1.print("hb");

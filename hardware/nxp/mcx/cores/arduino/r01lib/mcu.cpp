@@ -116,22 +116,39 @@ void init_mcu( void )
 	#endif
 
 #elif	CPU_MCXN236VDF
+	/* This board's clock_config.c and pin_mux.c are the SDK's board project
+	 * template: BOARD_BootClockPLL150M() attaches no peripheral clock, as on
+	 * N947, and BOARD_InitBootPins() enables PORT1 only, for the debug
+	 * UART's two pins. Everything else is done here. PORT5 and GPIO5 have
+	 * no clock gate. */
 	CLOCK_SetClkDiv(kCLOCK_DivFlexcom4Clk, 1);
 	CLOCK_AttachClk(BOARD_DEBUG_UART_CLK_ATTACH);
 
-	/* Attach PLL0 clock to I3C, 150MHz / 12 = 12.5MHz. */
+	/* I3C1, on D18/D19: only r01lib's own I3C class uses it here. PLL0
+	   150MHz / 12 = 12.5MHz, as the SDK's FRDM-MCXN236 I3C master examples. */
 	CLOCK_SetClkDiv(kCLOCK_DivI3c1FClk, 12U);
 	CLOCK_AttachClk(kPLL0_to_I3C1FCLK);
 
-	/* I2C */
+	/* Wire1 (LPI2C2) and Serial1 (LPUART2), which share FlexComm2 */
 	CLOCK_SetClkDiv(kCLOCK_DivFlexcom2Clk, 1u);
 	CLOCK_AttachClk(kFRO12M_to_FLEXCOMM2);
 
-	/* SPI */
+	/* SPI (LPSPI3) -- FRO_HF_DIV (48MHz), not FRO12M, for the same reason
+	   as N947's SPI above */
 	CLOCK_SetClkDiv(kCLOCK_DivFlexcom3Clk, 1u);
-	CLOCK_AttachClk(kFRO12M_to_FLEXCOMM3);
+	CLOCK_AttachClk(kFRO_HF_DIV_to_FLEXCOMM3);
+
+	/* Wire (LPI2C5, D18/D19) */
+	CLOCK_SetClkDiv(kCLOCK_DivFlexcom5Clk, 1u);
+	CLOCK_AttachClk(kFRO12M_to_FLEXCOMM5);
 
 	SYSCON->CLOCK_CTRL |= SYSCON_CLOCK_CTRL_FRO1MHZ_ENA_MASK;	//	UTICK
+
+	CLOCK_EnableClock( kCLOCK_Port0 );
+	CLOCK_EnableClock( kCLOCK_Port1 );
+	CLOCK_EnableClock( kCLOCK_Port2 );
+	CLOCK_EnableClock( kCLOCK_Port3 );
+	CLOCK_EnableClock( kCLOCK_Port4 );
 
 	CLOCK_EnableClock( kCLOCK_Gpio0 );
 	CLOCK_EnableClock( kCLOCK_Gpio1 );
@@ -140,17 +157,10 @@ void init_mcu( void )
 	CLOCK_EnableClock( kCLOCK_Gpio4 );
 
 	/* Init board hardware. */
-#if 1
 	BOARD_InitBootPins();
 	BOARD_InitBootClocks();
 	BOARD_InitBootPeripherals();
-#else
-	BOARD_InitPins();
-	BOARD_BootClockFRO12M();
-	BOARD_InitPeripherals();
-#endif
-	
-#ifndef BOARD_INIT_DEBUG_CONSOLE_PERIPHERAL
+	#ifndef BOARD_INIT_DEBUG_CONSOLE_PERIPHERAL
 		/* Init FSL debug console. */
 		BOARD_InitDebugConsole();
 	#endif
@@ -448,3 +458,18 @@ extern "C" __attribute__((noreturn)) void mcx_fault_report( const uint32_t *fram
 	while ( true )
 		;
 }
+
+#if defined( CPU_MCXN236VDF )
+extern "C" {
+#include "fsl_lpflexcomm.h"
+}
+
+void flexcomm_keep_shared( uint32_t instance )
+{
+	//	LP_FLEXCOMM_Init() releases the reset and selects the peripherals;
+	//	it does not reset the FlexComm, so whichever of the two is running
+	//	keeps going.
+	if ( 2u == instance )
+		LP_FLEXCOMM_Init( instance, LP_FLEXCOMM_PERIPH_LPI2CAndLPUART );
+}
+#endif

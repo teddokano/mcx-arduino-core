@@ -5,9 +5,10 @@
  *  Walks a single HIGH pulse through each one.
  *
  *  A0/A1 are DISABLED_PIN (not real, wired pins) on FRDM-MCXN947, so only
- *  A2-A5 are walked there; FRDM-MCXA153 and FRDM-MCXA156 have all six
- *  wired (on FRDM-MCXA156, A4/A5 only once R75/R76 are removed, see
- *  PIN_MAPPING_A156.md).
+ *  A2-A5 are walked there; FRDM-MCXA153, FRDM-MCXA156 and FRDM-MCXN236
+ *  have all six wired (on FRDM-MCXA156, A4/A5 only once R75/R76 are
+ *  removed, see PIN_MAPPING_A156.md; on FRDM-MCXN236, A1/A2 only once
+ *  R25/R67 are removed, and A3 is the blue LED's pin too).
  */
 
 #include <Arduino.h>
@@ -18,7 +19,7 @@ struct PinInfo {
 };
 
 PinInfo pins[] = {
-#if defined(FRDM_MCXA153) || defined(FRDM_MCXA156)
+#if defined(FRDM_MCXA153) || defined(FRDM_MCXA156) || defined(FRDM_MCXN236)
   { A0, "A0" }, { A1, "A1" },
 #endif
   { A2, "A2" }, { A3, "A3" }, { A4, "A4" }, { A5, "A5" },

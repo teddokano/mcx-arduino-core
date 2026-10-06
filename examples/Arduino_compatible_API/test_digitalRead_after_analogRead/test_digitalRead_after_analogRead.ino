@@ -29,6 +29,11 @@ const int PIN_B = A1;
 #elif defined(FRDM_MCXN947)
 const int PIN_A = A2;  // A0/A1 are not analog inputs on FRDM-MCXN947
 const int PIN_B = A3;
+#elif defined(FRDM_MCXN236)
+// A1/A2 are also on the CAN transceiver until R25/R67 are removed, and A3
+// is not an analog input here (the blue LED's pin)
+const int PIN_A = A0;
+const int PIN_B = A4;
 #else
 #error "This sketch has no settings for this board yet"
 #endif

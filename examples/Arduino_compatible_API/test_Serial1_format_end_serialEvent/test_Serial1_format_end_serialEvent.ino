@@ -2,7 +2,8 @@
  *  on Serial1 with its TX looped back to RX.
  *
  *  Wiring: the same Serial1 loopback jumper as release_check/11 -- D0-D1
- *  on FRDM-MCXA153 and FRDM-MCXA156, MikroBus MB_TX-MB_RX on FRDM-MCXN947.
+ *  on FRDM-MCXA153, FRDM-MCXA156 and FRDM-MCXN236, MikroBus MB_TX-MB_RX on
+ *  FRDM-MCXN947.
  *
  *  A loopback alone can't show that a format is right: the receiver is
  *  the same LPUART as the transmitter, so it expects whatever the
@@ -26,7 +27,7 @@
 #if defined(FRDM_MCXN947)
 const int TX_PIN = MB_TX;
 const int RX_PIN = MB_RX;
-#elif defined(FRDM_MCXA153) || defined(FRDM_MCXA156)
+#elif defined(FRDM_MCXA153) || defined(FRDM_MCXA156) || defined(FRDM_MCXN236)
 const int TX_PIN = D1;
 const int RX_PIN = D0;
 #else

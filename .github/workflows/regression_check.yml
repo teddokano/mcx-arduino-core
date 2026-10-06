@@ -89,7 +89,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        board: [frdm_mcxa153, frdm_mcxn947, frdm_mcxa156]
+        board: [frdm_mcxa153, frdm_mcxn947, frdm_mcxa156, frdm_mcxn236]
     runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
     steps:
       - name: Checkout

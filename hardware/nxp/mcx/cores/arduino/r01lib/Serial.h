@@ -11,9 +11,9 @@
  * |--------------|--------------------|---------------------------------------|
  * | FRDM-MCXC444 | CPU_MCXC444VLH     | USBTX/USBRX (= D1/D0), MB_TX/MB_RX   |
  * | FRDM-MCXA153 | CPU_MCXA153VLH     | USBTX/USBRX, D1/D0, MB_TX/MB_RX      |
- * | FRDM-MCXA156 | CPU_MCXA156VLL     | USBTX/USBRX                           |
- * | FRDM-MCXN236 | CPU_MCXN236VDF     | USBTX/USBRX                           |
- * | FRDM-MCXN947 | CPU_MCXN947VDF     | USBTX/USBRX                           |
+ * | FRDM-MCXA156 | CPU_MCXA156VLL     | USBTX/USBRX, D1/D0, MB_TX/MB_RX      |
+ * | FRDM-MCXN236 | CPU_MCXN236VDF     | USBTX/USBRX, D1/D0 (= MB_TX/MB_RX)   |
+ * | FRDM-MCXN947 | CPU_MCXN947VDF     | USBTX/USBRX, MB_TX/MB_RX             |
  *
  * ### Example usage
  * @code

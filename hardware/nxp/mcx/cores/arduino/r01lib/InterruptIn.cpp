@@ -19,7 +19,7 @@ extern "C" {
 #include	"InterruptIn.h"
 #include	"mcu.h"
 
-#ifdef	CPU_MCXN947VDF
+#if defined( CPU_MCXN947VDF ) || defined( CPU_MCXN236VDF )
 	#define		N_GPIO		6
 	#define		GPIO_BITS	32
 	static	GPIO_Type	*gpio_ptr[]	= GPIO_BASE_PTRS;

@@ -225,6 +225,9 @@ void setup() {
 #elif defined(FRDM_MCXA156)
   suite(Wire, "Wire", 0x42, LPI2C0);
   suite(Wire1, "Wire1", 0x42, LPI2C3);
+#elif defined(FRDM_MCXN236)
+  suite(Wire, "Wire", 0x42, LPI2C5);
+  suite(Wire1, "Wire1", 0x42, LPI2C2);  // shares its FlexComm with Serial1
 #else
 #error "This sketch has no settings for this board yet"
 #endif

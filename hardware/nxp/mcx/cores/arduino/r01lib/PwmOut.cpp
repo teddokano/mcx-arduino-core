@@ -289,7 +289,7 @@ PwmOut::operator float()
     return read();
 }
 
-#elif defined( CPU_MCXN947VDF )
+#elif defined( CPU_MCXN947VDF ) || defined( CPU_MCXN236VDF )
 
 extern "C" {
 #include "fsl_reset.h"
@@ -305,6 +305,17 @@ static PWM_Type * const FLEXPWM1 = PWM1;
 #include "PwmOut.h"
 #include "mcu.h"
 #include "pin_registry.h"
+
+// FlexPWM runs on the bus clock, 150MHz on both chips. N947 asks for it
+// as the main clock; FRDM-MCXN236's SDK has no kCLOCK_MainClk, and its own
+// PWM example asks for kCLOCK_BusClk.
+#if defined( CPU_MCXN947VDF )
+#define PWM_SOURCE_CLOCK    kCLOCK_MainClk
+#elif defined( CPU_MCXN236VDF )
+#define PWM_SOURCE_CLOCK    kCLOCK_BusClk
+#else
+#error "PwmOut: no FlexPWM clock source for this chip"
+#endif
 
 uint8_t PwmOut::_instance_count = 0;
 
@@ -334,6 +345,7 @@ struct PwmPinDescriptor {
 // counting gave Alt6/Alt4 -- both wrong, and both silently produced no
 // PWM output at all on real hardware (caught via logic analyzer, no
 // signal on any probed pin) before this fix.
+#if defined( CPU_MCXN947VDF )
 const PwmPinDescriptor s_pins[] = {
     //  pin    pin#  sm  ch  alt
     { PWM0,  3u, 2u, 1u, 5u },   // P2_3, PWM1_B2
@@ -343,6 +355,19 @@ const PwmPinDescriptor s_pins[] = {
     { PWM4,  7u, 0u, 1u, 5u },   // P2_7, PWM1_B0
     { PWM5,  6u, 0u, 0u, 5u },   // P2_6, PWM1_A0
 };
+#elif defined( CPU_MCXN236VDF )
+// FRDM-MCXN236: J3's six FlexPWM1 pins, ALT5 for all six per Zephyr's
+// MCXN236VDF-pinctrl.h. pin# is not read; the port comes from io.h.
+const PwmPinDescriptor s_pins[] = {
+    //  pin    pin#  sm  ch  alt
+    { PWM0, 17u, 2u, 1u, 5u },   // P3_17, PWM1_B2 (D6)
+    { PWM1, 16u, 2u, 0u, 5u },   // P3_16, PWM1_A2
+    { PWM2, 15u, 1u, 1u, 5u },   // P3_15, PWM1_B1
+    { PWM3, 14u, 1u, 0u, 5u },   // P3_14, PWM1_A1 (D9)
+    { PWM4,  7u, 0u, 1u, 5u },   // P2_7,  PWM1_B0 (D5)
+    { PWM5, 12u, 0u, 0u, 5u },   // P3_12, PWM1_A0 (D3)
+};
+#endif
 
 const clock_ip_name_t s_sm_clock[ 4 ] = { kCLOCK_Pwm1_Sm0, kCLOCK_Pwm1_Sm1, kCLOCK_Pwm1_Sm2, kCLOCK_Pwm1_Sm3 };
 
@@ -439,7 +464,7 @@ PwmOut::PwmOut( int pin )
     sig.faultState       = kPWM_PwmFaultState0;
     sig.pwmchannelenable = true;
     PWM_SetupPwm( FLEXPWM1, (pwm_submodule_t)_submodule, &sig, 1, kPWM_EdgeAligned, 1000u,
-                  CLOCK_GetFreq( kCLOCK_MainClk ) );
+                  CLOCK_GetFreq( PWM_SOURCE_CLOCK ) );
 
     apply();   // sets the real default period/duty and calls PWM_SetPwmLdok()
     PWM_StartTimer( FLEXPWM1, (uint8_t)( 1u << _submodule ) );
@@ -466,7 +491,7 @@ void PwmOut::apply( void )
     if ( -1 == _pin )
         return;
 
-    uint32_t src_clk = CLOCK_GetFreq( kCLOCK_MainClk );
+    uint32_t src_clk = CLOCK_GetFreq( PWM_SOURCE_CLOCK );
 
     uint8_t  prescale  = 0;
     uint64_t pulseCnt64 = 0;
@@ -502,7 +527,7 @@ void PwmOut::period( float seconds )
     if ( -1 == _pin )
         return;
 
-    uint32_t src_clk    = CLOCK_GetFreq( kCLOCK_MainClk );
+    uint32_t src_clk    = CLOCK_GetFreq( PWM_SOURCE_CLOCK );
     float    min_period = 1.0e6f / (float)src_clk;
     float    max_period = 1.0e6f * 65535.0f * 128.0f / (float)src_clk;
     float    period_us  = seconds * 1.0e6f;

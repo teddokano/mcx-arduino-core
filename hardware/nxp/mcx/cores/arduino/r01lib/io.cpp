@@ -488,7 +488,7 @@ DigitalInOut::DigitalInOut( uint8_t pin_num, bool direction, bool v, int pin_mod
 	
 	GPIO_PinInit( gpio_n, gpio_pin, &led_config );
 	mode( pin_mode );
-#if defined( CPU_MCXA153VLH ) || defined( CPU_MCXN947VDF ) || defined( CPU_MCXA156VLL )
+#if defined( CPU_MCXA153VLH ) || defined( CPU_MCXN947VDF ) || defined( CPU_MCXA156VLL ) || defined( CPU_MCXN236VDF )
 	//	Without the input buffer (PCR.IBE) digitalRead() reads 0, and so
 	//	does every peripheral reading its pin through here: LPI2C's SDA/SCL,
 	//	LPSPI's SDI, interrupts. AnalogIn turns it off on its pins, on every
@@ -553,7 +553,7 @@ void DigitalInOut::direction( bool dir )
 void DigitalInOut::pin_mux( int mux )
 {
 	PORT_SetPinMux( port_n, gpio_pin, (port_mux_t)mux );
-#if defined( CPU_MCXA153VLH ) || defined( CPU_MCXN947VDF ) || defined( CPU_MCXA156VLL )
+#if defined( CPU_MCXA153VLH ) || defined( CPU_MCXN947VDF ) || defined( CPU_MCXA156VLL ) || defined( CPU_MCXN236VDF )
 	input_buffer( true );	//	see the constructor
 #endif
 

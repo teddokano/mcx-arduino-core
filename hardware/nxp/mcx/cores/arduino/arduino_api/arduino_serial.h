@@ -156,7 +156,7 @@ extern SerialClass	Serial;
 // Serial1: hardware UART, separate from the USB-bridged Serial. On D0(RX)/
 // D1(TX) on most boards; on FRDM-MCXN947 it's on the MikroBus header
 // (MB_TX/MB_RX) instead -- see arduino_serial.cpp for why D0/D1 can't
-// support it on that board.
+// support it on that board. FRDM-MCXN236's MikroBus UART is its D0/D1.
 /** Global Serial1 instance -- hardware UART pin pair, board-dependent (see above). */
 extern SerialClass	Serial1;
 

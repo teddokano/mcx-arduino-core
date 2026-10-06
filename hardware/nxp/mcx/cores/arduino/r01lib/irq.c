@@ -10,7 +10,7 @@
 #include	"fsl_debug_console.h"
 #include	"irq.h"
 
-#ifdef	CPU_MCXN947VDF
+#if defined( CPU_MCXN947VDF ) || defined( CPU_MCXN236VDF )
 void GPIO00_IRQHandler( void )
 {	irq_handler( 0 );
 }

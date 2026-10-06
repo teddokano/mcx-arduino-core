@@ -25,7 +25,7 @@
 | 知りたいこと | 見る場所 |
 |---|---|
 | 対応APIの一覧・未対応項目 | [API_COMPATIBILITY.md](API_COMPATIBILITY.md) |
-| ピン配置（ボード別） | [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) / [PIN_MAPPING_N947.md](PIN_MAPPING_N947.md) / [PIN_MAPPING_A156.md](PIN_MAPPING_A156.md) |
+| ピン配置（ボード別） | [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) / [PIN_MAPPING_N947.md](PIN_MAPPING_N947.md) / [PIN_MAPPING_A156.md](PIN_MAPPING_A156.md) / [PIN_MAPPING_N236.md](PIN_MAPPING_N236.md)（0.9.0で作業中） |
 | リリースごとの変更点 | [CHANGELOG.md](CHANGELOG.md) |
 | 使い方の入門 | [TUTORIAL.md](TUTORIAL.md) / [TUTORIAL.ja.md](TUTORIAL.ja.md) |
 | クラス・関数のリファレンス | `docs/api/`（Doxygen生成、リリース前に再生成する） |
@@ -222,7 +222,7 @@ xPack checksums（正しい値）：
   `Wire1`のバスにはオンボードの加速度センサーFXLS8974CF（`0x18`、SA0はR191でGND）とMikroBusの`MB_SCL`/`MB_SDA`がつながる（ほかにFlexIOヘッダ・PMOD・カメラ・PTN5150・CODECにも）。プルアップはどちらのバスも4.7kΩ。
   **FC2は`Serial1`（D0/D1、`P4_3`/`P4_2`）のLPUARTでもあるので、LP_FLEXCOMM2はLPUARTとLPI2Cを同時に使うモード（`LP_FLEXCOMM_PERIPH_LPI2CAndLPUART`）で動かす**。
   `Serial1`と`Wire1`のどちらが先に初期化されても、後のほうが先のほうのモードを消さないこと
-- **センサーの検証（2026-10-05に決定）**: `SENSOR_WIRE`はA153・N947と同じく`Wire1`。`release_check/01`のセンサーの項目は、N236ではFXLS8974CFのWHO_AM_I（値はデータシートで確かめる）と、
+- **センサーの検証（2026-10-05に決定）**: `SENSOR_WIRE`はA153・N947と同じく`Wire1`。`release_check/01`のセンサーの項目は、N236ではFXLS8974CFのWHO_AM_I（`0x86`、下の項目）と、
   動作させた静止時の加速度の大きさが約1gになることを見る。P3T1755を読むサンプルは、外付けのP3T1755（`release_check/21`のモジュール）をMikroBus（=`Wire1`）につなげばそのまま動く見込み
 - **加速度センサーの割り込み線はMCUにつながっていない**（R13＝INT1-`P0_21`、R14＝INT2-`P0_24`、R18＝WAKEUP-`P0_23`がすべて未実装）。D4（`P0_21`）・D8（`P0_23`）は空いている
 - **SPIは付け替え不要**: SJ1・SJ2は工場出荷時に1-2で、D10=`P1_3`、D11=`P1_0`（`LPSPI3`）。D12=`P1_2`、D13=`P1_1`
@@ -242,7 +242,30 @@ xPack checksums（正しい値）：
   ピン関連の文書（`PIN_MAPPING_N236.md`、variantのREADMEなど）に必ず明記する
 - **UARTは`Serial`（USB、FC4、`P1_8`/`P1_9`）と`Serial1`（D0/D1）の2つ、SPIは`SPI`だけ（2026-10-05に決定）**。
   MikroBusのUART（`MB_RX`/`MB_TX`）はD0/D1と同じピンなので`Serial2`は無い。MikroBusのSPIはArduinoのSPIと同じ線（FC3）で、
-  CSが`P1_16`（=D18、`Wire`のSDA）なので、独立した`SPI1`も置かない
+  CSが`P1_16`（=D18、`Wire`のSDA）なので、独立した`SPI1`も置かない（`arduino_spi.{h,cpp}`でN236だけ`SPI1`を定義しない）
+- **`PWM0`〜`PWM5`は他の3ボードと同じ並び（2026-10-06に決定）**: `PWM0`/`PWM1`がsm2のB/A、`PWM2`/`PWM3`がsm1、`PWM4`/`PWM5`がsm0。
+  `PWM0`=`P3_17`(D6)、`PWM1`=`P3_16`、`PWM2`=`P3_15`、`PWM3`=`P3_14`(D9)、`PWM4`=`P2_7`(D5)、`PWM5`=`P3_12`(D3)。回路図にPWM0〜5のシルクは無い。
+  **PWMを出せるピンは物理的に6本で、4本はD-ピンと同じピン**（A156の「独立した10本」とは違う）。D2（`P2_0`）も`PWM1_A3`を出せるが、使っていない
+- **D3・D5・D6・D9の`analogWrite`は、物理ピンが`PWM0`〜`PWM5`と同じなので、何もしなくてもPWMになる**（`analogWrite()`は物理ピンでPwmOutの表を引く）。
+  そろっていない2点——`digitalPinHasPWM()`が`PWM0`〜`PWM5`の範囲しか真にしないこと、`pinMode()`のあとの`analogWrite()`がピンをPWMに戻さないこと——は、
+  **A156のD-ピンのPWMの作業でまとめて直す**（2026-10-06、ユーザー判断。それまでN236はこのまま）
+- **ポートの作業状態（2026-10-06に開始）**: variant（SDKのボード用テンプレートを無改変）、`boards.txt`、gdb-bridgeの`n236.cfg`、コアのN236分岐、
+  `EEPROM`、mcxPinStateの表、サンプルの分岐、CIの対象、`PIN_MAPPING_N236.md`・variantのREADMEまで書いた。`hello_world`で起動・`Serial`・RGB LEDを実機確認。
+  2026-10-06に配線なしの実機確認が通った: `release_check/01`・`04`・`06`（2回、書き込みをまたいだ保持も）・`07`・`08`、`test_Wire_target_self`（`Wire`と`Wire1`の両方）。
+  確認用のスケッチで、`analogRead(A3)`が`-1`、A0・A1・A2・A4・A5がそれぞれ内部プルアップ／プルダウンに従うこと、`PWM0`〜`PWM5`の1kHzとデューティ比、`analogWriteFrequency`、`tone`（D2）もPDIRを直接読んで確かめた。
+  `01`の`isize 0`の項目は、FXLS8974CFが送ったぶんだけレジスタのポインタを進める（P3T1755は進めない）ので、N236だけ直前にポインタを書き直す。
+  `11`（D0-D1・D2-D3）と`Serial1`・`Wire1`の同時使用も通った（下の「FC2の共有の実装」）。`12`（D11-D12）・`13`もALL OK（`13`はN236では`PWM0`がD6なので、サーボのパルスをD6-D7のジャンパ経由でD7で測る。D8のジャンパは要らない）。`14`（`Wire`と`Wire1`の両方、400kHzでの上限の切り詰めも）もALL PASS。既知の電圧での`analogRead`も確認した（12ビットで、A0・A1・A2・A4・A5がGNDで0〜1、3V3で4083〜4095。1本ずつ3V3にしたとき、ほかのピンは追従しない）。配線だけで済む確認はこれで全部。`03`（SW2のFALLINGの割り込み3回とLEDの切り替え、`detachInterrupt()`後は押しても反応しない、LOWのレベル割り込み）も通った。IDE（macOS）のDebugボタンで、ブレークポイント・ステップ実行・変数・SVDの表示もすべて確認した（2026-10-06、ユーザー）。`24`はN947との2枚でALL OK（N236はA153と同じ側＝`0x42`・先攻に移した。N947と同じ側だと2枚とも相手を待って進まないため。相手は常にN947）。LinkServer 26.9.130はN236のフラッシュを`MCXNxxx (1024KB)`と正しく判定し、106KBの`01`を書き込めた（書き込んだ`01`はALL OK）、README・CHANGELOG・API_COMPATIBILITYはこれから。mcxPinStateの上流（`~/dev/Arduino/mcxPinState`）はローカルで書き換えただけで、コミット・pushしていない
+- **組になるPWMの周期の問題（2026-10-06にN236で発見。A156のD-ピンのPWMの作業と一緒にコードを直す、とユーザーが決定（同日）。周期を組（サブモジュール）ごとに持たせ、ドキュメントの「片方を変えると相手も変わる」を成り立たせる）**: `PwmOut`は周期（`_period_us`）をオブジェクトごとに持つが、周期レジスタはサブモジュールの2本で共有している。
+  `analogWriteFrequency(PWM3, 2500)`のあとで相手の`PWM2`に`analogWrite()`すると、共有の周期が`PWM2`の持つ1kHzに戻る。そのあと`PWM3`を書くと周期は2.5kHzに戻るが、`PWM2`のデューティ比は崩れたままになる（0.75のはずが0.46）。
+  周期を短くすると、相手のピンのコンペア値が周期を超えてHigh固定になる（`PWM5`を20kHzにしたとき、`PWM4`がそうなった）。
+  `PwmOut.cpp`は4ボードとも同じ作りなので、A153・N947・A156でも起きるはず（未確認）。A156のD-ピンのPWM（D6とD9がsm0を共有）にも関わる
+- **FC2の共有の実装**: SDKの`LPUART_Init()`・`LPI2C_MasterInit()`・`LPI2C_SlaveInit()`はFlexCommのモードを自分の分だけにし、
+  `LPUART_Deinit()`・`LPI2C_MasterDeinit()`はFlexComm全体をリセットする。そこでN236のFC2だけ、初期化のあとで`flexcomm_keep_shared()`（`mcu.h`）が両方のモードに戻し、
+  Deinitを呼ばない（`Serial::reinit()`、`I2C::~I2C()`）。割り込みは`Serial.cpp`の`LP_FLEXCOMM2_IRQHandler()`が`Serial1`とSDKのハンドラの両方に渡す。
+  D0/D1は`FC2_P3`/`FC2_P2`で、LPUARTがここに出るのは両方のモードのときだけ（回路図のラベル`FC2_UART_RXD`/`TXD`による）。
+  2026-10-06に実機で確認: `release_check/11`がALL OK。確認用のスケッチで、`Serial1`（D0-D1のジャンパ）と`Wire1`（WHO_AM_I）の交互の使用、初期化と`end()`の順番の入れ替え、`Serial1.begin(baud, config)`のやり直し、`Wire1.setClock(400k)`、`Serial1`の長い送信中の`Wire1`の転送、`Wire1`のターゲット化がすべて通った
+- **加速度センサーのWHO_AM_Iは`0x86`（レジスタ`0x13`）**。2026-10-06にユーザーがデータシートで確認し、以前の別のアプリケーションでもこの値を読んでいる。ZephyrのFXLS8974ドライバと、NXPのレジスタ定義（ユーザーのFXLS89xx_Arduinoライブラリの`fxls896x.h`）とも一致する。
+  `release_check/01`はN236でこの値と、静止時に約1gを見る。Wireを`Stream`として使う確認では、P3T1755の`T_LOW`の代わりに`OFF_X`/`OFF_Y`（`0x22`/`0x23`）を書いて戻す
 
 ---
 

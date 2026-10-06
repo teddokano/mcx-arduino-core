@@ -227,9 +227,10 @@ const KnownInstance KNOWN_INSTANCES[]	=
 	{ "Wire",    "GPIO",   { (uint8_t)I2C_SDA, (uint8_t)I2C_SCL, 0 }, 2 },
 #if defined( FRDM_MCXA153 ) || defined( FRDM_MCXN947 )
 	{ "Wire1",   "GPIO",   { (uint8_t)I3C_SDA, (uint8_t)I3C_SCL, 0 }, 2 },
-#elif defined( FRDM_MCXA156 )
-	// The MikroBus I2C (LPI2C3): this board's on-board sensor, and with it
-	// its I3C pins, are on Wire's own D18/D19.
+#elif defined( FRDM_MCXA156 ) || defined( FRDM_MCXN236 )
+	// The MikroBus I2C (LPI2C3 on FRDM-MCXA156, LPI2C2 on FRDM-MCXN236):
+	// FRDM-MCXA156's on-board sensor, and with it its I3C pins, are on
+	// Wire's own D18/D19, and FRDM-MCXN236 has no I3C sensor.
 	{ "Wire1",   "GPIO",   { (uint8_t)arduino_pin_by_number[ MB_SDA ], (uint8_t)arduino_pin_by_number[ MB_SCL ], 0 }, 2 },
 #else
 #error "mcxPinState: say which pins this board's Wire1 is on"
@@ -241,9 +242,13 @@ const KnownInstance KNOWN_INSTANCES[]	=
 	{ "Wire2",   "GPIO",   { (uint8_t)arduino_pin_by_number[ MB_SDA ], (uint8_t)arduino_pin_by_number[ MB_SCL ], 0 }, 2 },
 #endif
 	{ "SPI",     "SPI",    { (uint8_t)arduino_pin_by_number[ ARD_MOSI ], (uint8_t)arduino_pin_by_number[ ARD_MISO ], (uint8_t)arduino_pin_by_number[ ARD_SCK ] }, 3 },
+#if !defined( FRDM_MCXN236 )
+	// FRDM-MCXN236 has no SPI1: its MikroBus SPI is SPI's own lines.
 	{ "SPI1",    "SPI",    { (uint8_t)arduino_pin_by_number[ MB_MOSI ], (uint8_t)arduino_pin_by_number[ MB_MISO ], (uint8_t)arduino_pin_by_number[ MB_SCK ] }, 3 },
+#endif
 	{ "Serial",  "Serial", { (uint8_t)USBTX, (uint8_t)USBRX, 0 }, 2 },
-#if defined( FRDM_MCXA153 )
+#if defined( FRDM_MCXA153 ) || defined( FRDM_MCXN236 )
+	// On FRDM-MCXN236 the MikroBus UART is these same two pins.
 	{ "Serial1", "Serial", { (uint8_t)arduino_pin_by_number[ D0 ], (uint8_t)arduino_pin_by_number[ D1 ], 0 }, 2 },
 #elif defined( FRDM_MCXN947 )
 	// On N947, Serial1 lives on the MikroBus header's MB_TX/MB_RX pins --

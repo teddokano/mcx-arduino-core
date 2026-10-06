@@ -34,7 +34,7 @@ PinState pins;
 
 #define BUZZER_PIN D13
 #define PWM_PIN    PWM0
-#if defined(FRDM_MCXA153) || defined(FRDM_MCXA156)
+#if defined(FRDM_MCXA153) || defined(FRDM_MCXA156) || defined(FRDM_MCXN236)
 #define ADC_PIN A0
 #elif defined(FRDM_MCXN947)
 #define ADC_PIN A2
@@ -66,6 +66,11 @@ void setup() {
   pinMode(MB_CS, OUTPUT);
   digitalWrite(MB_CS, HIGH);
   SPI1.begin();
+#elif defined(FRDM_MCXN236)
+  // Wire (D18/D19) and Serial1 (D0/D1, sharing its FlexComm with Wire1).
+  // No SPI: this board has no SPI1, and SPI's SCLK is D13, the tone pin
+  Wire.begin();
+  Serial1.begin(9600);
 #endif
 
   analogRead(ADC_PIN);

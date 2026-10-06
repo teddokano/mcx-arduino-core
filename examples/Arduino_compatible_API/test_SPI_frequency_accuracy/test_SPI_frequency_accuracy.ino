@@ -16,7 +16,8 @@
  *
  *  Wiring: same as release_check/05_spi_loopback -- jumper D11(MOSI)
  *  to D12(MISO) for the default SPI, and the MikroBus header's
- *  MOSI to MISO for SPI1.
+ *  MOSI to MISO for SPI1. FRDM-MCXN236 has no SPI1 (its MikroBus SPI is
+ *  SPI's own lines), so only the first jumper there.
  */
 
 #include <Arduino.h>
@@ -81,6 +82,7 @@ void setup() {
   check("SPI timing scales with requested frequency (50kHz > 250kHz > 24MHz)",
         t50k > t250k && t250k > t24m);
 
+#if !defined(FRDM_MCXN236)
   // ---- SPI1 (MikroBus): spot-check at one frequency, same code path ----
   Serial.println("--- SPI1 (MikroBus) spot check ---");
   pinMode(MB_CS, OUTPUT);
@@ -98,6 +100,7 @@ void setup() {
   Serial.println(" us");
 
   check("SPI1 timing scales with requested frequency (100kHz > 1MHz)", spi1_t100k > spi1_t1m);
+#endif
 
   Serial.println();
   if (failCount == 0)

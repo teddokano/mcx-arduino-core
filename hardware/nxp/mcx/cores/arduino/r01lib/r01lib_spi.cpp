@@ -237,10 +237,21 @@ SPI::SPI( int mosi, int miso, int sclk, int cs ) : Obj( true ), chip_select( cs,
 		panic( SPI_PIN_SETS );
 	}
 #elif	CPU_MCXN236VDF
-	unit_base			= EXAMPLE_LPSPI_MASTER_BASEADDR;
-	master_clk_freq		= LPSPI_MASTER_CLK_FREQ;
-	master_pcs_for_init	= EXAMPLE_LPSPI_MASTER_PCS_FOR_INIT;
-	master_pcs_4_xfer	= EXAMPLE_LPSPI_MASTER_PCS_FOR_TRANSFER;
+	// D10-D13 (P1_3/P1_0/P1_2/P1_1, SJ1/SJ2 at their factory 1-2) are
+	// FC3_P3/P0/P2/P1 -> LPSPI3 PCS0/SDO/SDI/SCK, Alt2 (Zephyr's
+	// MCXN236VDF-pinctrl.h). The MikroBus SPI is these same lines with CS on
+	// D18, so it has no instance of its own.
+	if ( (mosi == ARD_MOSI) && (miso == ARD_MISO) && (sclk == ARD_SCK) && (cs == ARD_CS) )
+	{
+		unit_base			= EXAMPLE_LPSPI_MASTER_BASEADDR;
+		master_clk_freq		= LPSPI_MASTER_CLK_FREQ;
+		master_pcs_for_init	= EXAMPLE_LPSPI_MASTER_PCS_FOR_INIT;
+		master_pcs_4_xfer	= EXAMPLE_LPSPI_MASTER_PCS_FOR_TRANSFER;
+	}
+	else
+	{
+		panic( "FRDM-MCXN236 supports SPI on Arduino pins (D10-D13)" );
+	}
 #else
 #error "r01lib_spi.cpp: no SPI pin sets for this chip"
 #endif

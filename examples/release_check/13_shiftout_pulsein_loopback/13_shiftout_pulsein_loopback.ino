@@ -39,6 +39,9 @@
  *       checks run on the non-PWM digitalWrite() fallback path instead.
  *       A scaling bug in there is silent: it compiles, CI stays green,
  *       nothing panics, and the shaft just sits at the wrong angle.
+ *       On FRDM-MCXN236, PWM0 is D6 itself, so jumper 3 already carries
+ *       the servo pulses to D7 and the sketch measures them there: no
+ *       jumper 4 on that board.
  */
 
 #include <Arduino.h>
@@ -53,7 +56,13 @@
 #define TONE_PIN           D6
 #define PULSE_MONITOR_PIN  D7
 #define SERVO_PWM_PIN      PWM0
+#if defined(FRDM_MCXN236)
+#define SERVO_MONITOR_PIN  D7   // PWM0 is D6 itself here: jumper 3 carries it
+#elif defined(FRDM_MCXA153) || defined(FRDM_MCXA156) || defined(FRDM_MCXN947)
 #define SERVO_MONITOR_PIN  D8
+#else
+#error "This sketch has no settings for this board yet"
+#endif
 
 volatile uint8_t captured     = 0;
 volatile uint8_t bitsCaptured = 0;

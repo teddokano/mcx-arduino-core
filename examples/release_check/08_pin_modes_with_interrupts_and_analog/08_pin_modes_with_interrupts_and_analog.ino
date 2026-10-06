@@ -24,7 +24,7 @@
  *  pull-up on: a pin without one reads 0 whatever its level.
  *
  *  Wiring: none. Leave D2, D4, D5 and the two analog pins below (A0/A1,
- *  A2/A3 on FRDM-MCXN947) unconnected.
+ *  A2/A3 on FRDM-MCXN947, A0/A4 on FRDM-MCXN236) unconnected.
  *
  *  Automatic: reads "ALL OK" or "N FAILED" at the end.
  */
@@ -40,6 +40,11 @@ const int ANALOG_PIN_B = A1;
 #elif defined(FRDM_MCXN947)
 const int ANALOG_PIN_A = A2;  // A0/A1 are not analog inputs on FRDM-MCXN947
 const int ANALOG_PIN_B = A3;
+#elif defined(FRDM_MCXN236)
+// A1/A2 are also on the CAN transceiver until R25/R67 are removed, and A3
+// is not an analog input here (the blue LED's pin)
+const int ANALOG_PIN_A = A0;
+const int ANALOG_PIN_B = A4;
 #else
 #error "This sketch has no settings for this board yet"
 #endif

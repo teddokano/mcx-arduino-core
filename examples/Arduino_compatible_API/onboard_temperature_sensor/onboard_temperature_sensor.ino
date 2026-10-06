@@ -18,7 +18,8 @@
 
 // The on-board P3T1755's bus: Wire1 on FRDM-MCXA153 and FRDM-MCXN947,
 // Wire (D18/D19) on FRDM-MCXA156, whose sensor is on the Arduino I2C pins
-#if defined(FRDM_MCXA153) || defined(FRDM_MCXN947)
+// FRDM-MCXN236 has none on board: connect one to its MikroBus I2C (Wire1)
+#if defined(FRDM_MCXA153) || defined(FRDM_MCXN947) || defined(FRDM_MCXN236)
 #define SENSOR_WIRE Wire1
 #elif defined(FRDM_MCXA156)
 #define SENSOR_WIRE Wire
