@@ -429,3 +429,6 @@ v0.4.0の`main`マージ直前、ユーザーから「今回のリリース準�
    `upload.sh`の`flash_size_bug()`、`upload.bat`の`:consider`、`gdb-bridge`の`flashSizeBug`の**3か所**にある。
    NXPが直した版を出したら、その版で46KBの`hello_world`を書けることを確かめてから3か所を揃えて更新する。
    原因の詳細はLinkServerのライセンス（使用結果の報告の公開制限）に配慮して、公開リポジトリには症状だけを書く
+10. **A4/A5でI²Cを使えるようにする**（2026-10-08、ユーザー判断）: 1.0前の、0.9.0とは別の版で入れる。入口は`bool TwoWire::setPins( int sda, int scl )`（ESP32と同じ形）で、
+   使えないピンの組や`begin()`のあとでは`false`を返してピンを変えない。A4/A5にI²Cがあるのは、A156（`LPI2C1`、`Wire`と別）とN236（`LPI2C2`、`Wire1`と同じ）とC444。
+   調べた事実と残る論点（コンストラクタがスケッチのピン名を受け付けない不具合、N236での扱いなど）は[memo/notes_toward_1.0.0.md](memo/notes_toward_1.0.0.md)の§5
