@@ -66,7 +66,7 @@ void check(const char *label, bool ok) {
 // the pattern (e.g. ArduinoJson's internal StringBuilderPrint,
 // LiquidCrystal) that couldn't compile when Print was just an alias for
 // the pin-constructor-requiring SerialClass. File-scope, not declared
-// inside setup() -- see 01_no_wiring_checks's FlakyPrint for why.
+// inside setup() -- see 09_no_wiring_software_checks's FlakyPrint for why.
 class BufferPrint : public Print {
 public:
   BufferPrint() { buf[0] = '\0'; }

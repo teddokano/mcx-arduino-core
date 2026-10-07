@@ -249,17 +249,26 @@ xPack checksums（正しい値）：
   **PWMを出せるピンは物理的に6本で、4本はD-ピンと同じピン**（A156の「独立した10本」とは違う）。D2（`P2_0`）も`PWM1_A3`を出せるが、使っていない
 - **D3・D5・D6・D9の`analogWrite`は、物理ピンが`PWM0`〜`PWM5`と同じなので、何もしなくてもPWMになる**（`analogWrite()`は物理ピンでPwmOutの表を引く）。
   そろっていない2点——`digitalPinHasPWM()`が`PWM0`〜`PWM5`の範囲しか真にしないこと、`pinMode()`のあとの`analogWrite()`がピンをPWMに戻さないこと——は、
-  **A156のD-ピンのPWMの作業でまとめて直す**（2026-10-06、ユーザー判断。それまでN236はこのまま）
+  A156のD-ピンのPWMの作業でまとめて直した（2026-10-08。下の「A156のD-ピンのPWMと、組の周期の修正」）
 - **ポートの作業状態（2026-10-06に開始）**: variant（SDKのボード用テンプレートを無改変）、`boards.txt`、gdb-bridgeの`n236.cfg`、コアのN236分岐、
   `EEPROM`、mcxPinStateの表、サンプルの分岐、CIの対象、`PIN_MAPPING_N236.md`・variantのREADMEまで書いた。`hello_world`で起動・`Serial`・RGB LEDを実機確認。
   2026-10-06に配線なしの実機確認が通った: `release_check/01`・`04`・`06`（2回、書き込みをまたいだ保持も）・`07`・`08`、`test_Wire_target_self`（`Wire`と`Wire1`の両方）。
   確認用のスケッチで、`analogRead(A3)`が`-1`、A0・A1・A2・A4・A5がそれぞれ内部プルアップ／プルダウンに従うこと、`PWM0`〜`PWM5`の1kHzとデューティ比、`analogWriteFrequency`、`tone`（D2）もPDIRを直接読んで確かめた。
   `01`の`isize 0`の項目は、FXLS8974CFが送ったぶんだけレジスタのポインタを進める（P3T1755は進めない）ので、N236だけ直前にポインタを書き直す。
   `11`（D0-D1・D2-D3）と`Serial1`・`Wire1`の同時使用も通った（下の「FC2の共有の実装」）。`12`（D11-D12）・`13`もALL OK（`13`はN236では`PWM0`がD6なので、サーボのパルスをD6-D7のジャンパ経由でD7で測る。D8のジャンパは要らない）。`14`（`Wire`と`Wire1`の両方、400kHzでの上限の切り詰めも）もALL PASS。既知の電圧での`analogRead`も確認した（12ビットで、A0・A1・A2・A4・A5がGNDで0〜1、3V3で4083〜4095。1本ずつ3V3にしたとき、ほかのピンは追従しない）。配線だけで済む確認はこれで全部。`03`（SW2のFALLINGの割り込み3回とLEDの切り替え、`detachInterrupt()`後は押しても反応しない、LOWのレベル割り込み）も通った。IDE（macOS）のDebugボタンで、ブレークポイント・ステップ実行・変数・SVDの表示もすべて確認した（2026-10-06、ユーザー）。`24`はN947との2枚でALL OK（N236はA153と同じ側＝`0x42`・先攻に移した。N947と同じ側だと2枚とも相手を待って進まないため。相手は常にN947）。LinkServer 26.9.130はN236のフラッシュを`MCXNxxx (1024KB)`と正しく判定し、106KBの`01`を書き込めた（書き込んだ`01`はALL OK）。`21`は、N947のオンボードのP3T1755をセンサーに使って確認した（N236の`MB_SDA`-N947の`MB_RX`、`MB_SCL`-`MB_TX`、GND-GND。N947は`hello_world`。プルアップはN236の4.7kΩ）。D1-D0・D11-D12のジャンパで約285ループ、WARNINGは0件、温度は28℃台で読み続けた。README・CHANGELOG・API_COMPATIBILITYはこれから。mcxPinStateの上流（`~/dev/Arduino/mcxPinState`）にもN236の分（表・サンプル・README）をコミット・pushした（2026-10-06、`1942acf`）
-- **組になるPWMの周期の問題（2026-10-06にN236で発見。A156のD-ピンのPWMの作業と一緒にコードを直す、とユーザーが決定（同日）。周期を組（サブモジュール）ごとに持たせ、ドキュメントの「片方を変えると相手も変わる」を成り立たせる）**: `PwmOut`は周期（`_period_us`）をオブジェクトごとに持つが、周期レジスタはサブモジュールの2本で共有している。
+- **組になるPWMの周期の問題（2026-10-06にN236で発見。2026-10-08に直した。下の項目を参照。A156のD-ピンのPWMの作業と一緒にコードを直す、とユーザーが決定（10-06）。周期を組（サブモジュール）ごとに持たせ、ドキュメントの「片方を変えると相手も変わる」を成り立たせる）**: `PwmOut`は周期（`_period_us`）をオブジェクトごとに持つが、周期レジスタはサブモジュールの2本で共有している。
   `analogWriteFrequency(PWM3, 2500)`のあとで相手の`PWM2`に`analogWrite()`すると、共有の周期が`PWM2`の持つ1kHzに戻る。そのあと`PWM3`を書くと周期は2.5kHzに戻るが、`PWM2`のデューティ比は崩れたままになる（0.75のはずが0.46）。
   周期を短くすると、相手のピンのコンペア値が周期を超えてHigh固定になる（`PWM5`を20kHzにしたとき、`PWM4`がそうなった）。
   `PwmOut.cpp`は4ボードとも同じ作りなので、A153・N947・A156でも起きるはず（未確認）。A156のD-ピンのPWM（D6とD9がsm0を共有）にも関わる
+- **A156のD-ピンのPWMと、組の周期の修正（2026-10-08に着手）**: `PwmOut`をチップごとの表（FlexPWMのインスタンス・リセット・クロック・ALT・クロック源）と1つの本体に統合し、
+  周期と両チャネルのパルス幅を組（サブモジュール）ごとに持たせた（`apply()`が両チャネルを書き直す）。相手が動いている組に後から加わるピンは、相手の周期を引き継ぐ（`analogWrite()`の初回も1kHzに戻さない）。
+  A156は`D6`/`D9`がFlexPWM1のsm0（A/B）、`D5`がsm1のA、`D3`がsm2のA（ALT7。D3は赤色LEDと共用）。`digitalPinHasPWM()`はA156・N236でD3/D5/D6/D9も真。
+  `pinMode()`は`analog_pin_to_gpio()`でPwmOutの持ち主の記録を外し、次の`analogWrite()`が`claim_pin()`でPWMに戻して`pinMode()`のGPIOオブジェクトを消す（mcxPinStateで持ち主が1つになる）。
+  確認用の`test_analogWrite_pairs_and_pinMode`（配線なし、PDIRで周波数とデューティ比を測る）がA156で28項目ALL OK。前のコアでは同じテストで9件FAILし、D9で`panic`する。A153・N947・N236でもALL OK（2026-10-08。判定はA153・N947が21項目、N236が23項目）。
+  `PwmOut`の書き直しでA153の`release_check/01`が残り40バイトになったので、周辺機能を使わない確認（数学定数・互換マクロ・AVR時代の補助関数・`Print`・`String`）を`release_check/09_no_wiring_software_checks`に分けた（ユーザー判断）。
+  分けたあとのA153の`01`は87,820バイト（76%）。A153・N947・N236・A156の4ボードで`01`と`09`がALL OK（A156は`01`が44項目、`09`が67項目）。判定は分ける前の`01`と1件も過不足が無い
+  文書（`PIN_MAPPING_*.md`・`API_COMPATIBILITY.md`・`TUTORIAL`・`README`・`docs/porting_a_new_board.md`）も更新した（2026-10-08）。同梱のmcxRCServoのREADMEの「`PWM0`〜`PWM5`」は上流のリポジトリで直すまでそのまま
+  `release_check/13`（サーボのパルス幅を含む）も4ボードでALL OK（2026-10-08、パルスはA156が499・1449・2399µs、N947が499・1448・2398µs、A153が499・1448・2399µs、N236が499・1449・2399µs）
 - **FC2の共有の実装**: SDKの`LPUART_Init()`・`LPI2C_MasterInit()`・`LPI2C_SlaveInit()`はFlexCommのモードを自分の分だけにし、
   `LPUART_Deinit()`・`LPI2C_MasterDeinit()`はFlexComm全体をリセットする。そこでN236のFC2だけ、初期化のあとで`flexcomm_keep_shared()`（`mcu.h`）が両方のモードに戻し、
   Deinitを呼ばない（`Serial::reinit()`、`I2C::~I2C()`）。割り込みは`Serial.cpp`の`LP_FLEXCOMM2_IRQHandler()`が`Serial1`とSDKのハンドラの両方に渡す。
@@ -296,7 +305,7 @@ xPack checksums（正しい値）：
 | attachInterrupt | ✅ | |
 | detachInterrupt | ✅ | v0.2.1で追加。SW2を使った実機確認済み |
 | analogRead | ✅ | LPADC。A153は`A0`-`A3`、N947は`A2`-`A5`、A156は`A0`-`A5`（`A4`・`A5`はR75・R76を外したボードで） |
-| analogWrite (PWM) | ✅ | A153・A156はFlexPWM0、N947はFlexPWM1。`PWM0`-`PWM5`のみ |
+| analogWrite (PWM) | ✅ | A153・A156はFlexPWM0、N947・N236はFlexPWM1。`PWM0`-`PWM5`と、A156・N236の`D3`/`D5`/`D6`/`D9`（A156はFlexPWM1、0.9.0）。組の周期は組ごとに共有（0.9.0で直した） |
 | millis / micros | ✅ | SysTick(1ms) + DWT |
 | delayMicroseconds | ✅ | wait_us()ベース、v0.2.1で追加 |
 | tone / noTone | ✅ | CTIMER0, 任意のデジタルピン |
@@ -304,15 +313,15 @@ xPack checksums（正しい値）：
 | shiftOut / shiftIn | ✅ | 割り込みベースの相互検証で確認 |
 | pulseIn / pulseInLong | ✅ | |
 | random / randomSeed | ✅ | |
-| UNO R3/R4互換マクロ・定数一式 | ✅ | `release_check/01`の「compat macros」節で実行時に値を確認 |
+| UNO R3/R4互換マクロ・定数一式 | ✅ | `release_check/09`の「compat macros」節で実行時に値を確認（0.8.0までは`01`） |
 | String クラス | ✅ | 独自実装（WString移植ではない）。連結・数値変換・検索・置換・大小文字変換・trim等を実機確認、全項目OK |
 | EEPROM（0.7.0） | ✅ | 1KB、内蔵フラッシュの末尾。`release_check/06`（API・書き込み・リセット後と書き込み後の保持）と`07`（ウォッチドッグで書き込み中に1000回リセット）で両ボード確認。CLIの`upload`とgdbの`load`、IDE（macOS）の書き込みボタンとDebugボタンで消えないことも確認 |
 | Wire.setWireTimeout / getWireTimeoutFlag / clearWireTimeoutFlag（0.7.0） | ✅ | LPI2Cのピンlowタイムアウト。`Wire`・N947の`Wire2`・A156の`Wire1`（A153・N947の`Wire1`はI3Cで無効）。`release_check/14`（ジャンパ）で3ボードとも確認 |
 | I2Cターゲット（スレーブ）モード（0.7.0） | ✅ | `Wire`とA156の`Wire1`（A153・N947の`Wire1`とN947の`Wire2`は`begin(address)`で止まる）。自分自身をターゲットにする形（`release_check/01`）と2枚接続（`release_check/24`）で確認 |
 | Wire: begin()のオーバーロード・内部プルアップ・Stream化・5引数requestFrom・バッファ上限（0.7.0） | ✅ | `test_Wire_begin_address`と`test_Wire_Stream_requestFrom5`で両ボード確認（後者は`release_check/01`に統合） |
 | Serial.begin(baud, config) / end() / serialEvent（0.7.0） | ✅ | 12形式をRXピンからビット単位で読んで確認（`release_check/11`に統合） |
-| AVR互換の補助関数（0.7.0） | ✅ | `itoa`/`dtostrf`/`word`/`_BV`/`analogReference`の定数/`HardwareSerial`/avr-libcの文字列関数/`M_`定数/`SDA`・`SCL`/`BitOrder`のenum化。`test_avr_compat_helpers`（`release_check/01`に統合。単体でもA156を含む3ボードでALL PASS） |
-| print(double)・String(double)の丸め（0.7.0） | ✅ | `test_print_float_rounding`で3ボード確認（A156は0.9.0の開発開始時。代表的な項目は`release_check/01`にも入っている） |
+| AVR互換の補助関数（0.7.0） | ✅ | `itoa`/`dtostrf`/`word`/`_BV`/`analogReference`の定数/`HardwareSerial`/avr-libcの文字列関数/`M_`定数/`SDA`・`SCL`/`BitOrder`のenum化。`test_avr_compat_helpers`（`release_check/09`に統合、0.8.0までは`01`。単体でもA156を含む3ボードでALL PASS） |
+| print(double)・String(double)の丸め（0.7.0） | ✅ | `test_print_float_rounding`で3ボード確認（A156は0.9.0の開発開始時。代表的な項目は`release_check/09`にも入っている） |
 | panic()のメッセージ・HardFaultの報告・スタック上限（0.7.0） | ✅ | `error: ...`をUSBシリアルへ。`test_fault_report`で8種類のクラッシュを3ボード確認（A156は0.9.0の開発開始時。FPUのあるA156でもPCが正しい行を指す）。スタックはヒープの終わりで`MSPLIM`により止まり、IDEの「ローカル変数で使える」表示はその量と一致する |
 | 複数ボード同時接続での書き込み・デバッグ（0.7.0、0.8.0で3枚） | ✅ | macOS（IDEとarduino-cli）、Windows・Linux（IDE、`0.7.0-rc1`のステージング経由）の全てで、2枚つないだままの書き込み（ポートを切り替えてそれぞれ）とデバッグ（1枚ずつ順番に）を確認。0.8.0で、A153・N947・A156の3枚をつないだまま3つのボードを同時にデバッガで動かせることを、macOS・Windows・Linuxの全てで、ステージング（`staging-0.8.0`）と本番の`main`のURLから入れた両方で確認（A156のプローブは`Device`列が空） |
 | 上記全機能の同時使用 | ✅ | `test_combined_peripherals.ino`（Serial1込み）で実機確認済み。WARNINGなし、`serial1`ループバック欠落なし |
@@ -378,7 +387,7 @@ v0.4.0の`main`マージ直前、ユーザーから「今回のリリース準�
 5. **その他の機械チェック**: `git status`のクリーンさ、自コードの`TODO`/`FIXME`/`XXX`残存、GitHub Issuesのオープン状態、新規追加した実行ファイル・設定ファイル（今回なら`gdb-bridge`バイナリ群・`boards.txt`の`debug.*`設定）の整合性、`package_nxp_mcx_index.json`の妥当性（新バージョンエントリはまだ追加しない——それは実際のリリース作業段階）、リリースzipサイズの見積り、「暫定」「未確認」「実機確認待ち」等の古い表現が現行ドキュメントに残っていないか
 6. **全サンプル×全ボードの回帰コンパイルスイープ**（`examples/Arduino_compatible_API`・`Arduino_incompatible_API`・`release_check`配下の全`.ino`）を、上記1〜5の変更後に最終確認として実行し、新規リグレッションがないことを確認する
 7. **`examples/release_check/`を実機で通す（全ボード）**——**コンパイルが通ったことを動作の証拠にしない**。項目6はコンパイルだけで、実行時にしか出ない不具合は一切見ていない（v0.4.0のソース配布移行では114サンプル×2ボードが通ったあと実機初回でハングした）。グループは`examples/release_check/README.md`の表に従い、番号体系は**`0n`=配線も外部部品も不要／`1n`=ジャンパ配線のみ／`2n`=外部ライブラリ・モジュール・ボードが必要**:
-   - **`0n`**（`01`〜`08`）: 配線不要。`08`はD2・D4・D5とA0/A1（N947はA2/A3）を内部プルで動かすので空けておく（`01`はA153のフラッシュを99%使っていて、`08`の分が入らなかった）。`05`はN947限定。`06`（EEPROM）は自分で1回リセットしてから判定し、もう一度書き込むと前回のデータが書き込みをまたいで残ったかも確認する。
+   - **`0n`**（`01`〜`09`）: 配線不要。`08`はD2・D4・D5とA0/A1（N947はA2/A3）を内部プルで動かすので空けておく（`01`はA153のフラッシュを99%使っていて、`08`の分が入らなかった）。`09`は周辺機能を使わないソフトウェアの確認で、0.9.0で`01`から分けた（`01`がA153のフラッシュの残り40バイトまで来たため）。`05`はN947限定。`06`（EEPROM）は自分で1回リセットしてから判定し、もう一度書き込むと前回のデータが書き込みをまたいで残ったかも確認する。
      `07`（EEPROMの書き込み中リセット）はウォッチドッグで1000回リセットをかけ、1ボード約6分。EEPROMを上書きするので`06`の2回が済んでから流す
    - **`1n`**（`11`〜`15`）: ジャンパのみ。`11`のSerial1配線は**ボードで違う**（A153・A156=D0-D1、N947=MikroBus `MB_TX`-`MB_RX`）。`14`（`setWireTimeout`）は全ボード共通で`D19`-`D8`＋`D18`-`D7`、N947は`Wire2`用に、A156は`Wire1`用に`MB_SCL`-`MB_PWM`＋`MB_SDA`-`MB_INT`も。`15`はA156限定で`MB_SDA`-`D18`＋`MB_SCL`-`D19`
    - **`2n`**（`21`〜`24`）: 外部`P3T1755.h`＋MikroBus配線／外部LM75系センサー／`Waveshare_TFT_Touch`の`SDBitmapViewerDemo`（`SDBitmapViewer`ではない。A156だけはDemoが`#error`で止まるので、`/PLAYLIST.JSN`を外したカードで`SDBitmapViewer`）／もう1枚のボード（`24`は2枚（0.8.0ではA153とN947、A156とN947）をD18-D18、D19-D19、GND-GNDでつなぎ、両方に書き込む。どちらかが前から同じスケッチを動かしていたら、両方をほぼ同時にリセットしてから始める）。`21`/`22`は**CIスタブではなく実物のライブラリ**を`--library`で指定すること
