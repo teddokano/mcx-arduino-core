@@ -39,6 +39,13 @@ physical MCU port pin.
 > `PWM2`/`PWM3`, and `PWM4`/`PWM5` each pair up on one FlexPWM0 submodule and
 > share its period register, so changing one pin's frequency changes its
 > paired pin's frequency too.
+>
+> The paired pin keeps its pulse width in microseconds, cut short if it no
+> longer fits the new period; `analogWrite()` on either pin then sets its
+> duty at the shared frequency. A pin's first `analogWrite()` joins its pair
+> at the frequency the pair is already running at. (Before 0.9.0,
+> `analogWrite()` on the paired pin put its own earlier frequency back and
+> left the other pin's duty wrong.)
 
 Other named pins/peripherals:
 

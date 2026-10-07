@@ -51,13 +51,13 @@ physical MCU port pin.
 | `D0` | `P2_11` | `Serial1` RX |
 | `D1` | `P2_10` | `Serial1` TX |
 | `D2` | `P3_1` | |
-| `D3` | `P3_12` | on-board Red LED (`RED`) |
+| `D3` | `P3_12` | `analogWrite` (FlexPWM1); on-board Red LED (`RED`) |
 | `D4` | `P3_31` | |
-| `D5` | `P3_14` | |
-| `D6` | `P3_16` | |
+| `D5` | `P3_14` | `analogWrite` (FlexPWM1) |
+| `D6` | `P3_16` | `analogWrite` (FlexPWM1) |
 | `D7` | `P1_14` | |
 | `D8` | `P1_15` | |
-| `D9` | `P3_17` | |
+| `D9` | `P3_17` | `analogWrite` (FlexPWM1) |
 | `D10` | `P2_6` | `SPI` CS — **needs R59 at 2-3** (see above) |
 | `D11` | `P2_13` | `SPI` MOSI — **needs R60 at 2-3** (see above) |
 | `D12` | `P2_16` | `SPI` MISO |
@@ -82,12 +82,32 @@ and submodules as FRDM-MCXA153):
 | `PWM4` | `P3_7` | sm0 | B |
 | `PWM5` | `P3_6` | sm0 | A |
 
+`D3`, `D5`, `D6` and `D9` are `analogWrite` pins too (since 0.9.0), on
+FlexPWM1 (ALT7) -- PWM outputs of their own, separate from `PWM0`-`PWM5`, so
+the board has ten:
+
+| Arduino pin | MCU pin | Submodule | Channel | Notes |
+|---|---|---|---|---|
+| `D6` | `P3_16` | sm0 | A | |
+| `D9` | `P3_17` | sm0 | B | |
+| `D5` | `P3_14` | sm1 | A | |
+| `D3` | `P3_12` | sm2 | A | also the red LED, on when LOW: a lower duty lights it brighter |
+
 > **PWM frequency**: `analogWriteFrequency(pin, hz)` sets a pin's PWM
 > frequency (non-standard extension, not part of the official Arduino API —
 > modeled on Teensy's function of the same name). `PWM0`/`PWM1`,
-> `PWM2`/`PWM3`, and `PWM4`/`PWM5` each pair up on one FlexPWM0 submodule and
-> share its period register, so changing one pin's frequency changes its
-> paired pin's frequency too.
+> `PWM2`/`PWM3`, and `PWM4`/`PWM5` each pair up on one FlexPWM0 submodule,
+> and `D6`/`D9` on one FlexPWM1 submodule; each pair shares its submodule's
+> period register, so changing one pin's frequency changes its paired pin's
+> frequency too. `D3` and `D5` have a submodule, and a frequency, each to
+> themselves, so the ten pins run at up to six frequencies.
+>
+> The paired pin keeps its pulse width in microseconds, cut short if it no
+> longer fits the new period; `analogWrite()` on either pin then sets its
+> duty at the shared frequency. A pin's first `analogWrite()` joins its pair
+> at the frequency the pair is already running at. (Before 0.9.0,
+> `analogWrite()` on the paired pin put its own earlier frequency back and
+> left the other pin's duty wrong.)
 
 ## Other named pins and peripherals
 

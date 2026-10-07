@@ -19,9 +19,12 @@
 int		analogRead( int pin_num );
 
 /** Set a PWM output pin's duty cycle. Lazily creates the pin's PwmOut
- *  instance on first use, with the default 1kHz period. Calls panic() if
- *  pin_num isn't one of this board's PWM-capable pins.
- * @param pin_num PWM pin (PWM0..PWM5)
+ *  instance on first use, with the default 1kHz period -- or, if the other
+ *  pin of its FlexPWM submodule is already running, at that pin's period.
+ *  After pinMode() has made the pin GPIO, this puts it back on FlexPWM.
+ *  On a pin with no PWM it drives the pin HIGH or LOW instead, as AVR's
+ *  core does.
+ * @param pin_num PWM pin (PWM0..PWM5, and D3/D5/D6/D9 on FRDM-MCXA156 and FRDM-MCXN236)
  * @param value duty cycle, scaled to analogWriteResolution() bits (8 by default, so 0..255)
  */
 void	analogWrite( int pin_num, int value );
@@ -40,11 +43,14 @@ void	analogWrite( int pin_num, int value );
  *  the new period if it no longer fits).
  *
  *  Caveat: PWM0-5 pair up two-to-a-FlexPWM-submodule (PWM0/PWM1,
- *  PWM2/PWM3, PWM4/PWM5), and a submodule's period register is shared by
- *  both channels -- changing one pin's frequency changes its paired
- *  pin's frequency too. See this board's PIN_MAPPING_*.md.
+ *  PWM2/PWM3, PWM4/PWM5; on FRDM-MCXA156 also D6/D9), and a submodule's
+ *  period register is shared by both channels -- changing one pin's
+ *  frequency changes its paired pin's frequency too, and the paired pin
+ *  keeps its pulse width in microseconds as above. analogWrite() on
+ *  either pin afterwards sets its duty at the shared frequency. See this
+ *  board's PIN_MAPPING_*.md.
  *
- * @param pin_num PWM pin (PWM0..PWM5)
+ * @param pin_num PWM pin (PWM0..PWM5, and D3/D5/D6/D9 on FRDM-MCXA156 and FRDM-MCXN236)
  * @param frequency new PWM frequency in Hz; call this before analogWrite() to set duty at the new rate
  */
 void	analogWriteFrequency( int pin_num, uint32_t frequency );

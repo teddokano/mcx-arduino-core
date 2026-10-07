@@ -13,8 +13,26 @@ static DigitalInOut*    digital_pins[ MAX_DIGITAL_PINS ]    = {};
 static InterruptIn*     interrupt_pins[ MAX_DIGITAL_PINS ]  = {};
 static uint8_t          pin_modes[ MAX_DIGITAL_PINS ]       = {};  // the last pinMode() mode, valid where digital_pins[] is set
 
+// arduino_analog.cpp: a PwmOut on the pin stops owning it
+void analog_pin_to_gpio( int raw_pin );
+
+// Called by analogWrite() when it puts a pin on FlexPWM: the pinMode() GPIO
+// object made for the pin would otherwise still claim it. Returns whether
+// there was one.
+bool digital_pin_drop( int raw_pin )
+{
+		if ( raw_pin < 0 || raw_pin >= MAX_DIGITAL_PINS || digital_pins[ raw_pin ] == nullptr )
+				return false;
+
+		delete digital_pins[ raw_pin ];
+		digital_pins[ raw_pin ] = nullptr;
+		return true;
+}
+
 static void set_pin_mode( int pin_num, int mode )
 {
+		analog_pin_to_gpio( pin_num );
+
 		pin_modes[ pin_num ]    = (uint8_t)mode;
 
 		int     dir       = (mode == OUTPUT || mode == OUTPUT_OPENDRAIN) ? DigitalInOut::OUTPUT : DigitalInOut::INPUT;

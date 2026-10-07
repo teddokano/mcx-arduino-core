@@ -368,8 +368,10 @@ void loop() {
 
 ### 2.6. PWM output: `analogWrite`
 
-PWM is only available on the dedicated pins `PWM0`-`PWM5` (FlexPWM0), not on
-every digital pin. The frequency is 1kHz unless `analogWriteFrequency()`
+PWM is available on the dedicated pins `PWM0`-`PWM5`, not on every digital
+pin. FRDM-MCXA156 and FRDM-MCXN236 also have it on `D3`, `D5`, `D6` and
+`D9`, as on a classic Arduino; on any other pin `analogWrite` just drives the
+pin HIGH or LOW. The frequency is 1kHz unless `analogWriteFrequency()`
 changes it; `analogWrite` sets the duty cycle (0-255), same as classic Arduino. This example mirrors the ADC
 reading from section 2.5 onto a PWM output — connect an LED (with a resistor) or
 scope to `PWM0` to see it change:
@@ -415,7 +417,7 @@ void loop() {
 ### 2.8. Sound: `tone` / `noTone`
 
 `tone()` works on **any** digital pin (via CTIMER0 software-toggling the
-pin), unlike `analogWrite` which is limited to `PWM0`-`PWM5`. Only one tone
+pin), unlike `analogWrite` which is limited to the PWM pins. Only one tone
 can play at a time. Connect a piezo buzzer between `D13` and GND:
 
 ```cpp

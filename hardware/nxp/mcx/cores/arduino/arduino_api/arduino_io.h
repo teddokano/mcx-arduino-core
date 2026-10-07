@@ -460,14 +460,19 @@ static const uint8_t	SCL	= PIN_WIRE_SCL;
 #error "arduino_io.h: NUM_ANALOG_INPUTS is not set for this board"
 #endif
 
-/** Whether analogWrite() works on the given ArduinoPinNum. On this board
- *  PWM capability lives entirely on the dedicated PWM0-PWM5 pins (a
- *  separate namespace from D0-D19, unlike AVR boards where PWM shares
- *  the D-pin numbers) -- so this is a plain range check against the
- *  enum above, true only for PWM0..PWM5, correctly false for every
- *  D-pin/A-pin/etc regardless of board.
+/** Whether analogWrite() works on the given ArduinoPinNum. Every board has
+ *  the dedicated PWM0-PWM5 pins (a separate namespace from D0-D19, unlike
+ *  AVR boards where PWM shares the D-pin numbers). On FRDM-MCXA156 D3, D5,
+ *  D6 and D9 reach FlexPWM too, and on FRDM-MCXN236 they are four of the
+ *  PWM0-PWM5 pins themselves, so it is true for those D-pins as well.
  */
+#if	defined( FRDM_MCXA153 ) || defined( FRDM_MCXN947 )
 #define	digitalPinHasPWM( p )	( ( (p) >= PWM0 ) && ( (p) <= PWM5 ) )
+#elif	defined( FRDM_MCXA156 ) || defined( FRDM_MCXN236 )
+#define	digitalPinHasPWM( p )	( ( ( (p) >= PWM0 ) && ( (p) <= PWM5 ) ) || (p) == D3 || (p) == D5 || (p) == D6 || (p) == D9 )
+#else
+#error "arduino_io.h: digitalPinHasPWM() is not set for this board"
+#endif
 
 #endif // ARDUINO_PIN_RENUMBERING
 

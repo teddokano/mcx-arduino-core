@@ -298,7 +298,7 @@ void loop() {
 
 ### 2.6. PWM出力: `analogWrite`
 
-PWMは専用ピン`PWM0`-`PWM5`（FlexPWM0）でのみ使用可能で、任意のデジタルピンでは使えません。周波数は1kHzで、`analogWriteFrequency()`で変えられます。`analogWrite`が決めるのはduty比（0-255）です（従来のArduinoと同じ）。以下の例は2.5節のADC読み取り値をそのままPWM出力に反映します — 抵抗付きLEDやオシロスコープを`PWM0`に接続して変化を確認してください:
+PWMは専用ピン`PWM0`-`PWM5`で使用でき、任意のデジタルピンでは使えません。FRDM-MCXA156とFRDM-MCXN236では、従来のArduinoと同じく`D3`・`D5`・`D6`・`D9`でも使えます。それ以外のピンでは、`analogWrite`はピンをHIGHかLOWにするだけです。周波数は1kHzで、`analogWriteFrequency()`で変えられます。`analogWrite`が決めるのはduty比（0-255）です（従来のArduinoと同じ）。以下の例は2.5節のADC読み取り値をそのままPWM出力に反映します — 抵抗付きLEDやオシロスコープを`PWM0`に接続して変化を確認してください:
 
 ```cpp
 #include <Arduino.h>
@@ -338,7 +338,7 @@ void loop() {
 
 ### 2.8. 音: `tone` / `noTone`
 
-`tone()`は`PWM0`-`PWM5`に限定される`analogWrite`と異なり、**任意の**デジタルピンで使用できます（CTIMER0によるソフトウェアトグル方式）。同時に鳴らせる音は1つだけです。圧電ブザーを`D13`とGND間に接続してください:
+`tone()`はPWMのピンに限定される`analogWrite`と異なり、**任意の**デジタルピンで使用できます（CTIMER0によるソフトウェアトグル方式）。同時に鳴らせる音は1つだけです。圧電ブザーを`D13`とGND間に接続してください:
 
 ```cpp
 #include <Arduino.h>

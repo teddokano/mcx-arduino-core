@@ -57,6 +57,13 @@ for the full verification status and per-feature notes this table summarizes.
 > share one submodule's period register (see the Submodule column above —
 > `PWM0`/`PWM1`, `PWM2`/`PWM3`, `PWM4`/`PWM5` are each a pair), changing one
 > pin's frequency changes its paired pin's frequency too.
+>
+> The paired pin keeps its pulse width in microseconds, cut short if it no
+> longer fits the new period; `analogWrite()` on either pin then sets its
+> duty at the shared frequency. A pin's first `analogWrite()` joins its pair
+> at the frequency the pair is already running at. (Before 0.9.0,
+> `analogWrite()` on the paired pin put its own earlier frequency back and
+> left the other pin's duty wrong.)
 
 Other named pins/peripherals:
 

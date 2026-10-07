@@ -33,9 +33,17 @@ static int raw_pin( int pin_num )
 #endif
 }
 
+// Set by pinMode() (through analog_pin_to_gpio()) on a pin whose PwmOut it
+// switched to GPIO; the next analogWrite() puts the pin back on FlexPWM
+static bool		pwm_pin_released[ MAX_ANALOG_PINS ]	= {};
+
+// arduino_io.cpp: drops the pin's pinMode() GPIO object, if it has one
+bool	digital_pin_drop( int raw_pin );
+
 // The PwmOut driving this pin, made on first use. nullptr means FlexPWM
-// cannot reach it: only the six dedicated PWM0-PWM5 pins exist on either
-// board. Asking PwmOut directly instead would panic() -- hence is_pwm_pin().
+// cannot reach it: PWM0-PWM5 on every board, and D3/D5/D6/D9 on
+// FRDM-MCXA156 (on FRDM-MCXN236 those are PWM0-PWM5 pins themselves).
+// Asking PwmOut directly instead would panic() -- hence is_pwm_pin().
 static PwmOut* pwm_for( int pin )
 {
 	if ( pin < 0 || pin >= MAX_ANALOG_PINS || !PwmOut::is_pwm_pin( pin ) )
@@ -43,15 +51,32 @@ static PwmOut* pwm_for( int pin )
 
 	if ( pwm_out_pins[ pin ] == nullptr )
 	{
+		//	A pin whose submodule partner is already running joins it at
+		//	its period, which analogWriteFrequency() may have set: putting
+		//	the default back here would change the partner's frequency.
+		bool	joins_running	= PwmOut::shares_running_period( pin );
+
 		pwm_out_pins[ pin ]	= new PwmOut( pin );
 
 		if ( pwm_out_pins[ pin ] == nullptr )
 			panic( "error @ new, in analogWrite()" );
 
-		pwm_out_pins[ pin ]->period_us( PWM_PERIOD_US );
+		if ( !joins_running )
+			pwm_out_pins[ pin ]->period_us( PWM_PERIOD_US );
 	}
 
 	return	pwm_out_pins[ pin ];
+}
+
+//	Called by pinMode() before it switches a pin to GPIO. A PwmOut on the
+//	pin stops owning it, and analogWrite() takes it back.
+void analog_pin_to_gpio( int raw_pin )
+{
+	if ( raw_pin < 0 || raw_pin >= MAX_ANALOG_PINS || pwm_out_pins[ raw_pin ] == nullptr )
+		return;
+
+	pwm_out_pins[ raw_pin ]->release_pin();
+	pwm_pin_released[ raw_pin ]	= true;
 }
 
 int analogRead( int pin_num )
@@ -90,8 +115,21 @@ void analogWrite( int pin_num, int value )
 	else if ( value > max_value )
 		value	= max_value;
 
-	if ( PwmOut *pwm = pwm_for( raw_pin( pin_num ) ) )
+	int	pin	= raw_pin( pin_num );
+
+	if ( PwmOut *pwm = pwm_for( pin ) )
 	{
+		//	The pin is FlexPWM's from here on: a pinMode() GPIO object
+		//	made before would still claim it, and a pinMode() since the
+		//	last analogWrite() has switched it to GPIO
+		digital_pin_drop( pin );
+
+		if ( pwm_pin_released[ pin ] )
+		{
+			pwm->claim_pin();
+			pwm_pin_released[ pin ]	= false;
+		}
+
 		pwm->write( (float)value / (float)max_value );
 		return;
 	}
@@ -99,7 +137,8 @@ void analogWrite( int pin_num, int value )
 	//	Landing here is the normal case, not an error: no D-pin on N947
 	//	reaches FlexPWM at all, and on A153 only D3/D7 do, on the channels
 	//	PWM5/PWM4 already own -- so analogWrite( 9, ... ), written for a
-	//	classic Arduino, can never be PWM on these boards. Drive the pin
+	//	classic Arduino, can be PWM only on FRDM-MCXA156 and FRDM-MCXN236
+	//	(D3/D5/D6/D9 there). Elsewhere, drive the pin
 	//	high or low instead, as AVR's core does for a pin with no timer
 	//	behind it (wiring_analog.c, "case NOT_ON_TIMER"). The midpoint
 	//	follows analogWriteResolution() rather than AVR's hardcoded 128.
@@ -119,7 +158,7 @@ void analogWriteFrequency( int pin_num, uint32_t frequency )
 	//	accident: asking for it on a pin that cannot do PWM is a mistake
 	//	worth saying out loud, as every other unsupported-pin case here does.
 	if ( pwm == nullptr )
-		panic( "analogWriteFrequency: pin has no PWM -- use PWM0-PWM5" );
+		panic( "analogWriteFrequency: pin has no PWM -- use PWM0-PWM5 (or D3/D5/D6/D9 on FRDM-MCXA156/N236)" );
 
 	if ( frequency < 1 )
 		frequency	= 1;

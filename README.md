@@ -24,7 +24,8 @@ functionality `Wire`-shaped APIs can't expose, and
 [debugging pin ownership with mcxPinState](docs/mcxpinstate_guide.md), a
 bundled companion library for exactly that. A second bundled library,
 [mcxRCServo](https://github.com/teddokano/mcxRCServo), drives hobby RC
-servos from the `PWM0`-`PWM5` pins.
+servos from the PWM pins (`PWM0`-`PWM5`, and `D3`/`D5`/`D6`/`D9` on
+FRDM-MCXA156 and FRDM-MCXN236).
 
 Adding another FRDM-MCX board to this core is a different job from using
 it, and has its own guide:
@@ -123,7 +124,7 @@ mcx-arduino-core/
 │   │   ├── EEPROM/            #   AVR-compatible EEPROM, 1KB in on-chip flash (lives here)
 │   │   ├── mcxPinState/       #   Pin-ownership debugging (see docs/mcxpinstate_guide.md);
 │   │   │                      #   developed in its own repo, synced here at release time
-│   │   └── mcxRCServo/        #   RC servo driver for the PWM0-PWM5 pins; likewise synced
+│   │   └── mcxRCServo/        #   RC servo driver for the PWM pins; likewise synced
 │   ├── tools/
 │   │   ├── upload.sh         # Upload script (auto-detects LinkServer), upload.bat for Windows
 │   │   └── gdb-bridge/       # Bridges Arduino IDE 2's cortex-debug (expects OpenOCD) to

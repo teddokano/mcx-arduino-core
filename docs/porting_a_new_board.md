@@ -133,7 +133,8 @@ is the LPI2C/LPSPI peripheral family the other chips share.
 | `r01lib/Serial.cpp`, `Serial.h` | `s_pinMap[]` (TX/RX → LPUART instance and per-pin ALT) and the IRQ handlers. The most branch-heavy file |
 | `r01lib/i2c.cpp`, `i3c.cpp` | Constructor branches selecting the LPI2C/I3C instance per pin pair |
 | `r01lib/r01lib_spi.cpp` | Same, for LPSPI |
-| `r01lib/AnalogIn.{h,cpp}`, `PwmOut.{h,cpp}` | **Whole class definitions duplicated per board**, not just tables. Doxygen documents only the first branch |
+| `r01lib/AnalogIn.{h,cpp}` | **Whole class definitions duplicated per board**, not just tables. Doxygen documents only the first branch |
+| `r01lib/PwmOut.cpp` | One table block per chip (since 0.9.0): the FlexPWM instances, their resets and submodule clock gates, the source clock, and each pin's instance, submodule, channel and ALT. The class itself is shared. `arduino_api/arduino_io.h`'s `digitalPinHasPWM()` needs the board's PWM-capable D-pins too |
 | `r01lib/irq.{c,h}`, `InterruptIn.cpp` | Interrupt vector wiring |
 | `arduino_api/arduino_io.h` | `NUM_ANALOG_INPUTS`, and the renumbering table |
 
@@ -379,7 +380,8 @@ but any new always-constructed global that grabs pins can reintroduce it.
 `PWM1` as FlexPWM instance pointers, which collides with the pin macros.
 `io.h` `#undef`s them; the driver keeps a copy of the SDK meaning saved
 before the include. A153 has no such collision, so the pattern only
-appears on one board and is easy to miss.
+appears on one board and is easy to miss (N236 has the same SDK names as
+N947, and shares its branch of that workaround).
 
 **Watch for `*/` inside block comments.** Writing something like
 `ARD_D*/ARD_A*` in a doc comment closes it early and breaks the build
