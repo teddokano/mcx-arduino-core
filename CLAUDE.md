@@ -267,7 +267,7 @@ xPack checksums（正しい値）：
   確認用の`test_analogWrite_pairs_and_pinMode`（配線なし、PDIRで周波数とデューティ比を測る）がA156で28項目ALL OK。前のコアでは同じテストで9件FAILし、D9で`panic`する。A153・N947・N236でもALL OK（2026-10-08。判定はA153・N947が21項目、N236が23項目）。
   `PwmOut`の書き直しでA153の`release_check/01`が残り40バイトになったので、周辺機能を使わない確認（数学定数・互換マクロ・AVR時代の補助関数・`Print`・`String`）を`release_check/09_no_wiring_software_checks`に分けた（ユーザー判断）。
   分けたあとのA153の`01`は87,820バイト（76%）。A153・N947・N236・A156の4ボードで`01`と`09`がALL OK（A156は`01`が44項目、`09`が67項目）。判定は分ける前の`01`と1件も過不足が無い
-  文書（`PIN_MAPPING_*.md`・`API_COMPATIBILITY.md`・`TUTORIAL`・`README`・`docs/porting_a_new_board.md`）も更新した（2026-10-08）。同梱のmcxRCServoのREADMEの「`PWM0`〜`PWM5`」は上流のリポジトリで直すまでそのまま
+  文書（`PIN_MAPPING_*.md`・`API_COMPATIBILITY.md`・`TUTORIAL`・`README`・`docs/porting_a_new_board.md`）も更新した（2026-10-08）。mcxRCServoのREADMEも上流で直してpushし（`303a675`、N236の列とD-ピンの表、組の相手のピンの説明）、同梱のコピーにも反映した
   `release_check/13`（サーボのパルス幅を含む）も4ボードでALL OK（2026-10-08、パルスはA156が499・1449・2399µs、N947が499・1448・2398µs、A153が499・1448・2399µs、N236が499・1449・2399µs）
 - **FC2の共有の実装**: SDKの`LPUART_Init()`・`LPI2C_MasterInit()`・`LPI2C_SlaveInit()`はFlexCommのモードを自分の分だけにし、
   `LPUART_Deinit()`・`LPI2C_MasterDeinit()`はFlexComm全体をリセットする。そこでN236のFC2だけ、初期化のあとで`flexcomm_keep_shared()`（`mcu.h`）が両方のモードに戻し、

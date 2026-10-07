@@ -11,8 +11,9 @@ Drives a hobby RC servo from a PWM pin. Two servos come ready to use:
 carrying the pulse timing from its own datasheet.
 
 Every example has been run on both FRDM-MCXA153 and FRDM-MCXN947. On
-FRDM-MCXA156 (mcx-arduino-core 0.8.0 and later) the library's pulse widths
-were measured on the `PWM0` pin, without a servo attached.
+FRDM-MCXA156 (mcx-arduino-core 0.8.0 and later) and FRDM-MCXN236 (0.9.0 and
+later) the library's pulse widths were measured on the `PWM0` pin, without a
+servo attached.
 
 ## Usage
 
@@ -147,25 +148,43 @@ untouched.
 Three wires, in the usual RC servo colours: brown to ground, red to the
 supply, orange or yellow to the signal pin.
 
-The signal line goes to any of the `PWM0`-`PWM5` pins -- the ones
-`analogWrite()` can drive, labelled on the board silkscreen. Every board puts
-them in the same place on the headers, so the same wiring and the same sketch
+The signal line goes to any pin `analogWrite()` can drive with PWM. On
+every board that is `PWM0`-`PWM5`; the pin diagrams in mcx-arduino-core's
+`PIN_MAPPING_*.md` show where they are. Every board puts them
+in the same place on the headers, so the same wiring and the same sketch
 work on any of them; what differs is only the MCU pin behind the name.
 
-| Pin name | FRDM-MCXA153 | FRDM-MCXN947 | FRDM-MCXA156 |
-|---|---|---|---|
-| `PWM0` | P3_11 | P2_3 | P3_11 |
-| `PWM1` | P3_10 | P2_2 | P3_10 |
-| `PWM2` | P3_9  | P2_5 | P3_9  |
-| `PWM3` | P3_8  | P2_4 | P3_8  |
-| `PWM4` | P3_7  | P2_7 | P3_7  |
-| `PWM5` | P3_6  | P2_6 | P3_6  |
+| Pin name | FRDM-MCXA153 | FRDM-MCXN947 | FRDM-MCXA156 | FRDM-MCXN236 |
+|---|---|---|---|---|
+| `PWM0` | P3_11 | P2_3 | P3_11 | P3_17 |
+| `PWM1` | P3_10 | P2_2 | P3_10 | P3_16 |
+| `PWM2` | P3_9  | P2_5 | P3_9  | P3_15 |
+| `PWM3` | P3_8  | P2_4 | P3_8  | P3_14 |
+| `PWM4` | P3_7  | P2_7 | P3_7  | P2_7  |
+| `PWM5` | P3_6  | P2_6 | P3_6  | P3_12 |
+
+FRDM-MCXN236 needs mcx-arduino-core 0.9.0 or later. From that version,
+FRDM-MCXA156 and FRDM-MCXN236 also have PWM on four D-pins, as on a classic
+Arduino. On FRDM-MCXA156 they are four outputs of their own; on
+FRDM-MCXN236 they are four of the `PWM0`-`PWM5` pins under a second name.
+
+| Pin name | FRDM-MCXA156 | FRDM-MCXN236 |
+|---|---|---|
+| `D3` | P3_12 | P3_12 (`PWM5`) |
+| `D5` | P3_14 | P2_7 (`PWM4`) |
+| `D6` | P3_16 | P3_17 (`PWM0`) |
+| `D9` | P3_17 | P3_14 (`PWM3`) |
 
 `PWM0`-`PWM5` pair up two to a FlexPWM submodule -- `PWM0`/`PWM1`,
-`PWM2`/`PWM3`, `PWM4`/`PWM5` -- and each pair shares one period register, so
-setting one pin's frequency sets its partner's as well. Every servo here
-wants 50Hz, so a pair of them is fine; a servo sharing a pair with something
-that wants a different PWM frequency is not.
+`PWM2`/`PWM3`, `PWM4`/`PWM5`, and on FRDM-MCXA156 also `D6`/`D9` -- and each
+pair shares one period register, so setting one pin's frequency sets its
+partner's as well. FRDM-MCXA156's `D3` and `D5` have a submodule each to
+themselves. Every servo here wants 50Hz, so a pair of them is fine. Whatever
+else is on a servo's partner pin runs at 50Hz too: an LED dimmed with
+`analogWrite()` does not mind, but something that needs a PWM frequency of
+its own does. With mcx-arduino-core before 0.9.0, an `analogWrite()` on the
+partner pin even put that pin's own earlier frequency back, taking the
+servo's 50Hz with it, so leave a servo's partner pin unused there.
 
 The SG90 examples were verified with the servo powered from the board, wired
 as drawn above. A positional servo only draws current while it is actually
