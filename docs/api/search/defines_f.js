@@ -25,5 +25,7 @@ var searchData=
   ['pwm3_22',['PWM3',['../io_8h.html#aeac4f78c2ea8acea2ef0ec02c191f3d2',1,'io.h']]],
   ['pwm4_23',['PWM4',['../io_8h.html#ac6262cc2b4c1e7ec9033a394b46d0d39',1,'io.h']]],
   ['pwm5_24',['PWM5',['../io_8h.html#a60d5992960f4493071ff4f46f8b0cb32',1,'io.h']]],
-  ['pwm_5fperiod_5fus_25',['PWM_PERIOD_US',['../arduino__analog_8cpp.html#a9eab62582ed1f922e9da46272d96944f',1,'arduino_analog.cpp']]]
+  ['pwm_5fmodules_25',['PWM_MODULES',['../_pwm_out_8cpp.html#a4b182a3dfd2d65d281b4ebbaef917d1a',1,'PwmOut.cpp']]],
+  ['pwm_5fperiod_5fus_26',['PWM_PERIOD_US',['../arduino__analog_8cpp.html#a9eab62582ed1f922e9da46272d96944f',1,'arduino_analog.cpp']]],
+  ['pwm_5fsource_5fclock_27',['PWM_SOURCE_CLOCK',['../_pwm_out_8cpp.html#a61d63a7fa75d4b0ab11c79c8cc11bd12',1,'PwmOut.cpp']]]
 ];

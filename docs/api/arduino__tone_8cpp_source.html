@@ -23,7 +23,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.8.0</span>
+   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.9.0</span>
    </div>
    <div id="projectbrief">Arduino board support package for NXP FRDM MCX Series boards</div>
   </td>
@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 <div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span><span class="comment">     *  chip&#39;s SDK).</span></div>
 <div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span><span class="comment">     */</span></div>
 <div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>    CLOCK_AttachClk( kFRO12M_to_CTIMER0 );</div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span><span class="preprocessor">#if defined( CPU_MCXN947VDF )</span></div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span><span class="preprocessor">#if defined( CPU_MCXN947VDF ) || defined( CPU_MCXN236VDF )</span></div>
 <div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>    CLOCK_SetClkDiv( kCLOCK_DivCtimer0Clk, 1u );</div>
 <div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span><span class="preprocessor">#elif defined( CPU_MCXA153VLH ) || defined( CPU_MCXA156VLL )</span></div>
 <div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>    CLOCK_SetClockDiv( kCLOCK_DivCTIMER0, 1u );</div>
@@ -268,9 +268,9 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 <div class="ttc" id="aarduino__tone_8cpp_html_a029ce7d1c3ffc8f1d357a6915fb7efc9"><div class="ttname"><a href="arduino__tone_8cpp.html#a029ce7d1c3ffc8f1d357a6915fb7efc9">CTIMER0_IRQHandler</a></div><div class="ttdeci">void CTIMER0_IRQHandler(void)</div><div class="ttdef"><b>Definition</b> <a href="#l00066">arduino_tone.cpp:66</a></div></div>
 <div class="ttc" id="aarduino__tone_8cpp_html_a2c7061bf635e1e161e73d12241a28cca"><div class="ttname"><a href="arduino__tone_8cpp.html#a2c7061bf635e1e161e73d12241a28cca">noTone</a></div><div class="ttdeci">void noTone(int pin_num)</div><div class="ttdef"><b>Definition</b> <a href="#l00143">arduino_tone.cpp:143</a></div></div>
 <div class="ttc" id="aarduino__tone_8cpp_html_a809e5456f5c88218f8372e1660d8cf9b"><div class="ttname"><a href="arduino__tone_8cpp.html#a809e5456f5c88218f8372e1660d8cf9b">tone</a></div><div class="ttdeci">void tone(int pin_num, unsigned int frequency, unsigned long duration)</div><div class="ttdef"><b>Definition</b> <a href="#l00091">arduino_tone.cpp:91</a></div></div>
-<div class="ttc" id="aclass_digital_in_out_html"><div class="ttname"><a href="class_digital_in_out.html">DigitalInOut</a></div><div class="ttdef"><b>Definition</b> <a href="io_8h_source.html#l00866">io.h:867</a></div></div>
+<div class="ttc" id="aclass_digital_in_out_html"><div class="ttname"><a href="class_digital_in_out.html">DigitalInOut</a></div><div class="ttdef"><b>Definition</b> <a href="io_8h_source.html#l00885">io.h:886</a></div></div>
 <div class="ttc" id="aclass_digital_in_out_html_a020a631fa7eb46952d7a28e80b716931"><div class="ttname"><a href="class_digital_in_out.html#a020a631fa7eb46952d7a28e80b716931">DigitalInOut::DigitalInOut</a></div><div class="ttdeci">DigitalInOut(uint8_t pin_num, bool direction=kGPIO_DigitalInput, bool value=0, int pin_mode=PullNone)</div><div class="ttdef"><b>Definition</b> <a href="io_8cpp_source.html#l00477">io.cpp:477</a></div></div>
-<div class="ttc" id="aclass_digital_in_out_html_a6042e4468e550347265bda8db2325be4a703c4f934619ea7ff966f011771439c2"><div class="ttname"><a href="class_digital_in_out.html#a6042e4468e550347265bda8db2325be4a703c4f934619ea7ff966f011771439c2">DigitalInOut::OUTPUT</a></div><div class="ttdeci">@ OUTPUT</div><div class="ttdef"><b>Definition</b> <a href="io_8h_source.html#l00871">io.h:871</a></div></div>
+<div class="ttc" id="aclass_digital_in_out_html_a6042e4468e550347265bda8db2325be4a703c4f934619ea7ff966f011771439c2"><div class="ttname"><a href="class_digital_in_out.html#a6042e4468e550347265bda8db2325be4a703c4f934619ea7ff966f011771439c2">DigitalInOut::OUTPUT</a></div><div class="ttdeci">@ OUTPUT</div><div class="ttdef"><b>Definition</b> <a href="io_8h_source.html#l00890">io.h:890</a></div></div>
 <div class="ttc" id="ar01lib_8h_html"><div class="ttname"><a href="r01lib_8h.html">r01lib.h</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->

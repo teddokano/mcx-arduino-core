@@ -10,5 +10,6 @@ var searchData=
   ['port_5ftype_7',['port_type',['../io_8cpp.html#a6b00a781f7b6edc2a45e188f18a1510a',1,'io.cpp']]],
   ['pull_8',['pull',['../struct_pin_pcr_info.html#af4fb4a1b6acdf2f689caa66000923c2a',1,'PinPcrInfo']]],
   ['pwm_5fout_5fpins_9',['pwm_out_pins',['../arduino__analog_8cpp.html#a074f42a422d9d8a6950ff8b92fb9847f',1,'arduino_analog.cpp']]],
-  ['pwm_5fresolution_5fbits_10',['pwm_resolution_bits',['../arduino__analog_8cpp.html#a233355b0eaa2beef0b56f517029d3ddf',1,'arduino_analog.cpp']]]
+  ['pwm_5fpin_5freleased_10',['pwm_pin_released',['../arduino__analog_8cpp.html#a735ecc34cb113a449eec15715b53e1c8',1,'arduino_analog.cpp']]],
+  ['pwm_5fresolution_5fbits_11',['pwm_resolution_bits',['../arduino__analog_8cpp.html#a233355b0eaa2beef0b56f517029d3ddf',1,'arduino_analog.cpp']]]
 ];

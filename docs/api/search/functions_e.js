@@ -17,11 +17,12 @@ var searchData=
   ['reg_5fxfer_14',['reg_xfer',['../class_i3_c.html#a16fe5e1f0d775364da4a5e88d068e756',1,'I3C']]],
   ['regist_15',['regist',['../class_interrupt_in.html#aeea4d3381088141d045cf2ebb6371c11',1,'InterruptIn']]],
   ['reinit_16',['reinit',['../class_serial.html#a4f5b54f416cd012dbbb700cc9f5230de',1,'Serial']]],
-  ['remove_17',['remove',['../class_string.html#a91a7b3eff0145d04b00c334eb26e14fd',1,'String::remove(unsigned int index)'],['../class_string.html#a75f1c8be5d96bb4ad78e1663e8527fb8',1,'String::remove(unsigned int index, unsigned int count)']]],
-  ['replace_18',['replace',['../class_string.html#ada3e4ff53c15f6cd12626ebcd495cd91',1,'String::replace(char find, char rep)'],['../class_string.html#a1fe39869ce0212608f0094492563fec0',1,'String::replace(const String &amp;find, const String &amp;rep)']]],
-  ['requestfrom_19',['requestFrom',['../class_two_wire.html#aea9b0478fb81b05bff3934e8a5044e5c',1,'TwoWire::requestFrom(const uint8_t address, const size_t length, bool stop=true)'],['../class_two_wire.html#a17efd58353bd4e68eba371a4b29e74ab',1,'TwoWire::requestFrom(uint8_t address, uint8_t quantity, uint32_t iaddress, uint8_t isize, uint8_t sendStop)']]],
-  ['reserve_20',['reserve',['../class_string.html#a4669cc8cd5ff06359d294c19eba8b729',1,'String']]],
-  ['resolve_5fpin_21',['resolve_pin',['../class_analog_in.html#a5077d91baa0098684f6d37c10de4429f',1,'AnalogIn::resolve_pin()'],['../class_pwm_out.html#a5dee54280c5fa3ce2c1d381d4b5c45ac',1,'PwmOut::resolve_pin()']]],
-  ['resolve_5fpins_22',['resolve_pins',['../class_serial.html#a68147ee8f0185e00f465af29a6300c2a',1,'Serial']]],
-  ['rise_23',['rise',['../class_interrupt_in.html#ad6bfbd9e6110c57eae9ef9e7ab6ad1f9',1,'InterruptIn']]]
+  ['release_5fpin_17',['release_pin',['../class_pwm_out.html#a1a41b0eba70e475fbbbcd9b11fbeeedc',1,'PwmOut']]],
+  ['remove_18',['remove',['../class_string.html#a91a7b3eff0145d04b00c334eb26e14fd',1,'String::remove(unsigned int index)'],['../class_string.html#a75f1c8be5d96bb4ad78e1663e8527fb8',1,'String::remove(unsigned int index, unsigned int count)']]],
+  ['replace_19',['replace',['../class_string.html#ada3e4ff53c15f6cd12626ebcd495cd91',1,'String::replace(char find, char rep)'],['../class_string.html#a1fe39869ce0212608f0094492563fec0',1,'String::replace(const String &amp;find, const String &amp;rep)']]],
+  ['requestfrom_20',['requestFrom',['../class_two_wire.html#aea9b0478fb81b05bff3934e8a5044e5c',1,'TwoWire::requestFrom(const uint8_t address, const size_t length, bool stop=true)'],['../class_two_wire.html#a17efd58353bd4e68eba371a4b29e74ab',1,'TwoWire::requestFrom(uint8_t address, uint8_t quantity, uint32_t iaddress, uint8_t isize, uint8_t sendStop)']]],
+  ['reserve_21',['reserve',['../class_string.html#a4669cc8cd5ff06359d294c19eba8b729',1,'String']]],
+  ['resolve_5fpin_22',['resolve_pin',['../class_analog_in.html#a5077d91baa0098684f6d37c10de4429f',1,'AnalogIn']]],
+  ['resolve_5fpins_23',['resolve_pins',['../class_serial.html#a68147ee8f0185e00f465af29a6300c2a',1,'Serial']]],
+  ['rise_24',['rise',['../class_interrupt_in.html#ad6bfbd9e6110c57eae9ef9e7ab6ad1f9',1,'InterruptIn']]]
 ];

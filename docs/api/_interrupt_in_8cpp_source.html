@@ -23,7 +23,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.8.0</span>
+   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.9.0</span>
    </div>
    <div id="projectbrief">Arduino board support package for NXP FRDM MCX Series boards</div>
   </td>
@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 <div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span><span class="preprocessor">#include    &quot;<a class="code" href="_interrupt_in_8h.html">InterruptIn.h</a>&quot;</span></div>
 <div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span><span class="preprocessor">#include    &quot;<a class="code" href="mcu_8h.html">mcu.h</a>&quot;</span></div>
 <div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span> </div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span><span class="preprocessor">#ifdef  CPU_MCXN947VDF</span></div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span><span class="preprocessor">#if defined( CPU_MCXN947VDF ) || defined( CPU_MCXN236VDF )</span></div>
 <div class="line"><a id="l00023" name="l00023"></a><span class="lineno"><a class="line" href="_interrupt_in_8cpp.html#a1d213b251de3419709de01c6e19df275">   23</a></span><span class="preprocessor">    #define     N_GPIO      6</span></div>
 <div class="line"><a id="l00024" name="l00024"></a><span class="lineno"><a class="line" href="_interrupt_in_8cpp.html#a99e32892a401202b8b6ade78014aed0e">   24</a></span><span class="preprocessor">    #define     GPIO_BITS   32</span></div>
 <div class="line"><a id="l00025" name="l00025"></a><span class="lineno"><a class="line" href="_interrupt_in_8cpp.html#a4e4e0b4b93017e4fed3ce6a8d6c9f492">   25</a></span>    <span class="keyword">static</span>  GPIO_Type   *<a class="code hl_variable" href="_interrupt_in_8cpp.html#a4e4e0b4b93017e4fed3ce6a8d6c9f492">gpio_ptr</a>[] = GPIO_BASE_PTRS;</div>
@@ -337,9 +337,9 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 <div class="ttc" id="a_interrupt_in_8h_html"><div class="ttname"><a href="_interrupt_in_8h.html">InterruptIn.h</a></div></div>
 <div class="ttc" id="a_interrupt_in_8h_html_a41a221fd39a2f7b5f11a9538494cbdc9"><div class="ttname"><a href="_interrupt_in_8h.html#a41a221fd39a2f7b5f11a9538494cbdc9">func_ptr</a></div><div class="ttdeci">void(*) func_ptr(void)</div><div class="ttdef"><b>Definition</b> <a href="_interrupt_in_8h_source.html#l00025">InterruptIn.h:25</a></div></div>
 <div class="ttc" id="aclass_digital_in_html_a4c92a94513c5f55fdcc99789ae35d84a"><div class="ttname"><a href="class_digital_in.html#a4c92a94513c5f55fdcc99789ae35d84a">DigitalIn::DigitalIn</a></div><div class="ttdeci">DigitalIn(uint8_t pin_num, int pin_mode=PullNone)</div><div class="ttdef"><b>Definition</b> <a href="io_8cpp_source.html#l00614">io.cpp:614</a></div></div>
-<div class="ttc" id="aclass_digital_in_out_html_a1b495b857a3087a92dd4ed0ecfc9eb9a"><div class="ttname"><a href="class_digital_in_out.html#a1b495b857a3087a92dd4ed0ecfc9eb9a">DigitalInOut::port_n</a></div><div class="ttdeci">PORT_Type * port_n</div><div class="ttdef"><b>Definition</b> <a href="io_8h_source.html#l00969">io.h:969</a></div></div>
-<div class="ttc" id="aclass_digital_in_out_html_a44740bc823e3945773f1423ec63803fa"><div class="ttname"><a href="class_digital_in_out.html#a44740bc823e3945773f1423ec63803fa">DigitalInOut::gpio_pin</a></div><div class="ttdeci">uint8_t gpio_pin</div><div class="ttdef"><b>Definition</b> <a href="io_8h_source.html#l00970">io.h:970</a></div></div>
-<div class="ttc" id="aclass_digital_in_out_html_a9bdab338c9f749340114fb97aa4e4c0b"><div class="ttname"><a href="class_digital_in_out.html#a9bdab338c9f749340114fb97aa4e4c0b">DigitalInOut::gpio_n</a></div><div class="ttdeci">GPIO_Type * gpio_n</div><div class="ttdef"><b>Definition</b> <a href="io_8h_source.html#l00968">io.h:968</a></div></div>
+<div class="ttc" id="aclass_digital_in_out_html_a1b495b857a3087a92dd4ed0ecfc9eb9a"><div class="ttname"><a href="class_digital_in_out.html#a1b495b857a3087a92dd4ed0ecfc9eb9a">DigitalInOut::port_n</a></div><div class="ttdeci">PORT_Type * port_n</div><div class="ttdef"><b>Definition</b> <a href="io_8h_source.html#l00988">io.h:988</a></div></div>
+<div class="ttc" id="aclass_digital_in_out_html_a44740bc823e3945773f1423ec63803fa"><div class="ttname"><a href="class_digital_in_out.html#a44740bc823e3945773f1423ec63803fa">DigitalInOut::gpio_pin</a></div><div class="ttdeci">uint8_t gpio_pin</div><div class="ttdef"><b>Definition</b> <a href="io_8h_source.html#l00989">io.h:989</a></div></div>
+<div class="ttc" id="aclass_digital_in_out_html_a9bdab338c9f749340114fb97aa4e4c0b"><div class="ttname"><a href="class_digital_in_out.html#a9bdab338c9f749340114fb97aa4e4c0b">DigitalInOut::gpio_n</a></div><div class="ttdeci">GPIO_Type * gpio_n</div><div class="ttdef"><b>Definition</b> <a href="io_8h_source.html#l00987">io.h:987</a></div></div>
 <div class="ttc" id="aclass_interrupt_in_html_a2b4f4fe1d77e75633f475c56887c9af9"><div class="ttname"><a href="class_interrupt_in.html#a2b4f4fe1d77e75633f475c56887c9af9">InterruptIn::change</a></div><div class="ttdeci">virtual void change(func_ptr callback)</div><div class="ttdef"><b>Definition</b> <a href="#l00123">InterruptIn.cpp:123</a></div></div>
 <div class="ttc" id="aclass_interrupt_in_html_a46b284cebdb15a0826e9316ac0ed805c"><div class="ttname"><a href="class_interrupt_in.html#a46b284cebdb15a0826e9316ac0ed805c">InterruptIn::low</a></div><div class="ttdeci">virtual void low(func_ptr callback)</div><div class="ttdef"><b>Definition</b> <a href="#l00128">InterruptIn.cpp:128</a></div></div>
 <div class="ttc" id="aclass_interrupt_in_html_a51540b3f768a86078c99801692184626"><div class="ttname"><a href="class_interrupt_in.html#a51540b3f768a86078c99801692184626">InterruptIn::InterruptIn</a></div><div class="ttdeci">InterruptIn(uint8_t pin_num)</div><div class="ttdef"><b>Definition</b> <a href="#l00106">InterruptIn.cpp:106</a></div></div>
@@ -350,7 +350,7 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 <div class="ttc" id="aclass_interrupt_in_html_aeea4d3381088141d045cf2ebb6371c11"><div class="ttname"><a href="class_interrupt_in.html#aeea4d3381088141d045cf2ebb6371c11">InterruptIn::regist</a></div><div class="ttdeci">void regist(func_ptr callback, port_interrupt_t type)</div><div class="ttdef"><b>Definition</b> <a href="#l00163">InterruptIn.cpp:163</a></div></div>
 <div class="ttc" id="aio_8h_html"><div class="ttname"><a href="io_8h.html">io.h</a></div></div>
 <div class="ttc" id="airq_8h_html"><div class="ttname"><a href="irq_8h.html">irq.h</a></div></div>
-<div class="ttc" id="amcu_8cpp_html_ad3cdbe388204f1d2a626f695cf59ddbb"><div class="ttname"><a href="mcu_8cpp.html#ad3cdbe388204f1d2a626f695cf59ddbb">panic</a></div><div class="ttdeci">void panic(const char *s)</div><div class="ttdef"><b>Definition</b> <a href="mcu_8cpp_source.html#l00314">mcu.cpp:314</a></div></div>
+<div class="ttc" id="amcu_8cpp_html_ad3cdbe388204f1d2a626f695cf59ddbb"><div class="ttname"><a href="mcu_8cpp.html#ad3cdbe388204f1d2a626f695cf59ddbb">panic</a></div><div class="ttdeci">void panic(const char *s)</div><div class="ttdef"><b>Definition</b> <a href="mcu_8cpp_source.html#l00324">mcu.cpp:324</a></div></div>
 <div class="ttc" id="amcu_8h_html"><div class="ttname"><a href="mcu_8h.html">mcu.h</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->

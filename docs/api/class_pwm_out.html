@@ -23,7 +23,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.8.0</span>
+   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.9.0</span>
    </div>
    <div id="projectbrief">Arduino board support package for NXP FRDM MCX Series boards</div>
   </td>
@@ -98,9 +98,7 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="#pri-methods">Private Member Functions</a> &#124;
-<a href="#pri-static-methods">Static Private Member Functions</a> &#124;
 <a href="#pri-attribs">Private Attributes</a> &#124;
-<a href="#pri-static-attribs">Static Private Attributes</a> &#124;
 <a href="class_pwm_out-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">PwmOut Class Reference</div></div>
 </div><!--header-->
@@ -146,6 +144,10 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a673fa0919719b180b6ed623e7e7e6b12"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mbed-style assignment, equivalent to <a class="el" href="#a4d95bd01f786eee501bc948e39c5e6e4" title="Set duty cycle, 0.0 - 1.0.">write()</a>.  <br /></td></tr>
 <tr class="memitem:aad1606ab653f991c53591467fba8ff3e" id="r_aad1606ab653f991c53591467fba8ff3e"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#aad1606ab653f991c53591467fba8ff3e">operator float</a> ()</td></tr>
 <tr class="memdesc:aad1606ab653f991c53591467fba8ff3e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mbed-style implicit conversion, equivalent to <a class="el" href="#a4e4f332621e66e098c157fe9f0eb2a3d" title="Get current duty cycle, 0.0 - 1.0.">read()</a>.  <br /></td></tr>
+<tr class="memitem:a9997d00aaed4279a61814e2f8d556442" id="r_a9997d00aaed4279a61814e2f8d556442"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a9997d00aaed4279a61814e2f8d556442">claim_pin</a> (void)</td></tr>
+<tr class="memdesc:a9997d00aaed4279a61814e2f8d556442"><td class="mdescLeft">&#160;</td><td class="mdescRight">Put the pin back on FlexPWM after something else took it.  <br /></td></tr>
+<tr class="memitem:a1a41b0eba70e475fbbbcd9b11fbeeedc" id="r_a1a41b0eba70e475fbbbcd9b11fbeeedc"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a1a41b0eba70e475fbbbcd9b11fbeeedc">release_pin</a> (void)</td></tr>
+<tr class="memdesc:a1a41b0eba70e475fbbbcd9b11fbeeedc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stop recording this <a class="el" href="class_pwm_out.html" title="Mbed-compatible PWM output class.">PwmOut</a> as the pin's owner.  <br /></td></tr>
 <tr class="inherit_header pub_methods_class_obj"><td colspan="2">Public Member Functions inherited from <a class="el" href="class_obj.html">Obj</a></td></tr>
 <tr class="memitem:a963b6bbaf9c2b6c3c401ac02131744fa pub_methods_class_obj" id="r_a963b6bbaf9c2b6c3c401ac02131744fa"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="class_obj.html#a963b6bbaf9c2b6c3c401ac02131744fa">Obj</a> (bool done=false)</td></tr>
 <tr class="memitem:a71f4773f4d79208c5bce501f05659425 pub_methods_class_obj" id="r_a71f4773f4d79208c5bce501f05659425"><td class="memItemLeft">virtual&#160;</td><td class="memItemRight"><a class="el" href="class_obj.html#a71f4773f4d79208c5bce501f05659425">~Obj</a> ()</td></tr>
@@ -154,33 +156,25 @@ Public Member Functions</h2></td></tr>
 Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a349a64f4629a902085273471fed58e35" id="r_a349a64f4629a902085273471fed58e35"><td class="memItemLeft">static bool&#160;</td><td class="memItemRight"><a class="el" href="#a349a64f4629a902085273471fed58e35">is_pwm_pin</a> (int pin)</td></tr>
 <tr class="memdesc:a349a64f4629a902085273471fed58e35"><td class="mdescLeft">&#160;</td><td class="mdescRight">Is this pin one FlexPWM can actually drive?  <br /></td></tr>
+<tr class="memitem:a86e8cf280a1d085ba59b0eb790076e45" id="r_a86e8cf280a1d085ba59b0eb790076e45"><td class="memItemLeft">static bool&#160;</td><td class="memItemRight"><a class="el" href="#a86e8cf280a1d085ba59b0eb790076e45">shares_running_period</a> (int pin)</td></tr>
+<tr class="memdesc:a86e8cf280a1d085ba59b0eb790076e45"><td class="mdescLeft">&#160;</td><td class="mdescRight">Is the other channel of this pin's submodule running?  <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pri-methods" class="groupheader"><a id="pri-methods" name="pri-methods"></a>
 Private Member Functions</h2></td></tr>
-<tr class="memitem:a5dee54280c5fa3ce2c1d381d4b5c45ac" id="r_a5dee54280c5fa3ce2c1d381d4b5c45ac"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a5dee54280c5fa3ce2c1d381d4b5c45ac">resolve_pin</a> (int pin)</td></tr>
 <tr class="memitem:a47d7d7a668ff0ad4429428262452bab5" id="r_a47d7d7a668ff0ad4429428262452bab5"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a47d7d7a668ff0ad4429428262452bab5">apply</a> (void)</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-pri-static-methods" class="groupheader"><a id="pri-static-methods" name="pri-static-methods"></a>
-Static Private Member Functions</h2></td></tr>
-<tr class="memitem:acd8c7f27d189e6b042b9caa032adeb2a" id="r_acd8c7f27d189e6b042b9caa032adeb2a"><td class="memItemLeft">static void&#160;</td><td class="memItemRight"><a class="el" href="#acd8c7f27d189e6b042b9caa032adeb2a">_acquire_module</a> (void)</td></tr>
-<tr class="memitem:ab8db86e02ebbbbe59b99aa61f2d20828" id="r_ab8db86e02ebbbbe59b99aa61f2d20828"><td class="memItemLeft">static void&#160;</td><td class="memItemRight"><a class="el" href="#ab8db86e02ebbbbe59b99aa61f2d20828">_release_module</a> (void)</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pri-attribs" class="groupheader"><a id="pri-attribs" name="pri-attribs"></a>
 Private Attributes</h2></td></tr>
+<tr class="memitem:ab959ba70a83e32789c22f6e6d85daaba" id="r_ab959ba70a83e32789c22f6e6d85daaba"><td class="memItemLeft">uint8_t&#160;</td><td class="memItemRight"><a class="el" href="#ab959ba70a83e32789c22f6e6d85daaba">_module</a></td></tr>
 <tr class="memitem:aa7408f46c0f4d3d32212cbbe34ee1187" id="r_aa7408f46c0f4d3d32212cbbe34ee1187"><td class="memItemLeft">uint8_t&#160;</td><td class="memItemRight"><a class="el" href="#aa7408f46c0f4d3d32212cbbe34ee1187">_submodule</a></td></tr>
 <tr class="memitem:a6e778861408176315f290861b7a77528" id="r_a6e778861408176315f290861b7a77528"><td class="memItemLeft">uint8_t&#160;</td><td class="memItemRight"><a class="el" href="#a6e778861408176315f290861b7a77528">_channel</a></td></tr>
+<tr class="memitem:ab691517c43a4a35f4b901bd02df24325" id="r_ab691517c43a4a35f4b901bd02df24325"><td class="memItemLeft">uint8_t&#160;</td><td class="memItemRight"><a class="el" href="#ab691517c43a4a35f4b901bd02df24325">_alt</a></td></tr>
 <tr class="memitem:a4136710a5104e6f2ef85165116ff771d" id="r_a4136710a5104e6f2ef85165116ff771d"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#a4136710a5104e6f2ef85165116ff771d">_pin</a></td></tr>
-<tr class="memitem:a5f0154e9729ddfa5b8249f263a98d62f" id="r_a5f0154e9729ddfa5b8249f263a98d62f"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#a5f0154e9729ddfa5b8249f263a98d62f">_period_us</a></td></tr>
-<tr class="memitem:a92142b9980433b541968ea432c9d0322" id="r_a92142b9980433b541968ea432c9d0322"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#a92142b9980433b541968ea432c9d0322">_pulse_us</a></td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-pri-static-attribs" class="groupheader"><a id="pri-static-attribs" name="pri-static-attribs"></a>
-Static Private Attributes</h2></td></tr>
-<tr class="memitem:ab6d6f934051a2c572e2cc9c311d751b7" id="r_ab6d6f934051a2c572e2cc9c311d751b7"><td class="memItemLeft">static uint8_t&#160;</td><td class="memItemRight"><a class="el" href="#ab6d6f934051a2c572e2cc9c311d751b7">_instance_count</a> = 0</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Mbed-compatible PWM output class. </p>
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8h_source.html#l00069">69</a> of file <a class="el" href="_pwm_out_8h_source.html">PwmOut.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8h_source.html#l00061">61</a> of file <a class="el" href="_pwm_out_8h_source.html">PwmOut.h</a>.</p>
 </div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="ab9e14adc0a7c64520f9c647cdbeabcec" name="ab9e14adc0a7c64520f9c647cdbeabcec"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ab9e14adc0a7c64520f9c647cdbeabcec">&#9670;&#160;</a></span>PwmOut()</h2>
@@ -206,15 +200,15 @@ Static Private Attributes</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Construct and configure a PWM output on the given pin. </p>
-<p>Resolves <code class="param">pin</code> to a FlexPWM0 submodule/channel pair, performs module-level init (first instance only: clock, fault-disable), and sets up the submodule/channel with a default 20ms period, 0% duty. Calls <span class="tt"><a class="el" href="mcu_8cpp.html#ad3cdbe388204f1d2a626f695cf59ddbb">panic()</a></span> if <code class="param">pin</code> is not a supported PWM pin.</p>
+<p>Resolves <code class="param">pin</code> to a FlexPWM instance, submodule and channel, takes the instance out of reset and initializes the submodule if nothing has yet, and starts the channel at 0% duty. The period is 20ms, or the period the submodule's other channel is already running at. Calls <span class="tt"><a class="el" href="mcu_8cpp.html#ad3cdbe388204f1d2a626f695cf59ddbb">panic()</a></span> if <code class="param">pin</code> is not a supported PWM pin.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">pin</td><td>Logical PWM-capable pin (e.g. <span class="tt"><a class="el" href="io_8h.html#afea037e4c6e9187610b538bd6a34b8ff">D3</a></span>..<span class="tt"><a class="el" href="io_8h.html#a9711ce54c7a380964a5b4dbac7da12e2">D8</a></span> mapped to ports 1-6 above). </td></tr>
+    <tr><td class="paramname">pin</td><td>Logical PWM-capable pin (<span class="tt"><a class="el" href="io_8h.html#a7a4ad06a2bcb1065209a117ea09bbfbf">PWM0</a></span>..<span class="tt"><a class="el" href="io_8h.html#a60d5992960f4493071ff4f46f8b0cb32">PWM5</a></span>, and on FRDM-MCXA156 also <span class="tt"><a class="el" href="io_8h.html#afea037e4c6e9187610b538bd6a34b8ff">D3</a></span>, <span class="tt"><a class="el" href="io_8h.html#a2ddd4183d444d6d128cbdbd6269e4e0c">D5</a></span>, <span class="tt"><a class="el" href="io_8h.html#a79a18a7f5ccf7a7ca31f302bd62527a6">D6</a></span>, <span class="tt"><a class="el" href="io_8h.html#ae712388ef2de85500f826aa636be401c">D9</a></span>). </td></tr>
   </table>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00112">112</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00220">220</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
 
 </div>
 </div>
@@ -243,65 +237,11 @@ Static Private Attributes</h2></td></tr>
 
 <p>Destroy the <a class="el" href="class_pwm_out.html" title="Mbed-compatible PWM output class.">PwmOut</a>. Sets duty to 0 (does not free the pin). </p>
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00170">170</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00291">291</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
 
 </div>
 </div>
 <a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
-<a id="acd8c7f27d189e6b042b9caa032adeb2a" name="acd8c7f27d189e6b042b9caa032adeb2a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acd8c7f27d189e6b042b9caa032adeb2a">&#9670;&#160;</a></span>_acquire_module()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void PwmOut::_acquire_module </td>
-          <td>(</td>
-          <td class="paramtype">void</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel static">static</span><span class="mlabel private">private</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00099">99</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
-
-</div>
-</div>
-<a id="ab8db86e02ebbbbe59b99aa61f2d20828" name="ab8db86e02ebbbbe59b99aa61f2d20828"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab8db86e02ebbbbe59b99aa61f2d20828">&#9670;&#160;</a></span>_release_module()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void PwmOut::_release_module </td>
-          <td>(</td>
-          <td class="paramtype">void</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel static">static</span><span class="mlabel private">private</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00107">107</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
-
-</div>
-</div>
 <a id="a47d7d7a668ff0ad4429428262452bab5" name="a47d7d7a668ff0ad4429428262452bab5"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a47d7d7a668ff0ad4429428262452bab5">&#9670;&#160;</a></span>apply()</h2>
 
@@ -325,7 +265,29 @@ Static Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00183">183</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00326">326</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a9997d00aaed4279a61814e2f8d556442" name="a9997d00aaed4279a61814e2f8d556442"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9997d00aaed4279a61814e2f8d556442">&#9670;&#160;</a></span>claim_pin()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void PwmOut::claim_pin </td>
+          <td>(</td>
+          <td class="paramtype">void</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Put the pin back on FlexPWM after something else took it. </p>
+<p><a class="el" href="arduino__io_8cpp.html#a2bf1cdfe3caa1e897b3511044b7b9bac">pinMode()</a> switches a pin to GPIO without knowing about any <a class="el" href="class_pwm_out.html" title="Mbed-compatible PWM output class.">PwmOut</a> on it. This muxes the pin to FlexPWM again and records this <a class="el" href="class_pwm_out.html" title="Mbed-compatible PWM output class.">PwmOut</a> as its owner; the channel's period and duty are as they were. </p>
+
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00307">307</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
 
 </div>
 </div>
@@ -362,7 +324,7 @@ Static Private Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true if FlexPWM reaches this pin </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00073">73</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00208">208</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
 
 </div>
 </div>
@@ -383,7 +345,7 @@ Static Private Attributes</h2></td></tr>
 
 <p>Mbed-style implicit conversion, equivalent to <a class="el" href="#a4e4f332621e66e098c157fe9f0eb2a3d" title="Get current duty cycle, 0.0 - 1.0.">read()</a>. </p>
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00287">287</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00453">453</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
 
 </div>
 </div>
@@ -404,7 +366,7 @@ Static Private Attributes</h2></td></tr>
 
 <p>Mbed-style assignment, equivalent to <a class="el" href="#a4d95bd01f786eee501bc948e39c5e6e4" title="Set duty cycle, 0.0 - 1.0.">write()</a>. </p>
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00281">281</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00447">447</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
 
 </div>
 </div>
@@ -425,7 +387,7 @@ Static Private Attributes</h2></td></tr>
 
 <p>Set period in seconds. Shared with the paired channel. </p>
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00223">223</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00375">375</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
 
 </div>
 </div>
@@ -446,7 +408,7 @@ Static Private Attributes</h2></td></tr>
 
 <p>Set period in milliseconds. </p>
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00245">245</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00401">401</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
 
 </div>
 </div>
@@ -467,7 +429,7 @@ Static Private Attributes</h2></td></tr>
 
 <p>Set period in microseconds. </p>
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00246">246</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00402">402</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
 
 </div>
 </div>
@@ -488,7 +450,7 @@ Static Private Attributes</h2></td></tr>
 
 <p>Set pulse width in seconds (clamped to period). </p>
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00248">248</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00404">404</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
 
 </div>
 </div>
@@ -509,7 +471,7 @@ Static Private Attributes</h2></td></tr>
 
 <p>Set pulse width in milliseconds. </p>
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00263">263</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00421">421</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
 
 </div>
 </div>
@@ -530,7 +492,7 @@ Static Private Attributes</h2></td></tr>
 
 <p>Set pulse width in microseconds. </p>
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00264">264</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00422">422</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
 
 </div>
 </div>
@@ -551,12 +513,34 @@ Static Private Attributes</h2></td></tr>
 
 <p>Get current duty cycle, 0.0 - 1.0. </p>
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00276">276</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00437">437</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
 
 </div>
 </div>
-<a id="a5dee54280c5fa3ce2c1d381d4b5c45ac" name="a5dee54280c5fa3ce2c1d381d4b5c45ac"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5dee54280c5fa3ce2c1d381d4b5c45ac">&#9670;&#160;</a></span>resolve_pin()</h2>
+<a id="a1a41b0eba70e475fbbbcd9b11fbeeedc" name="a1a41b0eba70e475fbbbcd9b11fbeeedc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1a41b0eba70e475fbbbcd9b11fbeeedc">&#9670;&#160;</a></span>release_pin()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void PwmOut::release_pin </td>
+          <td>(</td>
+          <td class="paramtype">void</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Stop recording this <a class="el" href="class_pwm_out.html" title="Mbed-compatible PWM output class.">PwmOut</a> as the pin's owner. </p>
+<p>For a caller about to switch the pin to another function. The channel itself keeps running, so <a class="el" href="#a9997d00aaed4279a61814e2f8d556442" title="Put the pin back on FlexPWM after something else took it.">claim_pin()</a> can take the pin back. </p>
+
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00321">321</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a86e8cf280a1d085ba59b0eb790076e45" name="a86e8cf280a1d085ba59b0eb790076e45"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a86e8cf280a1d085ba59b0eb790076e45">&#9670;&#160;</a></span>shares_running_period()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -565,7 +549,7 @@ Static Private Attributes</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void PwmOut::resolve_pin </td>
+          <td class="memname">bool PwmOut::shares_running_period </td>
           <td>(</td>
           <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>pin</em></span></td><td>)</td>
           <td></td>
@@ -573,12 +557,22 @@ Static Private Attributes</h2></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00083">83</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+<p>Is the other channel of this pin's submodule running? </p>
+<p>If so, a <a class="el" href="class_pwm_out.html" title="Mbed-compatible PWM output class.">PwmOut</a> made on <code class="param">pin</code> takes over that channel's period, and setting a period on it changes the other channel's too.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">pin</td><td>raw r01lib pin number, <em>not</em> an Arduino-renumbered one </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true if a <a class="el" href="class_pwm_out.html" title="Mbed-compatible PWM output class.">PwmOut</a> already exists on this pin's submodule </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00213">213</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
 
 </div>
 </div>
@@ -599,11 +593,35 @@ Static Private Attributes</h2></td></tr>
 
 <p>Set duty cycle, 0.0 - 1.0. </p>
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00266">266</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00424">424</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
 
 </div>
 </div>
 <a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="ab691517c43a4a35f4b901bd02df24325" name="ab691517c43a4a35f4b901bd02df24325"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab691517c43a4a35f4b901bd02df24325">&#9670;&#160;</a></span>_alt</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint8_t PwmOut::_alt</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8h_source.html#l00151">151</a> of file <a class="el" href="_pwm_out_8h_source.html">PwmOut.h</a>.</p>
+
+</div>
+</div>
 <a id="a6e778861408176315f290861b7a77528" name="a6e778861408176315f290861b7a77528"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a6e778861408176315f290861b7a77528">&#9670;&#160;</a></span>_channel</h2>
 
@@ -624,12 +642,12 @@ Static Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8h_source.html#l00138">138</a> of file <a class="el" href="_pwm_out_8h_source.html">PwmOut.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8h_source.html#l00150">150</a> of file <a class="el" href="_pwm_out_8h_source.html">PwmOut.h</a>.</p>
 
 </div>
 </div>
-<a id="ab6d6f934051a2c572e2cc9c311d751b7" name="ab6d6f934051a2c572e2cc9c311d751b7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab6d6f934051a2c572e2cc9c311d751b7">&#9670;&#160;</a></span>_instance_count</h2>
+<a id="ab959ba70a83e32789c22f6e6d85daaba" name="ab959ba70a83e32789c22f6e6d85daaba"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab959ba70a83e32789c22f6e6d85daaba">&#9670;&#160;</a></span>_module</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -638,31 +656,7 @@ Static Private Attributes</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">uint8_t PwmOut::_instance_count = 0</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel static">static</span><span class="mlabel private">private</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8h_source.html#l00134">134</a> of file <a class="el" href="_pwm_out_8h_source.html">PwmOut.h</a>.</p>
-
-</div>
-</div>
-<a id="a5f0154e9729ddfa5b8249f263a98d62f" name="a5f0154e9729ddfa5b8249f263a98d62f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5f0154e9729ddfa5b8249f263a98d62f">&#9670;&#160;</a></span>_period_us</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">uint32_t PwmOut::_period_us</td>
+          <td class="memname">uint8_t PwmOut::_module</td>
         </tr>
       </table>
   </td>
@@ -672,7 +666,7 @@ Static Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8h_source.html#l00141">141</a> of file <a class="el" href="_pwm_out_8h_source.html">PwmOut.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8h_source.html#l00148">148</a> of file <a class="el" href="_pwm_out_8h_source.html">PwmOut.h</a>.</p>
 
 </div>
 </div>
@@ -696,31 +690,7 @@ Static Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8h_source.html#l00139">139</a> of file <a class="el" href="_pwm_out_8h_source.html">PwmOut.h</a>.</p>
-
-</div>
-</div>
-<a id="a92142b9980433b541968ea432c9d0322" name="a92142b9980433b541968ea432c9d0322"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a92142b9980433b541968ea432c9d0322">&#9670;&#160;</a></span>_pulse_us</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">uint32_t PwmOut::_pulse_us</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8h_source.html#l00142">142</a> of file <a class="el" href="_pwm_out_8h_source.html">PwmOut.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8h_source.html#l00152">152</a> of file <a class="el" href="_pwm_out_8h_source.html">PwmOut.h</a>.</p>
 
 </div>
 </div>
@@ -744,7 +714,7 @@ Static Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8h_source.html#l00137">137</a> of file <a class="el" href="_pwm_out_8h_source.html">PwmOut.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8h_source.html#l00149">149</a> of file <a class="el" href="_pwm_out_8h_source.html">PwmOut.h</a>.</p>
 
 </div>
 </div>

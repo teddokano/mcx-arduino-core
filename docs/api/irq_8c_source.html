@@ -23,7 +23,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.8.0</span>
+   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.9.0</span>
    </div>
    <div id="projectbrief">Arduino board support package for NXP FRDM MCX Series boards</div>
   </td>
@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 <div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="preprocessor">#include    &quot;fsl_debug_console.h&quot;</span></div>
 <div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="preprocessor">#include    &quot;<a class="code" href="irq_8h.html">irq.h</a>&quot;</span></div>
 <div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span> </div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="preprocessor">#ifdef  CPU_MCXN947VDF</span></div>
+<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="preprocessor">#if defined( CPU_MCXN947VDF ) || defined( CPU_MCXN236VDF )</span></div>
 <div class="foldopen" id="foldopen00014" data-start="{" data-end="}">
 <div class="line"><a id="l00014" name="l00014"></a><span class="lineno"><a class="line" href="irq_8c.html#a6ba5537a0896e9272eaa7897fcdca415">   14</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="irq_8c.html#a6ba5537a0896e9272eaa7897fcdca415">GPIO00_IRQHandler</a>( <span class="keywordtype">void</span> )</div>
 <div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span>{   <a class="code hl_function" href="_interrupt_in_8cpp.html#aee5a3a2071748701d285256e2420e4b8">irq_handler</a>( 0 );</div>

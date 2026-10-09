@@ -23,7 +23,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.8.0</span>
+   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.9.0</span>
    </div>
    <div id="projectbrief">Arduino board support package for NXP FRDM MCX Series boards</div>
   </td>
@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 </div><!--header-->
 <div class="contents">
 
-<p>Mbed-compatible <a class="el" href="class_pwm_out.html" title="Mbed-compatible PWM output class.">PwmOut</a> class for r01lib (FRDM-MCXA153 first).  
+<p>Mbed-compatible <a class="el" href="class_pwm_out.html" title="Mbed-compatible PWM output class.">PwmOut</a> class for r01lib (FlexPWM).  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;fsl_pwm.h&quot;</code><br />
 <code>#include &quot;fsl_clock.h&quot;</code><br />
@@ -120,38 +120,35 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mbed-compatible PWM output class.  <a href="class_pwm_out.html#details">More...</a><br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Mbed-compatible <a class="el" href="class_pwm_out.html" title="Mbed-compatible PWM output class.">PwmOut</a> class for r01lib (FRDM-MCXA153 first). </p>
-<p>Provides FlexPWM0-backed PWM output with a Mbed-like API. Modeled on the submodule/channel mapping verified in the IchigoJam_Z (Zephyr) port for FRDM-MCXA153:</p>
+<div class="textblock"><p>Mbed-compatible <a class="el" href="class_pwm_out.html" title="Mbed-compatible PWM output class.">PwmOut</a> class for r01lib (FlexPWM). </p>
+<p>PWM output on the pins FlexPWM reaches, with a Mbed-like API. Which pins those are, and on which FlexPWM instance, submodule and channel, is a per-chip table in <a class="el" href="_pwm_out_8cpp.html" title="Mbed-compatible PwmOut implementation for r01lib (FlexPWM).">PwmOut.cpp</a>:</p>
 <table class="markdownTable">
 <tr class="markdownTableHead">
-<th class="markdownTableHeadNone">Logical pin  </th><th class="markdownTableHeadNone">Physical pin  </th><th class="markdownTableHeadNone">FlexPWM0 submodule  </th><th class="markdownTableHeadNone">Channel  </th></tr>
+<th class="markdownTableHeadNone">Board  </th><th class="markdownTableHeadNone">Pins  </th><th class="markdownTableHeadNone">FlexPWM  </th></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone">PWM0  </td><td class="markdownTableBodyNone">P3_11  </td><td class="markdownTableBodyNone">sm2  </td><td class="markdownTableBodyNone">B  </td></tr>
+<td class="markdownTableBodyNone">FRDM-MCXA153  </td><td class="markdownTableBodyNone">PWM0-PWM5 (P3_11..P3_6)  </td><td class="markdownTableBodyNone">FlexPWM0  </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone">PWM1  </td><td class="markdownTableBodyNone">P3_10  </td><td class="markdownTableBodyNone">sm2  </td><td class="markdownTableBodyNone">A  </td></tr>
+<td class="markdownTableBodyNone">FRDM-MCXA156  </td><td class="markdownTableBodyNone">PWM0-PWM5 (P3_11..P3_6)  </td><td class="markdownTableBodyNone">FlexPWM0  </td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone">PWM2  </td><td class="markdownTableBodyNone">P3_9  </td><td class="markdownTableBodyNone">sm1  </td><td class="markdownTableBodyNone">B  </td></tr>
+<td class="markdownTableBodyNone"></td><td class="markdownTableBodyNone">D3, D5, D6, D9 (P3_12, P3_14, P3_16, P3_17)  </td><td class="markdownTableBodyNone">FlexPWM1  </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone">PWM3  </td><td class="markdownTableBodyNone">P3_8  </td><td class="markdownTableBodyNone">sm1  </td><td class="markdownTableBodyNone">A  </td></tr>
+<td class="markdownTableBodyNone">FRDM-MCXN947  </td><td class="markdownTableBodyNone">PWM0-PWM5 (P2_2..P2_7)  </td><td class="markdownTableBodyNone">FlexPWM1  </td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone">PWM4  </td><td class="markdownTableBodyNone">P3_7  </td><td class="markdownTableBodyNone">sm0  </td><td class="markdownTableBodyNone">B  </td></tr>
-<tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone">PWM5  </td><td class="markdownTableBodyNone">P3_6  </td><td class="markdownTableBodyNone">sm0  </td><td class="markdownTableBodyNone">A  </td></tr>
+<td class="markdownTableBodyNone">FRDM-MCXN236  </td><td class="markdownTableBodyNone">PWM0-PWM5 (four of them are D3/D5/D6/D9)  </td><td class="markdownTableBodyNone">FlexPWM1  </td></tr>
 </table>
-<p>PWM0..PWM5 (defined in <a class="el" href="io_8h.html">io.h</a>) run in reverse physical-pin order to match the on-board connector orientation. These are dedicated PWM pins on FRDM-MCXA153 — no runtime pinmux switching between GPIO/PWM is needed (unlike RP2040).</p>
 <h3 class="doxsection"><a class="anchor" id="autotoc_md2"></a>
 Example usage</h3>
-<div class="fragment"><div class="line"><a class="code hl_class" href="class_pwm_out.html">PwmOut</a> pwm( <a class="code hl_define" href="io_8h.html#a7a4ad06a2bcb1065209a117ea09bbfbf">PWM0</a> );   <span class="comment">// maps to a submodule/channel pair above</span></div>
+<div class="fragment"><div class="line"><a class="code hl_class" href="class_pwm_out.html">PwmOut</a> pwm( <a class="code hl_define" href="io_8h.html#a7a4ad06a2bcb1065209a117ea09bbfbf">PWM0</a> );</div>
 <div class="line">pwm.period_ms( 20 );</div>
 <div class="line">pwm.write( 0.5f );    <span class="comment">// 50% duty</span></div>
-<div class="ttc" id="aclass_pwm_out_html"><div class="ttname"><a href="class_pwm_out.html">PwmOut</a></div><div class="ttdoc">Mbed-compatible PWM output class.</div><div class="ttdef"><b>Definition</b> <a href="_pwm_out_8h_source.html#l00069">PwmOut.h:70</a></div></div>
+<div class="ttc" id="aclass_pwm_out_html"><div class="ttname"><a href="class_pwm_out.html">PwmOut</a></div><div class="ttdoc">Mbed-compatible PWM output class.</div><div class="ttdef"><b>Definition</b> <a href="_pwm_out_8h_source.html#l00061">PwmOut.h:62</a></div></div>
 <div class="ttc" id="aio_8h_html_a7a4ad06a2bcb1065209a117ea09bbfbf"><div class="ttname"><a href="io_8h.html#a7a4ad06a2bcb1065209a117ea09bbfbf">PWM0</a></div><div class="ttdeci">#define PWM0</div><div class="ttdef"><b>Definition</b> <a href="io_8h_source.html#l00237">io.h:237</a></div></div>
 </div><!-- fragment --><h3 class="doxsection"><a class="anchor" id="autotoc_md3"></a>
-Design notes (see project discussion) — IMPORTANT</h3>
+Design notes &ndash; IMPORTANT</h3>
 <ul>
-<li><b>period() is shared per submodule.</b> Channels A/B on the same sm (e.g. port 1 &amp; 2) share one period register; only duty is independent. Calling period() on one instance changes the period seen by the other channel sharing its submodule. This is a hardware constraint, not a bug — documented here per Mbed HAL convention (same approach as shared-timer PWM pins on official Mbed targets).</li>
-<li>FlexPWM0 fault-disable is configured once per module (first instance to touch FlexPWM0), same reference-counted pattern as <a class="el" href="class_serial.html" title="Mbed-compatible UART class backed by interrupt-driven ring buffers.">Serial</a>'s clock/reset setup.</li>
-<li>~PwmOut() only sets duty to 0; it does not revert the pin to GPIO (matches Mbed's pwmout_free() scope).</li>
+<li><b>The period is shared per submodule.</b> Channels A and B of a submodule share one period register; only the duty is independent. period() on one <a class="el" href="class_pwm_out.html" title="Mbed-compatible PWM output class.">PwmOut</a> changes the period of the other channel of its submodule too, and that channel keeps its pulse width in microseconds (clamped to the new period). A <a class="el" href="class_pwm_out.html" title="Mbed-compatible PWM output class.">PwmOut</a> made on a submodule whose other channel is already running takes over the running period instead of resetting it. This is a hardware constraint, documented here per Mbed HAL convention (same approach as shared-timer PWM pins on official Mbed targets).</li>
+<li>Each FlexPWM instance is taken out of reset by the first <a class="el" href="class_pwm_out.html" title="Mbed-compatible PWM output class.">PwmOut</a> on it, and each submodule is initialized (fault-disable map cleared) by the first <a class="el" href="class_pwm_out.html" title="Mbed-compatible PWM output class.">PwmOut</a> on that submodule.</li>
+<li>~PwmOut() only sets the duty to 0; it does not revert the pin to GPIO (matches Mbed's pwmout_free() scope).</li>
 </ul>
 <dl class="section author"><dt>Author</dt><dd>Tedd OKANO </dd></dl>
 <dl class="section copyright"><dt>Copyright</dt><dd>MIT License </dd></dl>

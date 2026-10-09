@@ -23,7 +23,7 @@ var searchData=
   ['ibe_20',['ibe',['../struct_pin_pcr_info.html#ad63fc0d34b73e69223edb580ea5b8514',1,'PinPcrInfo']]],
   ['ibi_5fpayload_5fbuffer_5fsize_21',['IBI_PAYLOAD_BUFFER_SIZE',['../i3c_8cpp.html#a039307005eb408df115b1aef7055ba21',1,'i3c.cpp']]],
   ['if_22',['if',['../mcu_8cpp.html#a72f2e2a640db122c3e8fa3815478a251',1,'if(cfsr &amp;SCB_CFSR_BFARVALID_Msk):&#160;mcu.cpp'],['../mcu_8cpp.html#a8fb7df140cfafa69b550a592f218e65b',1,'if(stacked):&#160;mcu.cpp'],['../mcu_8cpp.html#a3f710b9405d70dd171226dd295b694ac',1,'if(!(exc_return &amp;0x8)) p:&#160;mcu.cpp']]],
-  ['important_23',['Design notes (see project discussion) — IMPORTANT',['../_pwm_out_8h.html#autotoc_md3',1,'']]],
+  ['important_23',['Design notes &amp;ndash; IMPORTANT',['../_pwm_out_8h.html#autotoc_md3',1,'']]],
   ['in_5frequest_24',['in_request',['../struct_wire_target.html#ab70f2581228be2078a1bc7edf510c275',1,'WireTarget']]],
   ['indexof_25',['indexOf',['../class_string.html#a6baae7cb75163973adfbd06e5d868a09',1,'String::indexOf(char ch, unsigned int fromIndex=0) const'],['../class_string.html#aa66583037fa980755e8a2cbe6708e26c',1,'String::indexOf(const String &amp;s, unsigned int fromIndex=0) const']]],
   ['init_5fdone_26',['init_done',['../class_obj.html#a3780646d9406c2806c8cd811d1c6b5df',1,'Obj']]],

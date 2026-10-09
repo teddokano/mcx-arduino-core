@@ -23,7 +23,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.8.0</span>
+   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.9.0</span>
    </div>
    <div id="projectbrief">Arduino board support package for NXP FRDM MCX Series boards</div>
   </td>
@@ -98,11 +98,14 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 </div><!-- top -->
 <div id="doc-content">
 <div class="header">
+  <div class="summary">
+<a href="#define-members">Macros</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle"><div class="title">PwmOut.cpp File Reference</div></div>
 </div><!--header-->
 <div class="contents">
 
-<p>Mbed-compatible <a class="el" href="class_pwm_out.html" title="Mbed-compatible PWM output class.">PwmOut</a> implementation for r01lib (FRDM-MCXA153).  
+<p>Mbed-compatible <a class="el" href="class_pwm_out.html" title="Mbed-compatible PWM output class.">PwmOut</a> implementation for r01lib (FlexPWM).  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;fsl_reset.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="_pwm_out_8h_source.html">PwmOut.h</a>&quot;</code><br />
@@ -110,19 +113,88 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 <code>#include &quot;<a class="el" href="pin__registry_8h_source.html">pin_registry.h</a>&quot;</code><br />
 </div>
 <p><a href="_pwm_out_8cpp_source.html">Go to the source code of this file.</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-define-members" class="groupheader"><a id="define-members" name="define-members"></a>
+Macros</h2></td></tr>
+<tr class="memitem:a4b182a3dfd2d65d281b4ebbaef917d1a" id="r_a4b182a3dfd2d65d281b4ebbaef917d1a"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#a4b182a3dfd2d65d281b4ebbaef917d1a">PWM_MODULES</a>&#160;&#160;&#160;1</td></tr>
+<tr class="memitem:a61d63a7fa75d4b0ab11c79c8cc11bd12" id="r_a61d63a7fa75d4b0ab11c79c8cc11bd12"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#a61d63a7fa75d4b0ab11c79c8cc11bd12">PWM_SOURCE_CLOCK</a>&#160;&#160;&#160;kCLOCK_MainClk</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-var-members" class="groupheader"><a id="var-members" name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:aae14576d2c910551e8523225c28e5afd" id="r_aae14576d2c910551e8523225c28e5afd"><td class="memItemLeft">static PWM_Type *const&#160;</td><td class="memItemRight"><a class="el" href="#aae14576d2c910551e8523225c28e5afd">FLEXPWM1</a> = <a class="el" href="io_8h.html#add1c370cc3193ef37474f000a2b982bb">PWM1</a></td></tr>
+</table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Mbed-compatible <a class="el" href="class_pwm_out.html" title="Mbed-compatible PWM output class.">PwmOut</a> implementation for r01lib (FRDM-MCXA153). </p>
-<p>Verified against the FRDM-MCXA153 SDK FlexPWM driver example (examples/driver_examples/pwm) and MCXA153_features.h before writing this file:</p><ul>
-<li>FSL_FEATURE_PWM_FAULT_CH_COUNT is 1 on this part, so only <span class="tt">kPWM_faultchannel_0</span> (a single DISMAP register per submodule) exists.</li>
+<div class="textblock"><p>Mbed-compatible <a class="el" href="class_pwm_out.html" title="Mbed-compatible PWM output class.">PwmOut</a> implementation for r01lib (FlexPWM). </p>
+<p>Verified against the FRDM-MCXA153 SDK FlexPWM driver example (examples/driver_examples/pwm) and MCXA153_features.h before writing the first version of this file:</p><ul>
+<li>FSL_FEATURE_PWM_FAULT_CH_COUNT is 1, so only <span class="tt">kPWM_faultchannel_0</span> (a single DISMAP register per submodule) exists.</li>
 <li>The SDK doc for <span class="tt">PWM_SetupFaultDisableMap()</span> states "a reset sets all
-   bits in this field" — i.e. out of reset, <em>every</em> FAULTx input is mapped to disable each channel's output. Since these fault pins are not driven by anything on this design, the disable-map is explicitly cleared for both channels of a submodule the first time it is used, otherwise the PWM output may never toggle. This is the concern the project memo flagged as needing verification before implementation.</li>
-<li><span class="tt">PWM_SetupPwm()</span> only supports integer 0-100% duty. For the continuous-duty Mbed API this file uses the raw-tick API <span class="tt">PWM_UpdatePwmPeriodAndDutycycle()</span> (16-bit period/duty) for all period()/write() calls after the one-time <span class="tt">PWM_SetupPwm()</span> call that establishes OUTEN/polarity/fault-state for the channel.</li>
+   bits in this field" — i.e. out of reset, <em>every</em> FAULTx input is mapped to disable each channel's output. No fault pins are driven on these boards, so the disable-map is cleared for both channels of a submodule the first time it is used, otherwise the PWM output may never toggle.</li>
+<li><span class="tt">PWM_SetupPwm()</span> only supports integer 0-100% duty. For the continuous-duty Mbed API this file uses the raw-tick API <span class="tt">PWM_UpdatePwmPeriodAndDutycycle()</span> (16-bit period/duty) for all period()/write() calls after the one-time <span class="tt">PWM_SetupPwm()</span> call that establishes OUTEN/polarity/fault-state for the channel. The registers both write are buffered until LDOK, so the placeholder period <span class="tt">PWM_SetupPwm()</span> writes never reaches a running channel: apply() writes the real one before setting LDOK.</li>
 </ul>
+<p>The period and both channels' pulse widths are kept per submodule (s_sm[] below), not per <a class="el" href="class_pwm_out.html" title="Mbed-compatible PWM output class.">PwmOut</a>: the two channels share the period register, and apply() rewrites both channels' compare values whenever either changes, so neither is left measured against the other's period.</p>
 <dl class="section author"><dt>Author</dt><dd>Tedd OKANO </dd></dl>
 <dl class="section copyright"><dt>Copyright</dt><dd>MIT License </dd></dl>
 
 <p class="definition">Definition in file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
-</div></div><!-- contents -->
+</div><a name="doc-define-members" id="doc-define-members"></a><h2 id="header-doc-define-members" class="groupheader">Macro Definition Documentation</h2>
+<a id="a4b182a3dfd2d65d281b4ebbaef917d1a" name="a4b182a3dfd2d65d281b4ebbaef917d1a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4b182a3dfd2d65d281b4ebbaef917d1a">&#9670;&#160;</a></span>PWM_MODULES</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PWM_MODULES&#160;&#160;&#160;1</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00068">68</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a61d63a7fa75d4b0ab11c79c8cc11bd12" name="a61d63a7fa75d4b0ab11c79c8cc11bd12"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a61d63a7fa75d4b0ab11c79c8cc11bd12">&#9670;&#160;</a></span>PWM_SOURCE_CLOCK</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PWM_SOURCE_CLOCK&#160;&#160;&#160;kCLOCK_MainClk</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00069">69</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+
+</div>
+</div>
+<a name="doc-var-members" id="doc-var-members"></a><h2 id="header-doc-var-members" class="groupheader">Variable Documentation</h2>
+<a id="aae14576d2c910551e8523225c28e5afd" name="aae14576d2c910551e8523225c28e5afd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aae14576d2c910551e8523225c28e5afd">&#9670;&#160;</a></span>FLEXPWM1</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">PWM_Type* const FLEXPWM1 = <a class="el" href="io_8h.html#add1c370cc3193ef37474f000a2b982bb">PWM1</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00047">47</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+
+</div>
+</div>
+</div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.18.0

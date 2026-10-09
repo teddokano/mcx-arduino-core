@@ -20,8 +20,7 @@ var searchData=
   ['default_17',['DEFAULT',['../arduino__analog_8h.html#a3da44afeba217135a680a7477b5e3ce3',1,'arduino_analog.h']]],
   ['deg_5fto_5frad_18',['DEG_TO_RAD',['../_arduino_8h.html#a212460e743fecb084d717bb2180c5a56',1,'Arduino.h']]],
   ['degrees_19',['degrees',['../_arduino_8h.html#afe93c2c14da376a1621194c15c1de496',1,'Arduino.h']]],
-  ['digitalpinhaspwm_20',['digitalPinHasPWM',['../arduino__io_8h.html#afaede01afebc78aa04e0c28dc85bcbd5',1,'arduino_io.h']]],
-  ['disabled_5fgpio_21',['DISABLED_GPIO',['../io_8cpp.html#a558ea429228d4d91c2ca448f9653102b',1,'io.cpp']]],
-  ['disabled_5fpin_22',['DISABLED_PIN',['../io_8cpp.html#ac1ce626a969ca4e6c05c76611217dd92',1,'io.cpp']]],
-  ['display_23',['DISPLAY',['../_arduino_8h.html#ab4bf926a45354a2f328f1a7b94ebd3c5',1,'Arduino.h']]]
+  ['disabled_5fgpio_20',['DISABLED_GPIO',['../io_8cpp.html#a558ea429228d4d91c2ca448f9653102b',1,'io.cpp']]],
+  ['disabled_5fpin_21',['DISABLED_PIN',['../io_8cpp.html#ac1ce626a969ca4e6c05c76611217dd92',1,'io.cpp']]],
+  ['display_22',['DISPLAY',['../_arduino_8h.html#ab4bf926a45354a2f328f1a7b94ebd3c5',1,'Arduino.h']]]
 ];

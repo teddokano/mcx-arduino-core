@@ -23,7 +23,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.8.0</span>
+   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.9.0</span>
    </div>
    <div id="projectbrief">Arduino board support package for NXP FRDM MCX Series boards</div>
   </td>
@@ -118,7 +118,9 @@ Macros</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:ab8f60bba1790187f559bc3a08d1a03c1" id="r_ab8f60bba1790187f559bc3a08d1a03c1"><td class="memItemLeft">static int&#160;</td><td class="memItemRight"><a class="el" href="#ab8f60bba1790187f559bc3a08d1a03c1">raw_pin</a> (int pin_num)</td></tr>
+<tr class="memitem:ac1a35c4aaaa895075f45abff357c4dfa" id="r_ac1a35c4aaaa895075f45abff357c4dfa"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#ac1a35c4aaaa895075f45abff357c4dfa">digital_pin_drop</a> (int raw_pin)</td></tr>
 <tr class="memitem:aee66f4e676e7f6efa2595fa2ce47ba3d" id="r_aee66f4e676e7f6efa2595fa2ce47ba3d"><td class="memItemLeft">static <a class="el" href="class_pwm_out.html">PwmOut</a> *&#160;</td><td class="memItemRight"><a class="el" href="#aee66f4e676e7f6efa2595fa2ce47ba3d">pwm_for</a> (int pin)</td></tr>
+<tr class="memitem:ae977ff61dc0d7f95da297913addd0be1" id="r_ae977ff61dc0d7f95da297913addd0be1"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ae977ff61dc0d7f95da297913addd0be1">analog_pin_to_gpio</a> (int raw_pin)</td></tr>
 <tr class="memitem:a3d9b75d7211a55977fc1049e749eee82" id="r_a3d9b75d7211a55977fc1049e749eee82"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#a3d9b75d7211a55977fc1049e749eee82">analogRead</a> (int pin_num)</td></tr>
 <tr class="memitem:a68551ebddbaf0d0ebfdb22a2a0be9d71" id="r_a68551ebddbaf0d0ebfdb22a2a0be9d71"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a68551ebddbaf0d0ebfdb22a2a0be9d71">analogWrite</a> (int pin_num, int value)</td></tr>
 <tr class="memitem:a43691e56dde3aceefab3866ded458ded" id="r_a43691e56dde3aceefab3866ded458ded"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a43691e56dde3aceefab3866ded458ded">analogWriteFrequency</a> (int pin_num, uint32_t frequency)</td></tr>
@@ -132,6 +134,7 @@ Variables</h2></td></tr>
 <tr class="memitem:a074f42a422d9d8a6950ff8b92fb9847f" id="r_a074f42a422d9d8a6950ff8b92fb9847f"><td class="memItemLeft">static <a class="el" href="class_pwm_out.html">PwmOut</a> *&#160;</td><td class="memItemRight"><a class="el" href="#a074f42a422d9d8a6950ff8b92fb9847f">pwm_out_pins</a> [<a class="el" href="#a456875cb3f4116b4731acf544919a945">MAX_ANALOG_PINS</a>] = {}</td></tr>
 <tr class="memitem:aea5c0b3c5035c0ca312194fe36953c9d" id="r_aea5c0b3c5035c0ca312194fe36953c9d"><td class="memItemLeft">static int&#160;</td><td class="memItemRight"><a class="el" href="#aea5c0b3c5035c0ca312194fe36953c9d">adc_resolution_bits</a> = 10</td></tr>
 <tr class="memitem:a233355b0eaa2beef0b56f517029d3ddf" id="r_a233355b0eaa2beef0b56f517029d3ddf"><td class="memItemLeft">static int&#160;</td><td class="memItemRight"><a class="el" href="#a233355b0eaa2beef0b56f517029d3ddf">pwm_resolution_bits</a> = 8</td></tr>
+<tr class="memitem:a735ecc34cb113a449eec15715b53e1c8" id="r_a735ecc34cb113a449eec15715b53e1c8"><td class="memItemLeft">static bool&#160;</td><td class="memItemRight"><a class="el" href="#a735ecc34cb113a449eec15715b53e1c8">pwm_pin_released</a> [<a class="el" href="#a456875cb3f4116b4731acf544919a945">MAX_ANALOG_PINS</a>] = {}</td></tr>
 </table>
 <a name="doc-define-members" id="doc-define-members"></a><h2 id="header-doc-define-members" class="groupheader">Macro Definition Documentation</h2>
 <a id="a456875cb3f4116b4731acf544919a945" name="a456875cb3f4116b4731acf544919a945"></a>
@@ -167,6 +170,25 @@ Variables</h2></td></tr>
 </div>
 </div>
 <a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function Documentation</h2>
+<a id="ae977ff61dc0d7f95da297913addd0be1" name="ae977ff61dc0d7f95da297913addd0be1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae977ff61dc0d7f95da297913addd0be1">&#9670;&#160;</a></span>analog_pin_to_gpio()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void analog_pin_to_gpio </td>
+          <td>(</td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>raw_pin</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="arduino__analog_8cpp_source.html#l00073">73</a> of file <a class="el" href="arduino__analog_8cpp_source.html">arduino_analog.cpp</a>.</p>
+
+</div>
+</div>
 <a id="a3d9b75d7211a55977fc1049e749eee82" name="a3d9b75d7211a55977fc1049e749eee82"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a3d9b75d7211a55977fc1049e749eee82">&#9670;&#160;</a></span>analogRead()</h2>
 
@@ -181,7 +203,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Read an analog input pin. Lazily creates the pin's <a class="el" href="class_analog_in.html" title="Mbed-compatible single-shot ADC input class.">AnalogIn</a> instance on first use. Calls <a class="el" href="mcu_8cpp.html#ad3cdbe388204f1d2a626f695cf59ddbb">panic()</a> if pin_num isn't one of this board's analog-capable pins. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Read an analog input pin. Lazily creates the pin's <a class="el" href="class_analog_in.html" title="Mbed-compatible single-shot ADC input class.">AnalogIn</a> instance on first use. Calls <a class="el" href="mcu_8cpp.html#ad3cdbe388204f1d2a626f695cf59ddbb">panic()</a> if pin_num isn't one of this board's analog-capable pins, except A3 on FRDM-MCXN236 (the blue LED's pin), which returns -1 instead. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">pin_num</td><td>analog pin (A0..A5, board-dependent which are wired) </td></tr>
   </table>
@@ -189,7 +211,7 @@ Variables</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>raw ADC reading, scaled to <a class="el" href="arduino__analog_8h.html#a18f83045d120929feaae532ad8f95721">analogReadResolution()</a> bits (10 by default) </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__analog_8cpp_source.html#l00057">57</a> of file <a class="el" href="arduino__analog_8cpp_source.html">arduino_analog.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__analog_8cpp_source.html#l00082">82</a> of file <a class="el" href="arduino__analog_8cpp_source.html">arduino_analog.cpp</a>.</p>
 
 </div>
 </div>
@@ -214,7 +236,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__analog_8cpp_source.html#l00126">126</a> of file <a class="el" href="arduino__analog_8cpp_source.html">arduino_analog.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__analog_8cpp_source.html#l00174">174</a> of file <a class="el" href="arduino__analog_8cpp_source.html">arduino_analog.cpp</a>.</p>
 
 </div>
 </div>
@@ -233,7 +255,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__analog_8cpp_source.html#l00121">121</a> of file <a class="el" href="arduino__analog_8cpp_source.html">arduino_analog.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__analog_8cpp_source.html#l00169">169</a> of file <a class="el" href="arduino__analog_8cpp_source.html">arduino_analog.cpp</a>.</p>
 
 </div>
 </div>
@@ -255,15 +277,15 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Set a PWM output pin's duty cycle. Lazily creates the pin's <a class="el" href="class_pwm_out.html" title="Mbed-compatible PWM output class.">PwmOut</a> instance on first use, with the default 1kHz period. Calls <a class="el" href="mcu_8cpp.html#ad3cdbe388204f1d2a626f695cf59ddbb">panic()</a> if pin_num isn't one of this board's PWM-capable pins. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Set a PWM output pin's duty cycle. Lazily creates the pin's <a class="el" href="class_pwm_out.html" title="Mbed-compatible PWM output class.">PwmOut</a> instance on first use, with the default 1kHz period &ndash; or, if the other pin of its FlexPWM submodule is already running, at that pin's period. After <a class="el" href="arduino__io_8cpp.html#a2bf1cdfe3caa1e897b3511044b7b9bac">pinMode()</a> has made the pin GPIO, this puts it back on FlexPWM. On a pin with no PWM it drives the pin HIGH or LOW instead, as AVR's core does. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">pin_num</td><td>PWM pin (PWM0..PWM5) </td></tr>
+    <tr><td class="paramname">pin_num</td><td>PWM pin (PWM0..PWM5, and D3/D5/D6/D9 on FRDM-MCXA156 and FRDM-MCXN236) </td></tr>
     <tr><td class="paramname">value</td><td>duty cycle, scaled to <a class="el" href="arduino__analog_8h.html#a25470b33598d47433259152681ae63f2">analogWriteResolution()</a> bits (8 by default, so 0..255) </td></tr>
   </table>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__analog_8cpp_source.html#l00075">75</a> of file <a class="el" href="arduino__analog_8cpp_source.html">arduino_analog.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__analog_8cpp_source.html#l00109">109</a> of file <a class="el" href="arduino__analog_8cpp_source.html">arduino_analog.cpp</a>.</p>
 
 </div>
 </div>
@@ -286,7 +308,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__analog_8cpp_source.html#l00103">103</a> of file <a class="el" href="arduino__analog_8cpp_source.html">arduino_analog.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__analog_8cpp_source.html#l00151">151</a> of file <a class="el" href="arduino__analog_8cpp_source.html">arduino_analog.cpp</a>.</p>
 
 </div>
 </div>
@@ -311,7 +333,26 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__analog_8cpp_source.html#l00136">136</a> of file <a class="el" href="arduino__analog_8cpp_source.html">arduino_analog.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__analog_8cpp_source.html#l00184">184</a> of file <a class="el" href="arduino__analog_8cpp_source.html">arduino_analog.cpp</a>.</p>
+
+</div>
+</div>
+<a id="ac1a35c4aaaa895075f45abff357c4dfa" name="ac1a35c4aaaa895075f45abff357c4dfa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac1a35c4aaaa895075f45abff357c4dfa">&#9670;&#160;</a></span>digital_pin_drop()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool digital_pin_drop </td>
+          <td>(</td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>raw_pin</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="arduino__io_8cpp_source.html#l00022">22</a> of file <a class="el" href="arduino__io_8cpp_source.html">arduino_io.cpp</a>.</p>
 
 </div>
 </div>
@@ -338,7 +379,7 @@ Variables</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__analog_8cpp_source.html#l00039">39</a> of file <a class="el" href="arduino__analog_8cpp_source.html">arduino_analog.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__analog_8cpp_source.html#l00047">47</a> of file <a class="el" href="arduino__analog_8cpp_source.html">arduino_analog.cpp</a>.</p>
 
 </div>
 </div>
@@ -439,6 +480,30 @@ Variables</h2></td></tr>
 </div><div class="memdoc">
 
 <p class="definition">Definition at line <a class="el" href="arduino__analog_8cpp_source.html#l00014">14</a> of file <a class="el" href="arduino__analog_8cpp_source.html">arduino_analog.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a735ecc34cb113a449eec15715b53e1c8" name="a735ecc34cb113a449eec15715b53e1c8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a735ecc34cb113a449eec15715b53e1c8">&#9670;&#160;</a></span>pwm_pin_released</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool pwm_pin_released[<a class="el" href="#a456875cb3f4116b4731acf544919a945">MAX_ANALOG_PINS</a>] = {}</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="arduino__analog_8cpp_source.html#l00038">38</a> of file <a class="el" href="arduino__analog_8cpp_source.html">arduino_analog.cpp</a>.</p>
 
 </div>
 </div>
