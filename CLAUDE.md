@@ -2,19 +2,20 @@
 
 ## プロジェクト概要
 - **リポジトリ**: https://github.com/teddokano/mcx-arduino-core
-- **内容**: NXP FRDM-MCXA153 / FRDM-MCXN947 / FRDM-MCXA156（0.8.0から。いずれもCortex-M33）向けのArduino IDEボードサポートパッケージ。
+- **内容**: NXP FRDM-MCXA153 / FRDM-MCXN947 / FRDM-MCXA156（0.8.0から）/ FRDM-MCXN236（0.9.0から。いずれもCortex-M33）向けのArduino IDEボードサポートパッケージ。
   v0.4.0以降は**ソース配布方式**（プリビルド`.a`は廃止）で、`hardware/nxp/mcx/cores/arduino/`（全ボード共有）と
   `hardware/nxp/mcx/variants/<board>/src/`（ボード固有）が唯一の実体。編集すれば次のビルドにそのまま反映される
 - **同梱ライブラリ**: `mcxPinState`（ピン所有状況のデバッグ表示）、`mcxRCServo`（RCサーボ）、`EEPROM`（0.7.0で追加）。
   前の2つは別リポジトリが開発の本拠地で、`hardware/nxp/mcx/libraries/`配下はリリース時に同期する取り込みコピー。
   `EEPROM`はこのリポジトリが本体（フラッシュの配置がリンカスクリプトと一体なので）
-- **現在のリリース**: **v0.8.0**（2026-10-05、FRDM-MCXA156の追加）。macOS・Windows・Linuxの3プラットフォームで
+- **現在のリリース**: **v0.9.0**（2026-10-09、FRDM-MCXN236の追加と、FRDM-MCXA156のD3/D5/D6/D9での`analogWrite`）。macOS・Windows・Linuxの3プラットフォームで
   インストール〜ビルド〜アップロード〜IDE内蔵デバッガまで検証済み
-- **開発中**: **0.9.0**（`0.9.0-dev`ブランチ）。**範囲はFRDM-MCXN236の対応と、FRDM-MCXA156のD3/D5/D6/D9での`analogWrite`の2つ**（2026-10-05に決定。ボード追加の順番はA156 → N236 → C444で合意済み）。
-  A156の前提と決定は下の「FRDM-MCXA156の前提と決定事項（0.8.0）」節、N236の分は「FRDM-MCXN236の前提と決定事項（0.9.0、作業中）」節
+- **次の版**: 範囲は未定で、開発用のブランチもまだ無い。ボード追加の順番はA156 → N236 → C444で合意済み。
+  A4/A5のI²C（Pendingタスク10）は1.0前の別の版で入れる。
+  A156の前提と決定は下の「FRDM-MCXA156の前提と決定事項（0.8.0）」節、N236の分は「FRDM-MCXN236の前提と決定事項（0.9.0）」節
 - **リリースごとの変更点**: [CHANGELOG.md](CHANGELOG.md)
 - **各リリースで何をやり、どこで詰まったかの詳細**: [docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md)
-  （v0.1.5〜v0.8.0の全作業記録。自動では読み込まれないので、経緯が必要なときだけ開く）
+  （v0.1.5〜v0.9.0の全作業記録。自動では読み込まれないので、経緯が必要なときだけ開く）
 
 ---
 
@@ -25,7 +26,7 @@
 | 知りたいこと | 見る場所 |
 |---|---|
 | 対応APIの一覧・未対応項目 | [API_COMPATIBILITY.md](API_COMPATIBILITY.md) |
-| ピン配置（ボード別） | [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) / [PIN_MAPPING_N947.md](PIN_MAPPING_N947.md) / [PIN_MAPPING_A156.md](PIN_MAPPING_A156.md) / [PIN_MAPPING_N236.md](PIN_MAPPING_N236.md)（0.9.0で作業中） |
+| ピン配置（ボード別） | [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) / [PIN_MAPPING_N947.md](PIN_MAPPING_N947.md) / [PIN_MAPPING_A156.md](PIN_MAPPING_A156.md) / [PIN_MAPPING_N236.md](PIN_MAPPING_N236.md) |
 | リリースごとの変更点 | [CHANGELOG.md](CHANGELOG.md) |
 | 使い方の入門 | [TUTORIAL.md](TUTORIAL.md) / [TUTORIAL.ja.md](TUTORIAL.ja.md) |
 | クラス・関数のリファレンス | `docs/api/`（Doxygen生成、リリース前に再生成する） |
@@ -101,6 +102,9 @@
 - **A153・N947のバイナリ一致で「何も変わっていない」を確かめるときは、行数の変わる編集に注意する**（0.8.0）。
   `assert()`は`__LINE__`をイメージに埋め込むので、`i3c.cpp`のA156の分岐で1行減らしただけで、I3Cを含む49件が変わった（比べた1件は4バイト違い）。
   違いが出たら`cmp -l`で位置を出し、`addr2line`で関数を見る。比較を崩さないよう、分岐の中の行数は変えないでおく
+- **同じ形の項目がまとめてFAILしたら、コードより先にジャンパを疑う**（0.9.0の実機確認だけで7回）。
+  `Serial1`の項目が全部落ちる、`Wire1`のタイムアウトが全部NAK（`134`）で即座に返る、サーボのパルスが測れない、などはどれもジャンパの付け忘れ・挿し違い・前の確認の配線の残りだった。
+  挿し直して流し直す前に、その確認がどのピンの組を使うかを`release_check/README.md`の表で確かめる
 - **フローティングピンを読むだけのテストは、機能が壊れていても偶然通る**。
   `INPUT_PULLDOWN`はv0.2.1で「実機確認済み」としながら実際には一度も効いておらず、
   原因は「配線なしのピンが`digitalRead()`でたまたまLOWを返す」テスト設計だった。
@@ -211,8 +215,9 @@ xPack checksums（正しい値）：
 
 ---
 
-## FRDM-MCXN236の前提と決定事項（0.9.0、作業中）
-0.9.0で対応する（0.9.0の範囲はこれとA156のD-ピンのPWMの2つ）。回路図は`ref/FRDM-MCXN236.pdf`（Rev C）。決まったものと、回路図・SDKで確かめた事実だけをここに置く。
+## FRDM-MCXN236の前提と決定事項（0.9.0）
+0.9.0（2026-10-09リリース）で対応した。回路図は`ref/FRDM-MCXN236.pdf`（Rev C）。いまも効いている決定と、回路図・SDKで確かめた事実だけをここに置く。
+実機確認とPWMの修正、リリース準備の経緯は[docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md)のv0.9.0の節、実機確認の結果はvariantのREADME。
 
 - **基板はRev C**（2026-10-05、ユーザーがシルクで確認）。Rev BでD18/D19が`P4_0`/`P4_1`から`P1_16`/`P1_17`に変わった。
   コア同梱の`r01lib`のN236分岐は、`io.h`が`I2C_SDA`/`I2C_SCL`を`A4`/`A5`とし、`i2c.cpp`が「D18/D19だけ」とするなど、新旧の版が混ざっているので、そのまま信用しない
@@ -239,7 +244,7 @@ xPack checksums（正しい値）：
   `S`はR185（100kΩ）でGNDに引かれてノーマルモードなので、`RXD`はバスが無いとレセッシブ（High）を出し続ける。
   A2はR67でトランシーバの`TXD`（入力、VIOへの内部プルアップがある）につながる。`USB1_OTG_PWR`（NX5P3090の`EN`）との間のR92は未実装（DNP）で、A3と`USB1_OTG_OC`の間のR88も未実装。
   **N236のボードはR25・R67を外すことを前提にする**（2026-10-06に決定。A156のR75・R76と同じ扱い）。外すとA1・A2はトランシーバから切り離され、FlexCANは使えなくなる。
-  開発用のN236（Rev C）からはR25・R67を外した（2026-10-06、ユーザーが実施）。`analogRead()`でA1・A2を読む確認は、ポーティングのあとに行う。
+  開発用のN236（Rev C）からはR25・R67を外した（2026-10-06、ユーザーが実施）。A1・A2の`analogRead()`は実機で確認済み。
   ピン関連の文書（`PIN_MAPPING_N236.md`、variantのREADMEなど）に必ず明記する
 - **UARTは`Serial`（USB、FC4、`P1_8`/`P1_9`）と`Serial1`（D0/D1）の2つ、SPIは`SPI`だけ（2026-10-05に決定）**。
   MikroBusのUART（`MB_RX`/`MB_TX`）はD0/D1と同じピンなので`Serial2`は無い。MikroBusのSPIはArduinoのSPIと同じ線（FC3）で、
@@ -247,41 +252,23 @@ xPack checksums（正しい値）：
 - **`PWM0`〜`PWM5`は他の3ボードと同じ並び（2026-10-06に決定）**: `PWM0`/`PWM1`がsm2のB/A、`PWM2`/`PWM3`がsm1、`PWM4`/`PWM5`がsm0。
   `PWM0`=`P3_17`(D6)、`PWM1`=`P3_16`、`PWM2`=`P3_15`、`PWM3`=`P3_14`(D9)、`PWM4`=`P2_7`(D5)、`PWM5`=`P3_12`(D3)。回路図にPWM0〜5のシルクは無い。
   **PWMを出せるピンは物理的に6本で、4本はD-ピンと同じピン**（A156の「独立した10本」とは違う）。D2（`P2_0`）も`PWM1_A3`を出せるが、使っていない
-- **D3・D5・D6・D9の`analogWrite`は、物理ピンが`PWM0`〜`PWM5`と同じなので、何もしなくてもPWMになる**（`analogWrite()`は物理ピンでPwmOutの表を引く）。
-  そろっていない2点——`digitalPinHasPWM()`が`PWM0`〜`PWM5`の範囲しか真にしないこと、`pinMode()`のあとの`analogWrite()`がピンをPWMに戻さないこと——は、
-  A156のD-ピンのPWMの作業でまとめて直した（2026-10-08。下の「A156のD-ピンのPWMと、組の周期の修正」）
-- **ポートの作業状態（2026-10-06に開始）**: variant（SDKのボード用テンプレートを無改変）、`boards.txt`、gdb-bridgeの`n236.cfg`、コアのN236分岐、
-  `EEPROM`、mcxPinStateの表、サンプルの分岐、CIの対象、`PIN_MAPPING_N236.md`・variantのREADMEまで書いた。`hello_world`で起動・`Serial`・RGB LEDを実機確認。
-  2026-10-06に配線なしの実機確認が通った: `release_check/01`・`04`・`06`（2回、書き込みをまたいだ保持も）・`07`・`08`、`test_Wire_target_self`（`Wire`と`Wire1`の両方）。
-  確認用のスケッチで、`analogRead(A3)`が`-1`、A0・A1・A2・A4・A5がそれぞれ内部プルアップ／プルダウンに従うこと、`PWM0`〜`PWM5`の1kHzとデューティ比、`analogWriteFrequency`、`tone`（D2）もPDIRを直接読んで確かめた。
-  `01`の`isize 0`の項目は、FXLS8974CFが送ったぶんだけレジスタのポインタを進める（P3T1755は進めない）ので、N236だけ直前にポインタを書き直す。
-  `11`（D0-D1・D2-D3）と`Serial1`・`Wire1`の同時使用も通った（下の「FC2の共有の実装」）。`12`（D11-D12）・`13`もALL OK（`13`はN236では`PWM0`がD6なので、サーボのパルスをD6-D7のジャンパ経由でD7で測る。D8のジャンパは要らない）。`14`（`Wire`と`Wire1`の両方、400kHzでの上限の切り詰めも）もALL PASS。既知の電圧での`analogRead`も確認した（12ビットで、A0・A1・A2・A4・A5がGNDで0〜1、3V3で4083〜4095。1本ずつ3V3にしたとき、ほかのピンは追従しない）。配線だけで済む確認はこれで全部。`03`（SW2のFALLINGの割り込み3回とLEDの切り替え、`detachInterrupt()`後は押しても反応しない、LOWのレベル割り込み）も通った。IDE（macOS）のDebugボタンで、ブレークポイント・ステップ実行・変数・SVDの表示もすべて確認した（2026-10-06、ユーザー）。`24`はN947との2枚でALL OK（N236はA153と同じ側＝`0x42`・先攻に移した。N947と同じ側だと2枚とも相手を待って進まないため。相手は常にN947）。LinkServer 26.9.130はN236のフラッシュを`MCXNxxx (1024KB)`と正しく判定し、106KBの`01`を書き込めた（書き込んだ`01`はALL OK）。`21`は、N947のオンボードのP3T1755をセンサーに使って確認した（N236の`MB_SDA`-N947の`MB_RX`、`MB_SCL`-`MB_TX`、GND-GND。N947は`hello_world`。プルアップはN236の4.7kΩ）。D1-D0・D11-D12のジャンパで約285ループ、WARNINGは0件、温度は28℃台で読み続けた。`02`（目で見る確認）・`22`（外付けのLM75系モジュール、温度20℃台で毎回読める）・`23`（Waveshare_TFT_Touch 1.3.1の`SDBitmapViewer`で正しく、問題ない速さで描画）も通った（2026-10-09）。これでN236で`release_check`の全項目が済んだ。README・CHANGELOG・API_COMPATIBILITYも書いた（2026-10-09）。mcxPinStateの上流（`~/dev/Arduino/mcxPinState`）にもN236の分（表・サンプル・README）をコミット・pushした（2026-10-06、`1942acf`）
-- **組になるPWMの周期の問題（2026-10-06にN236で発見。2026-10-08に直した。下の項目を参照。A156のD-ピンのPWMの作業と一緒にコードを直す、とユーザーが決定（10-06）。周期を組（サブモジュール）ごとに持たせ、ドキュメントの「片方を変えると相手も変わる」を成り立たせる）**: `PwmOut`は周期（`_period_us`）をオブジェクトごとに持つが、周期レジスタはサブモジュールの2本で共有している。
-  `analogWriteFrequency(PWM3, 2500)`のあとで相手の`PWM2`に`analogWrite()`すると、共有の周期が`PWM2`の持つ1kHzに戻る。そのあと`PWM3`を書くと周期は2.5kHzに戻るが、`PWM2`のデューティ比は崩れたままになる（0.75のはずが0.46）。
-  周期を短くすると、相手のピンのコンペア値が周期を超えてHigh固定になる（`PWM5`を20kHzにしたとき、`PWM4`がそうなった）。
-  `PwmOut.cpp`は4ボードとも同じ作りなので、A153・N947・A156でも起きるはず（未確認）。A156のD-ピンのPWM（D6とD9がsm0を共有）にも関わる
-- **A156のD-ピンのPWMと、組の周期の修正（2026-10-08に着手）**: `PwmOut`をチップごとの表（FlexPWMのインスタンス・リセット・クロック・ALT・クロック源）と1つの本体に統合し、
-  周期と両チャネルのパルス幅を組（サブモジュール）ごとに持たせた（`apply()`が両チャネルを書き直す）。相手が動いている組に後から加わるピンは、相手の周期を引き継ぐ（`analogWrite()`の初回も1kHzに戻さない）。
-  A156は`D6`/`D9`がFlexPWM1のsm0（A/B）、`D5`がsm1のA、`D3`がsm2のA（ALT7。D3は赤色LEDと共用）。`digitalPinHasPWM()`はA156・N236でD3/D5/D6/D9も真。
+- **D3・D5・D6・D9の`analogWrite`は、物理ピンが`PWM0`〜`PWM5`と同じなので、そのままPWMになる**（`analogWrite()`は物理ピンでPwmOutの表を引く）。
+  `digitalPinHasPWM()`もD3/D5/D6/D9で真（0.9.0）
+- **`release_check`でのN236の扱い**: `01`の`isize 0`の項目は、FXLS8974CFが送ったぶんだけレジスタのポインタを進める（P3T1755は進めない）ので、N236だけ直前にポインタを書き直す。
+  `13`は`PWM0`がD6なので、サーボのパルスをD6-D7のジャンパ経由でD7で測る（D8のジャンパは要らない）。`24`はA153と同じ側（`0x42`・先攻）で、相手は常にN947（同じ側だと2枚とも相手を待って進まない）。
+  `21`はオンボードにP3T1755が無いので、N947のオンボードのP3T1755を、N236の`MB_SDA`-N947の`MB_RX`、`MB_SCL`-`MB_TX`、GND-GNDでつないで読む（N947は`hello_world`）。
+  N947のセンサーが応答しないときは、N947のリセットでは戻らずUSBの抜き差しで戻った。LinkServer 26.9.130はN236のフラッシュを正しく判定する
+- **`PwmOut`の作り（0.9.0で書き直した）**: チップごとの表（FlexPWMのインスタンス・リセット・クロック・ALT・クロック源、各ピンのインスタンス・サブモジュール・チャネル）と1つの本体。
+  周期と両チャネルのパルス幅を組（サブモジュール）ごとに持ち、`apply()`が両チャネルを書き直す。相手が動いている組に後から加わるピンは、相手の周期を引き継ぐ（`analogWrite()`の初回も1kHzに戻さない）。
+  A156は`D6`/`D9`がFlexPWM1のsm0（A/B）、`D5`がsm1のA、`D3`がsm2のA（ALT7。D3は赤色LEDと共用）。
   `pinMode()`は`analog_pin_to_gpio()`でPwmOutの持ち主の記録を外し、次の`analogWrite()`が`claim_pin()`でPWMに戻して`pinMode()`のGPIOオブジェクトを消す（mcxPinStateで持ち主が1つになる）。
-  確認用の`test_analogWrite_pairs_and_pinMode`（配線なし、PDIRで周波数とデューティ比を測る）がA156で28項目ALL OK。前のコアでは同じテストで9件FAILし、D9で`panic`する。A153・N947・N236でもALL OK（2026-10-08。判定はA153・N947が21項目、N236が23項目）。
-  `PwmOut`の書き直しでA153の`release_check/01`が残り40バイトになったので、周辺機能を使わない確認（数学定数・互換マクロ・AVR時代の補助関数・`Print`・`String`）を`release_check/09_no_wiring_software_checks`に分けた（ユーザー判断）。
-  分けたあとのA153の`01`は87,820バイト（76%）。A153・N947・N236・A156の4ボードで`01`と`09`がALL OK（A156は`01`が44項目、`09`が67項目）。判定は分ける前の`01`と1件も過不足が無い
-  文書（`PIN_MAPPING_*.md`・`API_COMPATIBILITY.md`・`TUTORIAL`・`README`・`docs/porting_a_new_board.md`）も更新した（2026-10-08）。mcxRCServoのREADMEも上流で直してpushし（`303a675`、N236の列とD-ピンの表、組の相手のピンの説明）、同梱のコピーにも反映した。監査で出た「どのボードでも`PWM0`〜`PWM5`」の一文も、A156・N236のD-ピンを最初から書く形に上流で直してpushし（`48e6902`、2026-10-09）、同梱のコピーに反映した
-  `release_check/13`（サーボのパルス幅を含む）も4ボードでALL OK（2026-10-08、パルスはA156が499・1449・2399µs、N947が499・1448・2398µs、A153が499・1448・2399µs、N236が499・1449・2399µs）
+  確認は`release_check/08`（`test_analogWrite_pairs_and_pinMode`を含む）
 - **FC2の共有の実装**: SDKの`LPUART_Init()`・`LPI2C_MasterInit()`・`LPI2C_SlaveInit()`はFlexCommのモードを自分の分だけにし、
   `LPUART_Deinit()`・`LPI2C_MasterDeinit()`はFlexComm全体をリセットする。そこでN236のFC2だけ、初期化のあとで`flexcomm_keep_shared()`（`mcu.h`）が両方のモードに戻し、
   Deinitを呼ばない（`Serial::reinit()`、`I2C::~I2C()`）。割り込みは`Serial.cpp`の`LP_FLEXCOMM2_IRQHandler()`が`Serial1`とSDKのハンドラの両方に渡す。
-  D0/D1は`FC2_P3`/`FC2_P2`で、LPUARTがここに出るのは両方のモードのときだけ（回路図のラベル`FC2_UART_RXD`/`TXD`による）。
-  2026-10-06に実機で確認: `release_check/11`がALL OK。確認用のスケッチで、`Serial1`（D0-D1のジャンパ）と`Wire1`（WHO_AM_I）の交互の使用、初期化と`end()`の順番の入れ替え、`Serial1.begin(baud, config)`のやり直し、`Wire1.setClock(400k)`、`Serial1`の長い送信中の`Wire1`の転送、`Wire1`のターゲット化がすべて通った
+  D0/D1は`FC2_P3`/`FC2_P2`で、LPUARTがここに出るのは両方のモードのときだけ（回路図のラベル`FC2_UART_RXD`/`TXD`による）
 - **加速度センサーのWHO_AM_Iは`0x86`（レジスタ`0x13`）**。2026-10-06にユーザーがデータシートで確認し、以前の別のアプリケーションでもこの値を読んでいる。ZephyrのFXLS8974ドライバと、NXPのレジスタ定義（ユーザーのFXLS89xx_Arduinoライブラリの`fxls896x.h`）とも一致する。
   `release_check/01`はN236でこの値と、静止時に約1gを見る。Wireを`Stream`として使う確認では、P3T1755の`T_LOW`の代わりに`OFF_X`/`OFF_Y`（`0x22`/`0x23`）を書いて戻す
-- **0.9.0のリリース準備の進み具合（2026-10-09）**: チェックリストの1（CHANGELOGの`[Unreleased]`に要約とAdded/Fixed/Changed）、2（文書の監査。見つかった`release_check/README`の08の行、`porting_a_new_board.md`の表とクロックの表、`Wire.begin`のプルアップの行、N236のvariantのREADMEの実機確認の表を直した）、
-  3（Doxygenの再生成、警告0）、4（LICENSEは変更不要）、5（Issue・TODO・古い表現なし）、6（全サンプル×4ボードのコンパイル、すべて通過）は済んだ。7（4ボードで`release_check`を流し直す。`PwmOut`の書き直しが全ボードに効くため）も4ボードとも済んだ。
-  `docs/advanced_sdk_tuning.md`のGPIOトグル速度の表にN236の列を足した（`02`で`digitalWrite()`が2.046MHz、SDKが68.166MHz、33.32倍。N947とほぼ同じ）。
-  チェックリストの7の進み具合: N236は全項目OK（`01`〜`04`・`06`〜`09`・`11`〜`14`・`21`〜`24`。`08`はPWMの組の確認を入れたあとで42項目、`07`はfailures 0、`21`は約62秒・312周でWARNING 0件、`24`はN947と両方ALL OK）。`21`ではN947のP3T1755が`0x48`に応答せず`temp=0.00`が続き、N947のリセットでは直らず、USBの抜き差しで直った（`release_check/README.md`に書いた）。`21`は、読み出しの失敗をWARNINGにしていなかった（`I2C_device`ライブラリの`read_r16()`は`rx()`の失敗を見ず、初期化していないバッファから値を作る）ので、毎周の読み出しの前に`0x48`へ温度レジスタのポインタを書き、NAKなら「sensor not answering」を出すようにした（2026-10-09、ユーザー判断の案B。`test_combined_peripherals`も同じ）。4ボードで確認: A153・N947・A156は警告0件、センサーをつないでいないN236は71周すべてで警告（そのときの温度は`80.03`と、範囲内のもっともらしい値だった）。A153・A156・N947は`01`・`09`・`13`に加え、`22`・`23`（`23`は`SDBitmapViewer`）をユーザーが流して問題なし、`04`（CONFLICT・MISMATCHなし）・`06`（2回ともALL OK、書き込みをまたいだ保持も）・`07`（3枚ともfailures 0）・`08`（A153・N947が40項目、A156が47項目）もALL OK（2026-10-09）。`03`も3枚とも通った（A153は1回目の取り込みがフェーズ2の途中で切れていたので流し直した。2回目は最後まで出て、LOWレベル割り込みが152万回）。ジャンパ・2枚の確認も3枚とも通った（`11`・`12`・`14`・`15`（A156）・`21`（約60秒・310周前後でWARNING 0件）・`24`（A153とN947、A156とN947））。N947の`11`（`MB_TX`-`MB_RX`）とA156の`14`（`MB_SCL`-`MB_PWM`・`MB_SDA`-`MB_INT`）は、最初はジャンパがつながっておらずFAILし、つなぎ直して通った。N947の`05`も通った（9回のスキャンがすべて0件、ロジアナでMikroBusのSDA/SCLにスキャンの波形が出ていることをユーザーが確認）。A153・A156・N947の`02`もユーザーが目で見て問題なし（D2のトグルはA153・A156が1.274MHz／43.621MHz、N947が2.046MHz／68.162MHz）。**これでチェックリストの7は4ボードとも、`release_check/README.md`の表の全番号が済んだ（2026-10-09）**。
-  4枚つないだまま書き込んでいたとき、A153に`07`を書き込んだ直後のA156への書き込みで、`upload.sh`の`LinkServer probes`の一覧にA156（`TRCY3KVQCH3R3`）が載らず「not among LinkServer's probes」で失敗した（直後のLinkServerのエラーが出した一覧には載っていた）。流し直すと通った。1回だけで、再現は確かめていない。**0.9.0で手当てした**（2026-10-09、ユーザー判断。各OSの確認はステージングで行う）: `upload.sh`・`upload.bat`は、一覧に番号が無いと1秒待ってもう1回だけ`LinkServer probes`を引く（`upload.bat`の待ちは`ping -n 2 127.0.0.1`。`timeout`はIDEから起動されコンソールが無いと即座に失敗するため）。macOSで、見つかる経路の書き込みと、存在しない番号での引き直し（`sh -x`で2回呼ぶのを確認）と従来のメッセージを確かめた
-  監査で出た`test_analogWrite_pairs_and_pinMode`は`release_check/08`に入れた（2026-10-09、ユーザー判断）。PWMの確認を先に流す（A156・N236ではD5もPWMのピンで、後半でD5に割り込みをかけるので、mcxPinStateの持ち主の確認に混ざらないように）
 
 ---
 
@@ -350,6 +337,8 @@ xPack checksums（正しい値）：
   2026-09-24から`0.6.0`は`~/Library/Arduino15/mcx-0.6.0-backup`に退避中（Boards Manager検証で使うときは戻す）。
   0.8.0のリリース確認で本番の`main`のURLから入れた`packages/nxp`（0.8.0とツールチェーン）は
   `~/Library/Arduino15/nxp-0.8.0-release-installed`に退避してある（開発環境は元に戻した）
+  0.9.0のステージング（`staging-0.9.0`、`dd91e54`）から入れた`packages/nxp`（0.9.0とツールチェーン）は
+  `~/Library/Arduino15/nxp-0.9.0-staging-installed`に退避してある（macOSの確認は2026-10-09に問題なし。開発環境は元に戻した）
 - **注意（Boards Manager経由の実インストール検証時のハマりどころ）**: 上記symlink環境を無効化する際、`~/Library/Arduino15/packages/nxp`を同じ`packages/`直下で別名（例: `nxp.dev-backup`）にリネームしただけでは不十分 — arduino-cliは`packages/*`配下の全ディレクトリ名をpackager IDとして解釈するため、リネーム後も`nxp.dev-backup:mcx`という別パッケージとして「0.1.9-dev installed」表示が残ってしまう（`arduino-cli core list --all`で再現・特定）。無効化する際は`packages/`の外（例: スクラッチパッド等）に完全に退避すること。v0.2.0リリース後、この手順でBoards Manager経由のGitHubからの実インストールを検証済み
 
 ## GitHub Actions
@@ -364,6 +353,9 @@ xPack checksums（正しい値）：
 2. `main`とは別に**ステージング用ブランチ**（例: `staging-0.3.1`）を作り、`package_nxp_mcx_index.json`だけをそこにpush——今作ったリリースのエントリ（url/checksum/sizeは実際の値）を`platforms[]`の末尾に追加したもの（既存エントリは書き換えない。v0.3.1当時は`platforms[0]`を書き換えていたが、0.4以降は過去バージョンも選べるよう追加にしている）
 3. 各OS（macOS/Windows/Linux）で、Arduino IDEの**Additional Boards Manager URLsを一時的にこのステージングブランチのraw URL**に切り替えてインストール検証
 4. 全OSで問題なければ、いつも通り`main`に対して`update_package_index.yml`を手動実行してchecksum確定
+
+**`package_nxp_mcx_index.json`のエントリを入れる時期**（0.8.0・0.9.0とも）: タグとリリースzipを作ったあと、本物のchecksum・sizeで`staging-<version>`だけに入れ、3OSの確認が済んでから`main`をそのコミットまでfast-forwardする。
+`main`には仮の値のエントリを入れない（Boards Managerに未確認の版が出るため）。そのため、タグのコミットを`main`にpushした回とタグの回帰チェックは、hygieneの`package-index-entry`で失敗する（コンパイルが通っていれば想定どおり）
 
 **利点**: 従来の手順だと、`main`にプレースホルダーchecksum付きの新バージョンエントリを一旦pushしてから確定させるまでの間、誰かが`main`経由でインストールを試みると失敗する可能性があった（短時間ではあるが）。ステージングブランチ方式なら、`main`のインデックスには常に検証済みの内容だけが載る状態を保てる。**v0.3.1で初適用・完了**——macOS/Windows/Linux全てでBoards Manager経由インストール〜動作確認まで成功、`main`のchecksumも確定済み。詳細は[docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md)の「v0.3.1リリース完了」節。念のため、`main`のchecksum確定後にmacOSで改めて本番URL（`.../main/package_nxp_mcx_index.json`）経由のインストールも再検証し、問題ないことを確認済み
 
@@ -396,7 +388,7 @@ v0.4.0の`main`マージ直前、ユーザーから「今回のリリース準�
    - **`0n`**（`01`〜`09`）: 配線不要。`08`はD2・D4・D5とA0/A1（N947はA2/A3）を内部プルで動かすので空けておく（`01`はA153のフラッシュを99%使っていて、`08`の分が入らなかった）。`09`は周辺機能を使わないソフトウェアの確認で、0.9.0で`01`から分けた（`01`がA153のフラッシュの残り40バイトまで来たため）。`05`はN947限定。`06`（EEPROM）は自分で1回リセットしてから判定し、もう一度書き込むと前回のデータが書き込みをまたいで残ったかも確認する。
      `07`（EEPROMの書き込み中リセット）はウォッチドッグで1000回リセットをかけ、1ボード約6分。EEPROMを上書きするので`06`の2回が済んでから流す
    - **`1n`**（`11`〜`15`）: ジャンパのみ。`11`のSerial1配線は**ボードで違う**（A153・A156=D0-D1、N947=MikroBus `MB_TX`-`MB_RX`）。`14`（`setWireTimeout`）は全ボード共通で`D19`-`D8`＋`D18`-`D7`、N947は`Wire2`用に、A156は`Wire1`用に`MB_SCL`-`MB_PWM`＋`MB_SDA`-`MB_INT`も。`15`はA156限定で`MB_SDA`-`D18`＋`MB_SCL`-`D19`
-   - **`2n`**（`21`〜`24`）: 外部`P3T1755.h`＋MikroBus配線／外部LM75系センサー／`Waveshare_TFT_Touch`の`SDBitmapViewer`（ライブラリの1.3.1以降。0.9.0から全ボードでこれを使う（2026-10-09、ユーザー判断）。1.3.1で互換性が改善され、`SDBitmapViewerDemo`用の`/PLAYLIST.JSN`のままのカードでも動く。0.8.0までは`SDBitmapViewerDemo`だった）／もう1枚のボード（`24`は2枚（0.8.0ではA153とN947、A156とN947）をD18-D18、D19-D19、GND-GNDでつなぎ、両方に書き込む。どちらかが前から同じスケッチを動かしていたら、両方をほぼ同時にリセットしてから始める）。`21`/`22`は**CIスタブではなく実物のライブラリ**を`--library`で指定すること
+   - **`2n`**（`21`〜`24`）: 外部`P3T1755.h`＋MikroBus配線／外部LM75系センサー／`Waveshare_TFT_Touch`の`SDBitmapViewer`（ライブラリの1.3.1以降。0.9.0から全ボードでこれを使う（2026-10-09、ユーザー判断）。1.3.1で互換性が改善され、`SDBitmapViewerDemo`用の`/PLAYLIST.JSN`のままのカードでも動く。0.8.0までは`SDBitmapViewerDemo`だった）／もう1枚のボード（`24`は2枚（0.8.0ではA153とN947、A156とN947）をD18-D18、D19-D19、GND-GNDでつなぎ、両方に書き込む。どちらかが前から同じスケッチを動かしていたら、両方をほぼ同時にリセットしてから始める）。`21`/`22`は**CIスタブではなく実物のライブラリ**を`--library`で指定すること（`~/dev/Arduino/libraries/TempSensor_NXP_Arduino`と、それが使う`~/dev/Arduino/libraries/I2C_device_Arduino`の2つ）
    - **全ボード同時接続での書き込みも各プラットフォームで1回**: 対応ボードをすべて（0.8.0ではA153・N947・A156の3枚）つなぎ、ポートを切り替えてそれぞれに書き込めること。
      `upload.sh`/`upload.bat`はポートのUSBシリアル番号（`{upload.port.properties.serialNumber}`）を
      LinkServerの`--probe`に渡すので、**Windows/Linuxのポート検出がこの番号を同じ形で返すか**が肝。0.7.0でmacOS・Windows・Linuxの全てで2枚での書き込みを確認した（どれもLinkServerと同じ形の番号を返す）。
@@ -412,7 +404,7 @@ v0.4.0の`main`マージ直前、ユーザーから「今回のリリース準�
 ## 残りのPendingタスク
 1. ~~Linux対応の実機検証~~ **解消済み（v0.2.2で確定）**: v0.2.1リリース後の実機検証で、ファイル名の大文字小文字ミスマッチ（`arduino.h`/`Arduino.h`、`spi.h`/`SPI.h`）によりLinuxでビルドが失敗することが判明・修正し、v0.2.2としてリリース。Linux実機（Ubuntu系）でBoards Manager経由インストール〜Blinkスケッチのビルド〜書き込み〜実行まで成功を確認済み。README.md/TUTORIAL.md/TUTORIAL.ja.mdの「未検証」表記もすべて「macOS, Windows 11, Linuxで検証済み」に更新済み
 2. マルチボード対応（MCXN947, MCXA156, MCXN236）— **N947は`prepare0.3.0`ブランチで完了**。GPIO/Serial/Wire/Wire1/SPI/analogRead/analogWrite/tone・noTone・MikroBusの`SPI1`/`Wire2`/`Serial1`まで実機検証済み、`README.md`の対応ボード表もA153と同じ✅に変更済み（ユーザー判断、2026-08-16）。v0.3.0でリリース済み。
-   **A156は0.8.0でリリース済み**（「FRDM-MCXA156の前提と決定事項（0.8.0）」節）。N236・C444は未着手
+   **A156は0.8.0、N236は0.9.0でリリース済み**（それぞれの「前提と決定事項」節）。C444は未着手
 3. ~~`examples/tests/GPIO_NXP_Arduino`の不要なgitlinkエントリの整理~~ **解消済み**: `git ls-files --stage`で`160000`（gitlink）エントリが残っているのに`.gitmodules`が存在しないと判明（外部クローンの誤`git add`の名残）。`git rm --cached`でインデックスから除去し、他4つの外部ライブラリクローンと同様`.gitignore`に追加
 4. ~~v0.3.0リリース~~ **完了**: 2026-08-16リリース。詳細は[docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md)の「リリース前最終チェックとv0.3.0リリース完了」節
 5. ~~SDライブラリビルド時の`-Waddress-of-packed-member`警告~~ **解消済み（v0.3.1で対応）**: `platform.txt`の`compiler.cpp.flags`に`-Wno-address-of-packed-member`を追加して警告クラス自体を抑制。純粋な診断抑制フラグ（`-W`系）でコード生成には一切影響しないため、プリビルド`.a`の再ビルドや実機再検証は不要と判断——両ボードで`SDBitmapViewer`（`SD`ライブラリ使用）をコンパイルし、警告が完全に消えたことを確認
