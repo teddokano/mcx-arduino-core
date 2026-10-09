@@ -10,8 +10,9 @@
   `EEPROM`はこのリポジトリが本体（フラッシュの配置がリンカスクリプトと一体なので）
 - **現在のリリース**: **v0.9.0**（2026-10-09、FRDM-MCXN236の追加と、FRDM-MCXA156のD3/D5/D6/D9での`analogWrite`）。macOS・Windows・Linuxの3プラットフォームで
   インストール〜ビルド〜アップロード〜IDE内蔵デバッガまで検証済み
-- **次の版**: 範囲は未定で、開発用のブランチもまだ無い。ボード追加の順番はA156 → N236 → C444で合意済み。
-  A4/A5のI²C（Pendingタスク10）は1.0前の別の版で入れる。
+- **開発中**: **0.9.1**（`0.9.1-dev`ブランチ、2026-10-09に`main`から切った）。いま入っているのは、`analogRead(0)`〜`analogRead(5)`を`A0`〜`A5`として扱う修正
+  （ユーザーの`ref/ttbasic`の`randomSeed(analogRead(0))`が`panic()`で止まって発覚。ユーザー判断でコアを直し、0.9.1で出す）と、同梱のmcxRCServoのREADMEの同期。
+  それ以外の範囲は未定。ボード追加の順番はA156 → N236 → C444で合意済み。A4/A5のI²C（Pendingタスク10）は1.0前の別の版で入れる。
   A156の前提と決定は下の「FRDM-MCXA156の前提と決定事項（0.8.0）」節、N236の分は「FRDM-MCXN236の前提と決定事項（0.9.0）」節
 - **リリースごとの変更点**: [CHANGELOG.md](CHANGELOG.md)
 - **各リリースで何をやり、どこで詰まったかの詳細**: [docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md)
@@ -193,7 +194,8 @@ xPack checksums（正しい値）：
 - **D3/D5/D6/D9（FlexPWM1）での`analogWrite`は0.8.0では見送る**（2026-10-03、ユーザー判断）。
   A156の`analogWrite`はA153と同じ`PWM0`〜`PWM5`（FlexPWM0、J3の`P3_11`〜`P3_6`）だけ。
   **D-ピンのPWMは0.9.0で入れる**（2026-10-05に決定。A156のPWMは`PWM0`〜`PWM5`と合わせて10本、周波数は6系統になる）（D3=`P3_12` PWM1_A2、D5=`P3_14` PWM1_A1、D6=`P3_16` PWM1_A0、D9=`P3_17` PWM1_B0、いずれもALT7。
-  D6とD9はsm0を共有するので周波数が連動する）
+  D6とD9はsm0を共有するので周波数が連動する）。0.9.0で入れたあと、実物のSG90を`SG90_basic`で4本それぞれから動かせることをユーザーが確認した（2026-10-09、ボードから給電）。
+  上流のmcxRCServoのREADMEに書き（`8dcf339`）、同梱のコピーへは`0.9.1-dev`で同期した
 - **LinkServer 26.9の不具合（Pendingタスク9）はA156には出ない**（2026-10-03に確認）。26.9.130は
   `Flash variant 'MCXA1x6 ...' detected (1MB = 128*8K at 0x0)`と正しく判定し、46KBのイメージの書き込みと`verify`が通った
   （A156のvariantがまだ無いので、A153向けの`hello_world`のELFを`MCXA156:FRDM-MCXA156`として書いた）。
@@ -297,7 +299,7 @@ xPack checksums（正しい値）：
 | SPI | ✅ | |
 | attachInterrupt | ✅ | |
 | detachInterrupt | ✅ | v0.2.1で追加。SW2を使った実機確認済み |
-| analogRead | ✅ | LPADC。A153は`A0`-`A3`、N947は`A2`-`A5`、A156は`A0`-`A5`（`A4`・`A5`はR75・R76を外したボードで） |
+| analogRead | ✅ | LPADC。A153は`A0`-`A3`、N947は`A2`-`A5`、A156は`A0`-`A5`（`A4`・`A5`はR75・R76を外したボードで）、N236は`A0`-`A2`・`A4`・`A5`（`A3`は`-1`）。AVRと同じく`0`-`5`も`A0`-`A5`（0.9.1から。`test_analogRead_channel_numbers`と`release_check/08`で4ボード確認。D0-D5はどのボードでも`A`ピンと別のピンでADCも無いので、前に動いていた呼び出しの意味は変わらない） |
 | analogWrite (PWM) | ✅ | A153・A156はFlexPWM0、N947・N236はFlexPWM1。`PWM0`-`PWM5`と、A156・N236の`D3`/`D5`/`D6`/`D9`（A156はFlexPWM1、0.9.0）。組の周期は組ごとに共有（0.9.0で直した） |
 | millis / micros | ✅ | SysTick(1ms) + DWT |
 | delayMicroseconds | ✅ | wait_us()ベース、v0.2.1で追加 |
@@ -329,7 +331,7 @@ xPack checksums（正しい値）：
 - **リポジトリパス**: `~/dev/mcx-arduino-core`
 - **v0.4.0以降のソース構成**: `MCUXpresso_project/`ディレクトリは廃止（削除済み）。ソースの唯一の実体は`hardware/nxp/mcx/cores/arduino/`（全ボード共有）＋`hardware/nxp/mcx/variants/<board>/src/`（ボード固有）で、プリビルド`.a`のビルド・配置手順も不要になった——編集したソースはそのままarduino-cli/Arduino IDEのビルドに反映される（詳細は[docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md)の「`cores/arduino/`一本化・`platform.txt`書き換え完了」節）
 - **xPackツールチェーン**: `~/.xpacktools/xpack-arm-none-eabi-gcc-14.2.1-1.1/`（`package_nxp_mcx_index.json`記載のものと同一バイナリ、チェックサム確認済み）
-- **ローカルArduino IDE連携**: `~/Library/Arduino15/packages/nxp/hardware/mcx/<version>-dev`（今は`0.9.0-dev`。ブランチ名と同じ。パッチリリースのブランチを並行して進める間は、作業ツリーで切り替えたブランチに合わせてこの名前も付け替える）をこのリポジトリの`hardware/nxp/mcx/`へのシンボリックリンクとして設定済み（編集が即座に反映される）。ツールチェーンも`~/.xpacktools/`への symlink。`-dev`サフィックスにより、Boards Manager経由でインストールする実リリース版とはディレクトリ名が衝突せず共存できる（ただし下の項目のとおり、並んでいるとリリース版が選ばれる）
+- **ローカルArduino IDE連携**: `~/Library/Arduino15/packages/nxp/hardware/mcx/<version>-dev`（今は`0.9.1-dev`。ブランチ名と同じ。パッチリリースのブランチを並行して進める間は、作業ツリーで切り替えたブランチに合わせてこの名前も付け替える）をこのリポジトリの`hardware/nxp/mcx/`へのシンボリックリンクとして設定済み（編集が即座に反映される）。ツールチェーンも`~/.xpacktools/`への symlink。`-dev`サフィックスにより、Boards Manager経由でインストールする実リリース版とはディレクトリ名が衝突せず共存できる（ただし下の項目のとおり、並んでいるとリリース版が選ばれる）
 - **リリース版を入れたままだと`-dev`が使われない**（0.7.0で踏んだ）: `packages/nxp/hardware/mcx/`に
   Boards Managerで入れた`0.6.0`と`0.7.0-dev`のsymlinkが並ぶと、**IDEも既定のarduino-cliもインストール済みの`0.6.0`を選ぶ**。
   開発中の修正がIDEで一切効かず、「直したはずの不具合がIDEでは再現する」形で表に出る。

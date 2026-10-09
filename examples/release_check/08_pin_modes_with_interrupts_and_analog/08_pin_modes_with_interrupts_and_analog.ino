@@ -4,8 +4,10 @@
  *  channels and pins taken back from pinMode() right.
  *
  *  Consolidates (from examples/Arduino_compatible_API/):
- *  test_analogWrite_pairs_and_pinMode, test_attachInterrupt_keeps_pinMode
- *  and test_digitalRead_after_analogRead. It is a sketch of its own because
+ *  test_analogWrite_pairs_and_pinMode, test_attachInterrupt_keeps_pinMode,
+ *  test_digitalRead_after_analogRead and test_analogRead_channel_numbers
+ *  (the last on a third analog pin, since analogRead() turns a pin's input
+ *  buffer off only the first time it reads that pin). It is a sketch of its own because
  *  release_check/01 already fills FRDM-MCXA153's flash.
  *
  *  The analogWrite() checks run first: on FRDM-MCXA156 and FRDM-MCXN236,
@@ -32,8 +34,8 @@
  *  seeing the pull bring it back. The input buffer is checked with the
  *  pull-up on: a pin without one reads 0 whatever its level.
  *
- *  Wiring: none. Leave D2, D4, D5, the two analog pins below (A0/A1,
- *  A2/A3 on FRDM-MCXN947, A0/A4 on FRDM-MCXN236) and the PWM pins
+ *  Wiring: none. Leave D2, D4, D5, the three analog pins below (A0/A1/A2,
+ *  A2/A3/A4 on FRDM-MCXN947, A0/A4/A5 on FRDM-MCXN236) and the PWM pins
  *  (PWM0-PWM5, and D3/D6/D9 on FRDM-MCXA156) unconnected. The PWM part
  *  reads each pin's level from its GPIO port's PDIR.
  *
@@ -50,14 +52,17 @@
 // are removed, so stay on A0/A1
 const int ANALOG_PIN_A = A0;
 const int ANALOG_PIN_B = A1;
+const int ANALOG_PIN_C = A2;
 #elif defined(FRDM_MCXN947)
 const int ANALOG_PIN_A = A2;  // A0/A1 are not analog inputs on FRDM-MCXN947
 const int ANALOG_PIN_B = A3;
+const int ANALOG_PIN_C = A4;
 #elif defined(FRDM_MCXN236)
 // A1/A2 are also on the CAN transceiver until R25/R67 are removed, and A3
 // is not an analog input here (the blue LED's pin)
 const int ANALOG_PIN_A = A0;
 const int ANALOG_PIN_B = A4;
+const int ANALOG_PIN_C = A5;
 #else
 #error "This sketch has no settings for this board yet"
 #endif
@@ -370,6 +375,21 @@ void setup() {
   delay(1);
   check("the rising edge from the pull-up is caught", rises == 1);
   detachInterrupt(digitalPinToInterrupt(ANALOG_PIN_B));
+
+  // As on AVR, analogRead(0..5) is A0..A5: before 0.9.1, 0 was D0 and
+  // stopped in panic(). Seen by the input buffer analogRead() turns off.
+  Serial.println("--- analogRead() with a channel number ---");
+  pinMode(ANALOG_PIN_C, INPUT_PULLUP);
+  check("before: the analog pin's input buffer is on", inputBufferOn(ANALOG_PIN_C));
+  int byNumber = analogRead(ANALOG_PIN_C - A0);
+  Serial.print("  analogRead(");
+  Serial.print(ANALOG_PIN_C - A0);
+  Serial.print(") = ");
+  Serial.println(byNumber);
+  check("analogRead() by number reached the analog pin (its input buffer is off)", !inputBufferOn(ANALOG_PIN_C));
+  check("the reading is in range", 0 <= byNumber && byNumber <= 1023);
+  int byName = analogRead(ANALOG_PIN_C);
+  check("analogRead() by name still works after it", 0 <= byName && byName <= 1023);
 
   Serial.println();
   if (failCount == 0)

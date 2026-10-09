@@ -12,8 +12,9 @@
 /** Read an analog input pin. Lazily creates the pin's AnalogIn instance on
  *  first use. Calls panic() if pin_num isn't one of this board's
  *  analog-capable pins, except A3 on FRDM-MCXN236 (the blue LED's pin),
- *  which returns -1 instead.
- * @param pin_num analog pin (A0..A5, board-dependent which are wired)
+ *  which returns -1 instead. As on AVR, 0..5 mean A0..A5, so
+ *  analogRead( 0 ) reads A0.
+ * @param pin_num analog pin (A0..A5, board-dependent which are wired, or 0..5 for them)
  * @return raw ADC reading, scaled to analogReadResolution() bits (10 by default)
  */
 int		analogRead( int pin_num );

@@ -5,6 +5,19 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+- `analogRead(0)` stopped the sketch ("AnalogIn: unsupported analog pin"), and so did the common
+  `randomSeed(analogRead(0))`: the core took `0` as `D0`, which has no analog input. As on AVR, `0`-`5` now mean
+  `A0`-`A5`. `D0`-`D5` are never analog inputs on these boards, so no call that worked before reads another pin now
+
+### Added
+- New example sketch `test_analogRead_channel_numbers` (no wiring), also run by `release_check/08`
+
+### Changed
+- The bundled `mcxRCServo`'s README notes `SG90_basic` turning a servo from FRDM-MCXA156's `D3`, `D5`, `D6` and `D9`
+
 ## [0.9.0] - 2026-10-09
 
 ### Highlights

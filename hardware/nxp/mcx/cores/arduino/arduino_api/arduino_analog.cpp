@@ -81,6 +81,15 @@ void analog_pin_to_gpio( int raw_pin )
 
 int analogRead( int pin_num )
 {
+#ifdef	ARDUINO_PIN_RENUMBERING
+	//	Channel numbers, as AVR takes them: analogRead( 0 ) is A0, so
+	//	randomSeed( analogRead( 0 ) ) and the like work. D0-D5 are never
+	//	analog inputs on these boards, so nothing that read a pin before
+	//	reads a different one now.
+	if ( 0 <= pin_num && pin_num <= 5 )
+		pin_num	= A0 + pin_num;
+#endif
+
 	int	pin	= raw_pin( pin_num );
 
 	if ( pin < 0 || pin >= MAX_ANALOG_PINS )

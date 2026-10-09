@@ -11,9 +11,10 @@ Drives a hobby RC servo from a PWM pin. Two servos come ready to use:
 carrying the pulse timing from its own datasheet.
 
 Every example has been run on both FRDM-MCXA153 and FRDM-MCXN947. On
-FRDM-MCXA156 (mcx-arduino-core 0.8.0 and later) and FRDM-MCXN236 (0.9.0 and
-later) the library's pulse widths were measured on the `PWM0` pin, without a
-servo attached.
+FRDM-MCXA156, `SG90_basic` has also turned a servo from each of `D3`, `D5`,
+`D6` and `D9` (mcx-arduino-core 0.9.0). There and on FRDM-MCXN236, the
+library's pulse widths were also measured on the `PWM0` pin, without a servo
+attached (FRDM-MCXA156 from 0.8.0, FRDM-MCXN236 from 0.9.0).
 
 ## Usage
 
@@ -207,7 +208,8 @@ board's own supply well before stall.
 
 Neither datasheet states an input threshold for the signal line. Both servos
 take the board's 3.3V logic level while running from a 5V supply, which is
-how the examples were verified on FRDM-MCXA153 and FRDM-MCXN947.
+how the examples were verified on FRDM-MCXA153 and FRDM-MCXN947, and
+`SG90_basic` on FRDM-MCXA156's D-pins.
 
 ## Notes
 
