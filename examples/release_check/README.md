@@ -25,7 +25,7 @@ with one setup each:
 | 05 | `05_wire2_mikrobus_scan_N947` | none (N947 only -- `Wire2` doesn't exist on the other boards) | manual (confirm I2C traffic on a logic analyzer) |
 | 06 | `06_eeprom` | none | automatic, across one reset it does itself ("ALL OK" at the end). Run it again after: the new run checks the previous run's data came through the upload |
 | 07 | `07_eeprom_reset` | none | automatic, over 1000 resets it causes itself with the watchdog, about six minutes ("ALL OK" at the end). Run it after both runs of 06, since it overwrites the EEPROM |
-| 08 | `08_pin_modes_with_interrupts_and_analog` | none, with D2, D4, D5 and A0/A1 (A2/A3 on N947) left unconnected: it moves them with the internal pulls | automatic (reads "ALL OK"/"N FAILED") |
+| 08 | `08_pin_modes_with_interrupts_and_analog` | none, with D2, D4, D5, A0/A1 (A2/A3 on N947, A0/A4 on N236) and the PWM pins left unconnected: it moves the first ones with the internal pulls and reads the PWM pins' levels | automatic (reads "ALL OK"/"N FAILED") |
 | 09 | `09_no_wiring_software_checks` | none | automatic (reads "ALL OK"/"N FAILED") |
 | 11 | `11_serial1_and_gpio_loopback` | Serial1 TX/RX loopback jumper (D0-D1 on A153, A156 and N236, MikroBus MB_TX-MB_RX on N947) + D2-D3 jumper | automatic |
 | 12 | `12_spi_loopback` | D11-D12 jumper + MikroBus MOSI-MISO jumper | automatic |
@@ -34,7 +34,7 @@ with one setup each:
 | 15 | `15_wire_wire1_jumpered_A156` | A156 only: MB_SDA-D18 + MB_SCL-D19, nothing else on either bus (joins `Wire` and `Wire1` into one bus) | automatic |
 | 21 | `21_combined_peripherals_external_module` | needs the external `P3T1755.h` library + (A153, A156 and N236) D1-D0 jumper + (A156 only) MikroBus MB_TX-MB_RX jumper + MikroBus MOSI-MISO jumper + (N236 only) a P3T1755 on its MikroBus I2C: an FRDM-MCXN947's on-board one does, wired N236 MB_SDA-N947 MB_RX, MB_SCL-MB_TX, GND-GND, with the N947 running a sketch that leaves those pins alone | manual (watch the Serial log for WARNING lines) |
 | 22 | `22_wire_lm75b_external_module` | needs an external LM75-family sensor module on D18(SDA)/D19(SCL)/3V3/GND | manual (read the printed temperature) |
-| 23 | `23_waveshare_tft_touch_external_library` | needs the external `Waveshare_TFT_Touch` library + its LCD/SD hardware (see its own README); on FRDM-MCXA156 its `SDBitmapViewer` example instead | manual (judge the rendered image + draw speed) |
+| 23 | `23_waveshare_tft_touch_external_library` | needs the external `Waveshare_TFT_Touch` library + its LCD/SD hardware (see its own README), running its `SDBitmapViewer` example (1.3.1 or later) | manual (judge the rendered image + draw speed) |
 | 24 | `24_wire_target_two_boards` | an FRDM-MCXA153 (or FRDM-MCXA156, or FRDM-MCXN236) and an FRDM-MCXN947 wired D18-D18, D19-D19, GND-GND, both running this sketch (reset both together if either already was) | automatic, on each board |
 
 `06_eeprom` mirrors
@@ -55,11 +55,21 @@ clock-stretches forever. D7/D8 run with internal pull-ups while released,
 alongside the ones `Wire.begin()` turns on for D18/D19.
 
 `08_pin_modes_with_interrupts_and_analog` runs
+[`Arduino_compatible_API/test_analogWrite_pairs_and_pinMode`](../Arduino_compatible_API/test_analogWrite_pairs_and_pinMode)
+(since 0.9.0),
 [`Arduino_compatible_API/test_attachInterrupt_keeps_pinMode`](../Arduino_compatible_API/test_attachInterrupt_keeps_pinMode)
 and
 [`Arduino_compatible_API/test_digitalRead_after_analogRead`](../Arduino_compatible_API/test_digitalRead_after_analogRead)
 in one sketch. It is not part of `01` because `01` already filled
 FRDM-MCXA153's flash (99% before these were added).
+
+`21_combined_peripherals_external_module` warns "sensor not answering"
+when the P3T1755 does not acknowledge at `0x48` (the sensor library
+itself returns a leftover value then, which can look like a sane
+temperature; `0.00` on every line was seen). On FRDM-MCXN236, reading
+an N947's sensor, a reset of the N947 did not bring it back in 0.9.0,
+but unplugging and replugging the N947's USB did; the sensor keeps its
+state while powered.
 
 `09_no_wiring_software_checks` holds the checks that need no peripheral
 (math constants, compat macros, the AVR-era helpers, `Print`, `String`).

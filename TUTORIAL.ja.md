@@ -365,6 +365,8 @@ void loop() {
 
 > **FRDM-MCXA156**: このボードではセンサーが`Wire`（`D18`/`D19`）につながっていて、`Wire1`はMikroBusのI2Cです。以下の`Wire1`を`Wire`に置き換えてください。[PIN_MAPPING_A156.md](PIN_MAPPING_A156.md)を参照。
 
+> **FRDM-MCXN236**: このボードにはP3T1755がありません。オンボードのセンサーは`Wire1`の`0x18`にある加速度センサーFXLS8974CFで、`Wire1`はMikroBusのI2Cでもあります。以下の例をそのまま動かすには、P3T1755のモジュールをMikroBusの`MB_SDA`/`MB_SCL`につないでください。[PIN_MAPPING_N236.md](PIN_MAPPING_N236.md)を参照。
+
 ```cpp
 #include <Arduino.h>
 

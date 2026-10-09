@@ -445,7 +445,8 @@ static const uint8_t	SCL	= PIN_WIRE_SCL;
  *  analogRead( A3 ) returns -1 there.
  *  analogRead() on a pin without one panics. A portable library looping
  *  over NUM_ANALOG_INPUTS pins from A0 works on the two FRDM-MCXA boards,
- *  but still not on FRDM-MCXN947, where A0 itself is the missing one;
+ *  but still not on FRDM-MCXN947, where A0 itself is the missing one, nor
+ *  fully on FRDM-MCXN236, where the loop reaches A3 and reads -1;
  *  reporting the real working count is still more honest than claiming 6.
  */
 #if	defined( FRDM_MCXA153 )

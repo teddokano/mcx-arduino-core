@@ -69,4 +69,29 @@ FlexComm全体をリセットする。そこでコアは:
 
 ## 実機確認
 
-まだ行っていない。
+開発用の基板（Rev C、R25・R67を外したもの）で確認した。
+
+| 項目 | 結果 |
+|---|---|
+| 起動、`Serial`（USB）、RGB LED | `hello_world`で確認 |
+| `release_check/01` | ALL OK（クロックの値、`Wire1`の加速度センサーFXLS8974CFのWHO_AM_I（`0x86`）と静止時の約1g、`Wire`のターゲットモード） |
+| `Wire`・`Wire1`のターゲットモード | `test_Wire_target_self`が両方ともALL OK |
+| `release_check/09` | ALL OK |
+| `release_check/04` | CONFLICT・MISMATCHなし |
+| `release_check/06` | 2回ともALL OK（自分でかけるリセットをまたいだ保持、前回のデータが書き込みのあとも残る） |
+| `release_check/07` | ALL OK（書き込み中のリセット1000回） |
+| `release_check/08` | ALL OK（アナログピンは`A0`・`A4`） |
+| `release_check/03`（SW2＝`P0_20`） | 立ち下がりエッジで3回とも数えLEDが切り替わる、`detachInterrupt()`後は反応しない、LOWレベル割り込み |
+| `analogRead` | `A0`・`A1`・`A2`・`A4`・`A5`が12ビットでGNDのとき0〜1、3V3のとき4083〜4095。1本ずつ3V3にしても、ほかのピンは追従しない。`analogRead(A3)`は`-1` |
+| `analogWrite`・`tone` | `PWM0`〜`PWM5`の1kHzとデューティ比、`analogWriteFrequency()`、`D2`の`tone()`をPDIRで確認。`test_analogWrite_pairs_and_pinMode`（組の周期、`pinMode()`のあとの`analogWrite()`、D-ピンの別名）が23項目ALL OK |
+| `release_check/11`（D0-D1、D2-D3） | ALL OK。`Serial1`と`Wire1`の交互・同時の使用、初期化と`end()`の順番の入れ替えも通った |
+| `release_check/12`（D11-D12） | ALL OK |
+| `release_check/13`（D0-D1、D2-D3、D4-D5、D6-D7） | ALL OK（`mcxRCServo`のパルスは`PWM0`＝D6から出し、D7で499/1449/2399us） |
+| `release_check/14`（D19-D8、D18-D7、`MB_SCL`-`MB_PWM`、`MB_SDA`-`MB_INT`） | ALL PASS（`Wire`・`Wire1`とも。400kHzでの上限の切り詰めも） |
+| `release_check/21` | N947のオンボードのP3T1755を、MikroBus（`MB_SDA`-N947の`MB_RX`、`MB_SCL`-`MB_TX`、GND-GND）経由でセンサーに使って約285周、WARNINGなし |
+| `release_check/24`（N947とD18-D18、D19-D19、GND-GND） | 両ボードともALL OK（N236はA153と同じ側） |
+| LinkServer 26.9.130 | フラッシュを`MCXNxxx (1024KB)`と正しく判定し、106KBの`release_check/01`を書き込めた |
+| `release_check/22`（外付けのLM75系モジュールをD18/D19に） | `stop=false`・`stop=true`とも毎回読めて、温度は20℃台 |
+| `release_check/23`（Waveshare 2.8インチTFTタッチシールド） | ライブラリ1.3.1の`SDBitmapViewer`で、SDカードのBMPが正しく、問題ない速さで描かれた（LCDとSDカードが`SPI`を分け合い、CSは`D10`・`D5`） |
+| `release_check/02`（目で見る確認） | 問題なし。`D2`のトグルは`digitalWrite()`で2.046MHz、SDKのAPIで68.166MHz |
+| Arduino IDE（macOS） | Debugボタンでブレークポイント、ステップ実行、変数、SVDの表示 |

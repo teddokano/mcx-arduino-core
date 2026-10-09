@@ -17,6 +17,9 @@
  *  - digitalPinHasPWM() agrees with all of that.
  *
  *  Leave the PWM pins unconnected.
+ *
+ *  examples/release_check/08 runs the same checks; a change here goes
+ *  there too.
  */
 
 #include <Arduino.h>

@@ -65,10 +65,16 @@ rem refuses to flash at all for one it doesn't know ("No probes matched").
 rem A port that reports its serial number in some other form then uploads
 rem as before --probe was passed: fine with one board, refused with several.
 rem A probe busy with a debug session is still listed, so this doesn't send
-rem the upload to another board.
+rem the upload to another board. The listing has been seen to leave out a
+rem connected probe once, with four boards on and another just flashed, so
+rem a serial number it lacks is looked for once more a second later (ping
+rem waits that second: timeout fails at once without a console to read).
 set "PROBE_ARGS="
 set "UNLISTED="
 if not defined PROBE_SERIAL goto :listed_done
+"%LINKSERVER%" probes 2>&1 | findstr /i /l /c:"%PROBE_SERIAL%" >nul
+if not errorlevel 1 goto :serial_listed
+ping -n 2 127.0.0.1 >nul
 "%LINKSERVER%" probes 2>&1 | findstr /i /l /c:"%PROBE_SERIAL%" >nul
 if not errorlevel 1 goto :serial_listed
 echo The port's serial number "%PROBE_SERIAL%" is not among LinkServer's probes; uploading without --probe

@@ -1,4 +1,4 @@
-/** Combined peripheral stress test -- FRDM-MCXA153 / FRDM-MCXN947 / FRDM-MCXA156
+/** Combined peripheral stress test -- FRDM-MCXA153 / FRDM-MCXN947 / FRDM-MCXA156 / FRDM-MCXN236
  *
  *  Exercises multiple peripherals together in a single loop to check for
  *  interference between them:
@@ -18,7 +18,7 @@
  *                   everything else here. No device required: this just
  *                   probes a fixed address every loop and expects a NAK
  *                   (err != 0) back promptly, the same way the bus-scan
- *                   in examples/release_check/0B works with nothing
+ *                   in examples/release_check/05 works with nothing
  *                   plugged in -- the point here is that it completes
  *                   promptly under load, not that anything ACKs
  *
@@ -159,7 +159,14 @@ void loop() {
   serial2Rx[i] = '\0';
 #endif
 
-  // I3C (on-board P3T1755 over Wire1)
+  // I3C (on-board P3T1755 over Wire1). The sensor library does not report
+  // a failed read: it returns whatever was in its receive buffer, which can
+  // look like a sane temperature. So check first that the sensor answers,
+  // by setting its register pointer to the temperature register -- what
+  // temp() does next anyway.
+  SENSOR_WIRE.beginTransmission(0x48);
+  SENSOR_WIRE.write(0x00);
+  uint8_t sensorErr = SENSOR_WIRE.endTransmission();
   float temp = sensor.temp();
 
   // LPADC
@@ -218,7 +225,9 @@ void loop() {
   if (adc < 0 || adc > 1023)
     Serial.print("  <-- WARNING: analogRead out of range!");
 
-  if (temp < -40.0 || temp > 125.0)
+  if (sensorErr != 0)
+    Serial.print("  <-- WARNING: sensor not answering!");
+  else if (temp < -40.0 || temp > 125.0)
     Serial.print("  <-- WARNING: temp out of range!");
 
   if (spi1Echo != 0x1234)

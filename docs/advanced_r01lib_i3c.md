@@ -45,6 +45,12 @@ through `D18`/`D19`, which `I3C_SDA`/`I3C_SCL` name on that board and which
 sketch. This guide's example was run on FRDM-MCXA153 and FRDM-MCXN947, not
 on FRDM-MCXA156.
 
+**FRDM-MCXN236**: the same as FRDM-MCXA156 for the I3C peripheral: it
+reaches only `D18`/`D19`, which `I3C_SDA`/`I3C_SCL` name and `Wire` uses.
+Nothing on the board speaks I3C (the on-board accelerometer is plain I2C,
+on `Wire1`), so this guide needs an I3C device on `D18`/`D19`. It was not
+run on FRDM-MCXN236.
+
 **FRDM-MCXN947 only**: the on-board I3C bus's SDA/SCL pins are the same two
 physical pins as `Serial1` on the MikroBus header (`MB_TX`/`MB_RX`) —
 whichever one begins last wins the pins. Don't use both in the same sketch

@@ -113,10 +113,15 @@ fi
 # A port that reports its serial number in some other form then uploads as
 # before --probe was passed: fine with one board, refused with several.
 # A probe busy with a debug session is still listed, so this doesn't send
-# the upload to another board.
+# the upload to another board. The listing has been seen to leave out a
+# connected probe once, with four boards on and another just flashed, so
+# a serial number it lacks is looked for once more a second later.
+probe_listed() {
+    "$LINKSERVER" probes 2>&1 | grep -F -i -w -q -- "$PORT_SERIAL"
+}
 UNLISTED=""
 if [ -n "$PROBE_ARGS" ]; then
-    if "$LINKSERVER" probes 2>&1 | grep -F -i -w -q -- "$PORT_SERIAL"; then
+    if probe_listed || { sleep 1; probe_listed; }; then
         echo "Probe: $PORT_SERIAL"
     else
         echo "The port's serial number $PORT_SERIAL is not among LinkServer's probes; uploading without --probe"

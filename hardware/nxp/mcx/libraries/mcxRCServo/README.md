@@ -148,9 +148,10 @@ untouched.
 Three wires, in the usual RC servo colours: brown to ground, red to the
 supply, orange or yellow to the signal pin.
 
-The signal line goes to any pin `analogWrite()` can drive with PWM. On
-every board that is `PWM0`-`PWM5`; the pin diagrams in mcx-arduino-core's
-`PIN_MAPPING_*.md` show where they are. Every board puts them
+The signal line goes to any pin `analogWrite()` can drive with PWM. Every
+board has `PWM0`-`PWM5`, and FRDM-MCXA156 and FRDM-MCXN236 also four D-pins
+(below); the pin diagrams in mcx-arduino-core's `PIN_MAPPING_*.md` show
+where they are. Every board puts `PWM0`-`PWM5`
 in the same place on the headers, so the same wiring and the same sketch
 work on any of them; what differs is only the MCU pin behind the name.
 

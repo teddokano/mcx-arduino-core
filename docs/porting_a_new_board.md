@@ -18,7 +18,7 @@ Sibling boards are cheap; a different silicon family is a rewrite.
 | Board | Relationship | What that means |
 |-------|--------------|-----------------|
 | FRDM-MCXA156 | A153's sibling | Same LPADC/FlexPWM/LPI2C/LPSPI/LPUART. Mostly pin tables. Done in 0.8.0 |
-| FRDM-MCXN236 | N947's sibling | Same peripherals, but **no I3C temperature sensor** — an accelerometer instead, so every example built around `Wire1` + P3T1755 needs generalizing. A156 already moved the sensor examples to a per-board `SENSOR_WIRE` macro, which is the place to start |
+| FRDM-MCXN236 | N947's sibling | Same peripherals, but **no I3C temperature sensor** — an FXLS8974CF accelerometer on a plain LPI2C `Wire1` instead, so the release checks read it rather than a P3T1755. `Serial1` and `Wire1` share one FlexComm, which needed both modes at once. Done in 0.9.0 |
 | FRDM-MCXC444 | Not a sibling | Kinetis: Cortex-M0+, no FPU, ADC16/TPM instead of LPADC/FlexPWM, `fsl_i2c` instead of `fsl_lpi2c`. `analogRead`/`analogWrite`/`tone` are all unimplemented for it. Budget a whole release |
 
 Check this before promising a timeline. `r01lib` already carries a
@@ -288,27 +288,27 @@ rows.
 clocks. `init_mcu()` calls `BOARD_InitBootClocks()` — and therefore
 `clock_config.c` — *after* its own setup, so `clock_config.c` wins on
 anything it touches. The first two boards do opposite things, and
-FRDM-MCXA156 is like N947 here, since its `clock_config.c` is the SDK's
-template unchanged:
+FRDM-MCXA156 and FRDM-MCXN236 are like N947 here, since their
+`clock_config.c` is the SDK's template unchanged:
 
-| | A153 | N947 | A156 |
-|---|---|---|---|
-| Boot clock | `BOARD_BootClockFRO96M()` | `BOARD_BootClockPLL150M()` | `BOARD_BootClockFRO96M()` |
-| `clock_config.c` peripheral attaches | **re-attaches all of them** to FRO_HF_DIV | **touches none** | **touches none** |
-| `mcu.cpp`'s attaches | all overridden — **dead code** | the only thing setting them | the only thing setting them |
-| Per-peripheral dividers | `mcu.cpp`'s survive (`clock_config.c` sets none) | same | same |
+| | A153 | N947 | A156 | N236 |
+|---|---|---|---|---|
+| Boot clock | `BOARD_BootClockFRO96M()` | `BOARD_BootClockPLL150M()` | `BOARD_BootClockFRO96M()` | `BOARD_BootClockPLL150M()` |
+| `clock_config.c` peripheral attaches | **re-attaches all of them** to FRO_HF_DIV | **touches none** | **touches none** | **touches none** |
+| `mcu.cpp`'s attaches | all overridden — **dead code** | the only thing setting them | the only thing setting them | the only thing setting them |
+| Per-peripheral dividers | `mcu.cpp`'s survive (`clock_config.c` sets none) | same | same | same |
 
 So the effective sources are:
 
-| Peripheral | A153 | N947 | A156 |
-|---|---|---|---|
-| `Wire` | LPI2C0 @ 96MHz | FlexComm2 @ 12MHz | LPI2C0 @ 96MHz |
-| `Wire1` | I3C0 @ 48MHz (96/2) | I3C1 @ 25MHz (PLL0 150/6) | LPI2C3 @ 96MHz |
-| `Wire2` | — | FlexComm3 @ 12MHz | — |
-| `SPI` | LPSPI1 @ 96MHz | FlexComm1 @ 48MHz | LPSPI1 @ 96MHz |
-| `SPI1` | LPSPI0 @ 96MHz | FlexComm6 @ 48MHz | LPSPI0 @ 96MHz |
-| `Serial1` | LPUART2 @ 12MHz | FlexComm5 @ 12MHz | LPUART2 @ 12MHz |
-| `Serial2` | — | — | LPUART1 @ 12MHz |
+| Peripheral | A153 | N947 | A156 | N236 |
+|---|---|---|---|---|
+| `Wire` | LPI2C0 @ 96MHz | FlexComm2 @ 12MHz | LPI2C0 @ 96MHz | FlexComm5 @ 12MHz |
+| `Wire1` | I3C0 @ 48MHz (96/2) | I3C1 @ 25MHz (PLL0 150/6) | LPI2C3 @ 96MHz | FlexComm2 @ 12MHz |
+| `Wire2` | — | FlexComm3 @ 12MHz | — | — |
+| `SPI` | LPSPI1 @ 96MHz | FlexComm1 @ 48MHz | LPSPI1 @ 96MHz | FlexComm3 @ 48MHz |
+| `SPI1` | LPSPI0 @ 96MHz | FlexComm6 @ 48MHz | LPSPI0 @ 96MHz | — |
+| `Serial1` | LPUART2 @ 12MHz | FlexComm5 @ 12MHz | LPUART2 @ 12MHz | FlexComm2 @ 12MHz (shared with `Wire1`) |
+| `Serial2` | — | — | LPUART1 @ 12MHz | — |
 
 That asymmetry produced the same bug three times on N947 (default `SPI`,
 then `SPI1`, then suspected on `Wire2`), each time surfacing as
@@ -316,7 +316,7 @@ then `SPI1`, then suspected on `Wire2`), each time surfacing as
 check both files and **measure the result** — `CLOCK_Get…ClkFreq()`
 printed once over `Serial` is enough to see what you actually got.
 
-`Serial1` is the exception in both columns: neither file decides it.
+On A153 and N947, `Serial1` is the exception: neither file decides it.
 `Serial.cpp`'s pin map carries the attach (`kFRO12M_to_LPUART2`,
 `kFRO12M_to_FLEXCOMM5`), applied by the constructor during static
 initialization. An audit of `mcu.cpp` and `clock_config.c` alone read

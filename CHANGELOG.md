@@ -7,6 +7,59 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Highlights
+- New board: FRDM-MCXN236, with two resistors removed for `A1`/`A2` (see [PIN_MAPPING_N236.md](PIN_MAPPING_N236.md))
+- FRDM-MCXA156: `analogWrite()` on `D3`, `D5`, `D6` and `D9`, as on an Arduino UNO, in addition to `PWM0`-`PWM5`
+- Fixed on every board: two PWM pins that share a period keep the frequency `analogWriteFrequency()` set, and each keeps its own duty
+- Fixed on every board: `analogWrite()` after `pinMode()` on the same pin outputs PWM again
+
+### Added
+- FRDM-MCXN236 support: a fourth board, **FRDM-MCXN236 (mcx-arduino-core)** under Tools → Board, for the
+  Rev C board. The core assumes R25 and R67 are removed, so `A1`/`A2` aren't also wired to the CAN transceiver
+  ([PIN_MAPPING_N236.md](PIN_MAPPING_N236.md)). 1MB of flash, of which a sketch gets 960KB (the top 64KB hold
+  `EEPROM`), and 224KB of RAM. A sketch can test for it with `ARDUINO_FRDM_MCXN236`
+  - `Serial` over USB and `Serial1` on `D0`/`D1` (also the MikroBus UART). No `Serial2`
+  - `Wire` on `D18`/`D19`, and `Wire1` on the MikroBus I2C, where the on-board FXLS8974CF accelerometer is
+    (at `0x18`). Both are plain I2C, so both have target mode and `setWireTimeout()`. `Serial1` and `Wire1`
+    share one FlexComm and work at the same time. The board has no temperature sensor and no I3C device
+  - `SPI` on `D10`-`D13` (no `SPI1`: the MikroBus SPI is the same lines), `analogRead()` on `A0`, `A1`, `A2`,
+    `A4` and `A5`, `analogWrite()` on `PWM0`-`PWM5`, four of which are `D3`, `D5`, `D6` and `D9`, `tone()`,
+    interrupts, `EEPROM` (1KB), uploading and debugging. `A3` is the blue LED's pin, so `analogRead(A3)`
+    returns `-1` instead of stopping the sketch
+- FRDM-MCXA156: `analogWrite()` and `analogWriteFrequency()` on `D3`, `D5`, `D6` and `D9` (FlexPWM1), ten PWM
+  pins in all. `D6` and `D9` share a period; `D3` is also the red LED
+- `digitalPinHasPWM()` is true for `D3`, `D5`, `D6` and `D9` on FRDM-MCXA156 and FRDM-MCXN236
+- New example sketch `test_analogWrite_pairs_and_pinMode` (the fixes below, no wiring), also run by `release_check/08`
+- `release_check/09_no_wiring_software_checks`: the checks that need no peripheral (math constants, compatibility
+  macros, AVR-era helpers, `Print`, `String`) moved out of `release_check/01`, which had come within 40 bytes of
+  FRDM-MCXA153's flash. Together the two report the same checks `01` did
+- The bundled `mcxPinState` knows FRDM-MCXN236's pins and instances, and the bundled `mcxRCServo`'s README lists
+  the new PWM pins and which pins share a period
+- [PIN_MAPPING_N236.md](PIN_MAPPING_N236.md), with the board change and pin diagrams. `API_COMPATIBILITY.md`,
+  the README and the tutorials cover the fourth board
+
+### Fixed
+- Two PWM pins share a period when they are the two channels of one FlexPWM submodule (`PWM0`/`PWM1`,
+  `PWM2`/`PWM3`, `PWM4`/`PWM5`), as the documentation said, but the core did not keep it so. After
+  `analogWriteFrequency()` on one pin, `analogWrite()` on the other put back its own old 1kHz period and left
+  the first pin's duty wrong; and a shorter period could leave the other pin stuck high. The period and both
+  duties are now kept per pair, so either pin can be written in any order, and a pin whose partner is already
+  running starts at the partner's frequency
+- `analogWrite()` after `pinMode()` on the same pin set only the duty, and the pin stayed a GPIO. It now puts
+  the pin back on PWM, and `mcxPinState` shows one owner for it
+- Uploading with several boards connected could fail with "The selected port could not be matched to a debug
+  probe" although the board was connected: LinkServer's probe list had once left it out, just after another
+  board was flashed. The upload now looks for the port's probe once more a second later before giving up
+
+### Changed
+- `analogWrite()`'s documentation said it stops the sketch on a pin without PWM. It sets the pin HIGH or LOW
+  (at or above half scale, or below), as the AVR core does, and now says so
+- CI compiles every example for FRDM-MCXN236 too
+- `release_check/23` runs the `Waveshare_TFT_Touch` library's `SDBitmapViewer` example (1.3.1 or later) on
+  every board, in place of `SDBitmapViewerDemo`, which targets FRDM-MCXA153 and FRDM-MCXN947 only
+- `release_check/21` (and `test_combined_peripherals`) warns when the temperature sensor does not answer. The
+  sensor library returns a leftover value on a failed read, which could pass as a sane temperature
+
 ## [0.8.0] - 2026-10-05
 
 ### Highlights

@@ -16,16 +16,13 @@ loopback-only sketch here can get.
    `github.com/teddokano/Waveshare_TFT_Touch`) into your Arduino
    libraries folder, alongside the LCD + SD card hardware it expects
    (SPI bus shared between the two, separate CS pins).
-2. Open and run the library's own `SDBitmapViewerDemo` example against
-   FRDM-MCXA153 and/or FRDM-MCXN947 (the SD card content used for this
-   check is prepared to match `SDBitmapViewerDemo`, not the plainer
-   `SDBitmapViewer` example).
-   `SDBitmapViewerDemo` stops with an `#error` on FRDM-MCXA156, so run
-   `SDBitmapViewer` there instead: the LCD and the SD card share the
-   bus just the same. Rename or remove the card's `/PLAYLIST.JSN` first
-   -- it is written for `SDBitmapViewerDemo`, and `SDBitmapViewer` would
-   read it as a list of file names. Without it, `SDBitmapViewer` shows
-   the `.bmp` files in the card's root.
+2. Open and run the library's own `SDBitmapViewer` example (version
+   1.3.1 or later) on every board. It shows the files a card's
+   `/PLAYLIST.JSN` names, including a card set up for the library's
+   `SDBitmapViewerDemo`, or else the `.bmp` files in the card's root;
+   touch the screen for the next image. `SDBitmapViewerDemo`, which
+   this check used until 0.8.0, targets FRDM-MCXA153 and FRDM-MCXN947
+   only.
 3. Check:
    - The bitmap renders correctly, with no diagonal streaking/noise
      (that was the CS-forced-to-PCS symptom -- the LCD's CS pin

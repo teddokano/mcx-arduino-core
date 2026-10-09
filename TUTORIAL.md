@@ -454,6 +454,11 @@ a driver library:
 > `Wire1` is the MikroBus I2C. Use `Wire` in place of `Wire1` below. See
 > [PIN_MAPPING_A156.md](PIN_MAPPING_A156.md).
 
+> **FRDM-MCXN236**: that board has no P3T1755. Its on-board sensor is an
+> FXLS8974CF accelerometer at `0x18` on `Wire1`, which is also the MikroBus
+> I2C. To run the example below as it is, connect a P3T1755 module to the
+> MikroBus `MB_SDA`/`MB_SCL`. See [PIN_MAPPING_N236.md](PIN_MAPPING_N236.md).
+
 ```cpp
 #include <Arduino.h>
 
