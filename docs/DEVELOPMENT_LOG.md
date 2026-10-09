@@ -2903,7 +2903,8 @@ mcxRCServoのREADMEの「どのボードでも`PWM0`〜`PWM5`」は、上流で�
 - `staging-0.9.0`（`main`から、0.9.0エントリを本物のchecksum・sizeで末尾に追加。ボードの一覧にFRDM-MCXN236）でmacOS・Windows・Linuxをユーザーが確認して問題なし
 - `main`を`staging-0.9.0`の`dd91e54`までfast-forward、`update_package_index.yml`を`main`に対して手動実行して成功（値が一致したので書き換えなし）。`--release`付きhygieneは`main`で全項目pass
 - エントリをタグより前に入れない（`main`には検証済みのものだけを載せる）ので、タグのコミットを`main`にpushした回とタグの回帰チェックは`package-index-entry`で失敗する。0.8.0と同じで想定どおり（コンパイルは4ボードとも成功）
-- その後、本番の`main`のURL（`.../main/package_nxp_mcx_index.json`）から、WindowsとLinuxで入れ直して動作をユーザーが再確認した
+- その後、本番の`main`のURL（`.../main/package_nxp_mcx_index.json`）から、Windows・Linux・macOSで入れ直して動作をユーザーが再確認した。
+  macOSで本番URLから入れた0.9.0は`~/Library/Arduino15/nxp-0.9.0-release-installed`に退避
 - ステージングから入れたmacOSの0.9.0は`~/Library/Arduino15/nxp-0.9.0-staging-installed`に退避し、開発環境（`packages/nxp`）を戻した
 
 これでv0.9.0のリリース作業が全て完了。
