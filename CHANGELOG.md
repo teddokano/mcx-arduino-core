@@ -5,7 +5,7 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.9.0] - 2026-10-09
 
 ### Highlights
 - New board: FRDM-MCXN236, with two resistors removed for `A1`/`A2` (see [PIN_MAPPING_N236.md](PIN_MAPPING_N236.md))

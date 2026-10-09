@@ -422,29 +422,29 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 <div class="line"><a id="l00429" name="l00429"></a><span class="lineno">  429</span></div>
 <div class="line"><a id="l00434" name="l00434"></a><span class="lineno"><a class="line" href="arduino__io_8h.html#a0ef783fbc452748b33c5a307d0565f7a">  434</a></span><span class="preprocessor">#define NUM_DIGITAL_PINS    16</span></div>
 <div class="line"><a id="l00435" name="l00435"></a><span class="lineno">  435</span></div>
-<div class="line"><a id="l00451" name="l00451"></a><span class="lineno">  451</span><span class="preprocessor">#if defined( FRDM_MCXA153 )</span></div>
-<div class="line"><a id="l00452" name="l00452"></a><span class="lineno">  452</span><span class="preprocessor">#define NUM_ANALOG_INPUTS   4</span></div>
-<div class="line"><a id="l00453" name="l00453"></a><span class="lineno">  453</span><span class="preprocessor">#elif   defined( FRDM_MCXN947 )</span></div>
-<div class="line"><a id="l00454" name="l00454"></a><span class="lineno">  454</span><span class="preprocessor">#define NUM_ANALOG_INPUTS   4</span></div>
-<div class="line"><a id="l00455" name="l00455"></a><span class="lineno">  455</span><span class="preprocessor">#elif   defined( FRDM_MCXA156 )</span></div>
-<div class="line"><a id="l00456" name="l00456"></a><span class="lineno">  456</span><span class="preprocessor">#define NUM_ANALOG_INPUTS   6</span></div>
-<div class="line"><a id="l00457" name="l00457"></a><span class="lineno">  457</span><span class="preprocessor">#elif   defined( FRDM_MCXN236 )</span></div>
-<div class="line"><a id="l00458" name="l00458"></a><span class="lineno">  458</span><span class="preprocessor">#define NUM_ANALOG_INPUTS   5</span></div>
-<div class="line"><a id="l00459" name="l00459"></a><span class="lineno">  459</span><span class="preprocessor">#else</span></div>
-<div class="line"><a id="l00460" name="l00460"></a><span class="lineno">  460</span><span class="preprocessor">#error &quot;arduino_io.h: NUM_ANALOG_INPUTS is not set for this board&quot;</span></div>
-<div class="line"><a id="l00461" name="l00461"></a><span class="lineno">  461</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00462" name="l00462"></a><span class="lineno">  462</span></div>
-<div class="line"><a id="l00469" name="l00469"></a><span class="lineno">  469</span><span class="preprocessor">#if defined( FRDM_MCXA153 ) || defined( FRDM_MCXN947 )</span></div>
-<div class="line"><a id="l00470" name="l00470"></a><span class="lineno">  470</span><span class="preprocessor">#define digitalPinHasPWM( p )   ( ( (p) &gt;= PWM0 ) &amp;&amp; ( (p) &lt;= PWM5 ) )</span></div>
-<div class="line"><a id="l00471" name="l00471"></a><span class="lineno">  471</span><span class="preprocessor">#elif   defined( FRDM_MCXA156 ) || defined( FRDM_MCXN236 )</span></div>
-<div class="line"><a id="l00472" name="l00472"></a><span class="lineno">  472</span><span class="preprocessor">#define digitalPinHasPWM( p )   ( ( ( (p) &gt;= PWM0 ) &amp;&amp; ( (p) &lt;= PWM5 ) ) || (p) == D3 || (p) == D5 || (p) == D6 || (p) == D9 )</span></div>
-<div class="line"><a id="l00473" name="l00473"></a><span class="lineno">  473</span><span class="preprocessor">#else</span></div>
-<div class="line"><a id="l00474" name="l00474"></a><span class="lineno">  474</span><span class="preprocessor">#error &quot;arduino_io.h: digitalPinHasPWM() is not set for this board&quot;</span></div>
-<div class="line"><a id="l00475" name="l00475"></a><span class="lineno">  475</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00476" name="l00476"></a><span class="lineno">  476</span> </div>
-<div class="line"><a id="l00477" name="l00477"></a><span class="lineno">  477</span><span class="preprocessor">#endif </span><span class="comment">// ARDUINO_PIN_RENUMBERING</span></div>
-<div class="line"><a id="l00478" name="l00478"></a><span class="lineno">  478</span> </div>
-<div class="line"><a id="l00479" name="l00479"></a><span class="lineno">  479</span><span class="preprocessor">#endif </span><span class="comment">// !R01LIB_ARDUINO_IO_H</span></div>
+<div class="line"><a id="l00452" name="l00452"></a><span class="lineno">  452</span><span class="preprocessor">#if defined( FRDM_MCXA153 )</span></div>
+<div class="line"><a id="l00453" name="l00453"></a><span class="lineno">  453</span><span class="preprocessor">#define NUM_ANALOG_INPUTS   4</span></div>
+<div class="line"><a id="l00454" name="l00454"></a><span class="lineno">  454</span><span class="preprocessor">#elif   defined( FRDM_MCXN947 )</span></div>
+<div class="line"><a id="l00455" name="l00455"></a><span class="lineno">  455</span><span class="preprocessor">#define NUM_ANALOG_INPUTS   4</span></div>
+<div class="line"><a id="l00456" name="l00456"></a><span class="lineno">  456</span><span class="preprocessor">#elif   defined( FRDM_MCXA156 )</span></div>
+<div class="line"><a id="l00457" name="l00457"></a><span class="lineno">  457</span><span class="preprocessor">#define NUM_ANALOG_INPUTS   6</span></div>
+<div class="line"><a id="l00458" name="l00458"></a><span class="lineno">  458</span><span class="preprocessor">#elif   defined( FRDM_MCXN236 )</span></div>
+<div class="line"><a id="l00459" name="l00459"></a><span class="lineno">  459</span><span class="preprocessor">#define NUM_ANALOG_INPUTS   5</span></div>
+<div class="line"><a id="l00460" name="l00460"></a><span class="lineno">  460</span><span class="preprocessor">#else</span></div>
+<div class="line"><a id="l00461" name="l00461"></a><span class="lineno">  461</span><span class="preprocessor">#error &quot;arduino_io.h: NUM_ANALOG_INPUTS is not set for this board&quot;</span></div>
+<div class="line"><a id="l00462" name="l00462"></a><span class="lineno">  462</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00463" name="l00463"></a><span class="lineno">  463</span></div>
+<div class="line"><a id="l00470" name="l00470"></a><span class="lineno">  470</span><span class="preprocessor">#if defined( FRDM_MCXA153 ) || defined( FRDM_MCXN947 )</span></div>
+<div class="line"><a id="l00471" name="l00471"></a><span class="lineno">  471</span><span class="preprocessor">#define digitalPinHasPWM( p )   ( ( (p) &gt;= PWM0 ) &amp;&amp; ( (p) &lt;= PWM5 ) )</span></div>
+<div class="line"><a id="l00472" name="l00472"></a><span class="lineno">  472</span><span class="preprocessor">#elif   defined( FRDM_MCXA156 ) || defined( FRDM_MCXN236 )</span></div>
+<div class="line"><a id="l00473" name="l00473"></a><span class="lineno">  473</span><span class="preprocessor">#define digitalPinHasPWM( p )   ( ( ( (p) &gt;= PWM0 ) &amp;&amp; ( (p) &lt;= PWM5 ) ) || (p) == D3 || (p) == D5 || (p) == D6 || (p) == D9 )</span></div>
+<div class="line"><a id="l00474" name="l00474"></a><span class="lineno">  474</span><span class="preprocessor">#else</span></div>
+<div class="line"><a id="l00475" name="l00475"></a><span class="lineno">  475</span><span class="preprocessor">#error &quot;arduino_io.h: digitalPinHasPWM() is not set for this board&quot;</span></div>
+<div class="line"><a id="l00476" name="l00476"></a><span class="lineno">  476</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00477" name="l00477"></a><span class="lineno">  477</span> </div>
+<div class="line"><a id="l00478" name="l00478"></a><span class="lineno">  478</span><span class="preprocessor">#endif </span><span class="comment">// ARDUINO_PIN_RENUMBERING</span></div>
+<div class="line"><a id="l00479" name="l00479"></a><span class="lineno">  479</span> </div>
+<div class="line"><a id="l00480" name="l00480"></a><span class="lineno">  480</span><span class="preprocessor">#endif </span><span class="comment">// !R01LIB_ARDUINO_IO_H</span></div>
 <div class="ttc" id="aarduino__io_8cpp_html_a060a97031afd9e48c9280568626cd4c4"><div class="ttname"><a href="arduino__io_8cpp.html#a060a97031afd9e48c9280568626cd4c4">pulseInLong</a></div><div class="ttdeci">unsigned long pulseInLong(int pin_num, bool state, unsigned long timeout)</div><div class="ttdef"><b>Definition</b> <a href="arduino__io_8cpp_source.html#l00273">arduino_io.cpp:273</a></div></div>
 <div class="ttc" id="aarduino__io_8cpp_html_a269b915838dff5e9eaee3faa48260f4f"><div class="ttname"><a href="arduino__io_8cpp.html#a269b915838dff5e9eaee3faa48260f4f">shiftOut</a></div><div class="ttdeci">void shiftOut(int dataPin, int clockPin, int bitOrder, uint8_t val)</div><div class="ttdef"><b>Definition</b> <a href="arduino__io_8cpp_source.html#l00219">arduino_io.cpp:219</a></div></div>
 <div class="ttc" id="aarduino__io_8cpp_html_a2bf1cdfe3caa1e897b3511044b7b9bac"><div class="ttname"><a href="arduino__io_8cpp.html#a2bf1cdfe3caa1e897b3511044b7b9bac">pinMode</a></div><div class="ttdeci">void pinMode(int pin_num, int mode)</div><div class="ttdef"><b>Definition</b> <a href="arduino__io_8cpp_source.html#l00069">arduino_io.cpp:69</a></div></div>
