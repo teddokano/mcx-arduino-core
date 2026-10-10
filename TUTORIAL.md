@@ -344,7 +344,8 @@ way around (pulled low by default, reads `HIGH` when pressed).
 `analogRead` reads pins `A0`-`A3` through the on-chip LPADC and returns a
 10-bit value (0-1023), same range as classic Arduino boards. (`A4`/`A5` exist
 as pin names but aren't ADC-capable on this board — see the
-[pin mapping table](PIN_MAPPING_A153.md).)
+[pin mapping table](PIN_MAPPING_A153.md).) As on AVR, the plain numbers
+`0`-`3` work too and mean `A0`-`A3`: `analogRead(0)` reads `A0` (since 0.9.1).
 
 Connect a potentiometer (or any 0-3.3V analog signal) to `A0`, or just try it
 unconnected to see floating-pin noise:
@@ -598,7 +599,9 @@ unsigned long width = pulseIn(pin, HIGH);
 ```
 
 `random()` / `randomSeed()` are also available, matching the classic Arduino
-signatures. See
+signatures. The usual `randomSeed(analogRead(0))`, seeding from an unconnected
+`A0`'s noise, works since 0.9.1, on boards where `A0` is an analog input (not on
+FRDM-MCXN947: use `analogRead(2)` there). See
 [`examples/Arduino_compatible_API/test_shiftOut_pulseIn_random`](examples/Arduino_compatible_API/test_shiftOut_pulseIn_random).
 
 ### 2.13. UNO R3/R4 compatibility

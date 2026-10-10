@@ -275,7 +275,7 @@ void loop() {
 
 ### 2.5. アナログ入力: `analogRead`
 
-`analogRead`はLPADC経由で`A0`-`A3`ピンを読み取り、従来のArduinoボードと同じ10bit値（0-1023）を返します。（`A4`/`A5`はピン名としては存在しますが、このボードではADCに配線されていません — 詳細は[ピン配置表](PIN_MAPPING_A153.md)を参照）
+`analogRead`はLPADC経由で`A0`-`A3`ピンを読み取り、従来のArduinoボードと同じ10bit値（0-1023）を返します。（`A4`/`A5`はピン名としては存在しますが、このボードではADCに配線されていません — 詳細は[ピン配置表](PIN_MAPPING_A153.md)を参照）AVRと同じく、数字の`0`-`3`も`A0`-`A3`として使えます。`analogRead(0)`は`A0`を読みます（0.9.1から）。
 
 `A0`に可変抵抗（または0-3.3Vの任意のアナログ信号）を接続するか、未接続のままフローティングノイズを見てみてください:
 
@@ -488,6 +488,7 @@ unsigned long width = pulseIn(pin, HIGH);
 ```
 
 `random()` / `randomSeed()`も、従来のArduinoと同じシグネチャで使用できます。
+未接続の`A0`のノイズを種にするおなじみの`randomSeed(analogRead(0))`も、`A0`がアナログ入力のボードでは0.9.1から使えます（FRDM-MCXN947では使えないので`analogRead(2)`にしてください）。
 [`examples/Arduino_compatible_API/test_shiftOut_pulseIn_random`](examples/Arduino_compatible_API/test_shiftOut_pulseIn_random)を参照してください。
 
 ### 2.13. UNO R3/R4互換性

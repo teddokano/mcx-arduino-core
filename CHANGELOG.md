@@ -8,14 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Highlights
-- Fixed: `analogRead(0)`, as in `randomSeed(analogRead(0))`, no longer stops the sketch: `0`-`5` mean `A0`-`A5`, as on AVR
+- Fixed: `analogRead(0)`, as in `randomSeed(analogRead(0))`, no longer stops the sketch on FRDM-MCXA153, FRDM-MCXA156
+  and FRDM-MCXN236: `0`-`5` mean `A0`-`A5`, as on AVR
 - Fixed: a `static` object inside a function now links (no more "undefined reference to `__cxa_guard_acquire'")
 - New example `r01lib_I3C_demo`: I3C dynamic address assignment and In-Band Interrupts with the on-board temperature sensor
 
 ### Fixed
 - `analogRead(0)` stopped the sketch ("AnalogIn: unsupported analog pin"), and so did the common
   `randomSeed(analogRead(0))`: the core took `0` as `D0`, which has no analog input. As on AVR, `0`-`5` now mean
-  `A0`-`A5`. `D0`-`D5` are never analog inputs on these boards, so no call that worked before reads another pin now
+  `A0`-`A5`. `D0`-`D5` are never analog inputs on these boards, so no call that worked before reads another pin now.
+  `0` stops the sketch wherever `A0` does: on FRDM-MCXN947, where `A0`/`A1` have no analog input, use `analogRead(2)`
 - A static inside a function that is made at run time (an object with a constructor, such as a lazily made
   "singleton", or a value set from a function call) failed to link with "undefined reference to
   `__cxa_guard_acquire'". The core now builds C++ with `-fno-threadsafe-statics`, as AVR's core does. Sketches
