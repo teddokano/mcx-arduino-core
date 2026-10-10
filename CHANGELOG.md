@@ -11,9 +11,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `analogRead(0)` stopped the sketch ("AnalogIn: unsupported analog pin"), and so did the common
   `randomSeed(analogRead(0))`: the core took `0` as `D0`, which has no analog input. As on AVR, `0`-`5` now mean
   `A0`-`A5`. `D0`-`D5` are never analog inputs on these boards, so no call that worked before reads another pin now
+- A static inside a function that is made at run time (an object with a constructor, such as a lazily made
+  "singleton", or a value set from a function call) failed to link with "undefined reference to
+  `__cxa_guard_acquire'". The core now builds C++ with `-fno-threadsafe-statics`, as AVR's core does. Sketches
+  that built before produce the same binary
 
 ### Added
 - New example sketch `test_analogRead_channel_numbers` (no wiring), also run by `release_check/08`
+- New example sketch `test_function_local_static` (no wiring), also run by `release_check/09`
+- New example sketch `Arduino_incompatible_API/r01lib_I3C_demo`: dynamic address assignment (DAA), CCCs and
+  In-Band Interrupts with the on-board P3T1755, through r01lib's `I3C` class and its `P3T1755` driver class
+  (copied into the sketch's folder). Converted from NXP's r01lib demo for FRDM boards. Checked on FRDM-MCXA153,
+  FRDM-MCXA156 and FRDM-MCXN947
 
 ### Changed
 - The bundled `mcxRCServo`'s README notes `SG90_basic` turning a servo from FRDM-MCXA156's `D3`, `D5`, `D6` and `D9`

@@ -42,8 +42,9 @@ object in one sketch.
 not this peripheral. The I3C peripheral reaches the on-board sensor only
 through `D18`/`D19`, which `I3C_SDA`/`I3C_SCL` name on that board and which
 `Wire` also uses, so don't use `Wire` and an `I3C` object in the same
-sketch. This guide's example was run on FRDM-MCXA153 and FRDM-MCXN947, not
-on FRDM-MCXA156.
+sketch. This guide's first example was run on FRDM-MCXA153 and
+FRDM-MCXN947, not on FRDM-MCXA156; `r01lib_I3C_demo` (DAA and IBI, below)
+was run on all three.
 
 **FRDM-MCXN236**: the same as FRDM-MCXA156 for the I3C peripheral: it
 reaches only `D18`/`D19`, which `I3C_SDA`/`I3C_SCL` name and `Wire` uses.
@@ -142,14 +143,20 @@ For a bus with more than one I3C target (this example assumes exactly one),
 `I3C::DAA()` runs the full dynamic-address-assignment procedure
 (`ENTDAA`) and returns however many devices it discovered — see its
 declaration in `i3c.h` for the exact signature.
+[`examples/Arduino_incompatible_API/r01lib_I3C_demo/r01lib_I3C_demo.ino`](../examples/Arduino_incompatible_API/r01lib_I3C_demo/r01lib_I3C_demo.ino)
+uses it, prints what each target reports (PID, BCR, DCR), and reads every
+target it found.
 
 ## In-Band Interrupts (IBI)
 
-Not exercised in the example above, but part of the same class:
 `check_IBI()` polls for a pending IBI, and `set_IBI_callback(i3c_func_ptr)`
-registers a callback invoked when one arrives. If you're building something
-that needs a target to signal the controller asynchronously (rather than
-being polled), start there.
+registers a callback, called from the I3C interrupt, when one arrives.
+`r01lib_I3C_demo` uses both: it sets each P3T1755's thresholds just above
+the temperature it read at start-up, puts its ALERT in interrupt mode and
+enables its IBI with `DIRECT_ENEC`. Warm the sensor with a finger and the
+sketch prints the address of the target that sent the IBI, while the
+callback drives `D2` LOW as a trigger for an oscilloscope or a logic
+analyzer.
 
 ## See also
 

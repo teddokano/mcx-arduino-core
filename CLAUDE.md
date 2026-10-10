@@ -11,7 +11,9 @@
 - **現在のリリース**: **v0.9.0**（2026-10-09、FRDM-MCXN236の追加と、FRDM-MCXA156のD3/D5/D6/D9での`analogWrite`）。macOS・Windows・Linuxの3プラットフォームで
   インストール〜ビルド〜アップロード〜IDE内蔵デバッガまで検証済み
 - **開発中**: **0.9.1**（`0.9.1-dev`ブランチ、2026-10-09に`main`から切った）。いま入っているのは、`analogRead(0)`〜`analogRead(5)`を`A0`〜`A5`として扱う修正
-  （ユーザーの`ref/ttbasic`の`randomSeed(analogRead(0))`が`panic()`で止まって発覚。ユーザー判断でコアを直し、0.9.1で出す）と、同梱のmcxRCServoのREADMEの同期。
+  （ユーザーの`ref/ttbasic`の`randomSeed(analogRead(0))`が`panic()`で止まって発覚。ユーザー判断でコアを直し、0.9.1で出す）と、同梱のmcxRCServoのREADMEの同期、
+関数内の`static`オブジェクトのリンクエラー（`__cxa_guard_acquire`）の修正（`platform.txt`に`-fno-threadsafe-statics`。AVRのコアと同じ。前からビルドできたスケッチのバイナリは変わらない）、
+`r01lib_I3C_demo`（NXPのr01libデモ`P3T1755_FRDM_MCX_demo_DAA`の変換。A153・A156・N947でIBIとLEDまで確認）。
   それ以外の範囲は未定。ボード追加の順番はA156 → N236 → C444で合意済み。A4/A5のI²C（Pendingタスク10）は1.0前の別の版で入れる。
   A156の前提と決定は下の「FRDM-MCXA156の前提と決定事項（0.8.0）」節、N236の分は「FRDM-MCXN236の前提と決定事項（0.9.0）」節
 - **リリースごとの変更点**: [CHANGELOG.md](CHANGELOG.md)
