@@ -74,6 +74,16 @@ header.
 
 - NXP MCUXpresso SDK — https://github.com/nxp-mcuxpresso/mcux-sdk (BSD-3-Clause)
 
+The example sketch
+`examples/Arduino_incompatible_API/r01lib_I3C_demo/r01lib_I3C_demo.ino`
+is converted from NXP's P3T1755 I3C demo (`P3T1755_FRDM_MCX_demo_DAA`),
+changed where its header lists, and keeps NXP's copyright header. Per-board
+versions of that demo are published in NXP's Application Code Hub. The
+sketch's `I2C_device` and `TempSensor` files are copied unmodified from
+r01lib's device drivers (MIT License, by the author of this package).
+
+- NXP Application Code Hub, dm-i3c-temperature-sensor — https://github.com/nxp-appcodehub/dm-i3c-temperature-sensor (BSD-3-Clause)
+
 `hardware/nxp/mcx/tools/gdb-bridge` (Go, original code, no external
 dependencies) relays Arduino IDE 2's built-in debugger to NXP
 LinkServer's own gdbserver. Its LinkServer-executable discovery logic

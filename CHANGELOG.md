@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Highlights
+- Fixed: `analogRead(0)`, as in `randomSeed(analogRead(0))`, no longer stops the sketch: `0`-`5` mean `A0`-`A5`, as on AVR
+- Fixed: a `static` object inside a function now links (no more "undefined reference to `__cxa_guard_acquire'")
+- New example `r01lib_I3C_demo`: I3C dynamic address assignment and In-Band Interrupts with the on-board temperature sensor
+
 ### Fixed
 - `analogRead(0)` stopped the sketch ("AnalogIn: unsupported analog pin"), and so did the common
   `randomSeed(analogRead(0))`: the core took `0` as `D0`, which has no analog input. As on AVR, `0`-`5` now mean
