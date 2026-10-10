@@ -14,6 +14,11 @@
   （ユーザーの`ref/ttbasic`の`randomSeed(analogRead(0))`が`panic()`で止まって発覚。ユーザー判断でコアを直し、0.9.1で出す）と、同梱のmcxRCServoのREADMEの同期、
 関数内の`static`オブジェクトのリンクエラー（`__cxa_guard_acquire`）の修正（`platform.txt`に`-fno-threadsafe-statics`。AVRのコアと同じ。前からビルドできたスケッチのバイナリは変わらない）、
 `r01lib_I3C_demo`（NXPのr01libデモ`P3T1755_FRDM_MCX_demo_DAA`の変換。A153・A156・N947でIBIとLEDまで確認）。
+  **ADCの無いピンへの`analogRead()`（A153の`analogRead(A5)`など）をビルド時に検出する案は入れない**（2026-10-11、ユーザー判断）。
+  `__builtin_constant_p`と`__attribute__((error))`で、定数のピンならビルドエラーにできることは試作で確かめた（常に`-O2`なので確実に効く）。
+  入れない理由は副作用で、実行されないコード（実行時の変数でボードを分ける分岐など）でもビルドが止まり、AVRなどでビルドできるコードがこのコアではビルドできなくなる。
+  また、`-O2`のループ展開や関数の展開で定数になった呼び出しも検出されるので、エラーになるかどうかが最適化の判断に左右される。実行時の`panic()`のままにする。
+  `analogWrite()`はPWMの無いピンでAVRと同じく`digitalWrite()`になるのが正しい動きで、panicしない（A153の`A5`で実機確認）
   それ以外の範囲は未定。ボード追加の順番はA156 → N236 → C444で合意済み。A4/A5のI²C（Pendingタスク10）は1.0前の別の版で入れる。
   A156の前提と決定は下の「FRDM-MCXA156の前提と決定事項（0.8.0）」節、N236の分は「FRDM-MCXN236の前提と決定事項（0.9.0）」節
 - **リリースごとの変更点**: [CHANGELOG.md](CHANGELOG.md)
