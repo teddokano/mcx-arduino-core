@@ -70,7 +70,15 @@ itself returns a leftover value then, which can look like a sane
 temperature; `0.00` on every line was seen). On FRDM-MCXN236, reading
 an N947's sensor, a reset of the N947 did not bring it back in 0.9.0,
 but unplugging and replugging the N947's USB did; the sensor keeps its
-state while powered.
+state while powered. In 0.9.1 it happened again right after the N947
+had run `21` itself: replug the N947 after its own `21`, before the
+N236's.
+
+The same goes for the on-board sensor after
+[`Arduino_incompatible_API/r01lib_I3C_demo`](../Arduino_incompatible_API/r01lib_I3C_demo):
+the dynamic address that demo gives it stays until the board is
+unplugged, so on FRDM-MCXA156 `01`'s sensor checks failed when it ran
+after the demo, and passed after a replug.
 
 `09_no_wiring_software_checks` holds the checks that need no peripheral
 (math constants, compat macros, the AVR-era helpers, `Print`, `String`,

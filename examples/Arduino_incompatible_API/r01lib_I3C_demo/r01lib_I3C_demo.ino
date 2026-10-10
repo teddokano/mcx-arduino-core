@@ -31,6 +31,14 @@
  * is on it on FRDM-MCXA153, FRDM-MCXN947 and FRDM-MCXA156 (D18/D19 there).
  * FRDM-MCXN236 has no I3C sensor on board: connect one to D18/D19.
  *
+ * The sensor keeps the dynamic address DAA gave it for as long as it has
+ * power: a reset or an upload doesn't clear it. A sketch that reads it at
+ * its static address 0x48 afterwards gets no answer until the board is
+ * unplugged and plugged back in. On FRDM-MCXA156, release_check/01 failed
+ * its sensor checks this way (its Wire reads the sensor at 0x48). This
+ * demo itself starts by resetting the dynamic addresses, so running it
+ * again is fine.
+ *
  * Changes from the original:
  *  - setup()/loop(), and Serial in place of PRINTF
  *  - The LEDs and D2 go through pinMode()/digitalWrite(): with <Arduino.h>
