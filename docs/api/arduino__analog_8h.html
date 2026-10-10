@@ -23,7 +23,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.9.0</span>
+   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.9.1</span>
    </div>
    <div id="projectbrief">Arduino board support package for NXP FRDM MCX Series boards</div>
   </td>
@@ -141,7 +141,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__analog_8h_source.html#l00078">78</a> of file <a class="el" href="arduino__analog_8h_source.html">arduino_analog.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__analog_8h_source.html#l00079">79</a> of file <a class="el" href="arduino__analog_8h_source.html">arduino_analog.h</a>.</p>
 
 </div>
 </div>
@@ -157,7 +157,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__analog_8h_source.html#l00080">80</a> of file <a class="el" href="arduino__analog_8h_source.html">arduino_analog.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__analog_8h_source.html#l00081">81</a> of file <a class="el" href="arduino__analog_8h_source.html">arduino_analog.h</a>.</p>
 
 </div>
 </div>
@@ -173,7 +173,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__analog_8h_source.html#l00079">79</a> of file <a class="el" href="arduino__analog_8h_source.html">arduino_analog.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__analog_8h_source.html#l00080">80</a> of file <a class="el" href="arduino__analog_8h_source.html">arduino_analog.h</a>.</p>
 
 </div>
 </div>
@@ -189,7 +189,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__analog_8h_source.html#l00075">75</a> of file <a class="el" href="arduino__analog_8h_source.html">arduino_analog.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__analog_8h_source.html#l00076">76</a> of file <a class="el" href="arduino__analog_8h_source.html">arduino_analog.h</a>.</p>
 
 </div>
 </div>
@@ -205,7 +205,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__analog_8h_source.html#l00077">77</a> of file <a class="el" href="arduino__analog_8h_source.html">arduino_analog.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__analog_8h_source.html#l00078">78</a> of file <a class="el" href="arduino__analog_8h_source.html">arduino_analog.h</a>.</p>
 
 </div>
 </div>
@@ -221,7 +221,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__analog_8h_source.html#l00076">76</a> of file <a class="el" href="arduino__analog_8h_source.html">arduino_analog.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__analog_8h_source.html#l00077">77</a> of file <a class="el" href="arduino__analog_8h_source.html">arduino_analog.h</a>.</p>
 
 </div>
 </div>
@@ -240,9 +240,9 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Read an analog input pin. Lazily creates the pin's <a class="el" href="class_analog_in.html" title="Mbed-compatible single-shot ADC input class.">AnalogIn</a> instance on first use. Calls <a class="el" href="mcu_8cpp.html#ad3cdbe388204f1d2a626f695cf59ddbb">panic()</a> if pin_num isn't one of this board's analog-capable pins, except A3 on FRDM-MCXN236 (the blue LED's pin), which returns -1 instead. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Read an analog input pin. Lazily creates the pin's <a class="el" href="class_analog_in.html" title="Mbed-compatible single-shot ADC input class.">AnalogIn</a> instance on first use. Calls <a class="el" href="mcu_8cpp.html#ad3cdbe388204f1d2a626f695cf59ddbb">panic()</a> if pin_num isn't one of this board's analog-capable pins, except A3 on FRDM-MCXN236 (the blue LED's pin), which returns -1 instead. As on AVR, 0..5 mean A0..A5, so analogRead( 0 ) reads A0. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">pin_num</td><td>analog pin (A0..A5, board-dependent which are wired) </td></tr>
+    <tr><td class="paramname">pin_num</td><td>analog pin (A0..A5, board-dependent which are wired, or 0..5 for them) </td></tr>
   </table>
   </dd>
 </dl>
@@ -273,7 +273,7 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__analog_8cpp_source.html#l00174">174</a> of file <a class="el" href="arduino__analog_8cpp_source.html">arduino_analog.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__analog_8cpp_source.html#l00183">183</a> of file <a class="el" href="arduino__analog_8cpp_source.html">arduino_analog.cpp</a>.</p>
 
 </div>
 </div>
@@ -292,7 +292,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__analog_8cpp_source.html#l00169">169</a> of file <a class="el" href="arduino__analog_8cpp_source.html">arduino_analog.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__analog_8cpp_source.html#l00178">178</a> of file <a class="el" href="arduino__analog_8cpp_source.html">arduino_analog.cpp</a>.</p>
 
 </div>
 </div>
@@ -322,7 +322,7 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__analog_8cpp_source.html#l00109">109</a> of file <a class="el" href="arduino__analog_8cpp_source.html">arduino_analog.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__analog_8cpp_source.html#l00118">118</a> of file <a class="el" href="arduino__analog_8cpp_source.html">arduino_analog.cpp</a>.</p>
 
 </div>
 </div>
@@ -345,7 +345,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__analog_8cpp_source.html#l00151">151</a> of file <a class="el" href="arduino__analog_8cpp_source.html">arduino_analog.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__analog_8cpp_source.html#l00160">160</a> of file <a class="el" href="arduino__analog_8cpp_source.html">arduino_analog.cpp</a>.</p>
 
 </div>
 </div>
@@ -370,7 +370,7 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__analog_8cpp_source.html#l00184">184</a> of file <a class="el" href="arduino__analog_8cpp_source.html">arduino_analog.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__analog_8cpp_source.html#l00193">193</a> of file <a class="el" href="arduino__analog_8cpp_source.html">arduino_analog.cpp</a>.</p>
 
 </div>
 </div>
