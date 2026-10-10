@@ -54,8 +54,15 @@ class TwoWire : public Stream
 public:
 	/** Construct on the given SDA/SCL pin pair. Hardware isn't touched
 	 *  until begin().
-	 * @param sda_pin SDA pin
-	 * @param scl_pin SCL pin
+	 *
+	 *  This is how the core makes Wire, Wire1 and Wire2, and it is not
+	 *  meant for sketches: the pins are r01lib's raw pin values, which
+	 *  arduino_i2c.cpp sees since it does not include the Arduino pin
+	 *  renumbering. In a sketch, names such as MB_SDA or A4 are Arduino pin
+	 *  numbers, a different value, so a TwoWire made from them stops in
+	 *  panic() at begin(). Use Wire, Wire1 or Wire2.
+	 * @param sda_pin SDA pin, as r01lib's raw pin value
+	 * @param scl_pin SCL pin, as r01lib's raw pin value
 	 */
 	TwoWire( int sda_pin, int scl_pin );
 

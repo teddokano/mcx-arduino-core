@@ -25,6 +25,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   FRDM-MCXA156 and FRDM-MCXN947
 
 ### Changed
+- `TwoWire`'s constructor is documented as the core's own, for making `Wire`, `Wire1` and `Wire2`: it takes
+  r01lib's raw pin values, so a `TwoWire` made in a sketch from names such as `MB_SDA` stops in `panic()` at
+  `begin()`. Use `Wire`, `Wire1` or `Wire2`
 - The bundled `mcxRCServo`'s README notes `SG90_basic` turning a servo from FRDM-MCXA156's `D3`, `D5`, `D6` and `D9`
 
 ## [0.9.0] - 2026-10-09
