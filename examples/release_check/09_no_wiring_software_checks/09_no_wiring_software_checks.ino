@@ -9,8 +9,8 @@
  *  Consolidates (from examples/Arduino_compatible_API/): test_math_constants,
  *  test_arduino_compat_macros, test_avr_compat_helpers,
  *  test_MOSI_MISO_SCK_macros, test_Print_writeError, test_String,
- *  test_String_64bit, test_Serial_print_time_t, and the representative
- *  checks of test_print_float_rounding.
+ *  test_String_64bit, test_Serial_print_time_t, test_function_local_static
+ *  (since 0.9.1), and the representative checks of test_print_float_rounding.
  *
  *  Read the final "ALL OK"/"N FAILED" line.
  */
@@ -42,6 +42,29 @@ int index = 0;
 int x0 = 1, y0 = 2, x1 = 3, y1 = 4;
 int order_kind(BitOrder) { return 1; }
 int order_kind(int8_t) { return 2; }
+
+// For the function-local statics section: statics made the first time
+// their function runs. Up to 0.9.0 these failed to link (__cxa_guard_*).
+int lsConstructed = 0;
+struct LocalStaticCounter {
+  int n = 0;
+  LocalStaticCounter() { lsConstructed++; }
+  ~LocalStaticCounter() {}
+  int next() { return ++n; }
+};
+int lsNextCount() {
+  static LocalStaticCounter c;
+  return c.next();
+}
+int lsInitialCalls = 0;
+int lsInitial() {
+  lsInitialCalls++;
+  return 100;
+}
+int lsNextFromInitial() {
+  static int v = lsInitial();
+  return ++v;
+}
 
 int failCount = 0;
 
@@ -213,6 +236,21 @@ void setup() {
     check("concat(long long)", s4 == "-5000000000");
 
     check("String(long long, HEX)", String(255LL, HEX) == "ff");
+  }
+
+  // ---- function-local statics made at run time (was
+  //      test_function_local_static) -- building at all is the first check ----
+  Serial.println("--- function-local statics ---");
+  {
+    int a = lsNextCount();
+    int b = lsNextCount();
+    int c = lsNextCount();
+    check("object with a constructor keeps its state, constructed once",
+          a == 1 && b == 2 && c == 3 && lsConstructed == 1);
+    int d = lsNextFromInitial();
+    int e = lsNextFromInitial();
+    check("value set from a function call keeps its state, set once",
+          d == 101 && e == 102 && lsInitialCalls == 1);
   }
 
   // ---- Serial.print(time_t)/(long long)/(unsigned long long) overload

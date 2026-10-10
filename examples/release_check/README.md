@@ -73,7 +73,8 @@ but unplugging and replugging the N947's USB did; the sensor keeps its
 state while powered.
 
 `09_no_wiring_software_checks` holds the checks that need no peripheral
-(math constants, compat macros, the AVR-era helpers, `Print`, `String`).
+(math constants, compat macros, the AVR-era helpers, `Print`, `String`,
+and, since 0.9.1, function-local statics made at run time).
 They were part of `01` until 0.9.0, when `01` had grown to within 40
 bytes of FRDM-MCXA153's flash; `01` keeps the checks that use a
 peripheral (clocks, timing, analog, `Wire`).
