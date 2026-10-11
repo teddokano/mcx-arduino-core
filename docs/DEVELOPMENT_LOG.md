@@ -2910,3 +2910,96 @@ mcxRCServoのREADMEの「どのボードでも`PWM0`〜`PWM5`」は、上流で�
 これでv0.9.0のリリース作業が全て完了。
 
 ---
+
+## v0.9.1（`0.9.1-dev` ブランチ、2026-10-09に`main`から切った）
+パッチリリース。`platform.txt`のversion系3行・`Doxyfile`のPROJECT_NUMBER・同梱`mcxPinState`の`MCXPINSTATE_VERIFIED_AGAINST`を0.9.1へ（`27006b4`）。
+`arduino_io.h`は0.9.0から変わっていないので、定数だけ動かした。上流mcxPinStateのバンプは`4fcc12d`。ローカルIDE連携のsymlinkは`0.9.1-dev`。
+
+### `analogRead(0)`〜`analogRead(5)`を`A0`〜`A5`に（2026-10-10、`27006b4`）
+ユーザーの`ref/ttbasic`の`randomSeed(analogRead(0))`が`panic("AnalogIn: unsupported analog pin")`で止まって発覚した。
+`0`が`D0`として扱われ、`D0`にはADCが無いため。ユーザー判断でコアを直し、0.9.1で出す。
+`ARDUINO_PIN_RENUMBERING`のとき、`analogRead()`の入口で`0`〜`5`を`A0 + n`にする（AVRと同じ）。
+`D0`〜`D5`はどのボードでも`A0`〜`A5`と別のピンでADCも無いので、前に動いていた呼び出しが別のピンを読むことはない。
+`test_analogRead_channel_numbers`（配線なし）を足し、同じ確認を`release_check/08`に入れた（アナログのピンを3本目まで使う）。4ボードで確認。
+同じコミットで、同梱のmcxRCServoのREADMEを上流の`8dcf339`（A156のD3/D5/D6/D9で`SG90_basic`が動いた記録）と同期した。
+
+N947は`A0`/`A1`にADCが無いので、`analogRead(0)`は`analogRead(A0)`と同じく今も止まる。
+初めCHANGELOGのHighlightsに「`analogRead(0)`で止まらなくなった」と全ボード向けに書いていて、リリース準備の文書監査で見つかった。
+「A153・A156・N236で」と限定し、N947では`analogRead(2)`を使うと書いた（`dafa4c3`）。テストと`08`がN947でチャネル2を使っているのはこのため。
+
+### ADCの無いピンへの`analogRead()`をビルド時に検出する案は入れない（2026-10-11、`0449dea`）
+A153で`analogRead(A5)`がビルドでき、実行して`panic()`で初めて気づく、という相談（最初は`analogWrite(A5)`と書かれていたが、`analogRead()`の間違いだった）。
+`analogWrite()`はPWMの無いピンでAVRと同じく`digitalWrite()`になるのが正しい動きで、A153の`A5`でpanicしないことを実機で確かめた。
+`__builtin_constant_p`と`__attribute__((error))`を`always_inline`の包みに入れれば、定数のピンならビルドエラーにできることを試作で確かめた（全ボード常に`-O2`なので確実に効く）。
+副作用（実行されない分岐でもビルドが止まりAVRで通るコードが通らなくなる、ループ展開や関数の展開で定数になった呼び出しも引っかかり最適化の判断に左右される）を説明し、ユーザーが入れないと判断した。理由は`CLAUDE.md`の「開発中」に残した。
+
+### 関数内の`static`オブジェクトのリンクエラーを直した（2026-10-11、`c839f4b`）
+`r01lib_I3C_demo`を作る途中で、関数内の`static Ticker`が`undefined reference to '__cxa_guard_acquire'`でリンクできなかった（デモは大域変数にして回避）。
+実行時に初期化する関数内の`static`（コンストラクタのあるオブジェクト、関数の戻り値で初期化する値）は、スレッドセーフな初期化のために`__cxa_guard_acquire`/`release`を呼ぶ。
+コアは`-nostdlib`でlibstdc++をリンクしないので、それが無い。ユーザー判断で0.9.1で直した。
+`platform.txt`の`compiler.cpp.flags`に`-fno-threadsafe-statics`を足した（AVRのコアと同じ。スレッドが無いので守る相手がいない。AVRと同じく、作っている途中に割り込みが同じ関数に入ると二重に作られる）。
+`test_function_local_static`（配線なし、5項目）を足し、同じ確認を`release_check/09`に入れた。
+- 古いフラグではテストがリンクで失敗し、新しいフラグでは4ボードとも警告なしでビルドできる
+- A153でテストが5項目、`09`が69項目ALL OK
+- このとき12本のバイナリが前と一致することを確かめ、リリース前の全件のバイナリ比較で、前からビルドできたスケッチは1本も変わらないことを確かめた（下の「リリース準備」）
+
+### `r01lib_I3C_demo`（2026-10-11、`d07b935`）
+ユーザーの`ref/P3T1755_FRDM_MCX_demo_DAA`（NXPのr01libのデモ）を、`examples/Arduino_incompatible_API/r01lib_I3C_demo`に変換した。
+DAA、CCC（`GETPID`/`GETBCR`/`GETDCR`、`DIRECT_ENEC`）、IBI、同じバスのI2Cモードでの`0x4F`のLM75Bの読み出し。
+最初はr01libの`I3C`クラスを直接使う形で作ったが、作業の途中でユーザーがフォルダーにArduinoライブラリ版の`P3T1755.h`などを置き、P3T1755クラスを使う形にするよう依頼があった。
+置かれたファイルではビルドできなかった（`I2C_device.h`が無い）ので、上流r01libの`r01device`から`I2C_device.h/.cpp`・`TempSensor.h/.cpp`を無改変で写し、`P3T1755.h`は`#include "TempSensor.h"`だけにする形を提案し、ユーザーが了承した。
+ユーザーが置いたファイルは`~/.Trash/r01lib_I3C_demo-userfiles-1791657659/`へ移した。
+元のデモからの変更（スケッチのヘッダーに列挙）:
+- `setup()`/`loop()`と`Serial`
+- LEDとD2は`pinMode()`/`digitalWrite()`で（`<Arduino.h>`のもとでは`RED`などがArduinoのピン番号で、r01libの`DigitalOut`は受け付けない）
+- 各ターゲットはDAAが返した動的アドレスで
+- LEDは最初のターゲットの温度に従う（元は更新されない温度を渡していて、LEDは青のまま）
+
+A153・A156・N947でDAA（1台、`0x1A`、DCR `0x63`）・IBI・LEDをユーザーが確認した（N236はオンボードにI3Cセンサーが無い）。`docs/advanced_r01lib_i3c.md`のDAA・IBIの節からリンクした。
+`LICENSE`には、NXPのデモの変換であること（ボードごとの版はNXPのApplication Code Hubの`dm-i3c-temperature-sensor`で公開）と、r01libのドライバの写しであることを書いた（`9c75ae6`）。
+
+### `TwoWire`のコンストラクタの説明（2026-10-11、`c6d852c`）
+0.9.0の検討で「スケッチのピン名を受け付けない不具合」としていたものを、「不具合ではなく説明の不足」と整理した（ユーザーとの検討）。
+コンストラクタはコアが`Wire`・`Wire1`・`Wire2`を作るためのもので、引数はr01libの生のピン値（`arduino_i2c.cpp`はピンの付け替えを含めない）。
+`arduino_i2c.h`の説明にそう書き、スケッチでは`Wire`・`Wire1`・`Wire2`を使うよう案内した。`memo/notes_toward_1.0.0.md`の§5-2と表、`CLAUDE.md`のPendingタスク10も同じ言い方にした。
+スケッチ向けの入口は、A4/A5のI²Cで入れる予定の`setPins()`。
+
+### その他
+- `5.build`（arduino-cliのエラーメッセージを誤って保存したファイル）を消した（`51bf8cc`）
+- N947で`test_Analog_read_write`がビルドできなくなったという報告は、IDEを立ち上げ直したらビルドできた（ボードの選択は正しかった）。コアの問題ではなかった
+
+### パッチリリースの実機確認の範囲（2026-10-11、`3e75dec`）
+パッチリリースで`release_check`を実機でどこまで流すかをユーザーと検討し、**前のリリースとのバイナリ比較で決める**ことにした（ユーザー判断。手順は`CLAUDE.md`のリリース準備チェックリスト7）。
+バイナリがバイト単位で同じ`release_check`は流さず、違うものは全ボードで流す。ステージングでの3OSの確認は省かない。
+
+比較のやり方で詰まった点:
+- 0.9.0のコアを`git archive`で取り出し、スクラッチパッドの`ARDUINO_DIRECTORIES_DATA`の`packages/nxp/hardware/mcx/<版>`に置く。ディレクトリ名を`0.9.x`にしたら「no patch version found」で読まれず、`9.9.9`にした
+- 2つのコアを同じパスに置く（`assert()`の`__FILE__`がパスを埋め込むため）。0.9.0の全件のあと、ディレクトリを入れ替えて今のコアで全件
+- サンプルは両方とも今のブランチのもの。`.bin`を比べる
+
+結果（全101本×4ボード、0.9.0のタグのコアと`c6d852c`の内容のコア）:
+- 同じ: A153 80本、N947 86本、A156 81本、N236 80本
+- 違う: 45件（11+12+11+11）。どれも`analogRead()`を使うスケッチで、`analogRead()`を使うスケッチは全部違った。`nm -S`で大きさが変わった関数は、45件とも`analogRead()`だけ
+- `mcxPinState`はバージョンが上がっても、`analogRead()`を使わないもの（`BasicPinDump`など）は同じ（`#warning`の判定だけで、バイナリには出ない）
+- 0.9.0でビルドできないのは`test_function_local_static`と`09`で、4ボードとも`__cxa_guard_acquire`/`release`のリンクエラー
+- `08`は、開発中に4ボードで流した`27006b4`のコアでビルドし直すと、4ボードとも今のバイナリと同じだった
+- 書き込みとデバッグの経路（`tools/`・`boards.txt`・`variants/`）は0.9.0から変わっていない
+
+### リリース準備（2026-10-11）
+チェックリストの1〜7。
+**1. CHANGELOG**: Highlightsは3行（`analogRead(0)`の修正、関数内の`static`のリンクの修正、`r01lib_I3C_demo`）。日付の確定はリリース時。
+**2. 文書の監査**: Explore agentで監査。リンク切れ・古い表現は無し。上の`analogRead(0)`の言い過ぎ（N947）を直し、
+`API_COMPATIBILITY.md`に関数内の`static`の行、`TUTORIAL.md`/`TUTORIAL.ja.md`の`analogRead`と`randomSeed`の節に`analogRead(0)`のことを足した（`dafa4c3`）。
+**3. Doxygen**: 再生成（`bc706fc`）。中身が変わったのは`analogRead()`と`TwoWire`のコンストラクタの説明だけで、あとは全ページの版の表示。
+**4. ライセンス**: NXPのデモの帰属を足した（上の`r01lib_I3C_demo`）。
+**5. 機械チェック**: Issue・TODOなし。作業ツリーはきれい。版の表示は0.9.1で揃っている。
+**6. 全サンプルのコンパイル**: 4ボードのfull tierを逐次で（A153 93本・N947 100本・A156 94本・N236 93本）、すべて通過、警告0件。
+**7. 実機**: バイナリ比較で決めた`01`・`04`・`09`・`21`を4ボードで（`09`のA153は`c839f4b`で済み、`08`は上のとおり済み）。すべて通った。
+
+7の途中で見つかったこと:
+- **A156の`01`でセンサーの11項目がFAIL**: 直前にA156で`r01lib_I3C_demo`が動いていた（取り込みの先頭にデモの出力が残っていた）。
+  デモがDAAで振った動的アドレスをP3T1755は電源が入っている間保ち、書き込みやMCUのリセットでは消えない。A156の`01`は`Wire`（LPI2C）で`0x48`を読むので届かない。
+  USBを抜き挿ししたら37項目ALL OK。デモのヘッダーと`release_check/README.md`に書いた（`406e527`）
+- **N236の`21`で毎周「sensor not answering」**: 直前にN947で`21`（オンボードのP3T1755をI3Cの`Wire1`で使う）を動かしていた。N947のUSBを抜き挿ししたら警告0件。
+  0.9.0の「N947のリセットでは戻らず抜き挿しで戻った」と同じで、`release_check/README.md`に「N947で`21`を動かした直後は抜き挿ししてからN236の`21`」と足した（`406e527`）
+- N947の`21`の`wire2Err=134`、A156の`21`の`wire1Err=134`は、MikroBusのI²Cに何もつないでいないためのNAKで、WARNINGの対象ではない
