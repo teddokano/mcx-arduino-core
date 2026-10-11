@@ -3003,3 +3003,23 @@ A153・A156・N947でDAA（1台、`0x1A`、DCR `0x63`）・IBI・LEDをユーザ
 - **N236の`21`で毎周「sensor not answering」**: 直前にN947で`21`（オンボードのP3T1755をI3Cの`Wire1`で使う）を動かしていた。N947のUSBを抜き挿ししたら警告0件。
   0.9.0の「N947のリセットでは戻らず抜き挿しで戻った」と同じで、`release_check/README.md`に「N947で`21`を動かした直後は抜き挿ししてからN236の`21`」と足した（`406e527`）
 - N947の`21`の`wire2Err=134`、A156の`21`の`wire1Err=134`は、MikroBusのI²Cに何もつないでいないためのNAKで、WARNINGの対象ではない
+
+### v0.9.1リリース完了
+- `0.9.1-dev`を`main`へfast-forwardでマージ（`e5c6412`→`b0be2c3`）
+- リリースzipを`b0be2c3`から作り、公開前に確認した: 368項目、0.9.0とファイルの一覧が同じ、`version=0.9.1`、4ボード、`upload.bat`のCRLF、実行ビット。
+  開発用symlinkを退避してzipを`0.9.1`として展開し、`test_function_local_static`で4ボードのコンパイル（警告0）・`debug --info`（SVDが展開先を指す）・4枚つないだままのポート指定の書き込み（4枚とも5項目OK）。
+  書き込みは最初4枚とも「No probes detected」で失敗した。ボードがUSBから外れていて（`/dev/cu.usbmodem*`も`LinkServer probes`も空）、つなぎ直して通った
+- タグの前に、Releaseのノートにする`CHANGELOG`で、GCCのメッセージの`` `…' ``を写した`` `__cxa_guard_acquire' ``がバッククォートを1つ開けたままにし、次のコードの書式と組になって表示が崩れると気づいた。
+  `CHANGELOG`の2か所と`API_COMPATIBILITY.md`の1か所を直した（`45bdcea`、`main`もfast-forward）。`hardware/nxp/mcx`の木は`b0be2c3`と同じ
+- リリースzip: `git archive --format=zip --prefix=mcx/ 45bdcea:hardware/nxp/mcx`。SHA-256 `d4ed3ccbaab6bc5ed1da5d6d89e834d8792105796017cf784db2e177f3c4eb34`、10862617 bytes。
+  確認したzipと展開した中身・実行ビットが同じ（ファイルの日時だけが違う）
+- タグ`0.9.1`（`45bdcea`、軽量タグ）と`gh release create 0.9.1`（Latest）。ノートはCHANGELOGの0.9.1の節（相対リンクなし）。ダウンロードし直したchecksumが一致
+- `staging-0.9.1`（`main`から、0.9.1エントリを本物のchecksum・sizeで末尾に追加、`4465506`）でmacOS・Windows・Linuxをユーザーが確認して問題なし
+- `main`を`staging-0.9.1`の`4465506`までfast-forward、`update_package_index.yml`を`main`に対して手動実行して成功（run `38099391665`、値が一致したので書き換えなし）。`--release`付きhygieneは`main`で全項目pass
+  （`git archive`で取り出した写しで流すと、`.git`が無いので`platform-paths`と`doxygen-freshness`が失敗する。チェックはcheckoutで流す）
+- タグのコミットを`main`にpushした回（`b0be2c3`・`45bdcea`）とタグの回帰チェックは、hygieneの`package-index-entry`だけで失敗し、コンパイルは4ボードとも成功。0.8.0・0.9.0と同じで想定どおり
+- ステージングから入れたmacOSの0.9.1は`~/Library/Arduino15/nxp-0.9.1-staging-installed`に退避し、開発環境（`packages/nxp`）を戻した
+
+これでv0.9.1のリリース作業が全て完了。
+
+---

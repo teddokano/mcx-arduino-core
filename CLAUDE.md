@@ -8,24 +8,21 @@
 - **同梱ライブラリ**: `mcxPinState`（ピン所有状況のデバッグ表示）、`mcxRCServo`（RCサーボ）、`EEPROM`（0.7.0で追加）。
   前の2つは別リポジトリが開発の本拠地で、`hardware/nxp/mcx/libraries/`配下はリリース時に同期する取り込みコピー。
   `EEPROM`はこのリポジトリが本体（フラッシュの配置がリンカスクリプトと一体なので）
-- **現在のリリース**: **v0.9.0**（2026-10-09、FRDM-MCXN236の追加と、FRDM-MCXA156のD3/D5/D6/D9での`analogWrite`）。macOS・Windows・Linuxの3プラットフォームで
+- **現在のリリース**: **v0.9.1**（2026-10-11、パッチリリース。`analogRead(0)`〜`analogRead(5)`を`A0`〜`A5`として扱う修正、
+  関数内の`static`オブジェクトのリンクエラー（`__cxa_guard_acquire`）の修正（`platform.txt`に`-fno-threadsafe-statics`。AVRのコアと同じ）、`r01lib_I3C_demo`の追加）。
+  その前のv0.9.0（2026-10-09）でFRDM-MCXN236の追加と、FRDM-MCXA156のD3/D5/D6/D9での`analogWrite`。macOS・Windows・Linuxの3プラットフォームで
   インストール〜ビルド〜アップロード〜IDE内蔵デバッガまで検証済み
-- **開発中**: **0.9.1**（`0.9.1-dev`ブランチ、2026-10-09に`main`から切った）。いま入っているのは、`analogRead(0)`〜`analogRead(5)`を`A0`〜`A5`として扱う修正
-  （ユーザーの`ref/ttbasic`の`randomSeed(analogRead(0))`が`panic()`で止まって発覚。ユーザー判断でコアを直し、0.9.1で出す）と、同梱のmcxRCServoのREADMEの同期、
-関数内の`static`オブジェクトのリンクエラー（`__cxa_guard_acquire`）の修正（`platform.txt`に`-fno-threadsafe-statics`。AVRのコアと同じ。前からビルドできたスケッチのバイナリは変わらない）、
-`r01lib_I3C_demo`（NXPのr01libデモ`P3T1755_FRDM_MCX_demo_DAA`の変換。A153・A156・N947でIBIとLEDまで確認）。
-  **ADCの無いピンへの`analogRead()`（A153の`analogRead(A5)`など）をビルド時に検出する案は入れない**（2026-10-11、ユーザー判断）。
+- **開発中**: なし（次の版の番号と範囲は未定）。ローカルIDE連携のsymlinkは`0.9.1-dev`のまま。
+- **ADCの無いピンへの`analogRead()`（A153の`analogRead(A5)`など）をビルド時に検出する案は入れない**（2026-10-11、ユーザー判断）。
   `__builtin_constant_p`と`__attribute__((error))`で、定数のピンならビルドエラーにできることは試作で確かめた（常に`-O2`なので確実に効く）。
   入れない理由は副作用で、実行されないコード（実行時の変数でボードを分ける分岐など）でもビルドが止まり、AVRなどでビルドできるコードがこのコアではビルドできなくなる。
   また、`-O2`のループ展開や関数の展開で定数になった呼び出しも検出されるので、エラーになるかどうかが最適化の判断に左右される。実行時の`panic()`のままにする。
   `analogWrite()`はPWMの無いピンでAVRと同じく`digitalWrite()`になるのが正しい動きで、panicしない（A153の`A5`で実機確認）
-  ほかに`TwoWire`のコンストラクタの説明の修正（生のピン値を取るコア用のもの）。**0.9.1の範囲はここまで**（2026-10-11、ユーザー判断）。
-  実機の`release_check`はパッチリリースの手順（バイナリ比較）で`01`・`04`・`09`・`21`を4ボードで流し、全部通った（2026-10-11。`09`のA153は`c839f4b`で、`08`は開発中に4ボードで流したものとバイナリが同じ）。
-  **リリース準備チェックリストの1〜7は2026-10-11に済んだ**（残りは`CHANGELOG`の日付の確定と、`main`へのマージ以降のリリース作業）。経緯は`docs/DEVELOPMENT_LOG.md`のv0.9.1の節。ボード追加の順番はA156 → N236 → C444で合意済み。A4/A5のI²C（Pendingタスク10）は1.0前の別の版で入れる。
+- ボード追加の順番はA156 → N236 → C444で合意済み。A4/A5のI²C（Pendingタスク10）は1.0前の別の版で入れる。
   A156の前提と決定は下の「FRDM-MCXA156の前提と決定事項（0.8.0）」節、N236の分は「FRDM-MCXN236の前提と決定事項（0.9.0）」節
 - **リリースごとの変更点**: [CHANGELOG.md](CHANGELOG.md)
 - **各リリースで何をやり、どこで詰まったかの詳細**: [docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md)
-  （v0.1.5〜v0.9.0の全作業記録と、開発中のv0.9.1。自動では読み込まれないので、経緯が必要なときだけ開く）
+  （v0.1.5〜v0.9.1の全作業記録。自動では読み込まれないので、経緯が必要なときだけ開く）
 
 ---
 
@@ -351,6 +348,8 @@ xPack checksums（正しい値）：
   0.9.0のステージング（`staging-0.9.0`、`dd91e54`）から入れた`packages/nxp`（0.9.0とツールチェーン）は
   `~/Library/Arduino15/nxp-0.9.0-staging-installed`に、本番の`main`のURLから入れたものは`~/Library/Arduino15/nxp-0.9.0-release-installed`に退避してある
   （どちらもmacOSの確認は2026-10-09に問題なし。開発環境は元に戻した）
+  0.9.1のステージング（`staging-0.9.1`、`4465506`）から入れたものは`~/Library/Arduino15/nxp-0.9.1-staging-installed`に退避してある
+  （macOSの確認は2026-10-11に問題なし。開発環境は元に戻した）
 - **注意（Boards Manager経由の実インストール検証時のハマりどころ）**: 上記symlink環境を無効化する際、`~/Library/Arduino15/packages/nxp`を同じ`packages/`直下で別名（例: `nxp.dev-backup`）にリネームしただけでは不十分 — arduino-cliは`packages/*`配下の全ディレクトリ名をpackager IDとして解釈するため、リネーム後も`nxp.dev-backup:mcx`という別パッケージとして「0.1.9-dev installed」表示が残ってしまう（`arduino-cli core list --all`で再現・特定）。無効化する際は`packages/`の外（例: スクラッチパッド等）に完全に退避すること。v0.2.0リリース後、この手順でBoards Manager経由のGitHubからの実インストールを検証済み
 
 ## GitHub Actions
