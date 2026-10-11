@@ -174,6 +174,16 @@ garbled text or nothing at all.
 - Close any other program that might be holding the port open (another
   Serial Monitor instance, a terminal program, etc.)
 
+**A sketch that built before fails with `zephyr_contrib` or `arm-zephyr-eabi` in the output pane
+(for example "'A2' was not declared in this scope", or `PWM0` being a `PWM_Type *`):**
+- The selected board has changed to another core's board. Every FRDM board's MCU-Link has the
+  same USB ID, so another installed core for NXP boards, such as Zephyr Community Boards, matches
+  the same port, and picking the port from the board selector at the top of the window can
+  switch to its board
+- Pick the board again under **Tools → Board** (the one ending in "(mcx-arduino-core)"), and
+  the port under **Tools → Port**. If you don't use the other core, removing it in the Boards
+  Manager stops this from happening
+
 **Serial Monitor shows garbled text or nothing at all:**
 - Check the baud rate matches the sketch's `Serial.begin()` value, as
   described above

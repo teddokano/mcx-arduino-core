@@ -2967,6 +2967,12 @@ A153・A156・N947でDAA（1台、`0x1A`、DCR `0x63`）・IBI・LEDをユーザ
 ### その他
 - `5.build`（arduino-cliのエラーメッセージを誤って保存したファイル）を消した（`51bf8cc`）
 - N947で`test_Analog_read_write`がビルドできなくなったという報告は、IDEを立ち上げ直したらビルドできた（ボードの選択は正しかった）。コアの問題ではなかった
+  【2026-10-11追記】リリースのあと、ユーザーが同じ形のエラーのログを貼った（「'A2' was not declared」、`PWM0`が`PWM_Type *`）。
+  1行目が`FQBN: arduino:zephyr_contrib:frdm_mcxn947`で、入れてあるZephyr Community Boardsのボードでビルドしていた。
+  MCU-LinkはどのボードもUSBのIDが同じ（`0x1FC9`/`0x0143`）で、ポートから分かるのはIDとシリアル番号だけなので、どのMCU-Linkのポートにも
+  `arduino:zephyr_contrib`の2ボードと`nxp:mcx`の4ボードが当てはまり、`arduino-cli board list`ではFQBNの順で`arduino:zephyr_contrib:frdm_mcxn947`が先頭に来る。
+  IDEの上部の選択欄からポートを選ぶとそのボードに切り替わる、と見ている（IDEでは確かめていない）。この件も同じ原因だった可能性が高い。
+  コアの側では区別できないので、`TUTORIAL.md`/`TUTORIAL.ja.md`のトラブルシューティングに見分け方と避け方を書いた
 
 ### パッチリリースの実機確認の範囲（2026-10-11、`3e75dec`）
 パッチリリースで`release_check`を実機でどこまで流すかをユーザーと検討し、**前のリリースとのバイナリ比較で決める**ことにした（ユーザー判断。手順は`CLAUDE.md`のリリース準備チェックリスト7）。
