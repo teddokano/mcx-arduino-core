@@ -3019,6 +3019,8 @@ A153・A156・N947でDAA（1台、`0x1A`、DCR `0x63`）・IBI・LEDをユーザ
   （`git archive`で取り出した写しで流すと、`.git`が無いので`platform-paths`と`doxygen-freshness`が失敗する。チェックはcheckoutで流す）
 - タグのコミットを`main`にpushした回（`b0be2c3`・`45bdcea`）とタグの回帰チェックは、hygieneの`package-index-entry`だけで失敗し、コンパイルは4ボードとも成功。0.8.0・0.9.0と同じで想定どおり
 - ステージングから入れたmacOSの0.9.1は`~/Library/Arduino15/nxp-0.9.1-staging-installed`に退避し、開発環境（`packages/nxp`）を戻した
+- その後、本番の`main`のURL（`.../main/package_nxp_mcx_index.json`）から、macOS・Windows・Linuxで入れ直して動作をユーザーが再確認した（すべて問題なし）。
+  macOSで本番URLから入れた0.9.1は`~/Library/Arduino15/nxp-0.9.1-release-installed`に退避
 
 これでv0.9.1のリリース作業が全て完了。
 
