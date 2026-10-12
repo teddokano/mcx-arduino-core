@@ -343,13 +343,9 @@ xPack checksums（正しい値）：
   開発中の修正がIDEで一切効かず、「直したはずの不具合がIDEでは再現する」形で表に出る。
   実機確認の前に`arduino-cli compile -v`の`Using core ... from platform in folder:`が`-dev`を指しているか確かめること。
   2026-09-24から`0.6.0`は`~/Library/Arduino15/mcx-0.6.0-backup`に退避中（Boards Manager検証で使うときは戻す）。
-  0.8.0のリリース確認で本番の`main`のURLから入れた`packages/nxp`（0.8.0とツールチェーン）は
-  `~/Library/Arduino15/nxp-0.8.0-release-installed`に退避してある（開発環境は元に戻した）
-  0.9.0のステージング（`staging-0.9.0`、`dd91e54`）から入れた`packages/nxp`（0.9.0とツールチェーン）は
-  `~/Library/Arduino15/nxp-0.9.0-staging-installed`に、本番の`main`のURLから入れたものは`~/Library/Arduino15/nxp-0.9.0-release-installed`に退避してある
-  （どちらもmacOSの確認は2026-10-09に問題なし。開発環境は元に戻した）
-  0.9.1のステージング（`staging-0.9.1`、`4465506`）から入れたものは`~/Library/Arduino15/nxp-0.9.1-staging-installed`に、本番の`main`のURLから入れたものは`~/Library/Arduino15/nxp-0.9.1-release-installed`に退避してある
-  （どちらもmacOSの確認は2026-10-11に問題なし。開発環境は元に戻した）
+  本番の`main`のURLから入れた`packages/nxp`（リリース版とツールチェーン）は、0.9.0の分が`~/Library/Arduino15/nxp-0.9.0-release-installed`に、
+  0.9.1の分が`~/Library/Arduino15/nxp-0.9.1-release-installed`に退避してある（macOSの確認はそれぞれ2026-10-09・10-11に問題なし）。
+  ステージングから入れた分と0.8.0の分はユーザーが片付けた（2026-10-12）
 - **注意（Boards Manager経由の実インストール検証時のハマりどころ）**: 上記symlink環境を無効化する際、`~/Library/Arduino15/packages/nxp`を同じ`packages/`直下で別名（例: `nxp.dev-backup`）にリネームしただけでは不十分 — arduino-cliは`packages/*`配下の全ディレクトリ名をpackager IDとして解釈するため、リネーム後も`nxp.dev-backup:mcx`という別パッケージとして「0.1.9-dev installed」表示が残ってしまう（`arduino-cli core list --all`で再現・特定）。無効化する際は`packages/`の外（例: スクラッチパッド等）に完全に退避すること。v0.2.0リリース後、この手順でBoards Manager経由のGitHubからの実インストールを検証済み
 - **開発環境の退避と復帰は`script/`の2本で行う**（2026-10-12に作成。macOSでダブルクリックで動く）:
   `dev_env_evacuate.command`が`packages/nxp`を`~/Library/Arduino15/nxp-dev-env`へ移し、`dev_env_restore.command`が戻す。
