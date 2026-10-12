@@ -351,6 +351,11 @@ xPack checksums（正しい値）：
   0.9.1のステージング（`staging-0.9.1`、`4465506`）から入れたものは`~/Library/Arduino15/nxp-0.9.1-staging-installed`に、本番の`main`のURLから入れたものは`~/Library/Arduino15/nxp-0.9.1-release-installed`に退避してある
   （どちらもmacOSの確認は2026-10-11に問題なし。開発環境は元に戻した）
 - **注意（Boards Manager経由の実インストール検証時のハマりどころ）**: 上記symlink環境を無効化する際、`~/Library/Arduino15/packages/nxp`を同じ`packages/`直下で別名（例: `nxp.dev-backup`）にリネームしただけでは不十分 — arduino-cliは`packages/*`配下の全ディレクトリ名をpackager IDとして解釈するため、リネーム後も`nxp.dev-backup:mcx`という別パッケージとして「0.1.9-dev installed」表示が残ってしまう（`arduino-cli core list --all`で再現・特定）。無効化する際は`packages/`の外（例: スクラッチパッド等）に完全に退避すること。v0.2.0リリース後、この手順でBoards Manager経由のGitHubからの実インストールを検証済み
+- **開発環境の退避と復帰は`script/`の2本で行う**（2026-10-12に作成。macOSでダブルクリックで動く）:
+  `dev_env_evacuate.command`が`packages/nxp`を`~/Library/Arduino15/nxp-dev-env`へ移し、`dev_env_restore.command`が戻す。
+  戻すとき、退避中にBoards Managerで入れた`packages/nxp`があれば消さずに`~/Library/Arduino15/nxp-boardsmanager-<日時>`へ移してから戻す。
+  退避用は`packages/nxp`に`*-dev`のsymlinkが無ければ（Boards Managerで入れたものなら）何もしない。戻す用は両方に開発版があれば何もしない。
+  退避先の名前に版の番号は入れていない（0.9.1までは手で`nxp-0.9.1-dev-env`などに移していた）
 
 ## GitHub Actions
 - **`regression_check.yml`**: push・PRごとに全サンプルのコンパイル（fast/fullの2段）とhygieneチェック（`.github/scripts/check_repo_hygiene.py`、タグでは`--release`）
