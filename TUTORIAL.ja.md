@@ -86,24 +86,37 @@ English version → [TUTORIAL.md](TUTORIAL.md)
 
 このボードには**2つ**のUSB-Cコネクタがあり、間違った方に挿すとIDEに何も表示されません。**"MCU-Link USB"**とシルク印刷されたコネクタ（**J15**）を使ってください。このポートがオンボードのデバッグプローブで、LinkServerでの書き込み・ボードへの給電・`Serial`（USB経由のシリアルポート）の出力先すべてを兼ねています。
 
+![tutorial_usb](img/tutorial_usb.png)
+
 もう一方の**"MCU USB"**（**J8**）というコネクタは使わないでください。こちらはMCXA153自体のUSBペリフェラルに直結されており、このチュートリアルではこのボードパッケージ側で使用しません。
 
 ### 1.5. ボードパッケージのインストール
 
-1. Arduino IDEを開き、**File → Preferences**
+1. Arduino IDEを開き、**Preferences**を開く。macOSでは**Arduino IDE → Preferences**、Windows・Linuxでは**File → Preferences**
+
+   ![tutorial_preference](img/tutorial_preference.png)
+
 2. **Additional boards manager URLs**に以下を追加:
    ```
    https://raw.githubusercontent.com/teddokano/mcx-arduino-core/main/package_nxp_mcx_index.json
    ```
-   ![additional_boards_manager_urls.png](img/additional_boards_manager_urls.png)
+   ![tutorial_preference_dialog](img/tutorial_preference_dialog.png)
 3. **Tools → Board → Boards Manager**で`NXP MCX`を検索し**Install**
    — このとき初回はARM GCCツールチェーン（数百MB）も一緒にダウンロードされ、
    回線速度によっては数分かかります。Boards Managerウィンドウ下部の
    プログレスバーが進んでいれば、フリーズしているわけではなく
    ダウンロード中なので待ってください
+
+   ![tutorial_open_board_manager](img/tutorial_open_board_manager.png)
+
    ![install](img/install.png)
 4. **Tools → Board**で**FRDM-MCXA153 (mcx-arduino-core)**を選択
-5. ボードを**MCU-Link USB（J15）**コネクタに接続し、**Tools → Port**でポートを選択
+
+   ![tutorial_selecting_board](img/tutorial_selecting_board.png)
+
+5. ボードを**MCU-Link USB（J15）**コネクタに接続し、**Tools → Port**でポートを選択。下図はmacOSでの例（`/dev/cu.usbmodem...`）。Windowsでは`COM3`のようなCOMポート、Linuxでは`/dev/ttyACM0`のような名前で表示されるので、それを選択
+
+   ![tutorial_selecting_port](img/tutorial_selecting_port.png)
 
 詳細は[README.md](README.md#installation)を参照してください。
 

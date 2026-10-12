@@ -91,7 +91,7 @@ LinkServer自身のgdbserverを使用します——本家OpenOCDはMCXチップ
 ## インストール
 
 1. [Arduino IDE](https://docs.arduino.cc/software/ide/) 2.xを開く
-2. **File → Preferences**を開く
+2. **Arduino IDE → Preferences**（macOS）または**File → Preferences**（Windows・Linux）を開く
 3. **Additional boards manager URLs**に以下のURLを追加:
 ```
 https://raw.githubusercontent.com/teddokano/mcx-arduino-core/main/package_nxp_mcx_index.json

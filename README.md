@@ -101,7 +101,7 @@ The install → build → upload flow has been verified on **macOS, Windows 11, 
 ## Installation
 
 1. Open [Arduino IDE](https://docs.arduino.cc/software/ide/) 2.x
-2. Go to **File → Preferences**
+2. Go to **Arduino IDE → Preferences** (macOS) or **File → Preferences** (Windows, Linux)
 3. Add the following URL to **Additional boards manager URLs**:
 ```
 https://raw.githubusercontent.com/teddokano/mcx-arduino-core/main/package_nxp_mcx_index.json

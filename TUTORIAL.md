@@ -105,27 +105,43 @@ USB"** (connector **J15**). That port is the on-board debug probe: it's what
 LinkServer uploads through, it powers the board, and it's what `Serial`
 (the USB-bridged serial port) comes out of.
 
+![tutorial_usb](img/tutorial_usb.png)
+
 Don't use the other connector, silkscreened **"MCU USB"** (**J8**) — that one
 wires directly to the MCXA153's own USB peripheral, which this board
 package doesn't use for anything in this tutorial.
 
 ### 1.5. Install the board package
 
-1. Open Arduino IDE → **File → Preferences**
+1. Open Arduino IDE and open **Preferences**: **Arduino IDE → Preferences**
+   on macOS, **File → Preferences** on Windows and Linux
+
+   ![tutorial_preference](img/tutorial_preference.png)
+
 2. Add this URL under **Additional boards manager URLs**:
    ```
    https://raw.githubusercontent.com/teddokano/mcx-arduino-core/main/package_nxp_mcx_index.json
    ```
-   ![additional_boards_manager_urls.png](img/additional_boards_manager_urls.png)
+   ![tutorial_preference_dialog](img/tutorial_preference_dialog.png)
 3. **Tools → Board → Boards Manager**, search `NXP MCX`, click **Install**
    — this also downloads the ARM GCC toolchain (a few hundred MB) the
    first time, which can take several minutes depending on your
    connection. Watch the progress bar at the bottom of the Boards Manager
    window; it isn't frozen, just downloading
-    ![install](img/install.png)
+
+   ![tutorial_open_board_manager](img/tutorial_open_board_manager.png)
+
+   ![install](img/install.png)
 4. **Tools → Board**, select **FRDM-MCXA153 (mcx-arduino-core)**
+
+   ![tutorial_selecting_board](img/tutorial_selecting_board.png)
+
 5. Plug the board into the **MCU-Link USB (J15)** connector and select its
-   port under **Tools → Port**
+   port under **Tools → Port**. The picture below is from macOS
+   (`/dev/cu.usbmodem...`); on Windows the port shows up as a COM port such
+   as `COM3`, and on Linux as a name such as `/dev/ttyACM0`
+
+   ![tutorial_selecting_port](img/tutorial_selecting_port.png)
 
 Full details are in [README.md](README.md#installation).
 
