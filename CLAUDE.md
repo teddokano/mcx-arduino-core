@@ -308,7 +308,7 @@ xPack checksums（正しい値）：
 | Wire.end、Serial.find(len)/findUntil、Serial.availableForWrite、INPUT_PULLDOWN、OUTPUT_OPENDRAIN | ✅ | v0.2.1で追加。実機確認済み（`Wire.end()`はI3C使用時のBusFaultバグを修正後に確認） |
 | String operator+数値版/F()、Printable、NOT_AN_INTERRUPT、digitalPinToPort/BitMask+portOutput/Input/ModeRegister | ✅ | v0.2.1で追加。実機確認済み（fast GPIOレジスタ直接操作がD2-D3ジャンパで正しく動作、Printableカスタムクラスの出力を視覚確認） |
 | Print/Stream抽象基底クラス（新設） | ✅ | v0.2.1で追加。実機確認済み——ハードウェア非依存のPrint派生クラス、Stream&への多態性、print()/println()の実バイト数返却、Printableのn+=p.print(x)イディオムすべて動作確認 |
-| サードパーティライブラリ互換性（ArduinoJson/LiquidCrystal/DHT/NeoPixel/OneWire/Adafruit BusIO/Adafruit Unified Sensor） | ✅ | v0.2.1で最小スケッチのコンパイルを確認。0.7.0で各ライブラリの**同梱サンプル全47本×両ボード**に広げて再確認し、`BitOrder`の本物のenum化とavr-libcの文字列関数・`M_`定数の宣言を追加した。残る失敗8本は、BLE（4本）、ADXL343ドライバ（1本）、Ethernetが要求する`Client.h`（3本、coreにネットワーク基底クラスが無い）。Servoはライブラリ側のアーキテクチャ非対応で不可（既知の限界）。ライブラリはスクラッチパッドに`ARDUINO_DIRECTORIES_USER`で入れたので、`~/Documents/Arduino/libraries`には無い |
+| サードパーティライブラリ互換性（ArduinoJson/LiquidCrystal/DHT/NeoPixel/OneWire/Adafruit BusIO/Adafruit Unified Sensor） | ✅ | v0.2.1で最小スケッチのコンパイルを確認。0.7.0で各ライブラリの**同梱サンプル全47本×両ボード**に広げて再確認し、`BitOrder`の本物のenum化とavr-libcの文字列関数・`M_`定数の宣言を追加した。残る失敗8本は、BLE（4本）、ADXL343ドライバ（1本）、Ethernetが要求する`Client.h`（3本、coreにネットワーク基底クラスが無い）。0.9.2でネットワーク基底クラスを足し、公式`Ethernet`の作例13本・ArduinoJsonのEthernet系3本が4ボードでビルドできることを確かめた（PubSubClientは`pgm_read_byte_near()`が無いので止まる）。Servoはライブラリ側のアーキテクチャ非対応で不可（既知の限界）。ライブラリはスクラッチパッドに`ARDUINO_DIRECTORIES_USER`で入れたので、`~/Documents/Arduino/libraries`には無い |
 | Wire (I2C) | ✅ | |
 | Wire1 (I3C, I2Cモード) | ✅ | オンボードP3T1755で確認、重大バグ修正済み。A156の`Wire1`はI3CではなくMikroBusの`LPI2C3`（0.8.0） |
 | SPI | ✅ | |
@@ -450,6 +450,8 @@ v0.4.0の`main`マージ直前、ユーザーから「今回のリリース準�
    組み合わせを設計した`.github/scripts/check_jig_pairing.py`は残っている
 8. **ネットワーク基底クラス（`Client`/`Server`/`UDP`/`IPAddress`）は0.9.2で入れる**（2026-09-26、ユーザー判断で0.7.0は見送り。2026-10-15に0.9.2と決定）。
    無いため`Ethernet`ライブラリが`Client.h`で止まる（ArduinoJsonのEthernet系サンプル3本もこれで失敗）。
+   **0.9.2-devで4つのクラスを書いた**（`cores/arduino/arduino_api/`の`Client.h`・`Server.h`・`Udp.h`・`IPAddress.{h,cpp}`）。AVRと同じく`Arduino.h`からは読み込まない。
+   `IPAddress`はArduinoCore-APIと同じくIPv4とIPv6を持つ。`test_network_base_classes`がA153・N947の実機でALL PASS、ライブラリの作例は4ボードでビルドが通る。残りは下の「実際に通信できるまで」
    入れるときは、ArduinoCore-APIのソースがLGPLなのでコピーせず自前で書く。
    仮想関数のシグネチャはArduinoCore-APIと完全に一致させる（派生ライブラリがそのままビルドできるように）。
    W5500系シールドなどで**実際に通信できるまでを確認**すること（コンパイルだけでは対応済みにしない。

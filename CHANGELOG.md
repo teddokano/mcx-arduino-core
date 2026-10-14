@@ -5,6 +5,15 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- The network base classes `Client`, `Server`, `UDP` and `IPAddress` (`Client.h`, `Server.h`, `Udp.h`,
+  `IPAddress.h`), with the same virtual functions as ArduinoCore-API's, so libraries built on them now compile:
+  the official `Ethernet` library for W5x00 shields, and libraries that take a `Client&`.
+  `IPAddress` holds an IPv4 or IPv6 address, as in ArduinoCore-API. As on AVR, `Arduino.h` doesn't include them
+- New example sketch `test_network_base_classes` (no wiring)
+
 ## [0.9.1] - 2026-10-11
 
 ### Highlights

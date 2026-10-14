@@ -41,7 +41,8 @@ the interfaces those projects define, so that sketches and libraries
 written for them build and behave the same. That covers names,
 signatures, default values and constant values (for example
 `Wire.setWireTimeout()` and its defaults, I2C target mode's `onReceive()`/
-`onRequest()`, the `SERIAL_8N1` family, `BitOrder`, `SDA`/`SCL`, and the
+`onRequest()`, the `SERIAL_8N1` family, `BitOrder`, `SDA`/`SCL`, the
+network base classes `Client`/`Server`/`UDP`/`IPAddress`, and the
 AVR EEPROM library's API), with behavior checked against their source
 and documentation. The UNO R4 core was consulted the same way, and
 avr-libc's documentation for `ltoa()`/`ultoa()`/`dtostrf()` and the
