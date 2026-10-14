@@ -304,11 +304,11 @@ xPack checksums（正しい値）：
 | Serial.readString / readStringUntil、String::reserve/getBytes/toCharArray/startsWith(offset) | ✅ | v0.2.1で追加。Serial1ループバック＋純粋ロジック検証で実機確認済み |
 | SPI.setBitOrder/setDataMode/setClockDivider、String 64bit（long long/unsigned long long） | ✅ | v0.2.1で追加。MOSI-MISOループバック＋純粋ロジック検証で実機確認済み |
 | Serial print BIN基数バグ修正（Serial・String両方）、Serial.write全オーバーロード、attachInterrupt LOWモード | ✅ | v0.2.1で修正・追加。全項目実機確認済み（LOWモードは長押しでカウンタ374,533回増加を確認） |
-| PROGMEM/pgm_read系、F()/String対応、ARDUINO/ARDUINO_ARCH_*マクロ | ✅ | v0.2.1で追加。実機確認済み |
+| PROGMEM/pgm_read系、F()/String対応、ARDUINO/ARDUINO_ARCH_*マクロ | ✅ | v0.2.1で追加。実機確認済み。0.9.2で`<avr/pgmspace.h>`（`_near`/`_far`、`_P`/`_PF`系の関数など）を足し、PROGMEMのマクロは`Arduino.h`からそこへ移した。`test_avr_pgmspace`でA153・N947確認 |
 | Wire.end、Serial.find(len)/findUntil、Serial.availableForWrite、INPUT_PULLDOWN、OUTPUT_OPENDRAIN | ✅ | v0.2.1で追加。実機確認済み（`Wire.end()`はI3C使用時のBusFaultバグを修正後に確認） |
 | String operator+数値版/F()、Printable、NOT_AN_INTERRUPT、digitalPinToPort/BitMask+portOutput/Input/ModeRegister | ✅ | v0.2.1で追加。実機確認済み（fast GPIOレジスタ直接操作がD2-D3ジャンパで正しく動作、Printableカスタムクラスの出力を視覚確認） |
 | Print/Stream抽象基底クラス（新設） | ✅ | v0.2.1で追加。実機確認済み——ハードウェア非依存のPrint派生クラス、Stream&への多態性、print()/println()の実バイト数返却、Printableのn+=p.print(x)イディオムすべて動作確認 |
-| サードパーティライブラリ互換性（ArduinoJson/LiquidCrystal/DHT/NeoPixel/OneWire/Adafruit BusIO/Adafruit Unified Sensor） | ✅ | v0.2.1で最小スケッチのコンパイルを確認。0.7.0で各ライブラリの**同梱サンプル全47本×両ボード**に広げて再確認し、`BitOrder`の本物のenum化とavr-libcの文字列関数・`M_`定数の宣言を追加した。残る失敗8本は、BLE（4本）、ADXL343ドライバ（1本）、Ethernetが要求する`Client.h`（3本、coreにネットワーク基底クラスが無い）。0.9.2でネットワーク基底クラスを足し、公式`Ethernet`の作例13本・ArduinoJsonのEthernet系3本が4ボードでビルドできることを確かめた（PubSubClientは`pgm_read_byte_near()`が無いので止まる）。Servoはライブラリ側のアーキテクチャ非対応で不可（既知の限界）。ライブラリはスクラッチパッドに`ARDUINO_DIRECTORIES_USER`で入れたので、`~/Documents/Arduino/libraries`には無い |
+| サードパーティライブラリ互換性（ArduinoJson/LiquidCrystal/DHT/NeoPixel/OneWire/Adafruit BusIO/Adafruit Unified Sensor） | ✅ | v0.2.1で最小スケッチのコンパイルを確認。0.7.0で各ライブラリの**同梱サンプル全47本×両ボード**に広げて再確認し、`BitOrder`の本物のenum化とavr-libcの文字列関数・`M_`定数の宣言を追加した。残る失敗8本は、BLE（4本）、ADXL343ドライバ（1本）、Ethernetが要求する`Client.h`（3本、coreにネットワーク基底クラスが無い）。0.9.2でネットワーク基底クラスと`<avr/pgmspace.h>`を足し、公式`Ethernet`の作例13本・ArduinoJsonのEthernet系3本・PubSubClientの4本が4ボードでビルドできることを確かめた（PubSubClientは`pgm_read_byte_near()`で止まっていた。`mqtt_stream`は外部の`SRAM.h`が要るので対象外）。Servoはライブラリ側のアーキテクチャ非対応で不可（既知の限界）。ライブラリはスクラッチパッドに`ARDUINO_DIRECTORIES_USER`で入れたので、`~/Documents/Arduino/libraries`には無い |
 | Wire (I2C) | ✅ | |
 | Wire1 (I3C, I2Cモード) | ✅ | オンボードP3T1755で確認、重大バグ修正済み。A156の`Wire1`はI3CではなくMikroBusの`LPI2C3`（0.8.0） |
 | SPI | ✅ | |

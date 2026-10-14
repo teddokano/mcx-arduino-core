@@ -22,30 +22,14 @@
 
 /*
  *  PROGMEM / F() / pgm_read_*() compatibility -- no-ops on this Cortex-M
- *  target. AVR is a Harvard-architecture chip where flash and RAM are
- *  separate address spaces, so PROGMEM-tagged data needs special
- *  instructions (pgm_read_byte() etc.) to read back; on this von-Neumann
- *  Cortex-M, flash is just regular memory-mapped, readable like anything
- *  else. These are declared purely so AVR-era sketches/libraries that use
- *  them still compile -- __FlashStringHelper is forward-declared here
- *  (before arduino_string.h/arduino_serial.h) since String and SerialClass
- *  both need to know the type exists for their F()-string overloads.
+ *  target, where flash is ordinary memory (see avr/pgmspace.h, included
+ *  here as AVR's Arduino.h does, so sketches get PROGMEM, pgm_read_*() and
+ *  the _P functions without including it). __FlashStringHelper is
+ *  forward-declared here (before arduino_string.h/arduino_serial.h) since
+ *  String and SerialClass both need to know the type exists for their
+ *  F()-string overloads.
  */
-/** @name PROGMEM / pgm_read_*() compatibility macros
- *  No-ops / plain pointer casts on this von-Neumann target -- see the
- *  explanation above.
- */
-///@{
-#define	PROGMEM
-#define	PGM_P				const char *
-/** Identity -- string literals need no special flash-placement here. */
-#define	PSTR( s )			( s )
-#define	pgm_read_byte( addr )	( *(const unsigned char *)(addr) )
-#define	pgm_read_word( addr )	( *(const unsigned short *)(addr) )
-#define	pgm_read_dword( addr )	( *(const unsigned long *)(addr) )
-#define	pgm_read_float( addr )	( *(const float *)(addr) )
-#define	pgm_read_ptr( addr )	( *(const void * const *)(addr) )
-///@}
+#include	"avr/pgmspace.h"
 
 class __FlashStringHelper;
 /** Wrap a string literal for the String/Print/SerialClass overloads that

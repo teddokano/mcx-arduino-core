@@ -10,9 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Added
 - The network base classes `Client`, `Server`, `UDP` and `IPAddress` (`Client.h`, `Server.h`, `Udp.h`,
   `IPAddress.h`), with the same virtual functions as ArduinoCore-API's, so libraries built on them now compile:
-  the official `Ethernet` library for W5x00 shields, and libraries that take a `Client&`.
+  the official `Ethernet` library for W5x00 shields, and libraries that take a `Client&` such as PubSubClient.
   `IPAddress` holds an IPv4 or IPv6 address, as in ArduinoCore-API. As on AVR, `Arduino.h` doesn't include them
-- New example sketch `test_network_base_classes` (no wiring)
+- `<avr/pgmspace.h>`, with the rest of avr-libc's PROGMEM interface: the `_near`/`_far` forms of `pgm_read_*()`,
+  `pgm_read_qword()`, `pgm_get_far_address()`, `PGM_VOID_P`, the `prog_char` family of types, and the `_P` and
+  `_PF` string, memory and `printf`/`scanf` functions (`strcpy_P()`, `memcpy_P()`, `strlen_P()`, `sprintf_P()`, ...).
+  `Arduino.h` includes it, as AVR's does. Libraries such as PubSubClient stopped at `pgm_read_byte_near()` before
+- New example sketches `test_network_base_classes` and `test_avr_pgmspace` (no wiring)
+
+### Changed
+- `pgm_read_ptr()` gives `void *`, as in avr-libc, instead of `const void *`
 
 ## [0.9.1] - 2026-10-11
 

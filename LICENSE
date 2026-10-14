@@ -45,8 +45,9 @@ signatures, default values and constant values (for example
 network base classes `Client`/`Server`/`UDP`/`IPAddress`, and the
 AVR EEPROM library's API), with behavior checked against their source
 and documentation. The UNO R4 core was consulted the same way, and
-avr-libc's documentation for `ltoa()`/`ultoa()`/`dtostrf()` and the
-string functions declared in `Arduino.h`. No source code was copied from
+avr-libc's documentation for `ltoa()`/`ultoa()`/`dtostrf()`, the
+string functions declared in `Arduino.h`, and `<avr/pgmspace.h>`
+(`cores/arduino/arduino_api/avr/pgmspace.h`). No source code was copied from
 any of them.
 
 - ArduinoCore-renesas (UNO R4) — https://github.com/arduino/ArduinoCore-renesas (LGPL 2.1)
