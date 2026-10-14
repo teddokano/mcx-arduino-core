@@ -42,6 +42,7 @@
 | リリース前の実機チェック手順 | [examples/release_check/README.md](examples/release_check/README.md) |
 | 過去の作業記録・バグの切り分け経緯 | [docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md) |
 |リリース1.0.0にむけてやっておくべきこと|[memo/notes_toward_1.0.0.md](memo/notes_toward_1.0.0.md)|
+| チップのレジスタ・ペリフェラルの仕様 | NXPのドキュメントのMCPサーバー**ChipDocs**（2026-10-14に接続）。RMはA153=`MCXAP64M96FS3RM`、A156=`MCXAP100M96FS6RM`、N947=`MCXNP184M150F70RM`（MCX NのRM。N23xは対象外）。N236はデータシート`MCXN23x`とセキュリティRMだけ、C444は無い。ボードの回路図は`ref/`（ページを画像で読む）、ピンのALTはZephyrのpinctrlヘッダで確かめる |
 
 ---
 
