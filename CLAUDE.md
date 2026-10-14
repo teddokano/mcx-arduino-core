@@ -12,13 +12,15 @@
   関数内の`static`オブジェクトのリンクエラー（`__cxa_guard_acquire`）の修正（`platform.txt`に`-fno-threadsafe-statics`。AVRのコアと同じ）、`r01lib_I3C_demo`の追加）。
   その前のv0.9.0（2026-10-09）でFRDM-MCXN236の追加と、FRDM-MCXA156のD3/D5/D6/D9での`analogWrite`。macOS・Windows・Linuxの3プラットフォームで
   インストール〜ビルド〜アップロード〜IDE内蔵デバッガまで検証済み
-- **開発中**: なし（次の版の番号と範囲は未定）。ローカルIDE連携のsymlinkは`0.9.1-dev`のまま。
+- **開発中**: **v0.9.2**（`0.9.2-dev`ブランチ、2026-10-15に開始）。範囲は、ネットワーク基底クラス（`Client`/`Server`/`UDP`/`IPAddress`、Pendingタスク8）、
+  `Servo.h`の互換ライブラリ、A4/A5のI²C（`setPins`、Pendingタスク10）の3つ（2026-10-15、ユーザーが決定）。
+  N947のEthernet（ENET・lwIP）はその次の版。1.0までの版の割り振りは[memo/notes_toward_1.0.0.md](memo/notes_toward_1.0.0.md)の§9
 - **ADCの無いピンへの`analogRead()`（A153の`analogRead(A5)`など）をビルド時に検出する案は入れない**（2026-10-11、ユーザー判断）。
   `__builtin_constant_p`と`__attribute__((error))`で、定数のピンならビルドエラーにできることは試作で確かめた（常に`-O2`なので確実に効く）。
   入れない理由は副作用で、実行されないコード（実行時の変数でボードを分ける分岐など）でもビルドが止まり、AVRなどでビルドできるコードがこのコアではビルドできなくなる。
   また、`-O2`のループ展開や関数の展開で定数になった呼び出しも検出されるので、エラーになるかどうかが最適化の判断に左右される。実行時の`panic()`のままにする。
   `analogWrite()`はPWMの無いピンでAVRと同じく`digitalWrite()`になるのが正しい動きで、panicしない（A153の`A5`で実機確認）
-- ボード追加の順番はA156 → N236 → C444で合意済み。A4/A5のI²C（Pendingタスク10）は1.0前の別の版で入れる。
+- ボード追加の順番はA156 → N236 → C444で合意済み。A4/A5のI²C（Pendingタスク10）は0.9.2で入れる。
   A156の前提と決定は下の「FRDM-MCXA156の前提と決定事項（0.8.0）」節、N236の分は「FRDM-MCXN236の前提と決定事項（0.9.0）」節
 - **リリースごとの変更点**: [CHANGELOG.md](CHANGELOG.md)
 - **各リリースで何をやり、どこで詰まったかの詳細**: [docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md)
@@ -344,7 +346,7 @@ xPack checksums（正しい値）：
 - **リポジトリパス**: `~/dev/mcx-arduino-core`
 - **v0.4.0以降のソース構成**: `MCUXpresso_project/`ディレクトリは廃止（削除済み）。ソースの唯一の実体は`hardware/nxp/mcx/cores/arduino/`（全ボード共有）＋`hardware/nxp/mcx/variants/<board>/src/`（ボード固有）で、プリビルド`.a`のビルド・配置手順も不要になった——編集したソースはそのままarduino-cli/Arduino IDEのビルドに反映される（詳細は[docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md)の「`cores/arduino/`一本化・`platform.txt`書き換え完了」節）
 - **xPackツールチェーン**: `~/.xpacktools/xpack-arm-none-eabi-gcc-14.2.1-1.1/`（`package_nxp_mcx_index.json`記載のものと同一バイナリ、チェックサム確認済み）
-- **ローカルArduino IDE連携**: `~/Library/Arduino15/packages/nxp/hardware/mcx/<version>-dev`（今は`0.9.1-dev`。ブランチ名と同じ。パッチリリースのブランチを並行して進める間は、作業ツリーで切り替えたブランチに合わせてこの名前も付け替える）をこのリポジトリの`hardware/nxp/mcx/`へのシンボリックリンクとして設定済み（編集が即座に反映される）。ツールチェーンも`~/.xpacktools/`への symlink。`-dev`サフィックスにより、Boards Manager経由でインストールする実リリース版とはディレクトリ名が衝突せず共存できる（ただし下の項目のとおり、並んでいるとリリース版が選ばれる）
+- **ローカルArduino IDE連携**: `~/Library/Arduino15/packages/nxp/hardware/mcx/<version>-dev`（今は`0.9.2-dev`。ブランチ名と同じ。パッチリリースのブランチを並行して進める間は、作業ツリーで切り替えたブランチに合わせてこの名前も付け替える）をこのリポジトリの`hardware/nxp/mcx/`へのシンボリックリンクとして設定済み（編集が即座に反映される）。ツールチェーンも`~/.xpacktools/`への symlink。`-dev`サフィックスにより、Boards Manager経由でインストールする実リリース版とはディレクトリ名が衝突せず共存できる（ただし下の項目のとおり、並んでいるとリリース版が選ばれる）
 - **リリース版を入れたままだと`-dev`が使われない**（0.7.0で踏んだ）: `packages/nxp/hardware/mcx/`に
   Boards Managerで入れた`0.6.0`と`0.7.0-dev`のsymlinkが並ぶと、**IDEも既定のarduino-cliもインストール済みの`0.6.0`を選ぶ**。
   開発中の修正がIDEで一切効かず、「直したはずの不具合がIDEでは再現する」形で表に出る。
@@ -446,11 +448,12 @@ v0.4.0の`main`マージ直前、ユーザーから「今回のリリース準�
 7. **GPIO治具は作らない**（2026-10-02、ユーザー判断）。0.7.0で保留にしていたが、0.8.0の検討で
    「リリース作業の自動化が大きく進んでいて、治具による改善は手間の削減にそれほど効かない」として見送った。
    組み合わせを設計した`.github/scripts/check_jig_pairing.py`は残っている
-8. **ネットワーク基底クラス（`Client`/`Server`/`UDP`/`IPAddress`）は0.8以降**（2026-09-26、ユーザー判断で0.7.0は見送り）。
+8. **ネットワーク基底クラス（`Client`/`Server`/`UDP`/`IPAddress`）は0.9.2で入れる**（2026-09-26、ユーザー判断で0.7.0は見送り。2026-10-15に0.9.2と決定）。
    無いため`Ethernet`ライブラリが`Client.h`で止まる（ArduinoJsonのEthernet系サンプル3本もこれで失敗）。
    入れるときは、ArduinoCore-APIのソースがLGPLなのでコピーせず自前で書く。
    仮想関数のシグネチャはArduinoCore-APIと完全に一致させる（派生ライブラリがそのままビルドできるように）。
-   W5500系シールドなどで**実際に通信できるまでを確認**すること（コンパイルだけでは対応済みにしない）
+   W5500系シールドなどで**実際に通信できるまでを確認**すること（コンパイルだけでは対応済みにしない。
+   N947のEthernetでの確認でこれを満たすとみなすかは未決、memoの§8）
 9. **LinkServer 26.9.130はFRDM-MCXA153のフラッシュを32KBと読む**（2026-09-28に判明、N947自体は26.9で動く）。
    32KBを超えるスケッチの書き込み・デバッグが「Attempt to load into missing flash area」で失敗する。
    0.7.1で、26.9を避けて別の版を使うようにした。**N947も含めて全ボードで避ける**——LinkServerは書き込み後も`redlinkserv`を残し、
@@ -458,6 +461,6 @@ v0.4.0の`main`マージ直前、ユーザーから「今回のリリース準�
    `upload.sh`の`flash_size_bug()`、`upload.bat`の`:consider`、`gdb-bridge`の`flashSizeBug`の**3か所**にある。
    NXPが直した版を出したら、その版で46KBの`hello_world`を書けることを確かめてから3か所を揃えて更新する。
    原因の詳細はLinkServerのライセンス（使用結果の報告の公開制限）に配慮して、公開リポジトリには症状だけを書く
-10. **A4/A5でI²Cを使えるようにする**（2026-10-08、ユーザー判断）: 1.0前の、0.9.0とは別の版で入れる。入口は`bool TwoWire::setPins( int sda, int scl )`（ESP32と同じ形）で、
+10. **A4/A5でI²Cを使えるようにする**（2026-10-08、ユーザー判断）: 0.9.2で入れる（2026-10-15に決定）。入口は`bool TwoWire::setPins( int sda, int scl )`（ESP32と同じ形）で、
    使えないピンの組や`begin()`のあとでは`false`を返してピンを変えない。A4/A5にI²Cがあるのは、A156（`LPI2C1`、`Wire`と別）とN236（`LPI2C2`、`Wire1`と同じ）とC444。
    調べた事実と残る論点（`TwoWire`のコンストラクタはr01libの生のピン値を取るコア用のもので、スケッチのピン名は受け付けない——不具合ではなく説明の不足で、0.9.1で`arduino_i2c.h`の説明を直した。N236での扱いなど）は[memo/notes_toward_1.0.0.md](memo/notes_toward_1.0.0.md)の§5
