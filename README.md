@@ -25,7 +25,9 @@ functionality `Wire`-shaped APIs can't expose, and
 bundled companion library for exactly that. A second bundled library,
 [mcxRCServo](https://github.com/teddokano/mcxRCServo), drives hobby RC
 servos from the PWM pins (`PWM0`-`PWM5`, and `D3`/`D5`/`D6`/`D9` on
-FRDM-MCXA156 and FRDM-MCXN236).
+FRDM-MCXA156 and FRDM-MCXN236). From the same pins, the bundled `Servo`
+library takes the official Servo library's interface (`#include <Servo.h>`,
+`attach()`, `write()`), so sketches written for it build unchanged.
 
 Adding another FRDM-MCX board to this core is a different job from using
 it, and has its own guide:
@@ -127,6 +129,7 @@ mcx-arduino-core/
 │   │   └── sdk/               #   NXP MCX SDK driver files common to all supported chips
 │   ├── libraries/            # Bundled libraries
 │   │   ├── EEPROM/            #   AVR-compatible EEPROM, 1KB in on-chip flash (lives here)
+│   │   ├── Servo/             #   The official Servo library's API, on the PWM pins (lives here)
 │   │   ├── mcxPinState/       #   Pin-ownership debugging (see docs/mcxpinstate_guide.md);
 │   │   │                      #   developed in its own repo, synced here at release time
 │   │   └── mcxRCServo/        #   RC servo driver for the PWM pins; likewise synced

@@ -16,7 +16,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   `pgm_read_qword()`, `pgm_get_far_address()`, `PGM_VOID_P`, the `prog_char` family of types, and the `_P` and
   `_PF` string, memory and `printf`/`scanf` functions (`strcpy_P()`, `memcpy_P()`, `strlen_P()`, `sprintf_P()`, ...).
   `Arduino.h` includes it, as AVR's does. Libraries such as PubSubClient stopped at `pgm_read_byte_near()` before
-- New example sketches `test_network_base_classes` and `test_avr_pgmspace` (no wiring)
+- A bundled `Servo` library with the official Servo library's interface (`#include <Servo.h>`, `attach()`,
+  `write()` in degrees or microseconds, `read()`, `detach()`, ...), so sketches written for it build unchanged.
+  It runs on the PWM pins (`PWM0`-`PWM5`, and `D3`/`D5`/`D6`/`D9` on FRDM-MCXA156 and FRDM-MCXN236), with the
+  pulses from the PWM hardware; on other pins `attach()` returns `INVALID_SERVO`. `#include <Servo.h>` stopped with
+  "No such file" before, since the official library has no build for this core. Examples `Sweep` and `Knob`
+- New example sketches `test_network_base_classes` and `test_avr_pgmspace` (no wiring), and `test_Servo` (one jumper)
 
 ### Changed
 - `pgm_read_ptr()` gives `void *`, as in avr-libc, instead of `const void *`

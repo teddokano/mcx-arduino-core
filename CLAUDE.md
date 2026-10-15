@@ -5,16 +5,18 @@
 - **内容**: NXP FRDM-MCXA153 / FRDM-MCXN947 / FRDM-MCXA156（0.8.0から）/ FRDM-MCXN236（0.9.0から。いずれもCortex-M33）向けのArduino IDEボードサポートパッケージ。
   v0.4.0以降は**ソース配布方式**（プリビルド`.a`は廃止）で、`hardware/nxp/mcx/cores/arduino/`（全ボード共有）と
   `hardware/nxp/mcx/variants/<board>/src/`（ボード固有）が唯一の実体。編集すれば次のビルドにそのまま反映される
-- **同梱ライブラリ**: `mcxPinState`（ピン所有状況のデバッグ表示）、`mcxRCServo`（RCサーボ）、`EEPROM`（0.7.0で追加）。
+- **同梱ライブラリ**: `mcxPinState`（ピン所有状況のデバッグ表示）、`mcxRCServo`（RCサーボ）、`EEPROM`（0.7.0で追加）、`Servo`（0.9.2で追加、公式のServoライブラリと同じAPI、PWMのピンだけ）。
   前の2つは別リポジトリが開発の本拠地で、`hardware/nxp/mcx/libraries/`配下はリリース時に同期する取り込みコピー。
-  `EEPROM`はこのリポジトリが本体（フラッシュの配置がリンカスクリプトと一体なので）
+  `EEPROM`はこのリポジトリが本体（フラッシュの配置がリンカスクリプトと一体なので）。`Servo`もこのリポジトリが本体で、コアの`analog_pwm_out()`（`arduino_analog.h`）でピンの`PwmOut`を受け取り、マイクロ秒でパルス幅を設定する（`analogWriteResolution()`に触らない）
 - **現在のリリース**: **v0.9.1**（2026-10-11、パッチリリース。`analogRead(0)`〜`analogRead(5)`を`A0`〜`A5`として扱う修正、
   関数内の`static`オブジェクトのリンクエラー（`__cxa_guard_acquire`）の修正（`platform.txt`に`-fno-threadsafe-statics`。AVRのコアと同じ）、`r01lib_I3C_demo`の追加）。
   その前のv0.9.0（2026-10-09）でFRDM-MCXN236の追加と、FRDM-MCXA156のD3/D5/D6/D9での`analogWrite`。macOS・Windows・Linuxの3プラットフォームで
   インストール〜ビルド〜アップロード〜IDE内蔵デバッガまで検証済み
 - **開発中**: **v0.9.2**（`0.9.2-dev`ブランチ、2026-10-15に開始）。範囲は、ネットワーク基底クラス（`Client`/`Server`/`UDP`/`IPAddress`、Pendingタスク8）、
   `Servo.h`の互換ライブラリ、A4/A5のI²C（`setPins`、Pendingタスク10）の3つ（2026-10-15、ユーザーが決定）。
-  N947のEthernet（ENET・lwIP）はその次の版。1.0までの版の割り振りは[memo/notes_toward_1.0.0.md](memo/notes_toward_1.0.0.md)の§9
+  N947のEthernet（ENET・lwIP）はその次の版。1.0までの版の割り振りは[memo/notes_toward_1.0.0.md](memo/notes_toward_1.0.0.md)の§9。
+  **`Servo`（`libraries/Servo/`）は4ボードでビルドが通るだけで、実機は未確認**（2026-10-16、ユーザーが後でやると判断）。
+  `test_Servo`をジャンパ1本（A153・A156・N947は`PWM0`-`D8`、N236は`D6`-`D7`）で流す
 - **ADCの無いピンへの`analogRead()`（A153の`analogRead(A5)`など）をビルド時に検出する案は入れない**（2026-10-11、ユーザー判断）。
   `__builtin_constant_p`と`__attribute__((error))`で、定数のピンならビルドエラーにできることは試作で確かめた（常に`-O2`なので確実に効く）。
   入れない理由は副作用で、実行されないコード（実行時の変数でボードを分ける分岐など）でもビルドが止まり、AVRなどでビルドできるコードがこのコアではビルドできなくなる。
@@ -308,7 +310,7 @@ xPack checksums（正しい値）：
 | Wire.end、Serial.find(len)/findUntil、Serial.availableForWrite、INPUT_PULLDOWN、OUTPUT_OPENDRAIN | ✅ | v0.2.1で追加。実機確認済み（`Wire.end()`はI3C使用時のBusFaultバグを修正後に確認） |
 | String operator+数値版/F()、Printable、NOT_AN_INTERRUPT、digitalPinToPort/BitMask+portOutput/Input/ModeRegister | ✅ | v0.2.1で追加。実機確認済み（fast GPIOレジスタ直接操作がD2-D3ジャンパで正しく動作、Printableカスタムクラスの出力を視覚確認） |
 | Print/Stream抽象基底クラス（新設） | ✅ | v0.2.1で追加。実機確認済み——ハードウェア非依存のPrint派生クラス、Stream&への多態性、print()/println()の実バイト数返却、Printableのn+=p.print(x)イディオムすべて動作確認 |
-| サードパーティライブラリ互換性（ArduinoJson/LiquidCrystal/DHT/NeoPixel/OneWire/Adafruit BusIO/Adafruit Unified Sensor） | ✅ | v0.2.1で最小スケッチのコンパイルを確認。0.7.0で各ライブラリの**同梱サンプル全47本×両ボード**に広げて再確認し、`BitOrder`の本物のenum化とavr-libcの文字列関数・`M_`定数の宣言を追加した。残る失敗8本は、BLE（4本）、ADXL343ドライバ（1本）、Ethernetが要求する`Client.h`（3本、coreにネットワーク基底クラスが無い）。0.9.2でネットワーク基底クラスと`<avr/pgmspace.h>`を足し、公式`Ethernet`の作例13本・ArduinoJsonのEthernet系3本・PubSubClientの4本が4ボードでビルドできることを確かめた（PubSubClientは`pgm_read_byte_near()`で止まっていた。`mqtt_stream`は外部の`SRAM.h`が要るので対象外）。Servoはライブラリ側のアーキテクチャ非対応で不可（既知の限界）。ライブラリはスクラッチパッドに`ARDUINO_DIRECTORIES_USER`で入れたので、`~/Documents/Arduino/libraries`には無い |
+| サードパーティライブラリ互換性（ArduinoJson/LiquidCrystal/DHT/NeoPixel/OneWire/Adafruit BusIO/Adafruit Unified Sensor） | ✅ | v0.2.1で最小スケッチのコンパイルを確認。0.7.0で各ライブラリの**同梱サンプル全47本×両ボード**に広げて再確認し、`BitOrder`の本物のenum化とavr-libcの文字列関数・`M_`定数の宣言を追加した。残る失敗8本は、BLE（4本）、ADXL343ドライバ（1本）、Ethernetが要求する`Client.h`（3本、coreにネットワーク基底クラスが無い）。0.9.2でネットワーク基底クラスと`<avr/pgmspace.h>`を足し、公式`Ethernet`の作例13本・ArduinoJsonのEthernet系3本・PubSubClientの4本が4ボードでビルドできることを確かめた（PubSubClientは`pgm_read_byte_near()`で止まっていた。`mqtt_stream`は外部の`SRAM.h`が要るので対象外）。公式のServoはライブラリ側のアーキテクチャ非対応で使えないので、0.9.2で同じAPIの`Servo`を同梱した（公式が入っていても、ビルドは同梱のほうを選ぶことを確認）。ライブラリはスクラッチパッドに`ARDUINO_DIRECTORIES_USER`で入れたので、`~/Documents/Arduino/libraries`には無い |
 | Wire (I2C) | ✅ | |
 | Wire1 (I3C, I2Cモード) | ✅ | オンボードP3T1755で確認、重大バグ修正済み。A156の`Wire1`はI3CではなくMikroBusの`LPI2C3`（0.8.0） |
 | SPI | ✅ | |

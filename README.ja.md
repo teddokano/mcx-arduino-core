@@ -20,7 +20,7 @@ Arduino API対応状況の一覧は[API_COMPATIBILITY.md](API_COMPATIBILITY.md)�
 [MCUXpresso SDKを直接呼び出す](docs/advanced_sdk_tuning.md)（GPIO速度チューニング）、
 [r01libによるネイティブI3C](docs/advanced_r01lib_i3c.md)（`Wire`形式のAPIでは扱えない機能向け）、
 [mcxPinStateによるピン所有状況のデバッグ](docs/mcxpinstate_guide.md)（そのためのライブラリ、本パッケージに同梱済み）。
-同梱ライブラリはもう1つあります——[mcxRCServo](https://github.com/teddokano/mcxRCServo)はPWMのピン（`PWM0`〜`PWM5`と、FRDM-MCXA156・FRDM-MCXN236では`D3`・`D5`・`D6`・`D9`）からRCサーボを駆動します。
+同梱ライブラリはもう1つあります——[mcxRCServo](https://github.com/teddokano/mcxRCServo)はPWMのピン（`PWM0`〜`PWM5`と、FRDM-MCXA156・FRDM-MCXN236では`D3`・`D5`・`D6`・`D9`）からRCサーボを駆動します。同じピンで、同梱の`Servo`ライブラリは公式のServoライブラリと同じ使い方（`#include <Servo.h>`、`attach()`、`write()`）ができ、公式向けに書かれたスケッチがそのままビルドできます。
 
 このコアにFRDM-MCXボードを追加する作業は、コアを使う作業とは別物なので専用の手順書があります:
 [新しいボードの移植](docs/porting_a_new_board.md)（英語のみ）。
@@ -117,6 +117,7 @@ mcx-arduino-core/
 │   │   └── sdk/               #   対応する全チップ共通のNXP MCX SDKドライバファイル
 │   ├── libraries/            # 同梱ライブラリ
 │   │   ├── EEPROM/            #   AVR互換のEEPROM、オンチップのフラッシュに1KB（本体はここ）
+│   │   ├── Servo/             #   公式のServoライブラリと同じAPI、PWMのピンで（本体はここ）
 │   │   ├── mcxPinState/       #   ピン所有状況のデバッグ（docs/mcxpinstate_guide.md参照）。
 │   │   │                      #   開発は専用リポジトリで行い、リリース時にここへ同期
 │   │   └── mcxRCServo/        #   PWMのピンからRCサーボを駆動。同じく同期

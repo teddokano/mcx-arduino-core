@@ -68,6 +68,31 @@ static PwmOut* pwm_for( int pin )
 	return	pwm_out_pins[ pin ];
 }
 
+// The pin is FlexPWM's from here on: a pinMode() GPIO object made before
+// would still claim it, and a pinMode() since the last analogWrite() has
+// switched it to GPIO
+static void own_pin( int pin, PwmOut *pwm )
+{
+	digital_pin_drop( pin );
+
+	if ( pwm_pin_released[ pin ] )
+	{
+		pwm->claim_pin();
+		pwm_pin_released[ pin ]	= false;
+	}
+}
+
+PwmOut* analog_pwm_out( int pin_num )
+{
+	int		pin	= raw_pin( pin_num );
+	PwmOut	*pwm	= pwm_for( pin );
+
+	if ( pwm )
+		own_pin( pin, pwm );
+
+	return	pwm;
+}
+
 //	Called by pinMode() before it switches a pin to GPIO. A PwmOut on the
 //	pin stops owning it, and analogWrite() takes it back.
 void analog_pin_to_gpio( int raw_pin )
@@ -128,17 +153,7 @@ void analogWrite( int pin_num, int value )
 
 	if ( PwmOut *pwm = pwm_for( pin ) )
 	{
-		//	The pin is FlexPWM's from here on: a pinMode() GPIO object
-		//	made before would still claim it, and a pinMode() since the
-		//	last analogWrite() has switched it to GPIO
-		digital_pin_drop( pin );
-
-		if ( pwm_pin_released[ pin ] )
-		{
-			pwm->claim_pin();
-			pwm_pin_released[ pin ]	= false;
-		}
-
+		own_pin( pin, pwm );
 		pwm->write( (float)value / (float)max_value );
 		return;
 	}

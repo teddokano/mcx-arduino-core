@@ -36,21 +36,25 @@ No source code was copied from either project.
 
 The same holds for the rest of the Arduino API layer in
 `hardware/nxp/mcx/cores/arduino/arduino_api/` and for the bundled
-`hardware/nxp/mcx/libraries/EEPROM/`: they are written from scratch to
+`hardware/nxp/mcx/libraries/EEPROM/` and `hardware/nxp/mcx/libraries/Servo/`:
+they are written from scratch to
 the interfaces those projects define, so that sketches and libraries
 written for them build and behave the same. That covers names,
 signatures, default values and constant values (for example
 `Wire.setWireTimeout()` and its defaults, I2C target mode's `onReceive()`/
 `onRequest()`, the `SERIAL_8N1` family, `BitOrder`, `SDA`/`SCL`, the
-network base classes `Client`/`Server`/`UDP`/`IPAddress`, and the
-AVR EEPROM library's API), with behavior checked against their source
-and documentation. The UNO R4 core was consulted the same way, and
+network base classes `Client`/`Server`/`UDP`/`IPAddress`, the AVR EEPROM
+library's API, and the official Servo library's API), with behavior
+checked against their source
+and documentation. The UNO R4 core and the official Servo library were
+consulted the same way, and
 avr-libc's documentation for `ltoa()`/`ultoa()`/`dtostrf()`, the
 string functions declared in `Arduino.h`, and `<avr/pgmspace.h>`
 (`cores/arduino/arduino_api/avr/pgmspace.h`). No source code was copied from
 any of them.
 
 - ArduinoCore-renesas (UNO R4) — https://github.com/arduino/ArduinoCore-renesas (LGPL 2.1)
+- Servo — https://github.com/arduino-libraries/Servo (LGPL 2.1)
 - avr-libc — https://github.com/avrdudes/avr-libc (Modified BSD License)
 
 The Linux LinkServer-discovery logic in `hardware/nxp/mcx/tools/upload.sh`

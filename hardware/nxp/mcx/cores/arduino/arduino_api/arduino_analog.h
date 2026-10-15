@@ -91,4 +91,16 @@ void	analogReadResolution( int bits );
  */
 void	analogWriteResolution( int bits );
 
+class PwmOut;
+/** Not part of the Arduino API: for the libraries bundled with this core
+ *  (Servo), which set a PWM pin's pulse width in microseconds instead of
+ *  through analogWrite()'s duty scaling. Gives the PwmOut that analogWrite()
+ *  uses for the pin, made on first use, and takes the pin back from
+ *  pinMode() as analogWrite() does. Its period is shared with the other pin
+ *  of its FlexPWM submodule, as with analogWriteFrequency().
+ * @param pin_num PWM pin (PWM0..PWM5, and D3/D5/D6/D9 on FRDM-MCXA156 and FRDM-MCXN236)
+ * @return the pin's PwmOut, or nullptr if the pin has no PWM
+ */
+PwmOut	*analog_pwm_out( int pin_num );
+
 #endif // !R01LIB_ARDUINO_ANALOG_H
