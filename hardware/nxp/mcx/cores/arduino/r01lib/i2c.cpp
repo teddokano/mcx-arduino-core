@@ -204,14 +204,22 @@ I2C::I2C( int sda, int scl, bool no_hw ) : Obj( true ), _sda( sda ), _scl( scl )
 #elif	CPU_MCXC444VLH
 	int	mux_setting	= kPORT_MuxAlt2;
 
+	//	ALT values from Zephyr's MCXC444VLH-pinctrl.h. D18/D19 and A4/A5 both
+	//	reach I2C1, so they can't be two buses at once. PTE25/PTE24 is I2C0,
+	//	the on-board accelerometer's bus (Wire1), which no header pin reaches.
+	unit_base	= I2C1;
+
 	if ( (sda == D18) && (scl == D19) )
 		mux_setting	= kPORT_MuxAlt6;
 	else if ( (sda == A4) && (scl == A5) )
 		mux_setting	= kPORT_MuxAlt2;
+	else if ( (sda == PTE25) && (scl == PTE24) )
+	{
+		mux_setting	= kPORT_MuxAlt5;
+		unit_base	= I2C0;
+	}
 	else
-		panic( "FRDM-MCXC444 supports D18/D19 or A4/A5 pins for I2C" );
-
-	unit_base	= I2C1;
+		panic( "FRDM-MCXC444 supports D18/D19, A4/A5 (both I2C1) or the on-board sensor's PTE25/PTE24 (I2C0) for I2C" );
 	repeated_start_required_flag	= false;
 #else
 	#error Not supported CPU

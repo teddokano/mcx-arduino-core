@@ -155,6 +155,7 @@ void SPIClass::txrx( uint8_t *data, size_t size )
 }
 
 SPIClass	SPI;
-#if !defined( CPU_MCXN236VDF )
+#if !defined( CPU_MCXN236VDF ) && !defined( CPU_MCXC444VLH )
 SPIClass	SPI1( MB_MOSI, MB_MISO, MB_SCK, MB_CS );
-#endif	// FRDM-MCXN236's MikroBus SPI is SPI's own lines, with CS on D18
+#endif	// FRDM-MCXN236's MikroBus SPI is SPI's own lines, with CS on D18, and
+	// FRDM-MCXC444's is SPI's own D10-D13

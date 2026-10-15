@@ -18,6 +18,14 @@ constexpr int	SERIAL1_TX_PIN	= MB_TX;
 constexpr int	SERIAL1_RX_PIN	= MB_RX;
 #endif
 
+// The same for Serial on FRDM-MCXC444: its USB serial is D0/D1's own
+// LPUART0, so r01lib's io.h defines USBTX/USBRX as D1/D0, which the
+// renumbering below would turn into 1 and 0.
+#if defined( CPU_MCXC444VLH )
+constexpr int	SERIAL_TX_PIN	= USBTX;
+constexpr int	SERIAL_RX_PIN	= USBRX;
+#endif
+
 #include	"arduino_io.h"
 
 void SerialClass::begin( unsigned long baud, uint16_t config )
@@ -52,7 +60,11 @@ void SerialClass::begin( unsigned long baud, uint16_t config )
 // Global Arduino-compatible Serial instance(s) (no heap, directly inherit
 // r01lib Serial)
 // Serial:  USB-bridged UART (USBTX/USBRX, not part of the pin-renumbering table)
+#if defined( CPU_MCXC444VLH )
+SerialClass	Serial(  SERIAL_TX_PIN, SERIAL_RX_PIN );
+#else
 SerialClass	Serial(  USBTX, USBRX );
+#endif
 
 #ifdef	CPU_MCXN947VDF
 // Serial1 (D0/D1 hardware UART) is intentionally NOT supported on this board:
@@ -88,6 +100,10 @@ SerialClass	Serial2( arduino_pin_by_number[ MB_TX ], arduino_pin_by_number[ MB_R
 //          these same two pins, so there is no Serial2. LP_FLEXCOMM2 is
 //          also Wire1's LPI2C2, and runs both at once (Serial.cpp).
 SerialClass	Serial1( arduino_pin_by_number[ D1 ], arduino_pin_by_number[ D0 ] );
+#elif defined( CPU_MCXC444VLH )
+// No Serial1: Serial is LPUART0, which is both the USB serial and D0/D1, as
+// on UNO R3. The MikroBus UART (LPUART1) is on Wire's D18/D19, and the other
+// UART (UART2, D2/D9) isn't an LPUART.
 #else
 #error "arduino_serial.cpp: say where this board's Serial1 is"
 #endif

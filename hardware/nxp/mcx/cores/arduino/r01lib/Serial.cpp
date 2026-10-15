@@ -599,7 +599,14 @@ void Serial::format( int bits, Parity parity, int stop_bits )
         return;
     }
 
+#if defined( FSL_FEATURE_LPUART_HAS_7BIT_DATA_SUPPORT ) && FSL_FEATURE_LPUART_HAS_7BIT_DATA_SUPPORT
     _config.dataBitsCount = ( bits == 7 ) ? kLPUART_SevenDataBits : kLPUART_EightDataBits;
+#else
+    // FRDM-MCXC444's LPUART has no 7-bit mode
+    if ( bits == 7 )
+        panic( "Serial: 7 data bits aren't supported on FRDM-MCXC444" );
+    _config.dataBitsCount = kLPUART_EightDataBits;
+#endif
     _config.parityMode    = ( parity == Odd )  ? kLPUART_ParityOdd
                           : ( parity == Even ) ? kLPUART_ParityEven
                           :                      kLPUART_ParityDisabled;

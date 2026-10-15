@@ -52,6 +52,16 @@ class __FlashStringHelper;
 #include	"arduino_i2c.h"
 #include	"arduino_spi.h"
 
+#if defined( CPU_MCXC444VLH )
+// MCXC444.h names its SPI peripherals SPI0 and SPI1, as register pointers.
+// This board has no SPI1 object (its MikroBus SPI is SPI's own lines), so a
+// sketch's SPI1 would turn into a pointer and fail with a puzzling error;
+// without the macros it fails as an undeclared name instead. The core's
+// own SPI driver doesn't include this file and keeps them.
+#undef	SPI0
+#undef	SPI1
+#endif
+
 // The constants, macros, and templates below (through the min()/max()/
 // bit-manipulation/map()/random() section) are original reimplementations of
 // the standard Arduino API surface, written to match the interface and

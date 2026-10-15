@@ -90,15 +90,15 @@
   フラッシュ設定の`FOPT`を`0x3B`（`NMI_DIS`を0にしてNMIを常に止める）にした（SDKのままだと`0x3F`）。`FSEC`は`0xFE`（保護なし）のまま。`0x3D`（`BOOTPIN_OPT`）は別の効果で、対策にならない
 - **名前**: `MCXC444.h`が`SPI0`/`SPI1`をマクロで定義していて、Arduinoの`SPI1`とぶつかる。C444はMikroBusのSPIが`SPI`と同じ線なので、N236と同じく`SPI1`を置かない。
   マクロがスケッチから見えると`SPI1.begin()`が分かりにくいエラーになるので、コアで隠す方法を考える。`PWM0`〜`PWM5`・`I3C_SDA`/`I3C_SCL`はC444に無い（ピン番号の表の後ろの名前なので、外しても他のボードの番号は変わらない）
-- **Serial**: USBのシリアルとD0/D1は同じUART（LPUART0）なので、両方とも`Serial`にする（2026-10-16、ユーザーが決定。UNO R3と同じ）。`Serial1`をどこに置くか（置かないか）は未決。
-  スパイクではMikroBusのTX/RX（D18/D19、`Wire`と同じピン）に仮に置いた。LPUARTに7ビットのモードが無く、`SERIAL_7xx`は工夫が要る
+- **Serial**: USBのシリアルとD0/D1は同じUART（LPUART0）なので、両方とも`Serial`にする（2026-10-16、ユーザーが決定。UNO R3と同じ）。`Serial1`は置かない（2026-10-16、ユーザーが決定）。
+  スパイクではMikroBusのTX/RX（D18/D19、`Wire`と同じピン）に仮に置いていた。LPUARTに7ビットのモードが無く、`SERIAL_7xx`は工夫が要る
 - **M33前提の作り**: `micros()`のDWT（スパイクではSysTickで代えた）、フォールトの報告のCFSR/HFSR/BFAR/MMFAR、`semihost_hardfault.c`のThumb-2命令とHFSRの読み出し、
   スタックの上限（`MSPLIM`）がM0+に無い（スタックがあふれても止まらない）
 - **周辺回路**: CTIMERが無い（`tone()`はTPMかPIT。§7-2のServoのCTIMER1もC444では別のタイマーにする）、ADC16（`analogRead`）、TPM（`analogWrite`・`analogWriteFrequency`）、
   Kinetisの`fsl_i2c`（`Wire`のターゲットモードと`setWireTimeout()`）、`SPI::bit_order()`がr01libに無い、PORTに`IBE`が無い、EEPROM（FTFA、消去の単位が1KB）
 - **構造**: `cores/arduino/sdk/`の`fsl_i3c.c`・`fsl_pwm.c`・`fsl_spc.c`・`fsl_utick.c`・`fsl_inputmux.c`は全ボードでビルドされ、C444で通らない。
   使うボードのvariantへ移すか、ファイルをガードで包むかを決める
-- **周り**: `Wire1`（スパイクではMikroBusのA4/A5。§5の`setPins`と一緒に決める）、ピン表を回路図と突き合わせる（r01libのC444の分は未確認）、
+- **周り**: `Wire1`は加速度センサーのI2C0にする（2026-10-16、ユーザーが決定。A4/A5は`Wire`と同じI2C1なので§5の`setPins`で扱う）、ピン表を回路図と突き合わせる（r01libのC444の分は未確認）、
   作例・`release_check`（I3Cのセンサーが無く加速度センサー）・mcxPinState・Servo・mcxRCServoの作例（`PWM0`）・gdb-bridge・文書
 
 ## 5. A4/A5でI²Cを使えるようにする
@@ -280,9 +280,9 @@ A4-D18、A5-D19をジャンパでつなぐと、オンボードのP3T1755（`0x4
 - [ ] §3: probe-rsを検討するか
 - [ ] §3: CIに入れるサードパーティライブラリの選定
 - [x] §4-1: C444のスパイクをどのバージョンでやるか → 2026-10-16にやった（§4-5）。C444そのものを0.10.0で入れる
-- [ ] §4-5: C444の`Serial1`をどこに置くか（置かないか）
-- [ ] §4-5: `cores/arduino/sdk/`の全ボードでビルドされるファイルを、variantへ移すか、ガードで包むか
-- [ ] §4-5: C444でデバイスヘッダの`SPI0`/`SPI1`マクロをスケッチから隠す方法
+- [x] §4-5: C444の`Serial1`をどこに置くか（置かないか） → 置かない。`Serial`はUSBとD0/D1の両方（2026-10-16、`CLAUDE.md`のC444の節）
+- [x] §4-5: `cores/arduino/sdk/`の全ボードでビルドされるファイルを、variantへ移すか、ガードで包むか → MCXの4つのvariantへ移した（2026-10-16）
+- [x] §4-5: C444でデバイスヘッダの`SPI0`/`SPI1`マクロをスケッチから隠す方法 → `Arduino.h`の最後で`#undef`する（コアのSPIドライバは`Arduino.h`を読まないので使える、2026-10-16）
 - [ ] §5-2: `TwoWire`のコンストラクタが受け付けるのを、スケッチのピン名に統一するか（コアの`Wire`/`Wire1`の作り方も変わる）、注意書きだけにするか
 - [ ] §5-4: N236で`setPins(A4, A5)`を`Wire1`だけに許すか、`Wire`にも許すか（許すなら、そのあいだ`Wire1`は使えない）
 - [ ] §5-4: 各ボードのA4/A5に基板上のプルアップがあるか

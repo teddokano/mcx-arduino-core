@@ -265,13 +265,13 @@ void init_mcu( void )
 #if (defined(SDK_DEBUGCONSOLE) && (SDK_DEBUGCONSOLE == DEBUGCONSOLE_REDIRECT_TO_SDK))	
 	/* PORTA1 (pin 23) is configured as LPUART0_RX */
 	/* PORTA2 (pin 24) is configured as LPUART0_TX */
-	PORT_SetPinMux( BOARD_INITPINS_DEBUG_UART_RX_PORT, BOARD_INITPINS_DEBUG_UART_RX_PIN, kPORT_MuxAlt2 );
-	PORT_SetPinMux( BOARD_INITPINS_DEBUG_UART_TX_PORT, BOARD_INITPINS_DEBUG_UART_TX_PIN, kPORT_MuxAlt2 );
+	PORT_SetPinMux( BOARD_INITDEBUG_UARTPINS_DEBUG_UART_RX_PORT, BOARD_INITDEBUG_UARTPINS_DEBUG_UART_RX_PIN, kPORT_MuxAlt2 );
+	PORT_SetPinMux( BOARD_INITDEBUG_UARTPINS_DEBUG_UART_TX_PORT, BOARD_INITDEBUG_UARTPINS_DEBUG_UART_TX_PIN, kPORT_MuxAlt2 );
 #else
 	/* PORTA1 (pin 23) is configured as LPUART0_RX */
 	/* PORTA2 (pin 24) is configured as LPUART0_TX */
-	PORT_SetPinMux( BOARD_INITPINS_DEBUG_UART_RX_PORT, BOARD_INITPINS_DEBUG_UART_RX_PIN, kPORT_MuxAsGpio );
-	PORT_SetPinMux( BOARD_INITPINS_DEBUG_UART_TX_PORT, BOARD_INITPINS_DEBUG_UART_TX_PIN, kPORT_MuxAsGpio );
+	PORT_SetPinMux( BOARD_INITDEBUG_UARTPINS_DEBUG_UART_RX_PORT, BOARD_INITDEBUG_UARTPINS_DEBUG_UART_RX_PIN, kPORT_MuxAsGpio );
+	PORT_SetPinMux( BOARD_INITDEBUG_UARTPINS_DEBUG_UART_TX_PORT, BOARD_INITDEBUG_UARTPINS_DEBUG_UART_TX_PIN, kPORT_MuxAsGpio );
 #endif // (defined(SDK_DEBUGCONSOLE) && (SDK_DEBUGCONSOLE == DEBUGCONSOLE_REDIRECT_TO_SDK))
 
 
@@ -385,6 +385,7 @@ char *put_hex( char *p, uint32_t v )
 	return p;
 }
 
+#if !defined( __ARM_ARCH_6M__ )
 const char *fault_reason( uint32_t cfsr, uint32_t hfsr )
 {
 	if ( cfsr & SCB_CFSR_STKOF_Msk )		return "stack overflow";
@@ -458,6 +459,30 @@ extern "C" __attribute__((noreturn)) void mcx_fault_report( const uint32_t *fram
 	while ( true )
 		;
 }
+#else	// ARMv6-M (Cortex-M0+): no CFSR/HFSR/BFAR/MMFAR to tell faults apart
+
+}	// namespace
+
+extern "C" __attribute__((noreturn)) void mcx_fault_report( const uint32_t *frame, uint32_t exc_return )
+{
+	static char	msg[ 80 ];
+	char		*p	= msg;
+
+	p	= put_str( p, "HardFault at PC " );
+	p	= put_hex( p, frame[ 6 ] );
+
+	//	EXC_RETURN bit 3 clear: the fault came from handler mode
+	if ( !(exc_return & 0x8) )
+		p	= put_str( p, " in an interrupt" );
+
+	*p	= '\0';
+
+	panic( msg );
+
+	while ( true )
+		;
+}
+#endif
 
 #if defined( CPU_MCXN236VDF )
 extern "C" {

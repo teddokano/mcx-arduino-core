@@ -69,8 +69,11 @@ SPI::SPI( int mosi, int miso, int sclk, int cs ) : Obj( true ), chip_select( cs 
 		pin_registry_note( this, "SPI", spi_pins, 3, mux_setting );
 	}
 
+	//	The Arduino SPI leaves CS to the sketch, as on the MCX boards, where
+	//	the LPSPI's own CS output is never muxed to the pin: write() must not
+	//	toggle D10 around every transfer
 	chip_select			= true;
-	manual_cs_control	= false;
+	manual_cs_control	= true;
 }
 
 SPI::~SPI()
@@ -93,6 +96,13 @@ void SPI::mode( uint8_t mode )
 	masterConfig.phase		= (spi_clock_phase_t   )((mode >> 0) & 0x1);
 
 //	SPI_Deinit( unit_base );
+	SPI_MasterInit( unit_base, &masterConfig, master_clk_freq );
+}
+
+void SPI::bit_order( uint8_t order )
+{
+	masterConfig.direction	= order ? kSPI_MsbFirst : kSPI_LsbFirst;
+
 	SPI_MasterInit( unit_base, &masterConfig, master_clk_freq );
 }
 

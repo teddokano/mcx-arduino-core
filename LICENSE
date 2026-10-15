@@ -72,10 +72,13 @@ peripheral-register descriptor under
 `hardware/nxp/mcx/variants/<board>/svd/` (used for Arduino IDE's debugger
 peripheral register view), are sourced from the NXP MCUXpresso SDK for the
 corresponding chip, unmodified aside from being extracted from the SDK
-package, with one exception: the HardFault handler in
+package, with two exceptions: the HardFault handler in
 `hardware/nxp/mcx/cores/arduino/sdk/semihost_hardfault.c` is changed,
 where marked in the file, to report a crash on the serial port instead
-of stopping silently. Each file retains its own original copyright
+of stopping silently; and FRDM-MCXC444's
+`hardware/nxp/mcx/variants/frdm_mcxc444/src/startup_mcxc444.cpp` has its
+flash option byte changed, where marked, so a low NMI pin at reset does
+not stop the board. Each file retains its own original copyright
 header.
 
 - NXP MCUXpresso SDK — https://github.com/nxp-mcuxpresso/mcux-sdk (BSD-3-Clause)

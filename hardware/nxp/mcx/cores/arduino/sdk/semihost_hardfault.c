@@ -71,10 +71,20 @@ void HardFault_Handler(void){
         // may have a stacked PC that can't be read (a jump to a bad
         // address), and a fault in here would lock the core up.
         "_process:                   \n"
+#if defined( __ARM_ARCH_6M__ )
+        // ARMv6-M (FRDM-MCXC444) has no HFSR. A stacked PC inside the flash
+        // can be read without faulting, so only such a PC's instruction is
+        // checked for BKPT; anything else is reported.
+            "LDR    R1,[R0,#24]      \n"
+            "LDR    R2,=__top_PROGRAM_FLASH \n"
+            "CMP    R1,R2            \n"
+            "BHS    _hf_report       \n"
+#else
             "LDR    R2,=0xE000ED2C   \n"  // SCB->HFSR
             "LDR    R2,[R2]          \n"
             "CMP    R2,#0            \n"
             "BPL    _hf_report       \n"  // DEBUGEVT (bit 31) clear
+#endif
         // Load the instruction that triggered hard fault
             "LDR    R1,[R0,#24]      \n"
             "LDRH   R2,[r1]          \n"
@@ -90,8 +100,12 @@ void HardFault_Handler(void){
         // paused later can still unwind to the fault.
         "_hf_report:                 \n"
             "MRS    R2, MSP          \n"
+#if defined( __ARM_ARCH_6M__ )
+            "LDR    R3,=_pvHeapLimit+1024 \n"  // no ADD with an immediate this large in Thumb-1
+#else
             "LDR    R3,=_pvHeapLimit \n"
             "ADD    R3, R3, #1024    \n"
+#endif
             "CMP    R2, R3           \n"
             "BHS    _hf_keep_stack   \n"
             "LDR    R3,=_vStackTop   \n"

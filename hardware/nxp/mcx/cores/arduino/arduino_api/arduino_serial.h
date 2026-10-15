@@ -157,8 +157,11 @@ extern SerialClass	Serial;
 // D1(TX) on most boards; on FRDM-MCXN947 it's on the MikroBus header
 // (MB_TX/MB_RX) instead -- see arduino_serial.cpp for why D0/D1 can't
 // support it on that board. FRDM-MCXN236's MikroBus UART is its D0/D1.
+// FRDM-MCXC444 has no Serial1: its Serial is D0/D1 itself, as on UNO R3.
+#if !defined( CPU_MCXC444VLH )
 /** Global Serial1 instance -- hardware UART pin pair, board-dependent (see above). */
 extern SerialClass	Serial1;
+#endif
 
 #if defined( CPU_MCXA156VLL )
 /** Global Serial2 instance (FRDM-MCXA156 only) -- the MikroBus UART
@@ -179,7 +182,12 @@ extern SerialClass	Serial2;
  *  it undefined.
  */
 #define	SERIAL_PORT_MONITOR			Serial
+#if defined( CPU_MCXC444VLH )
+// As UNO R3's: Serial is the hardware port (D0/D1), and none is left open
+#define	SERIAL_PORT_HARDWARE			Serial
+#else
 #define	SERIAL_PORT_HARDWARE			Serial1
 #define	SERIAL_PORT_HARDWARE_OPEN		Serial1
+#endif
 
 #endif // !R01LIB_ARDUINO_SERIAL_H

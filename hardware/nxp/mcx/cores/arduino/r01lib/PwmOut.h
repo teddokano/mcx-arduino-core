@@ -152,6 +152,82 @@ private:
     int      _pin;
 };
 
+#elif defined( CPU_MCXC444VLH )
+
+extern "C" {
+#include "fsl_tpm.h"
+#include "fsl_clock.h"
+#include "fsl_port.h"
+}
+
+#include "obj.h"
+#include "io.h"
+
+/**
+ * @brief Mbed-compatible PWM output class, on FRDM-MCXC444's TPMs.
+ *
+ *  D3 is TPM1_CH0, D10 is TPM0_CH4, and D5, D6 and D9 are all TPM0_CH2
+ *  (Zephyr's MCXC444VLH-pinctrl.h). A TPM has one period for all its
+ *  channels, so every pin on TPM0 shares it. D5, D6 and D9 share one
+ *  channel too: the PwmOut written last drives it, and the pin of the one
+ *  it takes the channel from goes back to GPIO, driven LOW.
+ */
+class PwmOut : public Obj
+{
+public:
+    /** @param pin D3, D5, D6, D9 or D10 (raw r01lib pin values) */
+    explicit PwmOut( int pin );
+    /** Sets the pulse to 0 if this PwmOut still drives its channel */
+    virtual ~PwmOut();
+
+    /** @brief  Set period in seconds. Shared by every pin on the same TPM. */
+    void  period( float seconds );
+    /** @brief  Set period in milliseconds. */
+    void  period_ms( int ms );
+    /** @brief  Set period in microseconds. */
+    void  period_us( int us );
+
+    /** @brief  Set pulse width in seconds (clamped to period). */
+    void  pulsewidth( float seconds );
+    /** @brief  Set pulse width in milliseconds. */
+    void  pulsewidth_ms( int ms );
+    /** @brief  Set pulse width in microseconds. */
+    void  pulsewidth_us( int us );
+
+    /** @brief  Set duty cycle, 0.0 - 1.0. */
+    void  write( float duty );
+    /** @brief  Get current duty cycle, 0.0 - 1.0. */
+    float read( void );
+
+    /** @brief  Mbed-style assignment, equivalent to write(). */
+    PwmOut &operator=( float duty );
+    /** @brief  Mbed-style implicit conversion, equivalent to read(). */
+    operator float();
+
+    /** @brief  Put the pin back on its TPM channel after something else took it
+     *  (and take the channel from another pin sharing it) */
+    void  claim_pin( void );
+    /** @brief  Stop recording this PwmOut as the pin's owner, for a caller
+     *  about to switch the pin to another function */
+    void  release_pin( void );
+
+    /** @param pin raw r01lib pin number @return true if a TPM channel reaches it */
+    static bool is_pwm_pin( int pin );
+    /** @param pin raw r01lib pin number @return true if this pin's TPM is already running */
+    static bool shares_running_period( int pin );
+
+private:
+    void apply( void );  // push the TPM's period and its channels' pulses to hardware
+    void take_channel( void );
+
+    uint8_t  _tpm;        // 0 = TPM0, 1 = TPM1
+    uint8_t  _channel;    // TPMn_CHx
+    uint8_t  _alt;        // PORT mux ALT for the pin
+    bool     _holds_pin;  // the pin is muxed to the TPM for this PwmOut
+    uint32_t _pulse_us;
+    int      _pin;
+};
+
 #else
 #error "PwmOut.h: no PWM outputs for this chip"
 #endif

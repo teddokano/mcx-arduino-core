@@ -292,6 +292,37 @@ xPack checksums（正しい値）：
 
 ---
 
+## FRDM-MCXC444の前提と決定事項（0.10.0、作業中）
+0.10.0で対応する（2026-10-16に決定）。回路図は`ref/FRDM-MCXC444.pdf`（SCH-93440 Rev A）、SDKは`ref/SDK_2_16_000_FRDM-MCXC444.zip`。
+「ビルドが通るだけ」のスパイクの結果は[memo/notes_toward_1.0.0.md](memo/notes_toward_1.0.0.md)の§4-5（`c444-spike`ブランチ、未push）。スパイクのスタブは持ち込まず、`0.10.0-dev`の上で作り直す。
+
+- **Kinetis系でCortex-M0+（ARMv6-M、FPU無し）**、48MHz。DWTのサイクルカウンタ・CFSR/HFSR・`MSPLIM`が無い。周辺回路はLPUART/UART・`fsl_i2c`・`fsl_spi`・ADC16・TPM・PIT/LPTMRで、CTIMER・UTICK・I3C・FlexPWM・LPADCは無い
+- **ピンは回路図とZephyrの`MCXC444VLH-pinctrl.h`で確かめた**（2026-10-16）。r01libの`io.h`のC444の表（D0〜D19・A0〜A5）は回路図と一致する。
+  D0=PTA1、D1=PTA2、D2=PTD3、D3=PTA12、D4=PTA4、D5=PTA5、D6=PTE29、D7=PTE30、D8=PTA13、D9=PTD2、D10=PTD4、D11=PTD6、D12=PTD7、D13=PTD5、D18(SDA)=PTE0、D19(SCL)=PTE1。
+  A0〜A3=PTB0〜PTB3、A4=PTC2、A5=PTC1。LEDは赤=PTE31、緑=D13、青=D6
+- **フラッシュ設定のFOPTは`0x3B`にする**（SDKの`startup_mcxc444.cpp`のままだと`0x3F`）。D4（PTA4、SW3）はリセット直後NMIの端子で、LOWのまま起動するとNMIで止まる。
+  `0x3B`は`NMI_DIS`を0にしてNMIを常に止める。r01libのC444のテンプレートのプロジェクトと同じ。`FSEC`は`0xFE`（保護なし）。`0x3D`（`BOOTPIN_OPT`）は別の効果で対策にならない
+- **`Serial`はUSBのシリアルとD0/D1の両方**（同じLPUART0、2026-10-16にユーザーが決定。UNO R3と同じ）。**`Serial1`は置かない**（2026-10-16にユーザーが決定）。
+  MikroBusのUART（LPUART1、D14/D15=PTE0/PTE1）は`Wire`と同じピン、もう1つのUART2（D2/D9）はLPUARTではない旧型のUARTで、後から足すことはできる。
+  LPUARTに7ビットのモードが無い（`SERIAL_7xx`は工夫が要る）
+- **`Wire`=D18/D19（I2C1、ALT6）、`Wire1`=オンボードの加速度センサーFXLS8974CFのバス（I2C0、PTE24/PTE25、ALT5、4.7kΩのプルアップ、ヘッダには出ていない）**（2026-10-16にユーザーが決定。N236と同じ形）。
+  センサーは`0x18`（SA0はR36でGND）、INT1はPTD1、CS/WAKE_UPはR40（0Ω）でD11につながる。`SENSOR_WIRE`は`Wire1`。
+  A4/A5（PTC2/PTC1、ALT2）も`Wire`と同じI2C1なので、2つ目のバスにはならない。扱いは`setPins`（Pendingタスク10）の作業でA156・N236とまとめて決める
+- **`SPI`=D10〜D13（SPI1、ALT2）**。MikroBusのSPIも同じ線なので`SPI1`は置かない（N236と同じ）。`MCXC444.h`が`SPI0`/`SPI1`をマクロで定義しているので、Arduinoの`SPI1`とぶつからないようにする
+- **PWMはTPM**: D3=TPM1_CH0、D10=TPM0_CH4、**D5・D6・D9は3本ともTPM0_CH2**（同時に別のデューティにできない）。1つのTPMの全チャネルは周期を共有する。
+  **D5・D6・D9は最後に`analogWrite()`した1本だけがPWMになり、前のピンはGPIOのLOWに戻す**（2026-10-16にユーザーが決定）。赤のLED（PTE31）はTPM0_CH4でD10と同じチャネル。
+  `PWM0`〜`PWM5`のピンは無い
+- **`cores/arduino/sdk/`の`fsl_i3c`・`fsl_pwm`・`fsl_spc`・`fsl_utick`・`fsl_inputmux`はMCXの4つのvariantへ移した**（2026-10-16、ユーザーが決定）。
+  `cores/arduino/sdk/`の`.c`は全ボードでビルドされるので、C444に無い周辺回路のドライバは置けない。zipと同じファイルを4つのvariantに置いている
+- **できているもの（2026-10-16、ビルドだけ、実機は未確認）**: `variants/frdm_mcxc444/`（`README.md`に出どころ）、`boards.txt`（デバッグまで）、`gdb-bridge`の`c444.cfg`、
+  `micros()`（SysTick。`__ARM_ARCH_6M__`で分ける）、HardFaultの報告（PCだけ）と`semihost_hardfault.c`（M0+ではスタックしたPCがフラッシュの中のときだけBKPTを見る）、
+  `Serial`（`USBTX`/`USBRX`が`D1`/`D0`なので、ピン番号の付け替えの前に生の値を取る）、`Wire`/`Wire1`、`SPI`（r01libに無かった`bit_order()`を足し、CSは転送ごとに動かさずスケッチに任せる。MCXのボードと同じ）、`analogRead`（ADC16、16ビット、校正）、
+  `analogWrite`/`analogWriteFrequency`（TPM、D5/D6/D9の取り合い）、`tone`（PITのチャネル0）、`EEPROM`（FTFA、16バイト単位、フラッシュの最後の8KB、命令の間は割り込みを止める）、`Servo`。
+  `PIN_MAPPING_C444.md`・README・API_COMPATIBILITY・CHANGELOG・LICENSE（`startup_mcxc444.cpp`のFOPTの変更）・`docs/porting_a_new_board.md`
+- **残り**: 実機確認（`Serial`と点滅から、`docs/porting_a_new_board.md`の順で）、`Wire`のターゲットモードと`setWireTimeout()`（Kinetisの`fsl_i2c`で）、
+  作例の約35本（`#error "This sketch has no settings for this board yet"`と`PWM0`を使うもの。`release_check`の01・08・11・13・14・21・24はジャンパの決め方を実機と一緒に）、
+  mcxPinStateとmcxRCServoの作例（上流のリポジトリ。pushはユーザーの了承が要る）、CIのボードの表への追加（作例がそろってから）
+
 ## 動作確認済み
 
 | API | 状態 | 備考 |

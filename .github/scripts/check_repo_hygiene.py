@@ -503,7 +503,11 @@ def parse_pin_by_number():
     m = re.search(r"arduino_pin_by_number\s*\[\s*\]\s*=\s*\{(.*?)\}\s*;", text, re.DOTALL)
     if not m:
         return None
-    return re.findall(r"[A-Za-z_][A-Za-z0-9_]*", m.group(1))
+    # Board #if lines inside the table (FRDM-MCXC444 has no PWM0-PWM5) and
+    # comments are not entries: keep only the names, every board's together
+    body = re.sub(r"//[^\n]*", "", m.group(1))
+    body = "\n".join(line for line in body.splitlines() if not line.lstrip().startswith("#"))
+    return re.findall(r"[A-Za-z_][A-Za-z0-9_]*", body)
 
 
 def parse_alias_names():

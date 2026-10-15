@@ -429,6 +429,130 @@ AnalogIn::operator float()
     return read();
 }
 
+#elif defined( CPU_MCXC444VLH )
+
+#include "AnalogIn.h"
+#include "mcu.h"
+#include "pin_registry.h"
+
+namespace {
+
+struct analog_pin
+{
+    int         pin;
+    PORT_Type   *port;
+    uint32_t    port_pin;
+    uint8_t     channel;    // ADC0_SEn
+};
+
+const analog_pin s_pins[] = {
+    { A0, PORTB, 0u,  8u  },
+    { A1, PORTB, 1u,  9u  },
+    { A2, PORTB, 2u,  12u },
+    { A3, PORTB, 3u,  13u },
+    { A4, PORTC, 2u,  11u },
+    { A5, PORTC, 1u,  15u },
+};
+
+} // namespace
+
+uint8_t AnalogIn::_instance_count = 0;
+
+void AnalogIn::_acquire_peripheral( void )
+{
+    if ( _instance_count == 0 )
+    {
+        adc16_config_t cfg;
+        ADC16_GetDefaultConfig( &cfg );     // VREFH/VREFL, asynchronous clock
+        cfg.resolution = kADC16_ResolutionSE16Bit;
+        ADC16_Init( ADC0, &cfg );           // also turns the ADC0 clock on
+        ADC16_EnableHardwareTrigger( ADC0, false );
+
+        // Calibrate with the most averaging, as the reference manual
+        // advises, then keep a little for the readings themselves
+        ADC16_SetHardwareAverage( ADC0, kADC16_HardwareAverageCount32 );
+        (void)ADC16_DoAutoCalibration( ADC0 );
+        ADC16_SetHardwareAverage( ADC0, kADC16_HardwareAverageCount4 );
+    }
+
+    _instance_count++;
+}
+
+void AnalogIn::_release_peripheral( void )
+{
+    _instance_count--;
+
+    if ( _instance_count == 0 )
+        ADC16_Deinit( ADC0 );
+}
+
+AnalogIn::AnalogIn( int pin )
+    : Obj( true ), _channel( 0 ), _pin( -1 )
+{
+    for ( size_t i = 0; i < sizeof( s_pins ) / sizeof( s_pins[0] ); i++ )
+    {
+        if ( s_pins[ i ].pin == pin )
+        {
+            _channel    = s_pins[ i ].channel;
+            _pin        = pin;
+
+            // ALT0: the analog function, which also turns the digital input off
+            PORT_SetPinMux( s_pins[ i ].port, s_pins[ i ].port_pin, kPORT_PinDisabledOrAnalog );
+            break;
+        }
+    }
+
+    if ( -1 == _pin )
+    {
+        panic( "AnalogIn: unsupported analog pin" );
+        return;
+    }
+
+    _acquire_peripheral();
+
+    uint8_t pin8 = (uint8_t)_pin;
+    pin_registry_note( this, "AnalogIn", &pin8, 1, (uint8_t)kPORT_PinDisabledOrAnalog );
+}
+
+AnalogIn::~AnalogIn()
+{
+    pin_registry_forget( this );
+
+    if ( -1 == _pin )
+        return;
+
+    _release_peripheral();
+}
+
+uint16_t AnalogIn::read_u16( void )
+{
+    if ( -1 == _pin )
+        return 0;
+
+    adc16_channel_config_t ch;
+    ch.channelNumber                        = _channel;
+    ch.enableInterruptOnConversionCompleted = false;
+#if defined( FSL_FEATURE_ADC16_HAS_DIFF_MODE ) && FSL_FEATURE_ADC16_HAS_DIFF_MODE
+    ch.enableDifferentialConversion         = false;
+#endif
+    ADC16_SetChannelConfig( ADC0, 0u, &ch );    // starts the conversion
+
+    while ( 0u == ( kADC16_ChannelConversionDoneFlag & ADC16_GetChannelStatusFlags( ADC0, 0u ) ) )
+        ;
+
+    return (uint16_t)ADC16_GetChannelConversionValue( ADC0, 0u );
+}
+
+float AnalogIn::read( void )
+{
+    return (float)read_u16() / 65535.0f;
+}
+
+AnalogIn::operator float()
+{
+    return read();
+}
+
 #else
 #error "AnalogIn.cpp: no analog inputs for this chip"
 #endif

@@ -455,6 +455,323 @@ PwmOut::operator float()
     return read();
 }
 
+#elif defined( CPU_MCXC444VLH )
+
+#include "PwmOut.h"
+#include "mcu.h"
+#include "pin_registry.h"
+
+namespace {
+
+struct TpmPin {
+    int      pin;
+    uint8_t  tpm;
+    uint8_t  channel;
+    uint8_t  alt;
+};
+
+// Zephyr's MCXC444VLH-pinctrl.h
+const TpmPin s_pins[] = {
+    { D3,  1, 0, 3 },   // PTA12  TPM1_CH0
+    { D5,  0, 2, 3 },   // PTA5   TPM0_CH2
+    { D6,  0, 2, 3 },   // PTE29  TPM0_CH2
+    { D9,  0, 2, 4 },   // PTD2   TPM0_CH2
+    { D10, 0, 4, 4 },   // PTD4   TPM0_CH4
+};
+
+constexpr int   TPMS        = 2;
+constexpr int   CHANNELS    = 6;
+
+TPM_Type *const s_tpm[ TPMS ] = { TPM0, TPM1 };
+
+// Per TPM: the shared period, and which PwmOut drives each channel
+struct TpmState {
+    bool     init;
+    uint32_t period_us;
+    PwmOut   *owner[ CHANNELS ];
+};
+
+TpmState    s_state[ TPMS ] = {};
+
+const TpmPin *find_pin( int pin )
+{
+    for ( size_t i = 0; i < sizeof( s_pins ) / sizeof( s_pins[0] ); i++ )
+    {
+        if ( s_pins[ i ].pin == pin )
+            return &s_pins[ i ];
+    }
+    return nullptr;
+}
+
+bool running( const TpmState &st )
+{
+    for ( int ch = 0; ch < CHANNELS; ch++ )
+    {
+        if ( st.owner[ ch ] )
+            return true;
+    }
+    return false;
+}
+
+inline uint32_t source_clock( void )
+{
+    return CLOCK_GetFreq( kCLOCK_McgIrc48MClk );   // TPMSRC = 1, set below
+}
+
+} // namespace
+
+bool PwmOut::is_pwm_pin( int pin )
+{
+    return find_pin( pin ) != nullptr;
+}
+
+bool PwmOut::shares_running_period( int pin )
+{
+    const TpmPin *d = find_pin( pin );
+
+    return d && running( s_state[ d->tpm ] );
+}
+
+PwmOut::PwmOut( int pin )
+    : Obj( true ), _tpm( 0 ), _channel( 0 ), _alt( 0 ), _holds_pin( false ), _pulse_us( 0 ), _pin( -1 )
+{
+    const TpmPin *d = find_pin( pin );
+
+    if ( nullptr == d )
+    {
+        panic( "PwmOut: unsupported PWM pin" );
+        return;
+    }
+
+    _tpm        = d->tpm;
+    _channel    = d->channel;
+    _alt        = d->alt;
+    _pin        = pin;
+
+    TpmState    &st = s_state[ _tpm ];
+
+    if ( !st.init )
+    {
+        CLOCK_SetTpmClock( 1u );    // IRC48M, as the SDK's TPM examples do
+
+        tpm_config_t cfg;
+        TPM_GetDefaultConfig( &cfg );
+        TPM_Init( s_tpm[ _tpm ], &cfg );    // also turns the TPM's clock on
+        st.init = true;
+    }
+
+    // The first PwmOut on a TPM sets the Mbed default of 20ms; one made next
+    // to a running channel takes over the TPM's period
+    if ( !running( st ) )
+        st.period_us = 20000u;
+
+    take_channel();
+}
+
+PwmOut::~PwmOut()
+{
+    pin_registry_forget( this );
+
+    if ( -1 == _pin )
+        return;
+
+    TpmState    &st = s_state[ _tpm ];
+
+    if ( st.owner[ _channel ] == this )
+    {
+        _pulse_us   = 0u;
+        apply();
+        st.owner[ _channel ] = nullptr;
+    }
+}
+
+void PwmOut::take_channel( void )
+{
+    TpmState    &st     = s_state[ _tpm ];
+    PwmOut      *prev   = st.owner[ _channel ];
+
+    //  D5, D6 and D9 share TPM0_CH2: the pin that had it goes back to GPIO,
+    //  driven LOW, unless something else has had it since
+    if ( prev && prev != this && prev->_holds_pin )
+    {
+        DigitalInOut    low( (uint8_t)prev->_pin, kGPIO_DigitalOutput, 0 );
+        prev->_holds_pin    = false;
+        pin_registry_forget( prev );
+    }
+
+    st.owner[ _channel ]    = this;
+
+    // Edge-aligned PWM, high-true
+    s_tpm[ _tpm ]->CONTROLS[ _channel ].CnSC = TPM_CnSC_MSB_MASK | TPM_CnSC_ELSB_MASK;
+
+    {
+        DigitalInOut pin_io( (uint8_t)_pin );
+        pin_io.pin_mux( (int)_alt );
+    }
+    _holds_pin  = true;
+
+    apply();
+
+    uint8_t pin8 = (uint8_t)_pin;
+    pin_registry_note( this, "PwmOut", &pin8, 1, _alt );
+}
+
+void PwmOut::claim_pin( void )
+{
+    if ( -1 == _pin )
+        return;
+
+    take_channel();
+}
+
+void PwmOut::release_pin( void )
+{
+    _holds_pin  = false;
+    pin_registry_forget( this );
+}
+
+void PwmOut::apply( void )
+{
+    if ( -1 == _pin )
+        return;
+
+    TPM_Type    *base   = s_tpm[ _tpm ];
+    TpmState    &st     = s_state[ _tpm ];
+    uint32_t    src_clk = source_clock();
+
+    // The smallest prescaler (highest resolution) for which the period
+    // still fits the 16-bit counter
+    uint8_t     prescale    = 0;
+    uint64_t    ticks       = 0;
+    for ( prescale = 0; prescale <= 7; prescale++ )
+    {
+        ticks = ( (uint64_t)st.period_us * ( src_clk >> prescale ) ) / 1000000ULL;
+        if ( ticks <= 0x10000u || prescale == 7 )
+            break;
+    }
+    if ( ticks < 2 )
+        ticks = 2;
+    if ( ticks > 0x10000u )
+        ticks = 0x10000u;
+
+    // The prescaler can only change with the counter stopped
+    uint32_t    cur_ps  = ( base->SC & TPM_SC_PS_MASK ) >> TPM_SC_PS_SHIFT;
+    if ( cur_ps != prescale || !( base->SC & TPM_SC_CMOD_MASK ) )
+    {
+        TPM_StopTimer( base );
+        base->SC    = ( base->SC & ~TPM_SC_PS_MASK ) | TPM_SC_PS( prescale );
+        base->CNT   = 0u;
+    }
+
+    base->MOD   = (uint32_t)( ticks - 1u );
+
+    for ( int ch = 0; ch < CHANNELS; ch++ )
+    {
+        PwmOut  *o  = st.owner[ ch ];
+
+        if ( !o )
+            continue;
+
+        // A pulse as long as the period needs CnV = MOD + 1 to stay high
+        uint64_t    cnv = ( (uint64_t)o->_pulse_us * ( src_clk >> prescale ) ) / 1000000ULL;
+        if ( o->_pulse_us >= st.period_us || cnv > ticks )
+            cnv = ticks;
+
+        base->CONTROLS[ ch ].CnV    = (uint32_t)cnv;
+    }
+
+    if ( !( base->SC & TPM_SC_CMOD_MASK ) )
+        TPM_StartTimer( base, kTPM_SystemClock );
+}
+
+void PwmOut::period( float seconds )
+{
+    if ( -1 == _pin )
+        return;
+
+    TpmState    &st         = s_state[ _tpm ];
+    uint32_t    src_clk     = source_clock();
+    float       min_period  = 2.0e6f / (float)src_clk;                      // 2 ticks @ prescale/1
+    float       max_period  = 1.0e6f * 65536.0f * 128.0f / (float)src_clk;  // 65536 ticks @ prescale/128
+    float       period_us   = seconds * 1.0e6f;
+
+    if ( period_us < min_period )
+        period_us = min_period;
+    if ( period_us > max_period )
+        period_us = max_period;
+
+    st.period_us    = (uint32_t)period_us;
+
+    for ( int ch = 0; ch < CHANNELS; ch++ )
+    {
+        if ( st.owner[ ch ] && st.owner[ ch ]->_pulse_us > st.period_us )
+            st.owner[ ch ]->_pulse_us   = st.period_us;
+    }
+
+    apply();
+}
+
+void PwmOut::period_ms( int ms ) { period( (float)ms * 1.0e-3f ); }
+void PwmOut::period_us( int us ) { period( (float)us * 1.0e-6f ); }
+
+void PwmOut::pulsewidth( float seconds )
+{
+    if ( -1 == _pin )
+        return;
+
+    TpmState    &st         = s_state[ _tpm ];
+    float       pulse_us    = seconds * 1.0e6f;
+
+    if ( pulse_us < 0.0f )
+        pulse_us = 0.0f;
+    if ( pulse_us > (float)st.period_us )
+        pulse_us = (float)st.period_us;
+
+    _pulse_us   = (uint32_t)pulse_us;
+
+    if ( st.owner[ _channel ] != this )
+        take_channel();     // a pin sharing the channel had it: this one takes it back
+    else
+        apply();
+}
+
+void PwmOut::pulsewidth_ms( int ms ) { pulsewidth( (float)ms * 1.0e-3f ); }
+void PwmOut::pulsewidth_us( int us ) { pulsewidth( (float)us * 1.0e-6f ); }
+
+void PwmOut::write( float duty )
+{
+    if ( -1 == _pin )
+        return;
+
+    if ( duty < 0.0f )
+        duty = 0.0f;
+    if ( duty > 1.0f )
+        duty = 1.0f;
+
+    pulsewidth( duty * (float)s_state[ _tpm ].period_us * 1.0e-6f );
+}
+
+float PwmOut::read( void )
+{
+    if ( -1 == _pin )
+        return 0.0f;
+
+    const TpmState &st = s_state[ _tpm ];
+
+    return st.period_us ? ( (float)_pulse_us / (float)st.period_us ) : 0.0f;
+}
+
+PwmOut &PwmOut::operator=( float duty )
+{
+    write( duty );
+    return *this;
+}
+
+PwmOut::operator float()
+{
+    return read();
+}
+
 #else
 #error "PwmOut.cpp: no PWM outputs for this chip"
 #endif

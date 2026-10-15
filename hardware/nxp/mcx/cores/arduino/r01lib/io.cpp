@@ -571,10 +571,14 @@ void DigitalInOut::pin_mux( int mux )
 
 void DigitalInOut::input_buffer( bool enable )
 {
+#ifdef	PORT_PCR_IBE_MASK
 	if ( enable )
 		port_n->PCR[ gpio_pin ] |= PORT_PCR_IBE_MASK;
 	else
 		port_n->PCR[ gpio_pin ] &= ~PORT_PCR_IBE_MASK;
+#else
+	(void)enable;	// Kinetis PORT (FRDM-MCXC444) has no input buffer switch
+#endif
 }
 
 void DigitalInOut::mode( int pin_mode )
@@ -632,7 +636,11 @@ PinPcrInfo pin_registry_read_pcr( uint8_t raw_pin )
 	uint32_t	pcr		= PORT_GetPinMode( port, pins[ raw_pin ].pin );
 
 	info.mux	= (uint8_t)( ( pcr & PORT_PCR_MUX_MASK ) >> PORT_PCR_MUX_SHIFT );
+#ifdef	PORT_PCR_IBE_MASK
 	info.ibe	= 0 != ( pcr & PORT_PCR_IBE_MASK );
+#else
+	info.ibe	= 0 != info.mux;	// Kinetis: digital input is off only in analog mode (ALT0)
+#endif
 
 #ifndef	CPU_MCXC444VLH
 	info.ode	= 0 != ( pcr & PORT_PCR_ODE_MASK );

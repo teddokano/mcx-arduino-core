@@ -19,8 +19,10 @@
  *  A record is [address low, address high, length, CRC-8, data...]. The
  *  programming unit, and so a record, is the smallest the flash takes:
  *  16 bytes on FRDM-MCXA153 (12 of data), a 128-byte page on
- *  FRDM-MCXN947 and FRDM-MCXN236 (124 of data). Each unit is programmed
- *  once between erases.
+ *  FRDM-MCXN947 and FRDM-MCXN236 (124 of data). FRDM-MCXC444's FTFA
+ *  programs a 4-byte longword at a time, so a record there is four of
+ *  them, 16 bytes as on FRDM-MCXA153. Each unit is programmed once between
+ *  erases.
  *
  *  At the first access the current half (valid header, highest sequence
  *  number) is read into RAM: the image, then every record with a good
@@ -52,6 +54,10 @@ static const uint32_t	UNIT	= 16;	// phrase
 #elif defined( CPU_MCXN947VDF ) || defined( CPU_MCXN236VDF )
 #include "fsl_flash.h"
 static const uint32_t	UNIT	= 128;	// page
+#elif defined( CPU_MCXC444VLH )
+#include "fsl_flash.h"
+#define	EEPROM_KINETIS_FTFA			//	no ECC, no LPCAC; interrupts held off around each command
+static const uint32_t	UNIT	= 16;	// four longwords
 #else
 #error EEPROM: this board is not supported
 #endif
@@ -100,14 +106,37 @@ void clear_cache( void )
 	//	Drop the code cache's lines, as NXP's flashiap example does after
 	//	each erase and program, so nothing reads back what the flash held
 	//	before. Nothing here reads flash after start(), but a sketch might
+#if defined( EEPROM_KINETIS_FTFA )
+	MCM->PLACR	|= MCM_PLACR_CFCC_MASK;
+#else
 	SYSCON->LPCAC_CTRL	|= SYSCON_LPCAC_CTRL_CLR_LPCAC_MASK;
+#endif
 }
+
+#if defined( EEPROM_KINETIS_FTFA )
+//	The program runs from the same flash, which can't be read while a
+//	command runs: an interrupt would fetch its vector and handler from it.
+//	The driver runs the command itself from RAM; interrupts wait for it
+class irq_off
+{
+public:
+	irq_off()	: primask( __get_PRIMASK() )	{ __disable_irq(); }
+	~irq_off()	{ __set_PRIMASK( primask ); }
+private:
+	uint32_t	primask;
+};
+#endif
 
 bool erase_half( int h )
 {
 	status_t	s;
 #if defined( EEPROM_ROM_FLASH_API )
 	s	= FLASH_EraseSector( &flash, half_base( h ), half_size(), kFLASH_ApiEraseKey );
+#elif defined( EEPROM_KINETIS_FTFA )
+	{
+		irq_off	off;
+		s	= FLASH_Erase( &flash, half_base( h ), half_size(), kFLASH_ApiEraseKey );
+	}
 #else
 	s	= FLASH_Erase( &flash, half_base( h ), half_size(), kFLASH_ApiEraseKey );
 #endif
@@ -124,6 +153,11 @@ bool program( uint32_t addr, const void *src, uint32_t n )
 		s	= FLASH_ProgramPage( &flash, addr, (uint8_t *)src, n );
 	else
 		s	= FLASH_ProgramPhrase( &flash, addr, (uint8_t *)src, n );
+#elif defined( EEPROM_KINETIS_FTFA )
+	{
+		irq_off	off;
+		s	= FLASH_Program( &flash, addr, (uint8_t *)src, n );
+	}
 #else
 	s	= FLASH_Program( &flash, addr, (uint8_t *)src, n );
 #endif
@@ -149,6 +183,12 @@ bool erased( const uint8_t *p, size_t n )
 //	happened. Interrupts wait for the copy, at most a PAGE
 bool read_flash( void *dst, const void *src, size_t n )
 {
+#if defined( EEPROM_KINETIS_FTFA )
+	//	No ECC on the FTFA: flash left by a command cut short reads as
+	//	whatever it holds, which the CRC and the header checks then reject
+	memcpy( dst, src, n );
+	return true;
+#else
 	const volatile uint32_t	*s	= (const volatile uint32_t *)src;
 	uint32_t				*d	= (uint32_t *)dst;
 
@@ -170,6 +210,7 @@ bool read_flash( void *dst, const void *src, size_t n )
 
 	SCB->CFSR	= bfsr;
 	return bfsr == 0;
+#endif
 }
 
 bool header_valid( int h, uint32_t *s )

@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- FRDM-MCXC444 (MCXC444, a Kinetis Cortex-M0+ at 48MHz with no FPU), laid out like UNO R3: `Serial` is both the
+  USB serial port and `D0`/`D1`, with no `Serial1`; `analogWrite` on `D3`, `D5`, `D6`, `D9` and `D10` (TPM; `D5`,
+  `D6` and `D9` share one channel, so one of them at a time); `analogRead` on `A0`-`A5` (ADC16); `tone` on the PIT;
+  `Wire` on `D18`/`D19`, `Wire1` on the on-board accelerometer's bus; `SPI` on `D10`-`D13`; `EEPROM` in the top 8KB
+  of flash; the bundled `Servo`. I2C target mode and `Wire.setWireTimeout` are not done yet for it. The flash
+  option byte keeps `D4` (the reset-time NMI pin, also the `SW3` button) from stopping the board when it is low at
+  power-up. See `PIN_MAPPING_C444.md`
 - The network base classes `Client`, `Server`, `UDP` and `IPAddress` (`Client.h`, `Server.h`, `Udp.h`,
   `IPAddress.h`), with the same virtual functions as ArduinoCore-API's, so libraries built on them now compile:
   the official `Ethernet` library for W5x00 shields, and libraries that take a `Client&` such as PubSubClient.

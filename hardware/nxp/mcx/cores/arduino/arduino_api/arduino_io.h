@@ -183,8 +183,10 @@ unsigned long	pulseInLong( int pin_num, bool state, unsigned long timeout = 1000
  *  happens to alias a raw physical pin macro (P0_16) that was never
  *  renumbered, masking the same underlying bug there.)
  */
+#if	!defined( FRDM_MCXC444 )	//	FRDM-MCXC444 has no I3C and no PWM0-PWM5 header
 constexpr int	_raw_I3C_SDA	= I3C_SDA;
 constexpr int	_raw_I3C_SCL	= I3C_SCL;
+#endif
 constexpr int	_raw_I2C_SDA	= I2C_SDA;
 constexpr int	_raw_I2C_SCL	= I2C_SCL;
 
@@ -243,12 +245,14 @@ const int	arduino_pin_by_number[]	=
 	ARD_MISO,
 	ARD_SCK,
 
+#if	!defined( FRDM_MCXC444 )	//	FRDM-MCXC444 has no I3C and no PWM0-PWM5 header
 	PWM0,
 	PWM1,
 	PWM2,
 	PWM3,
 	PWM4,
 	PWM5,
+#endif
 };
 
 #undef	D0
@@ -315,21 +319,27 @@ const int	arduino_pin_by_number[]	=
  *  caused two real SOS-panic bugs (Serial1 on MikroBus, and the
  *  r01lib_I3C example).
  */
+#if	!defined( FRDM_MCXC444 )	//	FRDM-MCXC444 has no I3C and no PWM0-PWM5 header
 #undef	I3C_SDA
 #undef	I3C_SCL
+#endif
 #undef	I2C_SDA
 #undef	I2C_SCL
+#if	!defined( FRDM_MCXC444 )	//	FRDM-MCXC444 has no I3C and no PWM0-PWM5 header
 #define	I3C_SDA	_raw_I3C_SDA
 #define	I3C_SCL	_raw_I3C_SCL
+#endif
 #define	I2C_SDA	_raw_I2C_SDA
 #define	I2C_SCL	_raw_I2C_SCL
 
+#if	!defined( FRDM_MCXC444 )	//	FRDM-MCXC444 has no I3C and no PWM0-PWM5 header
 #undef	PWM0
 #undef	PWM1
 #undef	PWM2
 #undef	PWM3
 #undef	PWM4
 #undef	PWM5
+#endif
 
 /** Small consecutive Arduino pin numbers -- the values pinMode()/
  *  digitalWrite()/digitalRead()/etc. actually take as pin_num, translated
@@ -385,12 +395,14 @@ enum ArduinoPinNum {
 	ARD_MISO,
 	ARD_SCK,
 
+#if	!defined( FRDM_MCXC444 )	//	FRDM-MCXC444 has no I3C and no PWM0-PWM5 header
 	PWM0,
 	PWM1,
 	PWM2,
 	PWM3,
 	PWM4,
 	PWM5,
+#endif
 };
 
 // Bare MOSI/MISO/SCK, aliased to this board's default SPI pins (ARD_MOSI/
@@ -457,6 +469,8 @@ static const uint8_t	SCL	= PIN_WIRE_SCL;
 #define	NUM_ANALOG_INPUTS	6
 #elif	defined( FRDM_MCXN236 )
 #define	NUM_ANALOG_INPUTS	5
+#elif	defined( FRDM_MCXC444 )
+#define	NUM_ANALOG_INPUTS	6
 #else
 #error "arduino_io.h: NUM_ANALOG_INPUTS is not set for this board"
 #endif
@@ -471,6 +485,10 @@ static const uint8_t	SCL	= PIN_WIRE_SCL;
 #define	digitalPinHasPWM( p )	( ( (p) >= PWM0 ) && ( (p) <= PWM5 ) )
 #elif	defined( FRDM_MCXA156 ) || defined( FRDM_MCXN236 )
 #define	digitalPinHasPWM( p )	( ( ( (p) >= PWM0 ) && ( (p) <= PWM5 ) ) || (p) == D3 || (p) == D5 || (p) == D6 || (p) == D9 )
+#elif	defined( FRDM_MCXC444 )
+//	TPM channels, as on an UNO's D3/D5/D6/D9/D10. D5, D6 and D9 share one
+//	channel: only the one given analogWrite() last is PWM at a time.
+#define	digitalPinHasPWM( p )	( (p) == D3 || (p) == D5 || (p) == D6 || (p) == D9 || (p) == D10 )
 #else
 #error "arduino_io.h: digitalPinHasPWM() is not set for this board"
 #endif

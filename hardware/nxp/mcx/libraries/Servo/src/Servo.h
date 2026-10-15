@@ -26,6 +26,8 @@
 #define MAX_SERVOS			10
 #elif defined( FRDM_MCXA153 ) || defined( FRDM_MCXN947 ) || defined( FRDM_MCXN236 )
 #define MAX_SERVOS			6
+#elif defined( FRDM_MCXC444 )
+#define MAX_SERVOS			5	// D3, D5, D6, D9, D10 -- but D5/D6/D9 one at a time (see below)
 #else
 #error "Servo: no MAX_SERVOS for this board yet"
 #endif
@@ -37,7 +39,8 @@
  *  The pulses come from the pin's PWM hardware (FlexPWM), at 50Hz, so their
  *  width doesn't jitter. That limits the servo to a pin with PWM:
  *  PWM0-PWM5 on every board, and also D3, D5, D6 and D9 on FRDM-MCXA156 and
- *  FRDM-MCXN236 (on FRDM-MCXN236 these are four of PWM0-PWM5). On any other
+ *  FRDM-MCXN236 (on FRDM-MCXN236 these are four of PWM0-PWM5), and on
+ *  FRDM-MCXC444 D3, D5, D6, D9 and D10, as on an UNO. On any other
  *  pin, attach() stops the sketch with panic(), naming the pins to use.
  *  The official library on AVR uses any pin, which is why its examples use
  *  D9: on FRDM-MCXA153 and FRDM-MCXN947, change that to a PWM pin.
@@ -46,6 +49,9 @@
  *  PIN_MAPPING_*.md): attaching a servo sets the other pin's PWM to 50Hz
  *  too, and analogWriteFrequency() on the other pin changes the servo's.
  *  Another servo, or analogWrite() at 50Hz, on the other pin is fine.
+ *  On FRDM-MCXC444 the period is shared by a whole TPM: D5, D6, D9 and D10
+ *  (TPM0), and D3 (TPM1). D5, D6 and D9 share one TPM0 channel as well, so
+ *  only one servo among them runs at a time: the one written last.
  *
  *  Unlike the bundled mcxRCServo library, this leaves analogWrite()'s
  *  resolution alone.

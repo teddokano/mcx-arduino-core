@@ -212,6 +212,48 @@ private:
     int     _pin;
 };
 
+#elif defined( CPU_MCXC444VLH )
+
+/*
+ *  FRDM-MCXC444 has an ADC16 (ADC0), not an LPADC: A0-A5 are PTB0, PTB1,
+ *  PTB2, PTB3, PTC2, PTC1, on ADC0_SE8, SE9, SE12, SE13, SE11, SE15
+ *  (Zephyr's MCXC444VLH-pinctrl.h). It converts at 16 bits single-ended,
+ *  so read_u16() is the conversion itself, not a scaled-up 12-bit one.
+ */
+extern "C" {
+#include "fsl_adc16.h"
+#include "fsl_port.h"
+}
+
+#include "obj.h"
+#include "io.h"
+
+/**
+ * @brief Mbed-compatible single-shot ADC input class (ADC16).
+ */
+class AnalogIn : public Obj
+{
+public:
+    /** @param pin analog pin, A0-A5 */
+    explicit AnalogIn( int pin );
+    virtual ~AnalogIn();
+
+    /** @return the input as a fraction of VREFH, 0.0-1.0 */
+    float read( void );
+    /** @return the input, 0-65535 */
+    uint16_t read_u16( void );
+    /** @return the same as read() */
+    operator float();
+
+private:
+    static void _acquire_peripheral( void );
+    static void _release_peripheral( void );
+    static uint8_t _instance_count;
+
+    uint8_t _channel;   // ADC0_SEn
+    int     _pin;
+};
+
 #else
 #error "AnalogIn.h: no analog inputs for this chip"
 #endif

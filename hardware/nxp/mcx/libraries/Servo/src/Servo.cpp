@@ -32,7 +32,11 @@ uint8_t Servo::attach( int pin, int min, int max )
 	//	attach() returns: failing quietly here would leave the servo still
 	//	with no hint why. Stop and say so, as analogWriteFrequency() does.
 	if ( p == nullptr )
+#if defined( FRDM_MCXC444 )
+		panic( "Servo: pin has no PWM -- use D3, D5, D6, D9 or D10" );
+#else
 		panic( "Servo: pin has no PWM -- use PWM0-PWM5 (or D3/D5/D6/D9 on FRDM-MCXA156/N236)" );
+#endif
 
 	if ( pwm && pwm != p )
 		detach();	// moving to another pin: stop the old one's pulses

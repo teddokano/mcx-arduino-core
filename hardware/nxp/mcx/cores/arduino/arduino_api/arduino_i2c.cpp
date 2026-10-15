@@ -22,6 +22,10 @@ TwoWire	Wire1( MB_SDA,  MB_SCL );
 // No I3C sensor on this board. Wire1 is LPI2C2 (P4_0/P4_1), the bus of the
 // on-board accelerometer and of the MikroBus I2C.
 TwoWire	Wire1( MB_SDA,  MB_SCL );
+#elif defined( CPU_MCXC444VLH )
+// The on-board accelerometer's bus, I2C0, which no header pin reaches. A4/A5
+// are Wire's I2C1, so they can't be a second bus here.
+TwoWire	Wire1( PTE25,  PTE24 );
 #else
 #error "arduino_i2c.cpp: say which pins this board's Wire1 is on"
 #endif
@@ -53,7 +57,9 @@ TwoWire	Wire1( MB_SDA,  MB_SCL );
  */
 struct WireTarget
 {
+#if !defined( CPU_MCXC444VLH )	// LPI2C and I3C; FRDM-MCXC444 has the Kinetis I2C
 	lpi2c_slave_handle_t	handle;
+#endif
 	uint8_t		address;
 	bool		active;
 	bool		reading;	// the controller is reading, not writing
@@ -69,10 +75,12 @@ struct WireTarget
 	uint8_t		sink;		// where a NAKed byte is read to
 };
 
+#if !defined( CPU_MCXC444VLH )	// LPI2C and I3C; FRDM-MCXC444 has the Kinetis I2C
 static void target_callback( LPI2C_Type *, lpi2c_slave_transfer_t *xfer, void *self )
 {
 	static_cast<TwoWire *>( self )->target_event( xfer );
 }
+#endif
 
 TwoWire::TwoWire( int sda_pin, int scl_pin )
 	: _sda( sda_pin ), _scl( scl_pin ), i2c( nullptr ),
@@ -84,8 +92,8 @@ bool TwoWire::on_i3c_pins( void ) const
 {
 #if defined( CPU_MCXA153VLH ) || defined( CPU_MCXN947VDF )
 	return ( I3C_SDA == _sda ) && ( I3C_SCL == _scl );
-#elif defined( CPU_MCXA156VLL ) || defined( CPU_MCXN236VDF )
-	// No TwoWire runs on I3C here: I3C_SDA/I3C_SCL are Wire's D18/D19,
+#elif defined( CPU_MCXA156VLL ) || defined( CPU_MCXN236VDF ) || defined( CPU_MCXC444VLH )
+	// No TwoWire runs on I3C here (FRDM-MCXC444 has no I3C): I3C_SDA/I3C_SCL are Wire's D18/D19,
 	// which Wire drives through LPI2C0 (LPI2C5 on FRDM-MCXN236).
 	return false;
 #else
@@ -113,6 +121,9 @@ void TwoWire::begin( uint8_t address )
 	 */
 	if ( _sda == MB_SDA && _scl == MB_SCL )
 		panic( "Wire2: target (slave) mode doesn't work on Wire2 (LPI2C3 on FRDM-MCXN947). Use Wire" );
+#endif
+#if defined( CPU_MCXC444VLH )
+	panic( "Wire: target (slave) mode is not done yet for FRDM-MCXC444" );
 #endif
 	if ( address > 127 )
 		panic( "Wire: begin(address) given an address over 127" );
@@ -148,6 +159,7 @@ void TwoWire::onRequest( void (*handler)( void ) )
 	user_onRequest	= handler;
 }
 
+#if !defined( CPU_MCXC444VLH )	// LPI2C and I3C; FRDM-MCXC444 has the Kinetis I2C
 void TwoWire::target_arm( void )
 {
 	LPI2C_Type	*base	= i2c->lpi2c_base();
@@ -282,6 +294,12 @@ void TwoWire::target_event( void *p )
 			break;
 	}
 }
+#else
+// Target mode isn't done yet for the Kinetis I2C (begin(address) stops above)
+void TwoWire::target_arm( void ) {}
+void TwoWire::target_stop( void ) {}
+void TwoWire::target_event( void *p ) { (void)p; }
+#endif
 
 void TwoWire::start( int baud )
 {
@@ -291,6 +309,7 @@ void TwoWire::start( int baud )
 
 	if ( !i2c )
 	{
+#if !defined( CPU_MCXC444VLH )	// LPI2C and I3C; FRDM-MCXC444 has the Kinetis I2C
 		if ( is_i3c )
 		{
 			I3C	*i3c;
@@ -334,6 +353,7 @@ void TwoWire::start( int baud )
 			i2c	= i3c;
 		}
 		else
+#endif
 		{
 			i2c	= new I2C( _sda, _scl );
 
@@ -356,6 +376,7 @@ void TwoWire::start( int baud )
 	 *  dispatch to I2C::frequency() and dereference that uninitialized
 	 *  unit_base -> BusFault. Route to I3C's own overload instead.
 	 */
+#if !defined( CPU_MCXC444VLH )	// LPI2C and I3C; FRDM-MCXC444 has the Kinetis I2C
 	if ( is_i3c )
 		static_cast<I3C *>( i2c )->frequency( baudrate, 0, 0 );
 	else
@@ -363,6 +384,10 @@ void TwoWire::start( int baud )
 		i2c->pin_low_timeout( timeout_us );
 		i2c->frequency( baudrate );
 	}
+#else
+	(void)is_i3c;
+	i2c->frequency( baudrate );	// no pin-low timeout yet on the Kinetis I2C
+#endif
 
 	i2c->err_callback( nullptr );
 
@@ -388,9 +413,11 @@ void TwoWire::setClock( uint32_t freq )
 
 	baudrate	= (int)freq;
 
+#if !defined( CPU_MCXC444VLH )	// LPI2C and I3C; FRDM-MCXC444 has the Kinetis I2C
 	if ( on_i3c_pins() )
 		static_cast<I3C *>( i2c )->frequency( baudrate, 0, 0 );
 	else
+#endif
 		i2c->frequency( baudrate );
 }
 
@@ -493,8 +520,10 @@ void TwoWire::setWireTimeout( uint32_t timeout, bool reset_with_timeout )
 	reset_on_timeout	= reset_with_timeout;
 	timed_out			= false;
 
+#if !defined( CPU_MCXC444VLH )	// LPI2C and I3C; FRDM-MCXC444 has the Kinetis I2C
 	if ( i2c && !on_i3c_pins() )
 		i2c->pin_low_timeout( timeout_us );
+#endif
 }
 
 bool TwoWire::getWireTimeoutFlag( void )
@@ -509,8 +538,13 @@ void TwoWire::clearWireTimeoutFlag( void )
 
 void TwoWire::check_timeout( int status )
 {
+#if !defined( CPU_MCXC444VLH )	// LPI2C and I3C; FRDM-MCXC444 has the Kinetis I2C
 	if ( status != kStatus_LPI2C_PinLowTimeout )
 		return;
+#else
+	(void)status;	// no pin-low timeout yet on the Kinetis I2C
+	return;
+#endif
 
 	timed_out	= true;
 

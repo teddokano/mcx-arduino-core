@@ -211,3 +211,50 @@ frdm_mcxn236.debug.server.openocd.path={runtime.platform.path}/tools/gdb-bridge/
 frdm_mcxn236.debug.server.openocd.path.windows={runtime.platform.path}\tools\gdb-bridge\gdb-bridge-windows-amd64.exe
 frdm_mcxn236.debug.server.openocd.script=n236.cfg
 frdm_mcxn236.debug.svd_file={runtime.platform.path}/variants/frdm_mcxn236/svd/MCXN236.svd
+
+
+##############################################################
+# FRDM-MCXC444
+##############################################################
+
+frdm_mcxc444.name=FRDM-MCXC444 (mcx-arduino-core)
+
+# CPU (Cortex-M0+, no FPU)
+frdm_mcxc444.build.mcu=cortex-m0plus
+frdm_mcxc444.build.fpu_flags=
+frdm_mcxc444.build.f_cpu=48000000UL
+
+# Arduino IDE internal identifiers
+frdm_mcxc444.build.board=FRDM_MCXC444
+frdm_mcxc444.build.core=arduino
+frdm_mcxc444.build.variant=frdm_mcxc444
+
+# Board-specific preprocessor defines
+frdm_mcxc444.build.board_defines=-DCPU_MCXC444VLH -DTARGET_C444 -DFRDM_MCXC444
+
+# Optimization (release build)
+frdm_mcxc444.build.opt_flags=-O2
+
+# Flash / RAM
+frdm_mcxc444.upload.maximum_size=253952
+frdm_mcxc444.upload.maximum_data_size=32768
+
+# Linker script filename (inside variants/frdm_mcxc444/linker/)
+frdm_mcxc444.build.ldscript=MCXC444.ld
+
+# Upload
+frdm_mcxc444.build.linkserver_target=MCXC444:FRDM-MCXC444
+frdm_mcxc444.upload.tool=linkserver
+frdm_mcxc444.upload.tool.default=linkserver
+frdm_mcxc444.upload.protocol=
+
+frdm_mcxc444.vid.0=0x1FC9
+frdm_mcxc444.pid.0=0x0143
+frdm_mcxc444.upload_port.0.vid=0x1FC9
+frdm_mcxc444.upload_port.0.pid=0x0143
+
+# Debug (see the FRDM-MCXA153 entry)
+frdm_mcxc444.debug.server.openocd.path={runtime.platform.path}/tools/gdb-bridge/launch.sh
+frdm_mcxc444.debug.server.openocd.path.windows={runtime.platform.path}\tools\gdb-bridge\gdb-bridge-windows-amd64.exe
+frdm_mcxc444.debug.server.openocd.script=c444.cfg
+frdm_mcxc444.debug.svd_file={runtime.platform.path}/variants/frdm_mcxc444/svd/MCXC444.svd

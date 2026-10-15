@@ -1,9 +1,30 @@
 # Supported Arduino APIs
 
-Status of Arduino-standard APIs on this core, covering all four supported
-boards (FRDM-MCXA153, FRDM-MCXN947, FRDM-MCXA156 and FRDM-MCXN236). The boards share the
+Status of Arduino-standard APIs on this core, covering all five supported
+boards (FRDM-MCXA153, FRDM-MCXN947, FRDM-MCXA156, FRDM-MCXN236 and, from 0.10.0,
+FRDM-MCXC444). The boards share the
 same API surface except where a row below notes a difference. See the main
 [README](README.md) for board setup, pin mapping, and general usage.
+
+## FRDM-MCXC444
+
+New in 0.10.0, and not yet run on hardware. It is a Kinetis chip, a
+Cortex-M0+ with no FPU, so its peripherals differ from the four MCX A/N
+boards', and the rows below describe those four unless they say otherwise.
+On FRDM-MCXC444 (see [PIN_MAPPING_C444.md](PIN_MAPPING_C444.md)):
+
+| API | Difference |
+|-----|------------|
+| `Serial` / `Serial1` | `Serial` is both the USB serial port and `D0`/`D1`, as on UNO R3; there is no `Serial1`. No 7-bit formats (`SERIAL_7N1` and the like): `begin()` stops the sketch with a message |
+| `analogRead` | ADC16, `A0`-`A5`, converting at 16 bits |
+| `analogWrite` / `analogWriteFrequency` | TPM, on `D3`, `D5`, `D6`, `D9` and `D10` (no `PWM0`-`PWM5`). `D5`, `D6` and `D9` share one channel: only the pin given `analogWrite()` last is PWM, and the one before goes back to GPIO, LOW. Every pin on a TPM shares its period: `D5`/`D6`/`D9`/`D10` on TPM0, `D3` on TPM1 |
+| `tone` / `noTone` | On the PIT (there is no CTIMER), on any digital pin, as on the other boards |
+| `Wire` / `Wire1` | `Wire` is `D18`/`D19` (I2C1); `A4`/`A5` are the same I2C1. `Wire1` is the on-board accelerometer's bus (I2C0), which no header pin reaches. Target (slave) mode and `setWireTimeout()` are not done yet: `begin(address)` stops the sketch with a message, and the timeout never fires |
+| `SPI` / `SPI1` | `SPI` on `D10`-`D13`; no `SPI1` (the MikroBus SPI is the same lines) |
+| `EEPROM` | 1024 bytes in the top 8KB of flash, which leaves the sketch 248KB. Interrupts wait while flash is erased or written, as on FRDM-MCXA153 |
+| `Servo` | `D3`, `D5`, `D6`, `D9`, `D10`. `D5`/`D6`/`D9` one at a time, as with `analogWrite` |
+| `micros()` | From SysTick (the Cortex-M0+ has no cycle counter) |
+| HardFault report | The PC only: the Cortex-M0+ has no fault status registers to name the cause, and no stack limit, so a stack overflow is not caught |
 
 ## GPIO & Interrupts
 

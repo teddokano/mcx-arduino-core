@@ -19,11 +19,14 @@ Sibling boards are cheap; a different silicon family is a rewrite.
 |-------|--------------|-----------------|
 | FRDM-MCXA156 | A153's sibling | Same LPADC/FlexPWM/LPI2C/LPSPI/LPUART. Mostly pin tables. Done in 0.8.0 |
 | FRDM-MCXN236 | N947's sibling | Same peripherals, but **no I3C temperature sensor** — an FXLS8974CF accelerometer on a plain LPI2C `Wire1` instead, so the release checks read it rather than a P3T1755. `Serial1` and `Wire1` share one FlexComm, which needed both modes at once. Done in 0.9.0 |
-| FRDM-MCXC444 | Not a sibling | Kinetis: Cortex-M0+, no FPU, ADC16/TPM instead of LPADC/FlexPWM, `fsl_i2c` instead of `fsl_lpi2c`. `analogRead`/`analogWrite`/`tone` are all unimplemented for it. Budget a whole release |
+| FRDM-MCXC444 | Not a sibling | Kinetis: Cortex-M0+, no FPU, ADC16/TPM instead of LPADC/FlexPWM, `fsl_i2c` instead of `fsl_lpi2c`, PIT instead of CTIMER, FTFA flash. `analogRead`/`analogWrite`/`tone`/`EEPROM` each needed a new backend. Done in 0.10.0 (a whole release); its I2C target mode and `setWireTimeout` are still to do |
 
-Check this before promising a timeline. `r01lib` already carries a
-`CPU_MCXC444VLH` branch in some files, which makes C444 look half-done —
-it is not. `AnalogIn.h`/`PwmOut.h` have no C444 branch at all.
+Check this before promising a timeline. A board outside the MCX A/N
+family also finds every place the core assumes a Cortex-M33: the cycle
+counter behind `micros()`, the fault status registers and stack limit
+behind the HardFault report, Thumb-2 instructions in
+`semihost_hardfault.c`. FRDM-MCXC444's port branches each of these on
+`__ARM_ARCH_6M__`.
 
 ## What you need in hand
 
@@ -49,9 +52,13 @@ it is not. `AnalogIn.h`/`PwmOut.h` have no C444 branch at all.
 | `src/` | `board/`, `device/`, `startup/`, plus the `fsl_*` drivers that genuinely differ per chip (`fsl_clock`, `fsl_lpadc`, `fsl_lpi2c`, `fsl_lpspi`, `fsl_lpuart`, `fsl_reset`, …) |
 | `svd/` | The CMSIS-SVD file, for the IDE's CORTEX PERIPHERALS panel |
 
-Drivers that are byte-identical across boards live in
-`cores/arduino/sdk/` instead. Diff before deciding — the set that is
-shareable has grown over time.
+Drivers that are byte-identical across boards, and that build on every
+board, live in `cores/arduino/sdk/` instead. Diff before deciding — the
+set that is shareable has grown over time. Every `.c` there is compiled
+for every board, so a driver for a peripheral some chip lacks cannot stay
+there: since 0.10.0, `fsl_i3c`, `fsl_pwm`, `fsl_spc`, `fsl_utick` and
+`fsl_inputmux`, which FRDM-MCXC444 has no peripheral for, sit in each of
+the four MCX variants, as identical copies.
 
 ### Getting the SDK drivers
 

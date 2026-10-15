@@ -43,6 +43,7 @@ it, and has its own guide:
 | FRDM-MCXA156 | MCXA156 (Cortex-M33) | ✅ (from 0.8.0; see below) |
 | FRDM-MCXN947 | MCXN947 (Cortex-M33) | ✅ |
 | FRDM-MCXN236 | MCXN236 (Cortex-M33) | ✅ (from 0.9.0; see below) |
+| FRDM-MCXC444 | MCXC444 (Cortex-M0+) | ✅ (from 0.10.0; see below) |
 
 > **FRDM-MCXA156 needs two small board changes** for the Arduino header to
 > work fully: move R59 and R60 to their 2-3 position, or `SPI`'s CS and
@@ -54,6 +55,15 @@ it, and has its own guide:
 > analog inputs, or the on-board CAN transceiver drives them. `A3` is the
 > blue LED's pin, so `analogRead(A3)` returns `-1`. See
 > [PIN_MAPPING_N236.md](PIN_MAPPING_N236.md).
+
+> **FRDM-MCXC444 is laid out like UNO R3**: `Serial` is `D0`/`D1` (the USB
+> serial port too) and there is no `Serial1`, and `analogWrite` works on
+> `D3`, `D5`, `D6`, `D9` and `D10` (there are no `PWM0`-`PWM5` pins; `D5`,
+> `D6` and `D9` share one PWM channel). It is a Cortex-M0+ with no FPU. I2C
+> target mode and `Wire.setWireTimeout` are not done yet for it. New in
+> 0.10.0 and not yet run on hardware. See
+> [PIN_MAPPING_C444.md](PIN_MAPPING_C444.md) and
+> [API_COMPATIBILITY.md](API_COMPATIBILITY.md).
 
 > **Note**: mcx-arduino-core is an independent, community project and is not
 > part of or affiliated with Arduino's official
@@ -182,7 +192,8 @@ MIT License — see [LICENSE](LICENSE)
 ## Pin Mapping
 
 See [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) / [PIN_MAPPING_N947.md](PIN_MAPPING_N947.md) /
-[PIN_MAPPING_A156.md](PIN_MAPPING_A156.md) / [PIN_MAPPING_N236.md](PIN_MAPPING_N236.md)
+[PIN_MAPPING_A156.md](PIN_MAPPING_A156.md) / [PIN_MAPPING_N236.md](PIN_MAPPING_N236.md) /
+[PIN_MAPPING_C444.md](PIN_MAPPING_C444.md)
 for the full Arduino-pin-to-MCU-pin table for each supported board, including
 the on-board LEDs/buttons and peripheral pins (`Wire1`, `SPI`, `PWM`, etc.).
 
