@@ -7,9 +7,12 @@
  *
  *  Checks the pulse widths for write() in degrees and microseconds, the
  *  clamping, attach() with its own min/max, a value written before
- *  attach(), the 20ms period, detach(), attach() on a pin with no PWM,
- *  more objects than MAX_SERVOS, and that analogWrite() keeps its own
- *  8-bit scaling afterwards.
+ *  attach(), the 20ms period, detach(), more objects than MAX_SERVOS, and
+ *  that analogWrite() keeps its own 8-bit scaling afterwards.
+ *
+ *  attach() on a pin with no PWM stops the sketch with panic(), so that is
+ *  not checked here: try servo.attach(D2) by hand, which should print
+ *  "error: Servo: pin has no PWM ...".
  *
  *  Read the final "ALL PASS"/"N FAIL" line.
  */
@@ -25,7 +28,6 @@
 #else
 #error "No monitor pin for this board yet"
 #endif
-#define NO_PWM_PIN D2   // no PWM on any of the boards
 
 Servo servo;
 Servo early;
@@ -131,9 +133,7 @@ void setup() {
   check_pulse("sends 2400us from the start", 2400);
   early.detach();
 
-  Serial.println("--- pins with no PWM, and too many objects ---");
-  Servo on_gpio;
-  check("attach(D2) fails", on_gpio.attach(NO_PWM_PIN) == INVALID_SERVO && !on_gpio.attached());
+  Serial.println("--- too many objects ---");
   Servo extra[MAX_SERVOS];
   Servo &last = extra[MAX_SERVOS - 1];
   check("object beyond MAX_SERVOS can't attach", last.attach(SERVO_PIN) == INVALID_SERVO && last.readMicroseconds() == 0);

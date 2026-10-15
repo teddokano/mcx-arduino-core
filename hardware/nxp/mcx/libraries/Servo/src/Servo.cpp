@@ -28,8 +28,11 @@ uint8_t Servo::attach( int pin, int min, int max )
 
 	PwmOut	*p	= analog_pwm_out( pin );
 
+	//	The official library takes any pin, so sketches don't check what
+	//	attach() returns: failing quietly here would leave the servo still
+	//	with no hint why. Stop and say so, as analogWriteFrequency() does.
 	if ( p == nullptr )
-		return	INVALID_SERVO;
+		panic( "Servo: pin has no PWM -- use PWM0-PWM5 (or D3/D5/D6/D9 on FRDM-MCXA156/N236)" );
 
 	if ( pwm && pwm != p )
 		detach();	// moving to another pin: stop the old one's pulses

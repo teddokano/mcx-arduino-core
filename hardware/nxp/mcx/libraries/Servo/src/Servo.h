@@ -18,7 +18,7 @@
 #define DEFAULT_PULSE_WIDTH	1500	///< pulse width before the first write() [us]
 #define REFRESH_INTERVAL	20000	///< pulse period [us] (50Hz)
 #define SERVOS_PER_TIMER	12		///< as in the official library; nothing here depends on it
-#define INVALID_SERVO		255		///< what attach() returns when it fails
+#define INVALID_SERVO		255		///< what attach() returns for an object beyond MAX_SERVOS
 ///@}
 
 /** How many Servo objects can be made: one for each pin with PWM */
@@ -38,9 +38,9 @@
  *  width doesn't jitter. That limits the servo to a pin with PWM:
  *  PWM0-PWM5 on every board, and also D3, D5, D6 and D9 on FRDM-MCXA156 and
  *  FRDM-MCXN236 (on FRDM-MCXN236 these are four of PWM0-PWM5). On any other
- *  pin, attach() fails and returns INVALID_SERVO. The official library on
- *  AVR uses any pin, which is why its examples use D9: on FRDM-MCXA153 and
- *  FRDM-MCXN947, change that to a PWM pin.
+ *  pin, attach() stops the sketch with panic(), naming the pins to use.
+ *  The official library on AVR uses any pin, which is why its examples use
+ *  D9: on FRDM-MCXA153 and FRDM-MCXN947, change that to a PWM pin.
  *
  *  The two pins of a FlexPWM submodule share their period (see the board's
  *  PIN_MAPPING_*.md): attaching a servo sets the other pin's PWM to 50Hz
@@ -57,15 +57,15 @@ public:
 
 	/** Start sending pulses on a pin, for 0-180 degrees as 544-2400us.
 	 *  A value written before is sent from the start; otherwise 1500us.
-	 * @param pin a pin with PWM (see above)
-	 * @return this servo's index, or INVALID_SERVO if the pin has no PWM
+	 * @param pin a pin with PWM (see above); any other pin stops the sketch with panic()
+	 * @return this servo's index, or INVALID_SERVO if this object is beyond MAX_SERVOS
 	 */
 	uint8_t	attach( int pin );
 	/** The same, with the pulse widths for 0 and 180 degrees.
 	 * @param pin a pin with PWM
 	 * @param min pulse width for 0 degrees [us]
 	 * @param max pulse width for 180 degrees [us]
-	 * @return this servo's index, or INVALID_SERVO if the pin has no PWM
+	 * @return this servo's index, or INVALID_SERVO if this object is beyond MAX_SERVOS
 	 */
 	uint8_t	attach( int pin, int min, int max );
 	/** Stop the pulses; the pin stays LOW. attach() starts them again. */

@@ -8,7 +8,8 @@
  *  The servo has to be on a pin with PWM: PWM0-PWM5, and also D3, D5, D6
  *  and D9 on FRDM-MCXA156 and FRDM-MCXN236. The same sketch for the
  *  official Servo library on AVR uses D9, which has no PWM on FRDM-MCXA153
- *  and FRDM-MCXN947.
+ *  and FRDM-MCXN947: there attach() stops the sketch with an error message
+ *  on Serial.
  */
 
 #include <Servo.h>
@@ -18,9 +19,7 @@
 Servo servo;
 
 void setup() {
-  Serial.begin(115200);
-  if (servo.attach(SERVO_PIN) == INVALID_SERVO)
-    Serial.println("SERVO_PIN has no PWM");
+  servo.attach(SERVO_PIN);  // on a pin with no PWM, stops with an error on Serial
 }
 
 void loop() {

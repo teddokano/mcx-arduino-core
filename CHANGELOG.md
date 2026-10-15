@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - A bundled `Servo` library with the official Servo library's interface (`#include <Servo.h>`, `attach()`,
   `write()` in degrees or microseconds, `read()`, `detach()`, ...), so sketches written for it build unchanged.
   It runs on the PWM pins (`PWM0`-`PWM5`, and `D3`/`D5`/`D6`/`D9` on FRDM-MCXA156 and FRDM-MCXN236), with the
-  pulses from the PWM hardware; on other pins `attach()` returns `INVALID_SERVO`. `#include <Servo.h>` stopped with
+  pulses from the PWM hardware; on other pins `attach()` stops the sketch with an error message. `#include <Servo.h>` stopped with
   "No such file" before, since the official library has no build for this core. Examples `Sweep` and `Knob`
 - New example sketches `test_network_base_classes` and `test_avr_pgmspace` (no wiring), and `test_Servo` (one jumper)
 
