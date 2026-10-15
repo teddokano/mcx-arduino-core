@@ -25,6 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 - `pgm_read_ptr()` gives `void *`, as in avr-libc, instead of `const void *`
+- `pgm_read_word()`, `pgm_read_dword()`, `pgm_read_float()` and `pgm_read_ptr()` read at any address, as on AVR, where
+  AVR code reads words from odd offsets of byte tables (on these Cortex-M33 boards they already did; the code is the same)
 
 ## [0.9.1] - 2026-10-11
 

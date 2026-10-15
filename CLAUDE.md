@@ -5,16 +5,17 @@
 - **内容**: NXP FRDM-MCXA153 / FRDM-MCXN947 / FRDM-MCXA156（0.8.0から）/ FRDM-MCXN236（0.9.0から。いずれもCortex-M33）向けのArduino IDEボードサポートパッケージ。
   v0.4.0以降は**ソース配布方式**（プリビルド`.a`は廃止）で、`hardware/nxp/mcx/cores/arduino/`（全ボード共有）と
   `hardware/nxp/mcx/variants/<board>/src/`（ボード固有）が唯一の実体。編集すれば次のビルドにそのまま反映される
-- **同梱ライブラリ**: `mcxPinState`（ピン所有状況のデバッグ表示）、`mcxRCServo`（RCサーボ）、`EEPROM`（0.7.0で追加）、`Servo`（0.9.2で追加、公式のServoライブラリと同じAPI、PWMのピンだけ）。
+- **同梱ライブラリ**: `mcxPinState`（ピン所有状況のデバッグ表示）、`mcxRCServo`（RCサーボ）、`EEPROM`（0.7.0で追加）、`Servo`（0.10.0で追加、公式のServoライブラリと同じAPI、PWMのピンだけ）。
   前の2つは別リポジトリが開発の本拠地で、`hardware/nxp/mcx/libraries/`配下はリリース時に同期する取り込みコピー。
   `EEPROM`はこのリポジトリが本体（フラッシュの配置がリンカスクリプトと一体なので）。`Servo`もこのリポジトリが本体で、コアの`analog_pwm_out()`（`arduino_analog.h`）でピンの`PwmOut`を受け取り、マイクロ秒でパルス幅を設定する（`analogWriteResolution()`に触らない）
 - **現在のリリース**: **v0.9.1**（2026-10-11、パッチリリース。`analogRead(0)`〜`analogRead(5)`を`A0`〜`A5`として扱う修正、
   関数内の`static`オブジェクトのリンクエラー（`__cxa_guard_acquire`）の修正（`platform.txt`に`-fno-threadsafe-statics`。AVRのコアと同じ）、`r01lib_I3C_demo`の追加）。
   その前のv0.9.0（2026-10-09）でFRDM-MCXN236の追加と、FRDM-MCXA156のD3/D5/D6/D9での`analogWrite`。macOS・Windows・Linuxの3プラットフォームで
   インストール〜ビルド〜アップロード〜IDE内蔵デバッガまで検証済み
-- **開発中**: **v0.9.2**（`0.9.2-dev`ブランチ、2026-10-15に開始）。範囲は、ネットワーク基底クラス（`Client`/`Server`/`UDP`/`IPAddress`、Pendingタスク8）、
-  `Servo.h`の互換ライブラリ、A4/A5のI²C（`setPins`、Pendingタスク10）の3つ（2026-10-15、ユーザーが決定）。
-  N947のEthernet（ENET・lwIP）はその次の版。1.0までの版の割り振りは[memo/notes_toward_1.0.0.md](memo/notes_toward_1.0.0.md)の§9。
+- **開発中**: **v0.10.0**（`0.10.0-dev`ブランチ、2026-10-15に`0.9.2-dev`として開始し、2026-10-16に名前を変えた）。範囲は、ネットワーク基底クラス（`Client`/`Server`/`UDP`/`IPAddress`、Pendingタスク8）、
+  `Servo.h`の互換ライブラリ、A4/A5のI²C（`setPins`、Pendingタスク10）、`<avr/pgmspace.h>`、**FRDM-MCXC444**（2026-10-16、ユーザーが決定）。
+  機能の追加だけなのでパッチではなくマイナーの版にした。C444は「ビルドが通るだけ」のスパイク（`c444-spike`ブランチ、未push）の結果を見て入れると決めた。結果はmemoの§4-5で、スパイクのスタブは持ち込まず`0.10.0-dev`の上で作り直す。
+  N947のEthernet（ENET・lwIP）は0.11.0。1.0までの版の割り振りは[memo/notes_toward_1.0.0.md](memo/notes_toward_1.0.0.md)の§9。
   **`Servo`（`libraries/Servo/`）は4ボードでビルドが通るだけで、実機は未確認**（2026-10-16、ユーザーが後でやると判断）。
   `test_Servo`をジャンパ1本（A153・A156・N947は`PWM0`-`D8`、N236は`D6`-`D7`）で流す
 - **ADCの無いピンへの`analogRead()`（A153の`analogRead(A5)`など）をビルド時に検出する案は入れない**（2026-10-11、ユーザー判断）。
@@ -22,7 +23,7 @@
   入れない理由は副作用で、実行されないコード（実行時の変数でボードを分ける分岐など）でもビルドが止まり、AVRなどでビルドできるコードがこのコアではビルドできなくなる。
   また、`-O2`のループ展開や関数の展開で定数になった呼び出しも検出されるので、エラーになるかどうかが最適化の判断に左右される。実行時の`panic()`のままにする。
   `analogWrite()`はPWMの無いピンでAVRと同じく`digitalWrite()`になるのが正しい動きで、panicしない（A153の`A5`で実機確認）
-- ボード追加の順番はA156 → N236 → C444で合意済み。A4/A5のI²C（Pendingタスク10）は0.9.2で入れる。
+- ボード追加の順番はA156 → N236 → C444で合意済み。A4/A5のI²C（Pendingタスク10）とC444は0.10.0で入れる。
   A156の前提と決定は下の「FRDM-MCXA156の前提と決定事項（0.8.0）」節、N236の分は「FRDM-MCXN236の前提と決定事項（0.9.0）」節
 - **リリースごとの変更点**: [CHANGELOG.md](CHANGELOG.md)
 - **各リリースで何をやり、どこで詰まったかの詳細**: [docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md)
@@ -306,11 +307,11 @@ xPack checksums（正しい値）：
 | Serial.readString / readStringUntil、String::reserve/getBytes/toCharArray/startsWith(offset) | ✅ | v0.2.1で追加。Serial1ループバック＋純粋ロジック検証で実機確認済み |
 | SPI.setBitOrder/setDataMode/setClockDivider、String 64bit（long long/unsigned long long） | ✅ | v0.2.1で追加。MOSI-MISOループバック＋純粋ロジック検証で実機確認済み |
 | Serial print BIN基数バグ修正（Serial・String両方）、Serial.write全オーバーロード、attachInterrupt LOWモード | ✅ | v0.2.1で修正・追加。全項目実機確認済み（LOWモードは長押しでカウンタ374,533回増加を確認） |
-| PROGMEM/pgm_read系、F()/String対応、ARDUINO/ARDUINO_ARCH_*マクロ | ✅ | v0.2.1で追加。実機確認済み。0.9.2で`<avr/pgmspace.h>`（`_near`/`_far`、`_P`/`_PF`系の関数など）を足し、PROGMEMのマクロは`Arduino.h`からそこへ移した。`test_avr_pgmspace`でA153・N947確認 |
+| PROGMEM/pgm_read系、F()/String対応、ARDUINO/ARDUINO_ARCH_*マクロ | ✅ | v0.2.1で追加。実機確認済み。0.10.0で`<avr/pgmspace.h>`（`_near`/`_far`、`_P`/`_PF`系の関数など）を足し、PROGMEMのマクロは`Arduino.h`からそこへ移した。`test_avr_pgmspace`でA153・N947確認 |
 | Wire.end、Serial.find(len)/findUntil、Serial.availableForWrite、INPUT_PULLDOWN、OUTPUT_OPENDRAIN | ✅ | v0.2.1で追加。実機確認済み（`Wire.end()`はI3C使用時のBusFaultバグを修正後に確認） |
 | String operator+数値版/F()、Printable、NOT_AN_INTERRUPT、digitalPinToPort/BitMask+portOutput/Input/ModeRegister | ✅ | v0.2.1で追加。実機確認済み（fast GPIOレジスタ直接操作がD2-D3ジャンパで正しく動作、Printableカスタムクラスの出力を視覚確認） |
 | Print/Stream抽象基底クラス（新設） | ✅ | v0.2.1で追加。実機確認済み——ハードウェア非依存のPrint派生クラス、Stream&への多態性、print()/println()の実バイト数返却、Printableのn+=p.print(x)イディオムすべて動作確認 |
-| サードパーティライブラリ互換性（ArduinoJson/LiquidCrystal/DHT/NeoPixel/OneWire/Adafruit BusIO/Adafruit Unified Sensor） | ✅ | v0.2.1で最小スケッチのコンパイルを確認。0.7.0で各ライブラリの**同梱サンプル全47本×両ボード**に広げて再確認し、`BitOrder`の本物のenum化とavr-libcの文字列関数・`M_`定数の宣言を追加した。残る失敗8本は、BLE（4本）、ADXL343ドライバ（1本）、Ethernetが要求する`Client.h`（3本、coreにネットワーク基底クラスが無い）。0.9.2でネットワーク基底クラスと`<avr/pgmspace.h>`を足し、公式`Ethernet`の作例13本・ArduinoJsonのEthernet系3本・PubSubClientの4本が4ボードでビルドできることを確かめた（PubSubClientは`pgm_read_byte_near()`で止まっていた。`mqtt_stream`は外部の`SRAM.h`が要るので対象外）。公式のServoはライブラリ側のアーキテクチャ非対応で使えないので、0.9.2で同じAPIの`Servo`を同梱した（公式が入っていても、ビルドは同梱のほうを選ぶことを確認）。ライブラリはスクラッチパッドに`ARDUINO_DIRECTORIES_USER`で入れたので、`~/Documents/Arduino/libraries`には無い |
+| サードパーティライブラリ互換性（ArduinoJson/LiquidCrystal/DHT/NeoPixel/OneWire/Adafruit BusIO/Adafruit Unified Sensor） | ✅ | v0.2.1で最小スケッチのコンパイルを確認。0.7.0で各ライブラリの**同梱サンプル全47本×両ボード**に広げて再確認し、`BitOrder`の本物のenum化とavr-libcの文字列関数・`M_`定数の宣言を追加した。残る失敗8本は、BLE（4本）、ADXL343ドライバ（1本）、Ethernetが要求する`Client.h`（3本、coreにネットワーク基底クラスが無い）。0.10.0でネットワーク基底クラスと`<avr/pgmspace.h>`を足し、公式`Ethernet`の作例13本・ArduinoJsonのEthernet系3本・PubSubClientの4本が4ボードでビルドできることを確かめた（PubSubClientは`pgm_read_byte_near()`で止まっていた。`mqtt_stream`は外部の`SRAM.h`が要るので対象外）。公式のServoはライブラリ側のアーキテクチャ非対応で使えないので、0.10.0で同じAPIの`Servo`を同梱した（公式が入っていても、ビルドは同梱のほうを選ぶことを確認）。ライブラリはスクラッチパッドに`ARDUINO_DIRECTORIES_USER`で入れたので、`~/Documents/Arduino/libraries`には無い |
 | Wire (I2C) | ✅ | |
 | Wire1 (I3C, I2Cモード) | ✅ | オンボードP3T1755で確認、重大バグ修正済み。A156の`Wire1`はI3CではなくMikroBusの`LPI2C3`（0.8.0） |
 | SPI | ✅ | |
@@ -348,7 +349,7 @@ xPack checksums（正しい値）：
 - **リポジトリパス**: `~/dev/mcx-arduino-core`
 - **v0.4.0以降のソース構成**: `MCUXpresso_project/`ディレクトリは廃止（削除済み）。ソースの唯一の実体は`hardware/nxp/mcx/cores/arduino/`（全ボード共有）＋`hardware/nxp/mcx/variants/<board>/src/`（ボード固有）で、プリビルド`.a`のビルド・配置手順も不要になった——編集したソースはそのままarduino-cli/Arduino IDEのビルドに反映される（詳細は[docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md)の「`cores/arduino/`一本化・`platform.txt`書き換え完了」節）
 - **xPackツールチェーン**: `~/.xpacktools/xpack-arm-none-eabi-gcc-14.2.1-1.1/`（`package_nxp_mcx_index.json`記載のものと同一バイナリ、チェックサム確認済み）
-- **ローカルArduino IDE連携**: `~/Library/Arduino15/packages/nxp/hardware/mcx/<version>-dev`（今は`0.9.2-dev`。ブランチ名と同じ。パッチリリースのブランチを並行して進める間は、作業ツリーで切り替えたブランチに合わせてこの名前も付け替える）をこのリポジトリの`hardware/nxp/mcx/`へのシンボリックリンクとして設定済み（編集が即座に反映される）。ツールチェーンも`~/.xpacktools/`への symlink。`-dev`サフィックスにより、Boards Manager経由でインストールする実リリース版とはディレクトリ名が衝突せず共存できる（ただし下の項目のとおり、並んでいるとリリース版が選ばれる）
+- **ローカルArduino IDE連携**: `~/Library/Arduino15/packages/nxp/hardware/mcx/<version>-dev`（今は`0.10.0-dev`。ブランチ名と同じ。パッチリリースのブランチを並行して進める間は、作業ツリーで切り替えたブランチに合わせてこの名前も付け替える）をこのリポジトリの`hardware/nxp/mcx/`へのシンボリックリンクとして設定済み（編集が即座に反映される）。ツールチェーンも`~/.xpacktools/`への symlink。`-dev`サフィックスにより、Boards Manager経由でインストールする実リリース版とはディレクトリ名が衝突せず共存できる（ただし下の項目のとおり、並んでいるとリリース版が選ばれる）
 - **リリース版を入れたままだと`-dev`が使われない**（0.7.0で踏んだ）: `packages/nxp/hardware/mcx/`に
   Boards Managerで入れた`0.6.0`と`0.7.0-dev`のsymlinkが並ぶと、**IDEも既定のarduino-cliもインストール済みの`0.6.0`を選ぶ**。
   開発中の修正がIDEで一切効かず、「直したはずの不具合がIDEでは再現する」形で表に出る。
@@ -450,9 +451,9 @@ v0.4.0の`main`マージ直前、ユーザーから「今回のリリース準�
 7. **GPIO治具は作らない**（2026-10-02、ユーザー判断）。0.7.0で保留にしていたが、0.8.0の検討で
    「リリース作業の自動化が大きく進んでいて、治具による改善は手間の削減にそれほど効かない」として見送った。
    組み合わせを設計した`.github/scripts/check_jig_pairing.py`は残っている
-8. **ネットワーク基底クラス（`Client`/`Server`/`UDP`/`IPAddress`）は0.9.2で入れる**（2026-09-26、ユーザー判断で0.7.0は見送り。2026-10-15に0.9.2と決定）。
+8. **ネットワーク基底クラス（`Client`/`Server`/`UDP`/`IPAddress`）は0.10.0で入れる**（2026-09-26、ユーザー判断で0.7.0は見送り。2026-10-15に0.9.2と決め、2026-10-16に0.10.0へ）。
    無いため`Ethernet`ライブラリが`Client.h`で止まる（ArduinoJsonのEthernet系サンプル3本もこれで失敗）。
-   **0.9.2-devで4つのクラスを書いた**（`cores/arduino/arduino_api/`の`Client.h`・`Server.h`・`Udp.h`・`IPAddress.{h,cpp}`）。AVRと同じく`Arduino.h`からは読み込まない。
+   **0.10.0-dev（旧0.9.2-dev）で4つのクラスを書いた**（`cores/arduino/arduino_api/`の`Client.h`・`Server.h`・`Udp.h`・`IPAddress.{h,cpp}`）。AVRと同じく`Arduino.h`からは読み込まない。
    `IPAddress`はArduinoCore-APIと同じくIPv4とIPv6を持つ。`test_network_base_classes`がA153・N947の実機でALL PASS、ライブラリの作例は4ボードでビルドが通る。残りは下の「実際に通信できるまで」
    入れるときは、ArduinoCore-APIのソースがLGPLなのでコピーせず自前で書く。
    仮想関数のシグネチャはArduinoCore-APIと完全に一致させる（派生ライブラリがそのままビルドできるように）。
@@ -465,6 +466,6 @@ v0.4.0の`main`マージ直前、ユーザーから「今回のリリース準�
    `upload.sh`の`flash_size_bug()`、`upload.bat`の`:consider`、`gdb-bridge`の`flashSizeBug`の**3か所**にある。
    NXPが直した版を出したら、その版で46KBの`hello_world`を書けることを確かめてから3か所を揃えて更新する。
    原因の詳細はLinkServerのライセンス（使用結果の報告の公開制限）に配慮して、公開リポジトリには症状だけを書く
-10. **A4/A5でI²Cを使えるようにする**（2026-10-08、ユーザー判断）: 0.9.2で入れる（2026-10-15に決定）。入口は`bool TwoWire::setPins( int sda, int scl )`（ESP32と同じ形）で、
+10. **A4/A5でI²Cを使えるようにする**（2026-10-08、ユーザー判断）: 0.10.0で入れる（2026-10-15に0.9.2と決め、2026-10-16に0.10.0へ）。入口は`bool TwoWire::setPins( int sda, int scl )`（ESP32と同じ形）で、
    使えないピンの組や`begin()`のあとでは`false`を返してピンを変えない。A4/A5にI²Cがあるのは、A156（`LPI2C1`、`Wire`と別）とN236（`LPI2C2`、`Wire1`と同じ）とC444。
    調べた事実と残る論点（`TwoWire`のコンストラクタはr01libの生のピン値を取るコア用のもので、スケッチのピン名は受け付けない——不具合ではなく説明の不足で、0.9.1で`arduino_i2c.h`の説明を直した。N236での扱いなど）は[memo/notes_toward_1.0.0.md](memo/notes_toward_1.0.0.md)の§5
