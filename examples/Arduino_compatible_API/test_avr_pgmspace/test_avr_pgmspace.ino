@@ -32,6 +32,8 @@ const char item0[] PROGMEM = "zero";
 const char item1[] PROGMEM = "one";
 const char *const items[] PROGMEM = { item0, item1 };
 const prog_uchar old_style[] PROGMEM = { 7, 8, 9 };
+// Words read from odd offsets of a byte table, as AVR code does
+const uint8_t packed[] PROGMEM = { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99 };
 
 int fails = 0;
 
@@ -63,6 +65,9 @@ void setup() {
   void *as_void = pgm_read_ptr(&items[0]);  // void *, as in avr-libc
   check("pgm_read_ptr gives void *", as_void == item0);
   check("prog_uchar", pgm_read_byte(&old_style[2]) == 9);
+  check("pgm_read_word at an odd address", pgm_read_word(packed + 1) == 0x2211);
+  check("pgm_read_dword at an odd address", pgm_read_dword(packed + 3) == 0x66554433);
+  check("pgm_read_qword at an odd address", pgm_read_qword(packed + 1) == 0x8877665544332211ULL);
   PGM_P p = greeting;
   PGM_VOID_P vp = bytes;
   check("PGM_P / PGM_VOID_P", pgm_read_byte(p) == 'H' && pgm_read_byte(vp) == 0x11);

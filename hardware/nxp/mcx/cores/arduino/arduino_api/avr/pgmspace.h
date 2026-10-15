@@ -60,16 +60,27 @@ typedef uint32_t		uint_farptr_t;
 /** @param var an object in flash @return its address as a uint_farptr_t */
 #define	pgm_get_far_address( var )	( (uint_farptr_t)(uintptr_t)&( var ) )
 
-/** @name Reading from flash: plain reads through a pointer
+/*  The multi-byte reads go through memcpy(), so they work at any address,
+ *  as on AVR, where a word is read a byte at a time: AVR code reads words
+ *  out of byte tables at odd offsets. A Cortex-M33 reads an unaligned word
+ *  anyway, and the compiler turns these into the same single load there,
+ *  but a Cortex-M0+ would fault. */
+static inline uint16_t	mcx_pgm_read_word( const void *p )	{ uint16_t v; memcpy( &v, p, sizeof( v ) ); return v; }
+static inline uint32_t	mcx_pgm_read_dword( const void *p )	{ uint32_t v; memcpy( &v, p, sizeof( v ) ); return v; }
+static inline uint64_t	mcx_pgm_read_qword( const void *p )	{ uint64_t v; memcpy( &v, p, sizeof( v ) ); return v; }
+static inline float		mcx_pgm_read_float( const void *p )	{ float v; memcpy( &v, p, sizeof( v ) ); return v; }
+static inline void		*mcx_pgm_read_ptr( const void *p )	{ void *v; memcpy( &v, p, sizeof( v ) ); return v; }
+
+/** @name Reading from flash: plain reads, at any alignment
  *  addr may be a pointer, or for the _far forms a uint_farptr_t.
  */
 ///@{
 #define	pgm_read_byte( addr )		( *(const uint8_t *)(uintptr_t)(addr) )
-#define	pgm_read_word( addr )		( *(const uint16_t *)(uintptr_t)(addr) )
-#define	pgm_read_dword( addr )		( *(const uint32_t *)(uintptr_t)(addr) )
-#define	pgm_read_qword( addr )		( *(const uint64_t *)(uintptr_t)(addr) )
-#define	pgm_read_float( addr )		( *(const float *)(uintptr_t)(addr) )
-#define	pgm_read_ptr( addr )		( *(void * const *)(uintptr_t)(addr) )
+#define	pgm_read_word( addr )		mcx_pgm_read_word( (const void *)(uintptr_t)(addr) )
+#define	pgm_read_dword( addr )		mcx_pgm_read_dword( (const void *)(uintptr_t)(addr) )
+#define	pgm_read_qword( addr )		mcx_pgm_read_qword( (const void *)(uintptr_t)(addr) )
+#define	pgm_read_float( addr )		mcx_pgm_read_float( (const void *)(uintptr_t)(addr) )
+#define	pgm_read_ptr( addr )		mcx_pgm_read_ptr( (const void *)(uintptr_t)(addr) )
 
 #define	pgm_read_byte_near( addr )	pgm_read_byte( addr )
 #define	pgm_read_word_near( addr )	pgm_read_word( addr )
