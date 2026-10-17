@@ -7,9 +7,10 @@ MCU port pin. The pins were checked against the board's schematic
 (SCH-93440 Rev A) and Zephyr's `MCXC444VLH-pinctrl.h`.
 
 > [!NOTE]
-> **Support for this board is new in 0.10.0 and has not been run on
-> hardware yet.** Everything below builds; the pin table follows the
-> schematic.
+> **Support for this board is new in 0.10.0 and is still being checked on
+> hardware.** GPIO, `Serial`, `analogRead`, `analogWrite`, `tone`,
+> `Wire1`, `SPI`'s clock, `EEPROM` and `Servo` have run on the board;
+> the sketches that need jumpers have not yet.
 
 This board differs from the other FRDM boards in three ways a sketch may
 notice:
@@ -21,6 +22,12 @@ notice:
 - **The MCU is a Cortex-M0+ at 48MHz with no FPU**, so `float` and
   `double` arithmetic is done in software and is slower than on the other
   boards. 256KB of flash (248KB for the sketch) and 32KB of RAM.
+
+![pins-FRDM-MCXC444](img/pins-FRDM-MCXC444-ard.png)  
+*FRDM-MCXC444 Arduino shield socket pins*
+
+![pins-FRDM-MCXC444](img/pins-FRDM-MCXC444-mb.png)  
+*FRDM-MCXC444 MikroBus socket pins*
 
 ## Arduino header
 
@@ -49,7 +56,8 @@ notice:
 | `A4` | `PTC2` | `analogRead` (`ADC0_SE11`); also `MB_SDA` |
 | `A5` | `PTC1` | `analogRead` (`ADC0_SE15`); also `MB_SCL` |
 
-`NUM_ANALOG_INPUTS` is 6. The ADC converts at 16 bits;
+`NUM_ANALOG_INPUTS` is 6. The ADC converts at 16 bits, against VDDA
+(3.3V): the board leaves the VREFH pin unconnected (JP6 open).
 `analogRead()` scales that to `analogReadResolution()` bits (10 by default).
 
 > **PWM**: `analogWrite` runs on the TPMs. **`D5`, `D6` and `D9` are all

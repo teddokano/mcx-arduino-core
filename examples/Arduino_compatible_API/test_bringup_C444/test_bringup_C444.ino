@@ -52,13 +52,19 @@ struct RawPin {
   uint8_t bit;
 };
 
-// What sample() saw on a pin: the share of time it was high, and its
-// rising edges
+// What sample() saw on a pin: its rising edges in a time window, and the
+// share of time it was high
 struct Waveform {
   uint32_t samples;
   uint32_t highs;
   uint32_t rises;
-  float duty() const { return samples ? (float)highs / (float)samples : 0.0f; }
+  bool byPeriods;   // periodDuty holds the duty over whole periods
+  float periodDuty;
+  float duty() const {
+    if (byPeriods)
+      return periodDuty;
+    return samples ? (float)highs / (float)samples : 0.0f;
+  }
 };
 
 // The EEPROM start counter
@@ -118,8 +124,9 @@ void setPull(const RawPin &p, bool up) {
   p.port->PCR[p.bit] = v | PORT_PCR_PE_MASK | (up ? PORT_PCR_PS_MASK : 0);
 }
 
-// Samples a pin for a while
-Waveform sample(const RawPin &p, uint32_t us) {
+// Samples a pin for a while, with interrupts on: a pin an interrupt
+// toggles (tone()) needs them
+Waveform sampleRaw(const RawPin &p, uint32_t us) {
   Waveform w = {};
   int prev = level(p);
   uint32_t t0 = micros();
@@ -130,6 +137,45 @@ Waveform sample(const RawPin &p, uint32_t us) {
     if (v && !prev)
       w.rises++;
     prev = v;
+  }
+  return w;
+}
+
+// The share of time a pin is high over whole periods, from a rising edge.
+// Interrupts are off meanwhile: SysTick runs at 1kHz, the PWM's default
+// rate, so its interrupt lands at the same phase every period and biases
+// sampleRaw()'s duty (D10 at 192/255 read 0.70 that way)
+float dutyOver(const RawPin &p, uint32_t periods) {
+  const uint32_t LIMIT = 20000000u;
+  uint32_t n = 0, hi = 0, rises = 0;
+  noInterrupts();
+  while (level(p) && n < LIMIT)
+    n++;
+  while (!level(p) && n < LIMIT)
+    n++;
+  // Branch-free, so a high sample takes as long as a low one: with
+  // `if (v && !prev)` the low ones were quicker, and the duty read 2-3%
+  // low
+  n = 0;
+  uint32_t prev = 1;
+  while (rises < periods && n < LIMIT) {
+    uint32_t v = (uint32_t)level(p);
+    hi += v;
+    n++;
+    rises += v & (prev ^ 1u);
+    prev = v;
+  }
+  interrupts();
+  return n ? (float)hi / (float)n : 0.0f;
+}
+
+// Samples a PWM pin: its rising edges in the window, and if it toggles, its
+// duty over whole periods
+Waveform sample(const RawPin &p, uint32_t us) {
+  Waveform w = sampleRaw(p, us);
+  if (w.rises >= 2) {
+    w.periodDuty = dutyOver(p, w.rises < 20 ? w.rises : 20);
+    w.byPeriods = true;
   }
   return w;
 }
@@ -393,9 +439,10 @@ void setup() {
     }
     check("analogRead(A0)-(A5) in 0-1023", inRange);
 
-    // analogRead() has calibrated ADC0 and set it to 16 bits. VREFSH and
-    // VREFSL are the ends of the scale; the bandgap is 0.97-1.03V (data
-    // sheet), which gives VREFH (VDDA on this board)
+    // analogRead() has calibrated ADC0 and set it to 16 bits, on the
+    // alternate reference VALTH/VALTL (VDDA/VSSA): the VREFH pin is open on
+    // this board. Channels 29/30 are the selected reference's two ends; the
+    // bandgap is 0.97-1.03V (data sheet), which gives VDDA
     uint16_t high = adcChannel(29);  // VREFSH
     uint16_t low = adcChannel(30);   // VREFSL
     PMC->REGSC |= PMC_REGSC_BGBE_MASK;
@@ -409,13 +456,13 @@ void setup() {
     Serial.print(low);
     Serial.print(", bandgap ");
     Serial.print(bandgap);
-    Serial.print(" (VREFH ~ ");
+    Serial.print(" (VDDA ~ ");
     Serial.print(vrefh, 3);
     Serial.print(" V), temperature sensor ");
     Serial.println(temp);
-    check("VREFSH reads full scale (>= 65000)", high >= 65000);
-    check("VREFSL reads zero (<= 300)", low <= 300);
-    check("the bandgap puts VREFH at 3.0-3.6V", vrefh >= 3.0f && vrefh <= 3.6f);
+    check("the reference's top end reads full scale (>= 65000)", high >= 65000);
+    check("the reference's bottom end reads zero (<= 300)", low <= 300);
+    check("the bandgap puts VDDA at 3.0-3.6V", vrefh >= 3.0f && vrefh <= 3.6f);
   }
 
   // ---- analogWrite() on the TPMs ----
@@ -449,6 +496,17 @@ void setup() {
     delay(25);
     w = sample(PIN_D3, 25000);
     check("D3 255 at 50Hz: always HIGH", w.highs == w.samples);
+
+    // Two analogWrite()s within one 20ms period: while the counter runs a
+    // CnV write waits for the period's end, and the TPM ignores another
+    // write before then, so the core has to keep the second for the next
+    // period
+    analogWrite(D3, 64);
+    analogWrite(D3, 191);
+    delay(45);
+    w = sample(PIN_D3, 100000);
+    printPwm("D3 64 then 191 at once", TPM1, 0, w);
+    check("D3: the second of two quick analogWrite()s lands", within(w.duty(), 191.0f / 255.0f, 0.02f) && within(tpmDuty(TPM1, 0), 191.0f / 255.0f, 0.01f));
     analogWriteFrequency(D3, 1000);
 
     // D10 is TPM0_CH4. D5, D6 and D9 all reach TPM0_CH2: the one given
@@ -465,6 +523,13 @@ void setup() {
     check("D6 takes TPM0_CH2 (ALT3), D5 goes to GPIO LOW", mux(PIN_D6) == 3 && drivenLow(PIN_D5));
     analogWrite(D9, 64);
     check("D9 takes TPM0_CH2 (ALT4), D6 goes to GPIO LOW", mux(PIN_D9) == 4 && drivenLow(PIN_D6));
+    delay(3);  // CnV takes a new value at the end of a period
+    Serial.print("TPM0 CH2: CnSC 0x");
+    Serial.print(TPM0->CONTROLS[2].CnSC, HEX);
+    Serial.print(", CnV ");
+    Serial.print(TPM0->CONTROLS[2].CnV);
+    Serial.print(", MOD ");
+    Serial.println(TPM0->MOD);
     w = sample(PIN_D9, 20000);
     printPwm("D9 64", TPM0, 2, w);
     check("D9 pin: duty ~0.25", within(w.duty(), 64.0f / 255.0f, 0.05f));
@@ -485,7 +550,7 @@ void setup() {
   section("tone");
   {
     tone(D8, 1000);
-    Waveform w = sample(PIN_D8, 100000);
+    Waveform w = sampleRaw(PIN_D8, 100000);
     Serial.print("tone(D8, 1000): ");
     Serial.print(w.rises);
     Serial.print(" rising edges in 100ms, duty ");
@@ -495,10 +560,10 @@ void setup() {
 
     tone(D8, 2000, 50);
     delay(10);
-    w = sample(PIN_D8, 20000);
+    w = sampleRaw(PIN_D8, 20000);
     check("tone(D8, 2000, 50) runs", w.rises >= 39 && w.rises <= 41);
     delay(40);
-    w = sample(PIN_D8, 20000);
+    w = sampleRaw(PIN_D8, 20000);
     check("... and stops after 50ms", w.rises == 0);
   }
 
@@ -553,32 +618,45 @@ void setup() {
 
     // SCL rate: the same 6-byte read at 100kHz and 400kHz. The difference
     // is 7 bytes of 9 bits (address + 6 data) times 7.5us, about 470us,
-    // whatever the driver's own overhead
-    uint32_t t[2];
-    const uint32_t rates[2] = { 100000u, 400000u };
-    for (int i = 0; i < 2; i++) {
-      Wire1.setClock(rates[i]);
-      uint32_t best = 0xFFFFFFFFu;
+    // whatever the driver's own overhead. Timed first at the clock begin()
+    // set, before any setClock(), and each read's byte count is printed
+    struct {
+      const char *name;
+      uint32_t hz;  // 0: leave the clock begin() set
+      uint32_t us;
+      uint8_t got;
+    } runs[] = {
+      { "begin()'s clock", 0u, 0, 0 },
+      { "setClock(100000)", 100000u, 0, 0 },
+      { "setClock(400000)", 400000u, 0, 0 },
+    };
+    for (auto &r : runs) {
+      if (r.hz)
+        Wire1.setClock(r.hz);
+      r.us = 0xFFFFFFFFu;
       for (int k = 0; k < 5; k++) {
         uint32_t t0 = micros();
-        Wire1.requestFrom(ADDR, (uint8_t)6);
+        uint8_t got = Wire1.requestFrom(ADDR, (uint8_t)6);
         uint32_t d = micros() - t0;
         while (Wire1.available())
           Wire1.read();
-        if (d < best)
-          best = d;
+        r.got = got;
+        if (d < r.us)
+          r.us = d;
       }
-      t[i] = best;
+      Serial.print("6-byte read, ");
+      Serial.print(r.name);
+      Serial.print(": ");
+      Serial.print(r.us);
+      Serial.print(" us, requestFrom() returned ");
+      Serial.println(r.got);
     }
     Wire1.setClock(100000u);
-    long diff = (long)t[0] - (long)t[1];
-    Serial.print("6-byte read: ");
-    Serial.print(t[0]);
-    Serial.print(" us at 100kHz, ");
-    Serial.print(t[1]);
-    Serial.print(" us at 400kHz, difference ");
+    long diff = (long)runs[1].us - (long)runs[2].us;
+    Serial.print("difference 100kHz - 400kHz: ");
     Serial.print(diff);
     Serial.println(" us (expect ~470)");
+    check("Wire1 reads 6 bytes at every clock", runs[0].got == 6 && runs[1].got == 6 && runs[2].got == 6);
     check("Wire1 SCL rates (difference 400-560us)", diff >= 400 && diff <= 560);
 
     Wire1.beginTransmission(ADDR);
@@ -593,39 +671,67 @@ void setup() {
     SPI.begin();
     uint8_t buf[64];
 
-    // SCK rate: 64 bytes at 1MHz and at 250kHz differ by 512 bits x 3us
-    uint32_t t[2];
-    const uint32_t rates[2] = { 1000000u, 250000u };
-    for (int i = 0; i < 2; i++) {
+    // SCK rate: 64 bytes at four rates. The time is 512 bits / SCK plus
+    // the driver's own time, so a straight line through the four gives
+    // the real SCK as a share of the one asked for (1.0 when right). The
+    // baud rate register is printed too: SCK = the module clock (SPI1: the
+    // 48MHz system clock) / ((SPPR + 1) x 2^(SPR + 1))
+    const uint32_t rates[4] = { 1000000u, 500000u, 250000u, 125000u };
+    float sx = 0, sy = 0, sxx = 0, sxy = 0;
+    for (int i = 0; i < 4; i++) {
       SPI.beginTransaction(SPISettings(rates[i], MSBFIRST, SPI_MODE0));
+      uint8_t br = ((SPI_Type *)SPI1_BASE)->BR;  // Arduino.h #undefs MCXC444.h's SPI1
       for (int k = 0; k < 64; k++)
         buf[k] = (uint8_t)k;
       uint32_t t0 = micros();
       SPI.transfer(buf, sizeof(buf));
-      t[i] = micros() - t0;
+      uint32_t t = micros() - t0;
       SPI.endTransaction();
-    }
-    long diff = (long)t[1] - (long)t[0];
-    Serial.print("64 bytes: ");
-    Serial.print(t[0]);
-    Serial.print(" us at 1MHz, ");
-    Serial.print(t[1]);
-    Serial.print(" us at 250kHz, difference ");
-    Serial.print(diff);
-    Serial.println(" us (expect 1536)");
-    check("SPI SCK rates (difference 1536us +/-10%)", within((float)diff, 1536.0f, 0.10f));
 
-    // Loopback, if D11-D12 is jumpered
+      uint32_t sppr = (br & SPI_BR_SPPR_MASK) >> SPI_BR_SPPR_SHIFT;
+      uint32_t spr = (br & SPI_BR_SPR_MASK) >> SPI_BR_SPR_SHIFT;
+      uint32_t divisor = (sppr + 1u) << (spr + 1u);
+      Serial.print(rates[i]);
+      Serial.print(" Hz asked: BR 0x");
+      Serial.print(br, HEX);
+      Serial.print(" (divisor ");
+      Serial.print(divisor);
+      Serial.print(", SCK ");
+      Serial.print(48000000u / divisor);
+      Serial.print(" Hz from 48MHz), 64 bytes in ");
+      Serial.print(t);
+      Serial.println(" us");
+
+      float x = 512.0f * 1.0e6f / (float)rates[i];  // us of bits at the asked rate
+      sx += x;
+      sy += (float)t;
+      sxx += x * x;
+      sxy += x * (float)t;
+    }
+    float slope = (4.0f * sxy - sx * sy) / (4.0f * sxx - sx * sx);
+    Serial.print("real SCK / asked SCK = ");
+    Serial.print(1.0f / slope, 3);
+    Serial.print(", driver time per transfer ");
+    Serial.print((sy - slope * sx) / 4.0f, 0);
+    Serial.println(" us");
+    check("SPI SCK is the rate asked for (+/-10%)", within(1.0f / slope, 1.0f, 0.10f));
+
+    // Loopback, if D11-D12 is jumpered: 0x55 and 0xAA both coming back
+    // says so (a floating D12 can match 0x00 or 0xFF by chance)
     SPI.beginTransaction(SPISettings(1000000u, MSBFIRST, SPI_MODE0));
     const uint8_t patterns[] = { 0x55, 0xAA, 0x00, 0xFF, 0x3C, 0x81 };
     int match = 0;
-    for (uint8_t p : patterns)
-      if (SPI.transfer(p) == p)
-        match++;
+    bool jumpered = true;
+    for (uint8_t p : patterns) {
+      bool same = SPI.transfer(p) == p;
+      match += same;
+      if (p == 0x55 || p == 0xAA)
+        jumpered = jumpered && same;
+    }
     uint16_t w16 = SPI.transfer16(0x1234);
     SPI.endTransaction();
     SPI.end();
-    if (match == 0)
+    if (!jumpered)
       Serial.println("SPI loopback: SKIP (no D11-D12 jumper)");
     else
       check("SPI loopback D11-D12: 6 bytes and transfer16()", match == 6 && w16 == 0x1234);

@@ -38,7 +38,7 @@
 | 知りたいこと | 見る場所 |
 |---|---|
 | 対応APIの一覧・未対応項目 | [API_COMPATIBILITY.md](API_COMPATIBILITY.md) |
-| ピン配置（ボード別） | [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) / [PIN_MAPPING_N947.md](PIN_MAPPING_N947.md) / [PIN_MAPPING_A156.md](PIN_MAPPING_A156.md) / [PIN_MAPPING_N236.md](PIN_MAPPING_N236.md) |
+| ピン配置（ボード別） | [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) / [PIN_MAPPING_N947.md](PIN_MAPPING_N947.md) / [PIN_MAPPING_A156.md](PIN_MAPPING_A156.md) / [PIN_MAPPING_N236.md](PIN_MAPPING_N236.md) / [PIN_MAPPING_C444.md](PIN_MAPPING_C444.md) |
 | リリースごとの変更点 | [CHANGELOG.md](CHANGELOG.md) |
 | 使い方の入門 | [TUTORIAL.md](TUTORIAL.md) / [TUTORIAL.ja.md](TUTORIAL.ja.md) |
 | クラス・関数のリファレンス | `docs/api/`（Doxygen生成、リリース前に再生成する） |
@@ -319,16 +319,34 @@ xPack checksums（正しい値）：
   FTFAは4バイト単位で書き、消去せずに同じ場所へもう一度書けない。命令の実行中はそのフラッシュを読めない（SDKのドライバは待ちをRAMで行う）。
   PITとLPUART0/1はバスクロック、I2C0・I2C1・SPI1はシステムクロック、SPI0はバスクロック。デジタルの機能のピン（TPMを含む）は`GPIOx_PDIR`で読める。
   `SIM_COPC`（ウォッチドッグ）はリセット後に一度だけ書けて、SDKの`SystemInit()`が0を書くので、スケッチからは動かせない。
-  回路図: A4/A5（PTC2/PTC1）にはR26・R27（4.7kΩ）のプルアップがある。D18/D19にはプルアップが無い（`Wire.begin()`の内蔵プルアップで持ち上がる）。SW3（D4）はR15（10kΩ）でプルアップ。VREFHはJP6で3.3V
+  回路図: A4/A5（PTC2/PTC1）にはR26・R27（4.7kΩ）のプルアップがある。D18/D19にはプルアップが無い（`Wire.begin()`の内蔵プルアップで持ち上がる）。SW3（D4）はR15（10kΩ）でプルアップ。**VREFHの端子はJP6が開いていてどこにもつながっていない**（ボードの`board.h`が`BOARD_ADC_USE_ALT_VREF`を立て、SDKのADC16の作例はVALTH＝VDDAを使う。2026-10-17に「JP6で3.3V」と書いたのは誤りで、実機でVREFHを基準にすると全部の入力が最大値になった）
 - **RMとデータシートで見つけて直した不具合（2026-10-17、ビルドだけ）**: TPMの周期が65536カウントのときMODが`0xFFFF`になり、`analogWrite(pin, 255)`の`CnV`が16ビットに切り詰められて0%になっていた（上限を65535カウントにした）。
   ADC16のクロックがSDKの既定（非同期クロックの8分周、0.38〜0.91MHz）で16ビットの下限を下回っていた（バスクロックの8分周、3MHzにした）。
   SPI1にSDKの作例（SPI0用）のバスクロックを渡していて、SCKが要求の2倍になっていた（システムクロックにした）
-- **できているもの（2026-10-16、ビルドだけ、実機は未確認）**: `variants/frdm_mcxc444/`（`README.md`に出どころ）、`boards.txt`（デバッグまで）、`gdb-bridge`の`c444.cfg`、
+- **実機で確かめたこと（2026-10-18）**: `examples/Arduino_compatible_API/test_bringup_C444`（配線なし、立ち上げの順を1本で）がALL OK。
+  `release_check`の`01`・`06`（2回、書き込みをまたいだ保持も）・`09`、`test_avr_pgmspace`（M0+でアドレスのそろっていない読み出しも）、`test_network_base_classes`がALL OK/ALL PASS。
+  `test_fault_report`は8種類のうち7種類で`error: HardFault at PC ...`がクラッシュした行を指す（M0+にはCFSRが無いので種類は出ない。割り込みの中は`in an interrupt`）。
+  **スタックあふれ（kind 4）は報告されず、リセットを繰り返す**（M0+には`MSPLIM`が無い）。
+  書き込みはLinkServer 26.6.137で、フラッシュを正しく判定する
+- **実機で見つけて直した不具合（2026-10-18）**: どれもC444の分岐か、MCXでは値の変わらない形で直した。
+  - **ポートのクロック**: SDKのテンプレートの`BOARD_InitBootPins()`はPORTAのクロックしか入れず、`pinMode(RED, OUTPUT)`（PTE31）でHardFaultになった。`mcu.cpp`で5つとも入れる
+  - **GPIOのALT**: KinetisはALT0が「無効（アナログ）」でGPIOはALT1（MCXはALT0がGPIO）。`DigitalInOut`がMUXを設定せず、`pinMode()`と`Serial.end()`は`pin_mux( 0 )`でGPIOに戻していたので、入出力・プル・割り込み・`tone`・`Wire`の内蔵プルアップが全部効かなかった。
+    コンストラクタ（C444の分岐）でALT1にし、GPIOに戻す所は`kPORT_MuxAsGpio`（MCXでは0、C444では1）にした
+  - **ADCの基準電圧**: 上のVREFHの件。`AnalogIn`はVALTHを使う（VDDAを約3.29Vと読む）
+  - **`delayMicroseconds()`**: `wait_us()`の倍精度と64ビットの計算がM0+ではソフトウェアで約45µsかかり、10µsが56µsになった。M0+ではSysTickのカウンタを数える（割り込みを止めていても正しい）
+  - **I2CのSCL**: `I2C_MasterSetBaudRate()`の引数（ボーレートと元のクロック）が逆で、いつも2.4MHzだった（LPI2Cの関数は順番が逆）
+  - **I2Cのリピーテッドスタート**: STOPを付けない書き込みがNAKで失敗したあとも印が残り、次の転送が失敗した（`release_check/01`のStreamの3項目）。失敗したら消す
+  - **SPIのSCK**: `SPI::frequency()`が頼まれた周波数を半分にしていた（以前のバスクロックの誤りを打ち消していたもの）。2026-10-17にクロックを直したので、半分にするのをやめた
+  - **TPMの`CnV`**: カウンタが動いている間、`CnV`への書き込みは周期の終わりまでバッファで待ち、その間の同じチャネルへの書き込みは捨てられる（RMのとおり。読み戻すと書いた値が返るので、読んでも分からない）。
+    1周期に2回の`analogWrite()`の2回目と、D5/D6/D9の取り合いで後から来たピンのデューティが効かなかった。
+    **TOF（オーバーフローのフラグ）は、`STATUS`・`SC`のどちらに書いても実機で消えないことが多く**（消えた回もある。理由は分からない）、使えない。
+    そこで書いた時点の`CNT`・`MOD`・分周比から周期の終わりの時刻を出し、それより前の書き込みは覚えておいてSysTick（`pwm_tpm_service()`）が書く。同じ値は書かない
+- **できているもの（2026-10-16、ビルドだけ。上の項目以外は実機は未確認）**: `variants/frdm_mcxc444/`（`README.md`に出どころ）、`boards.txt`（デバッグまで）、`gdb-bridge`の`c444.cfg`、
   `micros()`（SysTick。`__ARM_ARCH_6M__`で分ける）、HardFaultの報告（PCだけ）と`semihost_hardfault.c`（M0+ではスタックしたPCがフラッシュの中のときだけBKPTを見る）、
   `Serial`（`USBTX`/`USBRX`が`D1`/`D0`なので、ピン番号の付け替えの前に生の値を取る）、`Wire`/`Wire1`、`SPI`（r01libに無かった`bit_order()`を足し、CSは転送ごとに動かさずスケッチに任せる。MCXのボードと同じ）、`analogRead`（ADC16、16ビット、校正）、
   `analogWrite`/`analogWriteFrequency`（TPM、D5/D6/D9の取り合い）、`tone`（PITのチャネル0）、`EEPROM`（FTFA、16バイト単位、フラッシュの最後の8KB、命令の間は割り込みを止める）、`Servo`。
   `PIN_MAPPING_C444.md`・README・API_COMPATIBILITY・CHANGELOG・LICENSE（`startup_mcxc444.cpp`のFOPTの変更）・`docs/porting_a_new_board.md`
-- **残り**: 実機確認（`Serial`と点滅から、`docs/porting_a_new_board.md`の順で）、`Wire`のターゲットモードと`setWireTimeout()`（Kinetisの`fsl_i2c`で）、
+- **残り**: 実機確認の続き（`release_check/02`・`03`は人が見る・押す、ジャンパの要る`1n`・`2n`、`Servo`の実物、`analogRead()`を既知の電圧で）、スタックあふれの扱い、`Wire`のターゲットモードと`setWireTimeout()`（Kinetisの`fsl_i2c`で）、
   作例の約35本（`#error "This sketch has no settings for this board yet"`と`PWM0`を使うもの。`release_check`の01・08・11・13・14・21・24はジャンパの決め方を実機と一緒に）、
   mcxPinStateとmcxRCServoの作例（上流のリポジトリ。pushはユーザーの了承が要る）、CIのボードの表への追加（作例がそろってから）
 

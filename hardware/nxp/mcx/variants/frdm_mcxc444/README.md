@@ -44,7 +44,17 @@ A153のものを元に、SRAMを1つ（`0x1FFFE000`から32KB）にし、Kinetis
 
 ## 実機確認
 
-まだ実機では動かしていない（0.10.0の作業中）。
+2026-10-18に開発用のボードで確かめた（0.10.0の作業中。書き込みはLinkServer 26.6.137）。
+
+- `test_bringup_C444`（下記）がALL OK
+- `release_check`の`01`・`06`（2回。書き込みをまたいだ保持も）・`09`がALL OK
+- `test_avr_pgmspace`（アドレスのそろっていない`pgm_read_*`も）と`test_network_base_classes`がALL PASS
+- `test_fault_report`: 8種類のうち7種類で`error: HardFault at PC ...`がクラッシュした行を指す。
+  Cortex-M0+には故障の種類を示すレジスタが無いので、種類は出ない。スタックあふれ（4）は報告されず、ボードがリセットを繰り返す（M0+にはスタックの上限のレジスタが無い）
+
+まだのもの: `release_check`の`02`・`03`（人が見る・押す）、ジャンパの要る`1n`、外部の部品が要る`2n`、`Wire`のターゲットモードと`setWireTimeout()`（未実装）。
+
+ADCの基準電圧はVALTH（VDDA）にしている。このボードではVREFHの端子がJP6で切り離されていて、VREFHを基準にすると全部の入力が最大値になる（ボードの`board.h`の`BOARD_ADC_USE_ALT_VREF`、SDKのADC16の作例と同じ）。
 
 最初に流すのは[`examples/Arduino_compatible_API/test_bringup_C444`](../../../../../examples/Arduino_compatible_API/test_bringup_C444)。
 配線なしで、`docs/porting_a_new_board.md`の立ち上げの順（赤のLED、`Serial`、クロック、`millis()`/`micros()`、全ピンのプルアップ・プルダウン、割り込み、`analogRead()`、`analogWrite()`、`tone()`、`Wire1`の加速度センサー、`SPI`、`EEPROM`、`Servo`、`Wire`のスキャン）を1本で確かめる。
