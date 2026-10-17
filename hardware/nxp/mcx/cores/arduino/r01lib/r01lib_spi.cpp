@@ -87,7 +87,10 @@ SPI::~SPI()
 
 void SPI::frequency( uint32_t frequency )
 {
-	masterConfig.baudRate_Bps = frequency / 2;	//	This may be a problem of SDK v25.12
+	//	The rate as asked. This used to be halved, which made up for the bus
+	//	clock passed as SPI1's module clock (it is the system clock, twice
+	//	that). With the right clock above, halving made SCK half the rate
+	masterConfig.baudRate_Bps = frequency;
 
 //	SPI_Deinit( unit_base );
 	SPI_MasterInit( unit_base, &masterConfig, master_clk_freq );

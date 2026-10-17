@@ -640,8 +640,8 @@ void Serial::end( void )
     DigitalInOut tx_io( (uint8_t)_tx_pin );
     DigitalInOut rx_io( (uint8_t)_rx_pin );
 
-    tx_io.pin_mux( 0 );
-    rx_io.pin_mux( 0 );
+    tx_io.pin_mux( kPORT_MuxAsGpio );   // ALT0 on MCX, ALT1 on FRDM-MCXC444
+    rx_io.pin_mux( kPORT_MuxAsGpio );
 
     pin_registry_forget( this );
     _pins_muxed = false;

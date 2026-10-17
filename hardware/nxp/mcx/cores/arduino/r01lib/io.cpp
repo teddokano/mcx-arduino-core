@@ -487,6 +487,12 @@ DigitalInOut::DigitalInOut( uint8_t pin_num, bool direction, bool v, int pin_mod
 	gpio_pin	= pins[ _pn ].pin;
 	
 	GPIO_PinInit( gpio_n, gpio_pin, &led_config );
+#if defined( CPU_MCXC444VLH )
+	//	On Kinetis a pin out of reset is ALT0, disabled (analog), and GPIO
+	//	is ALT1: without this the pin neither drives nor reads. The MCX
+	//	chips come out of reset as GPIO (ALT0 there)
+	PORT_SetPinMux( port_n, gpio_pin, kPORT_MuxAsGpio );
+#endif
 	mode( pin_mode );
 #if defined( CPU_MCXA153VLH ) || defined( CPU_MCXN947VDF ) || defined( CPU_MCXA156VLL ) || defined( CPU_MCXN236VDF )
 	//	Without the input buffer (PCR.IBE) digitalRead() reads 0, and so
@@ -502,7 +508,7 @@ DigitalInOut::DigitalInOut( uint8_t pin_num, bool direction, bool v, int pin_mod
 
 	value( (bool)_value );
 
-	pin_registry_note( this, "GPIO", &_pn, 1, 0 );
+	pin_registry_note( this, "GPIO", &_pn, 1, kPORT_MuxAsGpio );
 }
 
 DigitalInOut::~DigitalInOut()

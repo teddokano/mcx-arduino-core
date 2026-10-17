@@ -228,6 +228,10 @@ private:
     int      _pin;
 };
 
+/** Writes the CnV values that had to wait for a TPM's period to end.
+ *  Called from SysTick_Handler() every millisecond, with micros() */
+void pwm_tpm_service( uint32_t now );
+
 #else
 #error "PwmOut.h: no PWM outputs for this chip"
 #endif

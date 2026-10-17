@@ -463,8 +463,14 @@ void AnalogIn::_acquire_peripheral( void )
     if ( _instance_count == 0 )
     {
         adc16_config_t cfg;
-        ADC16_GetDefaultConfig( &cfg );     // VREFH/VREFL
+        ADC16_GetDefaultConfig( &cfg );
         cfg.resolution = kADC16_ResolutionSE16Bit;
+
+        // The board leaves the VREFH pin open (JP6), so the alternate
+        // reference, VALTH/VALTL (VDDA/VSSA): the board's board.h sets
+        // BOARD_ADC_USE_ALT_VREF, and the SDK's ADC16 demos use it. With
+        // VREFH every input, the bandgap included, read full scale
+        cfg.referenceVoltageSource = kADC16_ReferenceVoltageSourceValt;
 
         // The default, the asynchronous clock divided by 8, is 0.38-0.91MHz,
         // below the data sheet's 2.0MHz floor for 16-bit conversions. The

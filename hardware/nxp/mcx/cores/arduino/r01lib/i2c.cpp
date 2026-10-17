@@ -276,7 +276,9 @@ I2C::~I2C()
 void I2C::frequency( uint32_t frequency )
 {
 #if	CPU_MCXC444VLH
-	I2C_MasterSetBaudRate( unit_base, I2C_MASTER_CLOCK_FREQUENCY, frequency );
+	//	( base, baud rate, source clock ): with the two swapped, the SDK picked
+	//	its smallest divider and SCL ran at 2.4MHz whatever was asked
+	I2C_MasterSetBaudRate( unit_base, frequency, I2C_MASTER_CLOCK_FREQUENCY );
 #else
 	/*	Clear the glitch filters before handing over to the SDK.
 	 *
@@ -450,7 +452,16 @@ status_t I2C::write_core( uint8_t address, const uint8_t *dp, int length, bool s
 
 	repeated_start_required_flag	= !stop;
 
-	return I2C_MasterTransferBlocking( unit_base, &masterXfer );
+	status_t	r	= I2C_MasterTransferBlocking( unit_base, &masterXfer );
+
+	//	On an error the SDK has sent a STOP (NAK) or the bus was lost
+	//	(arbitration): the next transfer starts with a START, not a repeated
+	//	START. Left set, the transfer after a NAK on a requestFrom() with a
+	//	register address failed too
+	if ( kStatus_Success != r )
+		repeated_start_required_flag	= false;
+
+	return r;
 }
 
 status_t I2C::read_core( uint8_t address, uint8_t *dp, int length, bool stop )
@@ -472,7 +483,16 @@ status_t I2C::read_core( uint8_t address, uint8_t *dp, int length, bool stop )
 
 	repeated_start_required_flag	= !stop;
 
-	return I2C_MasterTransferBlocking( unit_base, &masterXfer );
+	status_t	r	= I2C_MasterTransferBlocking( unit_base, &masterXfer );
+
+	//	On an error the SDK has sent a STOP (NAK) or the bus was lost
+	//	(arbitration): the next transfer starts with a START, not a repeated
+	//	START. Left set, the transfer after a NAK on a requestFrom() with a
+	//	register address failed too
+	if ( kStatus_Success != r )
+		repeated_start_required_flag	= false;
+
+	return r;
 }
 #else
 /*	Emit a STOP, working around LPI2C_MasterStop()'s own error handling.

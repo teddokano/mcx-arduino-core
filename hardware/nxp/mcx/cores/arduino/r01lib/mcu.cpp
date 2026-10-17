@@ -262,6 +262,15 @@ void init_mcu( void )
 	BOARD_InitBootClocks();
 	BOARD_InitDebugConsole();
 
+	//	The SDK template's BOARD_InitBootPins() clocks only PORTA (the debug
+	//	UART). Touching another port's PCR with its clock gated off is a
+	//	HardFault on Kinetis, so open all five here, as the MCX chips do above
+	CLOCK_EnableClock( kCLOCK_PortA );
+	CLOCK_EnableClock( kCLOCK_PortB );
+	CLOCK_EnableClock( kCLOCK_PortC );
+	CLOCK_EnableClock( kCLOCK_PortD );
+	CLOCK_EnableClock( kCLOCK_PortE );
+
 #if (defined(SDK_DEBUGCONSOLE) && (SDK_DEBUGCONSOLE == DEBUGCONSOLE_REDIRECT_TO_SDK))	
 	/* PORTA1 (pin 23) is configured as LPUART0_RX */
 	/* PORTA2 (pin 24) is configured as LPUART0_TX */

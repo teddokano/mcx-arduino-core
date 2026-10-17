@@ -461,6 +461,8 @@ PwmOut::operator float()
 #include "mcu.h"
 #include "pin_registry.h"
 
+unsigned long micros( void );   // arduino_main.cpp
+
 namespace {
 
 struct TpmPin {
@@ -484,14 +486,22 @@ constexpr int   CHANNELS    = 6;
 
 TPM_Type *const s_tpm[ TPMS ] = { TPM0, TPM1 };
 
-// Per TPM: the shared period, and which PwmOut drives each channel
+// Per TPM: the shared period, which PwmOut drives each channel, and the
+// MOD and CnV values on their way to the hardware (set_cnv())
 struct TpmState {
     bool     init;
     uint32_t period_us;
     PwmOut   *owner[ CHANNELS ];
+    uint32_t mod;                   // MOD as last written
+    uint16_t cnv[ CHANNELS ];       // CnV as last written
+    uint32_t free_at[ CHANNELS ];   // micros() when that write has left the CnV buffer
+    uint16_t later[ CHANNELS ];     // a CnV that has to wait for the buffer
+    uint8_t  waiting;               // channels with a value in later[]
 };
 
 TpmState    s_state[ TPMS ] = {};
+
+volatile bool   s_any_waiting   = false;
 
 const TpmPin *find_pin( int pin )
 {
@@ -518,7 +528,102 @@ inline uint32_t source_clock( void )
     return CLOCK_GetFreq( kCLOCK_McgIrc48MClk );   // TPMSRC = 1, set below
 }
 
+// How long until the counter overflows, in microseconds, rounded up
+uint32_t us_to_overflow( int t )
+{
+    TPM_Type    *base   = s_tpm[ t ];
+    uint32_t    ps      = ( base->SC & TPM_SC_PS_MASK ) >> TPM_SC_PS_SHIFT;
+    uint32_t    ticks   = base->MOD + 1u - base->CNT;
+
+    return ( ( ticks << ps ) + ( source_clock() / 1000000u ) - 1u ) / ( source_clock() / 1000000u );
+}
+
+void write_cnv( int t, int ch, uint16_t value, uint32_t now )
+{
+    s_tpm[ t ]->CONTROLS[ ch ].CnV  = value;
+    s_state[ t ].cnv[ ch ]          = value;
+    s_state[ t ].free_at[ ch ]      = now + us_to_overflow( t ) + 2u;
+}
+
+// While the counter runs, a CnV write waits in a buffer for the end of the
+// period, and further writes to that buffer before then are ignored
+// (reference manual, TPMx_CnV; seen on the board too). The TPM's own flag
+// for the end of a period, TOF, could not be cleared reliably on the board,
+// so the time the buffer frees up is worked out from the counter instead,
+// and a value for a channel whose buffer is still taken waits here until
+// pwm_tpm_service() (SysTick, every millisecond) writes it. analogWrite()
+// never waits, and the last value always lands
+void set_cnv( int t, int ch, uint16_t value, uint32_t now )
+{
+    TPM_Type    *base   = s_tpm[ t ];
+    TpmState    &st     = s_state[ t ];
+    uint8_t     bit     = (uint8_t)( 1u << ch );
+    uint32_t    primask = __get_PRIMASK();
+
+    __disable_irq();
+
+    if ( !( base->SC & TPM_SC_CMOD_MASK ) )
+    {
+        // Stopped: the register takes the value at once
+        base->CONTROLS[ ch ].CnV    = value;
+        st.cnv[ ch ]                = value;
+        st.free_at[ ch ]            = now;
+        st.waiting                  &= (uint8_t)~bit;
+    }
+    else if ( st.waiting & bit )
+    {
+        st.later[ ch ]  = value;            // replaces the value waiting
+    }
+    else if ( value == st.cnv[ ch ] )
+    {
+        // already there, or on its way
+    }
+    else if ( (int32_t)( now - st.free_at[ ch ] ) < 0 )
+    {
+        st.later[ ch ]  = value;
+        st.waiting      |= bit;
+        s_any_waiting   = true;
+    }
+    else
+    {
+        write_cnv( t, ch, value, now );
+    }
+
+    __set_PRIMASK( primask );
+}
+
 } // namespace
+
+void pwm_tpm_service( uint32_t now )
+{
+    if ( !s_any_waiting )
+        return;
+
+    bool    still   = false;
+
+    for ( int t = 0; t < TPMS; t++ )
+    {
+        TpmState    &st = s_state[ t ];
+
+        for ( int ch = 0; ch < CHANNELS; ch++ )
+        {
+            uint8_t bit = (uint8_t)( 1u << ch );
+
+            if ( !( st.waiting & bit ) )
+                continue;
+
+            if ( (int32_t)( now - st.free_at[ ch ] ) >= 0 )
+            {
+                write_cnv( t, ch, st.later[ ch ], now );
+                st.waiting  &= (uint8_t)~bit;
+            }
+            else
+                still   = true;
+        }
+    }
+
+    s_any_waiting   = still;
+}
 
 bool PwmOut::is_pwm_pin( int pin )
 {
@@ -638,6 +743,7 @@ void PwmOut::apply( void )
     TPM_Type    *base   = s_tpm[ _tpm ];
     TpmState    &st     = s_state[ _tpm ];
     uint32_t    src_clk = source_clock();
+    uint32_t    now     = (uint32_t)micros();
 
     // The smallest prescaler (highest resolution) for which the period
     // still fits the 16-bit counter. At most 0xFFFF ticks, so MOD stays
@@ -655,16 +761,24 @@ void PwmOut::apply( void )
     if ( ticks > 0xFFFFu )
         ticks = 0xFFFFu;
 
-    // The prescaler can only change with the counter stopped
+    // The prescaler can only change with the counter stopped. Stopped, the
+    // registers take MOD and CnV at once, so nothing is left waiting
     uint32_t    cur_ps  = ( base->SC & TPM_SC_PS_MASK ) >> TPM_SC_PS_SHIFT;
     if ( cur_ps != prescale || !( base->SC & TPM_SC_CMOD_MASK ) )
     {
         TPM_StopTimer( base );
-        base->SC    = ( base->SC & ~TPM_SC_PS_MASK ) | TPM_SC_PS( prescale );
-        base->CNT   = 0u;
+        base->SC        = ( base->SC & ~( TPM_SC_PS_MASK | TPM_SC_TOF_MASK ) ) | TPM_SC_PS( prescale );
+        base->CNT       = 0u;
+        st.waiting      = 0u;
+        st.mod          = 0xFFFFFFFFu;  // so it is written below
     }
 
-    base->MOD   = (uint32_t)( ticks - 1u );
+    // MOD is buffered like CnV: write it only when it changes
+    if ( st.mod != (uint32_t)( ticks - 1u ) )
+    {
+        base->MOD   = (uint32_t)( ticks - 1u );
+        st.mod      = (uint32_t)( ticks - 1u );
+    }
 
     for ( int ch = 0; ch < CHANNELS; ch++ )
     {
@@ -678,7 +792,7 @@ void PwmOut::apply( void )
         if ( o->_pulse_us >= st.period_us || cnv > ticks )
             cnv = ticks;
 
-        base->CONTROLS[ ch ].CnV    = (uint32_t)cnv;
+        set_cnv( _tpm, ch, (uint16_t)cnv, now );
     }
 
     if ( !( base->SC & TPM_SC_CMOD_MASK ) )
