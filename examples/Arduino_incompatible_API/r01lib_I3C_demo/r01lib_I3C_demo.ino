@@ -47,10 +47,21 @@
  *  - Each target is addressed by the dynamic address DAA reports for it
  *  - The LED follows the first target's temperature. The original passed
  *    the LED a temperature that was never updated, so it stayed blue
+ *  - FRDM-MCXC444 has no I3C: there the sketch only says so
  */
 
 #include <Arduino.h>
 #include "P3T1755.h"
+
+#if defined(FRDM_MCXC444)
+void setup() {
+  Serial.begin(115200);
+  Serial.println("FRDM-MCXC444 has no I3C");
+}
+
+void loop() {
+}
+#else
 
 I3C i3c(I3C_SDA, I3C_SCL);  //	SDA, SCL
 
@@ -256,3 +267,4 @@ void led_set_color(float temp, float ref) {
 void ibi_trigger_output(void) {
   digitalWrite(TRIGGER, TRIGGER_POLARITY);
 }
+#endif

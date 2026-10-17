@@ -14,6 +14,9 @@
  *
  *  Wiring needed: D0-D1 jumper (Serial1 loopback) for everything except
  *  the String extras section.
+ *
+ *  FRDM-MCXC444 has no Serial1 (its Serial is D0/D1 itself), so only the
+ *  String extras section runs there.
  */
 
 #include <Arduino.h>
@@ -36,6 +39,9 @@ void setup() {
 
   Serial.println("Serial/Stream helpers test (readBytes/parseInt/parseFloat/find/readString/flush/peek)");
 
+#if defined(FRDM_MCXC444)
+  Serial.println("Serial1 sections: SKIP (FRDM-MCXC444 has no Serial1)");
+#else
   Serial1.begin(9600);
   Serial1.setTimeout(500);
 
@@ -103,6 +109,7 @@ void setup() {
 
   String s3 = Serial1.readString();  // leftover, then times out
   check("readStringUntil leftover", s3 == "def");
+#endif
 
   // ---- String::reserve/getBytes/toCharArray/startsWith(offset) ----
   String s4 = "Hello, world!";
@@ -118,6 +125,7 @@ void setup() {
 
   check("String::startsWith(s, offset)", s4.startsWith("world", 7) && !s4.startsWith("world", 0));
 
+#if !defined(FRDM_MCXC444)
   // ---- flush() ----
   // A real hardware UART (not the USB-CDC bridge) at a slow baud rate, so
   // the physical transmission time is large enough to measure. If flush()
@@ -159,6 +167,7 @@ void setup() {
   int p3 = Serial1.peek();
   check("peek() doesn't consume; matches read(); advances after read()",
         p1 == 'A' && p2 == 'A' && availAfterPeek == availBeforePeek && r == 'A' && p3 == 'B');
+#endif
 
   Serial.println();
   Serial.println(failCount == 0 ? "ALL OK" : "SOME FAILED");

@@ -11,18 +11,29 @@
  * analyzer against the values printed to Serial.
  *
  * Portable across boards: PWM0 is common to FRDM-MCXA153/FRDM-MCXN947.
+ * FRDM-MCXC444 has no PWM0-PWM5 pins, and uses D3 instead.
  */
 
 #include <Arduino.h>
+
+// The pin driven: PWM0, or on FRDM-MCXC444, which has no PWM0-PWM5 pins,
+// D3 (TPM1_CH0)
+#if defined(FRDM_MCXC444)
+#define PWM_PIN D3
+#define PWM_PIN_NAME "D3"
+#else
+#define PWM_PIN PWM0
+#define PWM_PIN_NAME "PWM0"
+#endif
 
 void setup() {
   Serial.begin(115200);
   while (!Serial)
     ;
 
-  pinMode(PWM0, OUTPUT);
+  pinMode(PWM_PIN, OUTPUT);
 
-  Serial.println("analogWriteFrequency test -- PWM0, 50% duty at each frequency");
+  Serial.println("analogWriteFrequency test -- " PWM_PIN_NAME ", 50% duty at each frequency");
 }
 
 void loop() {
@@ -31,10 +42,10 @@ void loop() {
 
   uint32_t f = freqs[i];
 
-  analogWriteFrequency(PWM0, f);
-  analogWrite(PWM0, 128);  // 50% duty (8bit default resolution) at the new frequency
+  analogWriteFrequency(PWM_PIN, f);
+  analogWrite(PWM_PIN, 128);  // 50% duty (8bit default resolution) at the new frequency
 
-  Serial.printf("PWM0: %lu Hz (period %lu us), 50%% duty\r\n",
+  Serial.printf(PWM_PIN_NAME ": %lu Hz (period %lu us), 50%% duty\r\n",
                 (unsigned long)f, (unsigned long)(1000000UL / f));
 
   i = (i + 1) % (sizeof(freqs) / sizeof(freqs[0]));

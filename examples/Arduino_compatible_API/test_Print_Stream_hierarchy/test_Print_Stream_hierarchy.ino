@@ -12,6 +12,9 @@
  *
  *  Wiring needed: D0-D1 jumper (Serial1 loopback, for the Stream&
  *  polymorphism check).
+ *
+ *  FRDM-MCXC444 has no Serial1 (its Serial is D0/D1 itself), so the two
+ *  Serial1 checks are left out there.
  */
 
 #include <Arduino.h>
@@ -96,6 +99,9 @@ void setup() {
   check("Printable printTo() byte-count accumulation", pn == 5);
 
   // ---- Stream& genuine polymorphism ----
+#if defined(FRDM_MCXC444)
+  Serial.println("Serial1 sections: SKIP (FRDM-MCXC444 has no Serial1)");
+#else
   Serial1.begin(9600);
   Serial1.setTimeout(1000);
   Serial1.print("xxxHELLOyyy");
@@ -109,6 +115,7 @@ void setup() {
   Serial1.find("=");
   long v = Serial1.parseInt();
   check("Stream::parseInt() after refactor", v == 123);
+#endif
 
   Serial.println("done");
 }

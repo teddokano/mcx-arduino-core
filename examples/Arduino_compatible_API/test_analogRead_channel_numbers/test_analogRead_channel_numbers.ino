@@ -14,7 +14,7 @@
 #include <Arduino.h>
 #include "pin_registry.h"
 
-#if defined(FRDM_MCXA153) || defined(FRDM_MCXA156) || defined(FRDM_MCXN236)
+#if defined(FRDM_MCXA153) || defined(FRDM_MCXA156) || defined(FRDM_MCXN236) || defined(FRDM_MCXC444)
 const int ANALOG_PIN = A0;
 #elif defined(FRDM_MCXN947)
 const int ANALOG_PIN = A2;  // A0/A1 are not analog inputs on FRDM-MCXN947

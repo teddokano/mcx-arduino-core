@@ -5,6 +5,9 @@
  *  jumper) as a loopback source, to confirm bytes actually go out and
  *  come back correctly -- including a null byte, to prove the buffer
  *  overload is count-based, not string-based.
+ *
+ *  FRDM-MCXC444 has no Serial1 (its Serial is D0/D1 itself), so only the
+ *  BIN checks run there.
  */
 
 #include <Arduino.h>
@@ -21,7 +24,9 @@ void setup() {
   while (!Serial)
     ;
 
+#if !defined(FRDM_MCXC444)
   Serial1.begin(9600);
+#endif
 
   Serial.println("Serial BIN / write() test");
 
@@ -43,6 +48,9 @@ void setup() {
   check("-5 BIN == -101", String(-5, BIN) == "-101");
 
   // ---- write() overloads (Serial1 loopback) ----
+#if defined(FRDM_MCXC444)
+  Serial.println("Serial1 sections: SKIP (FRDM-MCXC444 has no Serial1)");
+#else
   size_t n1 = Serial1.write((uint8_t)'A');
   delay(30);
   int r1 = Serial1.read();
@@ -65,6 +73,7 @@ void setup() {
     rawback[j++] = (uint8_t)Serial1.read();
   bool rawMatch = (j == 4) && rawback[0] == 0x41 && rawback[1] == 0x00 && rawback[2] == 0x42 && rawback[3] == 0xFF;
   check("write(buffer, size) handles null byte, count-based", n3 == 4 && rawMatch);
+#endif
 }
 
 void loop() {

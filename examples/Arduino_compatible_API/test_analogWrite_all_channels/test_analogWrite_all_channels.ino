@@ -13,6 +13,11 @@
  *  per-channel (A vs B). This phase holds one channel of each pair at a
  *  fixed 50% while ramping its sibling through 0/25/50/75/100%, to confirm
  *  changing one channel's duty doesn't disturb the other's.
+ *
+ *  FRDM-MCXC444 has no PWM0-PWM5 pins. Its PWM is on three TPM channels:
+ *  D3 (TPM1_CH0), D10 (TPM0_CH4), and D5/D6/D9, which all share TPM0_CH2.
+ *  Phase A drives D3, D9 and D10; phase B's pair is D10 and D9, the two
+ *  channels of TPM0, which share its period.
  */
 
 #include <Arduino.h>
@@ -26,15 +31,21 @@ void setup() {
 }
 
 void phaseA() {
-  Serial.println("--- Phase A: distinct fixed duty on all 6 channels ---");
+  Serial.println("--- Phase A: distinct fixed duty on every channel ---");
 
   struct { int pin; const char *name; uint8_t value; } chans[] = {
+#if defined(FRDM_MCXC444)
+    { D3, "D3", 26 },     // ~10%
+    { D9, "D9", 128 },    // ~50%
+    { D10, "D10", 230 },  // ~90%
+#else
     { PWM0, "PWM0", 26 },   // ~10%
     { PWM1, "PWM1", 77 },   // ~30%
     { PWM2, "PWM2", 128 },  // ~50%
     { PWM3, "PWM3", 179 },  // ~70%
     { PWM4, "PWM4", 230 },  // ~90%
     { PWM5, "PWM5", 51 },   // ~20%
+#endif
   };
 
   for (auto &c : chans) {
@@ -75,9 +86,13 @@ void phaseB_pair(const char *fixedName, int fixedPin,
 void loop() {
   phaseA();
 
+#if defined(FRDM_MCXC444)
+  phaseB_pair("D10", D10, "D9", D9);
+#else
   phaseB_pair("PWM1", PWM1, "PWM0", PWM0);
   phaseB_pair("PWM3", PWM3, "PWM2", PWM2);
   phaseB_pair("PWM5", PWM5, "PWM4", PWM4);
+#endif
 
   Serial.println("--- cycle complete, repeating ---");
 }

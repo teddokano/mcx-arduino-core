@@ -13,16 +13,17 @@
  *  This sketch needs no per-board #if branching -- SPI1/MB_CS already
  *  resolve to the right pins/peripheral on either board.
  *
- *  FRDM-MCXN236 has no SPI1: its MikroBus SPI is SPI's own D11-D13 lines,
- *  with CS on D18. There the sketch only says so.
+ *  FRDM-MCXN236 and FRDM-MCXC444 have no SPI1: their MikroBus SPI is SPI's
+ *  own D11-D13 lines, with CS on D18 (N236) or D10 (C444). There the sketch
+ *  only says so.
  */
 
 #include <Arduino.h>
 
-#if defined(FRDM_MCXN236)
+#if defined(FRDM_MCXN236) || defined(FRDM_MCXC444)
 void setup() {
   Serial.begin(115200);
-  Serial.println("FRDM-MCXN236 has no SPI1 (its MikroBus SPI is SPI's own lines)");
+  Serial.println("This board has no SPI1 (its MikroBus SPI is SPI's own lines)");
 }
 
 void loop() {

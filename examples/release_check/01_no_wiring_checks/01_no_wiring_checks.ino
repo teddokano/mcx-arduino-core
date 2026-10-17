@@ -26,6 +26,11 @@
  *  registers where the other boards use the temperature sensor's T_LOW,
  *  and their messages still say T_LOW. Keep the board still while it runs.
  *
+ *  FRDM-MCXC444 is the same as FRDM-MCXN236 here: the accelerometer is on
+ *  its Wire1 (I2C0, which no header pin reaches). It has no PWM0-PWM5, so
+ *  analogWrite() goes to D3, and Wire's target mode is not done yet on
+ *  that board, so that section only says so.
+ *
  *  Every check here is fully automatic -- read the final "ALL OK"/
  *  "N FAILED" line, no jumpers, no scope, no button presses. Sketches
  *  that need a human to watch a scope/LED/piezo, press a button, or
@@ -42,8 +47,9 @@
 
 // The on-board P3T1755's bus: Wire1 on FRDM-MCXA153 and FRDM-MCXN947,
 // Wire (D18/D19) on FRDM-MCXA156, whose sensor is on the Arduino I2C pins.
-// On FRDM-MCXN236 the on-board sensor is the accelerometer, on Wire1
-#if defined(FRDM_MCXA153) || defined(FRDM_MCXN947) || defined(FRDM_MCXN236)
+// On FRDM-MCXN236 and FRDM-MCXC444 the on-board sensor is the
+// accelerometer, on Wire1
+#if defined(FRDM_MCXA153) || defined(FRDM_MCXN947) || defined(FRDM_MCXN236) || defined(FRDM_MCXC444)
 #define SENSOR_WIRE Wire1
 #elif defined(FRDM_MCXA156)
 #define SENSOR_WIRE Wire
@@ -53,9 +59,9 @@
 
 // The on-board sensor's address, and a register pair the Wire-as-a-Stream
 // checks may write and then put back: the P3T1755's T_LOW, or on
-// FRDM-MCXN236 the accelerometer's OFF_X/OFF_Y (output offsets, written
-// while it is in standby)
-#if defined(FRDM_MCXN236)
+// FRDM-MCXN236 and FRDM-MCXC444 the accelerometer's OFF_X/OFF_Y (output
+// offsets, written while it is in standby)
+#if defined(FRDM_MCXN236) || defined(FRDM_MCXC444)
 #define SENSOR_I2C_ADDR 0x18
 #define SCRATCH_REG 0x22
 #elif defined(FRDM_MCXA153) || defined(FRDM_MCXA156) || defined(FRDM_MCXN947)
@@ -63,6 +69,16 @@
 #define SCRATCH_REG 0x02
 #else
 #error "This sketch has no settings for this board yet"
+#endif
+
+// The PWM pin for the analogWrite() sanity check: PWM0, or D3 (TPM1_CH0)
+// on FRDM-MCXC444, which has no PWM0-PWM5 pins
+#if defined(FRDM_MCXC444)
+#define PWM_PIN D3
+#define PWM_PIN_NAME "D3"
+#else
+#define PWM_PIN PWM0
+#define PWM_PIN_NAME "PWM0"
 #endif
 
 int failCount = 0;
@@ -215,6 +231,17 @@ void setup() {
     checkClock("Wire          (FlexComm5)", CLOCK_GetLPFlexCommClkFreq(5u), 12000000u);
     checkClock("Wire1/Serial1 (FlexComm2)", CLOCK_GetLPFlexCommClkFreq(2u), 12000000u);
     checkClock("SPI           (FlexComm3)", CLOCK_GetLPFlexCommClkFreq(3u), 48000000u);
+#elif defined(FRDM_MCXC444)
+    // The SDK's clock_config.c: IRC48M as the core clock, the bus clock at
+    // half. The reference manual's clock distribution table puts both I2Cs
+    // and SPI1 (SPI) on the system clock, and the PIT (tone()) on the bus
+    // clock. Serial's LPUART0 and the TPMs (analogWrite()) select IRC48M
+    // (SIM_SOPT2's LPUART0SRC/TPMSRC = 1); Serial has started by now, the
+    // TPMs only at their first analogWrite()
+    checkClock("core/system (Wire, Wire1, SPI)", CLOCK_GetCoreSysClkFreq(), 48000000u);
+    checkClock("bus (tone)                    ", CLOCK_GetBusClkFreq(), 24000000u);
+    checkClock("IRC48M (Serial, analogWrite)  ", CLOCK_GetFreq(kCLOCK_McgIrc48MClk), 48000000u);
+    check("Serial (LPUART0) on IRC48M", ((SIM->SOPT2 & SIM_SOPT2_LPUART0SRC_MASK) >> SIM_SOPT2_LPUART0SRC_SHIFT) == 1u);
 #else
 #error "This sketch has no settings for this board yet"
 #endif
@@ -262,8 +289,8 @@ void setup() {
     int value = analogRead(A2);
     Serial.print("A2 = "); Serial.println(value);
     check("analogRead(A2) in range", value >= 0 && value <= 1023);
-    analogWrite(PWM0, value >> 2);
-    check("analogWrite(PWM0, ...) (reached here without crashing)", true);
+    analogWrite(PWM_PIN, value >> 2);
+    check("analogWrite(" PWM_PIN_NAME ", ...) (reached here without crashing)", true);
   }
 
   // ---- analogWrite on a pin FlexPWM cannot reach ----
@@ -305,7 +332,7 @@ void setup() {
     // it by accident -- so there is nothing to check for here.
   }
 
-#if defined(FRDM_MCXN236)
+#if defined(FRDM_MCXN236) || defined(FRDM_MCXC444)
   // ---- Wire1 on-board accelerometer (FXLS8974CF), raw registers ----
   Serial.println("--- Wire1 on-board accelerometer (raw registers) ---");
   {
@@ -421,7 +448,7 @@ void setup() {
     got = SENSOR_WIRE.requestFrom(SENSOR_I2C_ADDR, 2, SCRATCH_REG, 1, 1);
     check("the same with int arguments", got == 2 && SENSOR_WIRE.read() == 0x50);
 
-#if defined(FRDM_MCXN236)
+#if defined(FRDM_MCXN236) || defined(FRDM_MCXC444)
     // FXLS8974CF advances its register pointer past the bytes it has sent
     // (to 0x24 here), where P3T1755 keeps it; point it back at OFF_X first
     SENSOR_WIRE.beginTransmission(SENSOR);
@@ -484,6 +511,9 @@ void setup() {
   //      (the core of test_Wire_target_self; see that sketch and
   //      release_check/24 for more). Needs nothing on D18/D19 ----
   Serial.println("--- Wire as its own target (begin(address)/onReceive/onRequest) ---");
+#if defined(FRDM_MCXC444)
+  Serial.println("SKIP: target mode is not done yet on FRDM-MCXC444");
+#else
   {
     const uint8_t ADDR = 0x42;
     for (int i = 0; i < 16; i++)
@@ -518,6 +548,7 @@ void setup() {
 
     Wire.end();
   }
+#endif
 
 #if defined(FRDM_MCXN947)
   // ---- Wire2 (MikroBus I2C) bus scan (was test_Wire2_MikroBus_N947) ----
@@ -572,6 +603,25 @@ void setup() {
     Serial.print(found);
     Serial.println(" device(s) found");
     check("Wire1 bus scan completed without hanging", true);
+  }
+#elif defined(FRDM_MCXC444)
+  // ---- Wire1 (I2C0, the on-board accelerometer's bus) scan ----
+  Serial.println("--- Wire1 (on-board accelerometer's bus) scan (C444 only) ---");
+  {
+    int found = 0;
+    bool accelerometer = false;
+    for (uint8_t addr = 0x08; addr <= 0x77; addr++) {
+      Wire1.beginTransmission(addr);
+      if (Wire1.endTransmission() == 0) {
+        Serial.print("found device at 0x");
+        Serial.println(addr, HEX);
+        found++;
+        accelerometer = accelerometer || addr == SENSOR_I2C_ADDR;
+      }
+    }
+    Serial.print(found);
+    Serial.println(" device(s) found");
+    check("Wire1 bus scan completed, and found the accelerometer at 0x18", accelerometer);
   }
 #endif
 

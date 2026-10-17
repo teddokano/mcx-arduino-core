@@ -2,10 +2,23 @@
  *
  *  Wiring: jumper D1 (Serial1 TX) <-> D0 (Serial1 RX) to loop Serial1 back
  *  to itself. Serial (USB) is used to report what was received.
+ *
+ *  FRDM-MCXC444 has no Serial1: its Serial is D0/D1 itself, the same UART
+ *  as the USB serial port, so there is nothing to loop back. There the
+ *  sketch only says so.
  */
 
 #include <Arduino.h>
 
+#if defined(FRDM_MCXC444)
+void setup() {
+  Serial.begin(115200);
+  Serial.println("FRDM-MCXC444 has no Serial1 (its Serial is D0/D1 itself)");
+}
+
+void loop() {
+}
+#else
 void setup() {
   Serial.begin(115200);
   while (!Serial)
@@ -30,3 +43,4 @@ void setup() {
 
 void loop() {
 }
+#endif

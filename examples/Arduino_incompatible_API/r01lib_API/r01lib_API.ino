@@ -8,7 +8,11 @@
 
 #include <Arduino.h>
 
+#if defined( FRDM_MCXC444 )
+DigitalOut	led( PTD5 );	//	the green LED, D13
+#else
 DigitalOut	led( P3_13 );
+#endif
 
 void setup( void )
 {

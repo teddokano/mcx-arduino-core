@@ -19,11 +19,24 @@
  *  and one with the right one. Only the right one should arrive.
  *
  *  Automatic: reads "ALL OK" or "N FAILED" at the end.
+ *
+ *  FRDM-MCXC444 has no Serial1: its Serial is D0/D1 itself, the same UART
+ *  as the USB serial port, so there is nothing to loop back. There the
+ *  sketch only says so.
  */
 
 #include <Arduino.h>
 #include "pin_registry.h"
 
+#if defined(FRDM_MCXC444)
+void setup() {
+  Serial.begin(115200);
+  Serial.println("FRDM-MCXC444 has no Serial1 (its Serial is D0/D1 itself)");
+}
+
+void loop() {
+}
+#else
 #if defined(FRDM_MCXN947)
 const int TX_PIN = MB_TX;
 const int RX_PIN = MB_RX;
@@ -308,3 +321,4 @@ void loop() {
     }
   }
 }
+#endif

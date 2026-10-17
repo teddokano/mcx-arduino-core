@@ -18,8 +18,8 @@ with one setup each:
 
 | # | Sketch | Wiring | Judgment |
 |---|--------|--------|----------|
-| 01 | `01_no_wiring_checks` | none (on N947, #11's MB_TX-MB_RX jumper must be off: those pins are `Wire1`'s SDA/SCL there) | automatic (reads "ALL OK"/"N FAILED") |
-| 02 | `02_no_wiring_manual_observe` | none | manual (watch/listen -- scope, LA, multimeter, ears) |
+| 01 | `01_no_wiring_checks` | none (on N947, #11's MB_TX-MB_RX jumper must be off: those pins are `Wire1`'s SDA/SCL there). On C444 the `Wire` target section prints SKIP: target mode is not done yet there | automatic (reads "ALL OK"/"N FAILED") |
+| 02 | `02_no_wiring_manual_observe` | none (on C444 the pin walk leaves out D0/D1, which are `Serial` there, and the PWM sections use D3, D9 and D10) | manual (watch/listen -- scope, LA, multimeter, ears) |
 | 03 | `03_sw2_interrupts` | none (press the on-board SW2 button as prompted) | manual |
 | 04 | `04_mcxpinstate_audit` | none | manual (no `*** CONFLICT ***` / `*** MISMATCH ***` in the tables) |
 | 05 | `05_wire2_mikrobus_scan_N947` | none (N947 only -- `Wire2` doesn't exist on the other boards) | manual (confirm I2C traffic on a logic analyzer) |
@@ -28,7 +28,7 @@ with one setup each:
 | 08 | `08_pin_modes_with_interrupts_and_analog` | none, with D2, D4, D5, A0/A1/A2 (A2/A3/A4 on N947, A0/A4/A5 on N236) and the PWM pins left unconnected: it moves the first ones with the internal pulls and reads the PWM pins' levels | automatic (reads "ALL OK"/"N FAILED") |
 | 09 | `09_no_wiring_software_checks` | none | automatic (reads "ALL OK"/"N FAILED") |
 | 11 | `11_serial1_and_gpio_loopback` | Serial1 TX/RX loopback jumper (D0-D1 on A153, A156 and N236, MikroBus MB_TX-MB_RX on N947) + D2-D3 jumper | automatic |
-| 12 | `12_spi_loopback` | D11-D12 jumper + MikroBus MOSI-MISO jumper | automatic |
+| 12 | `12_spi_loopback` | D11-D12 jumper + MikroBus MOSI-MISO jumper (only the first on N236 and C444, which have no `SPI1`: their MikroBus MOSI/MISO are D11/D12) | automatic |
 | 13 | `13_shiftout_pulsein_loopback` | D0-D1, D2-D3, D4-D5, D6-D7 jumpers (4 adjacent pairs) + PWM0-D8 jumper (not on FRDM-MCXN236, where PWM0 is D6 itself) | automatic |
 | 14 | `14_wire_timeout` | D19(SCL)-D8 + D18(SDA)-D7 jumpers, nothing else on `Wire`; on FRDM-MCXN947 also MB_SCL-MB_PWM + MB_SDA-MB_INT, for `Wire2`, and the same on FRDM-MCXA156 and FRDM-MCXN236, for `Wire1` | automatic |
 | 15 | `15_wire_wire1_jumpered_A156` | A156 only: MB_SDA-D18 + MB_SCL-D19, nothing else on either bus (joins `Wire` and `Wire1` into one bus) | automatic |

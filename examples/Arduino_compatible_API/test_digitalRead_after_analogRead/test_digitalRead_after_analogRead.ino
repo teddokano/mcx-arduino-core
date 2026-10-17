@@ -15,6 +15,12 @@
  *
  *  Wiring: none. Leave the two analog pins below unconnected.
  *
+ *  FRDM-MCXC444 has no input buffer switch: a pin's digital input is off
+ *  only while it is in its analog function (ALT0), which is what the
+ *  "input buffer" checks read there. The interrupt check is left out on
+ *  that board: A0-A3 are on PORTB, which has no pin interrupts, and A4/A5
+ *  have 4.7k pull-ups (R26/R27) that the pull-down cannot overcome.
+ *
  *  Automatic: reads "ALL OK" or "N FAILED" at the end.
  */
 
@@ -34,6 +40,9 @@ const int PIN_B = A3;
 // is not an analog input here (the blue LED's pin)
 const int PIN_A = A0;
 const int PIN_B = A4;
+#elif defined(FRDM_MCXC444)
+const int PIN_A = A0;
+const int PIN_B = A1;
 #else
 #error "This sketch has no settings for this board yet"
 #endif
@@ -81,6 +90,9 @@ void setup() {
   check("reads the pull-up's HIGH", digitalRead(PIN_B) == HIGH);
 
   Serial.println("--- attachInterrupt() after analogRead() ---");
+#if defined(FRDM_MCXC444)
+  Serial.println("SKIP: no analog pin here has both a pin interrupt and no pull-up on the board");
+#else
   analogRead(PIN_B);
   attachInterrupt(digitalPinToInterrupt(PIN_B), onRise, RISING);
   check("attachInterrupt() turned the input buffer back on", inputBufferOn(PIN_B));
@@ -90,6 +102,7 @@ void setup() {
   delay(1);
   check("the rising edge from the pull-up is caught", rises == 1);
   detachInterrupt(digitalPinToInterrupt(PIN_B));
+#endif
 
   Serial.println();
   if (failCount == 0)

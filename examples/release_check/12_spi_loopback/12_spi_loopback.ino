@@ -10,9 +10,9 @@
  *  verdict, superseded by these.)
  *
  *  Wiring needed: jumper D11 (MOSI) <-> D12 (MISO), and jumper the
- *  MikroBus header's MOSI <-> MISO pins. FRDM-MCXN236 has no SPI1 (its
- *  MikroBus MOSI/MISO are D11/D12 themselves), so the first jumper only,
- *  and the SPI1 section is left out there.
+ *  MikroBus header's MOSI <-> MISO pins. FRDM-MCXN236 and FRDM-MCXC444
+ *  have no SPI1 (their MikroBus MOSI/MISO are D11/D12 themselves), so the
+ *  first jumper only, and the SPI1 section is left out there.
  *
  *  All SPI transfers in each section run back-to-back before any Serial
  *  output, so a logic analyzer capture shows clean, uninterrupted bursts
@@ -145,7 +145,7 @@ void setup() {
     check("transfer after changing dataMode", b3 == 0x5A);
   }
 
-#if !defined(FRDM_MCXN236)
+#if !defined(FRDM_MCXN236) && !defined(FRDM_MCXC444)  // no SPI1 there
   // ---- SPI1 (MikroBus SPI), independent peripheral from SPI
   //      (was test_SPI1_MikroBus) ----
   Serial.println("--- SPI1 (MikroBus SPI) ---");

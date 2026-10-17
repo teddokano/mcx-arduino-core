@@ -19,10 +19,35 @@
  *
  *  For interactive checks that need you to actually press SW2 at a
  *  specific moment, see 03_sw2_interrupts instead.
+ *
+ *  On FRDM-MCXC444 the pin walk leaves out D0/D1, which are Serial there,
+ *  and the PWM sections use the TPM pins in place of PWM0-PWM5: D3
+ *  (TPM1_CH0), D9 (TPM0_CH2, shared with D5/D6) and D10 (TPM0_CH4), with
+ *  D10 and D9 as the pair sharing a period, and D3 for
+ *  analogWriteFrequency().
  */
 
 #include <Arduino.h>
 #include "fsl_gpio.h"
+
+// The PWM pins: PWM0-PWM5, or FRDM-MCXC444's TPM pins. PWM_FIXED and
+// PWM_SWEEP share a period, and PWM_FREQ is the one analogWriteFrequency()
+// moves
+#if defined(FRDM_MCXC444)
+#define PWM_FIXED D10
+#define PWM_FIXED_NAME "D10"
+#define PWM_SWEEP D9
+#define PWM_SWEEP_NAME "D9"
+#define PWM_FREQ D3
+#define PWM_FREQ_NAME "D3"
+#else
+#define PWM_FIXED PWM1
+#define PWM_FIXED_NAME "PWM1"
+#define PWM_SWEEP PWM0
+#define PWM_SWEEP_NAME "PWM0"
+#define PWM_FREQ PWM0
+#define PWM_FREQ_NAME "PWM0"
+#endif
 
 static GPIO_Type *toggleSpeedPort;
 static uint32_t   toggleSpeedMask;
@@ -41,15 +66,18 @@ void setup() {
     struct PinInfo { int pin; const char *name; };
 
     PinInfo pins[] = {
-      { D0, "D0" }, { D1, "D1" }, { D2, "D2" }, { D3, "D3" },
+#if !defined(FRDM_MCXC444)  // Serial's own pins there
+      { D0, "D0" }, { D1, "D1" },
+#endif
+      { D2, "D2" }, { D3, "D3" },
       { D4, "D4" }, { D5, "D5" }, { D6, "D6" }, { D7, "D7" },
       { D8, "D8" }, { D9, "D9" }, { D10, "D10" }, { D11, "D11" },
       { D12, "D12" }, { D13, "D13" }, { D18, "D18" }, { D19, "D19" },
-#if defined(FRDM_MCXA153) || defined(FRDM_MCXA156) || defined(FRDM_MCXN236)
+#if defined(FRDM_MCXA153) || defined(FRDM_MCXA156) || defined(FRDM_MCXN236) || defined(FRDM_MCXC444)
       { A0, "A0" }, { A1, "A1" },
 #endif
       { A2, "A2" }, { A3, "A3" }, { A4, "A4" }, { A5, "A5" },
-#if defined(FRDM_MCXA153) || defined(FRDM_MCXA156) || defined(FRDM_MCXN236)
+#if defined(FRDM_MCXA153) || defined(FRDM_MCXA156) || defined(FRDM_MCXN236) || defined(FRDM_MCXC444)
       { MB_AN, "MB_AN" },
 #endif
       { MB_RST, "MB_RST" }, { MB_CS, "MB_CS" },
@@ -77,15 +105,21 @@ void setup() {
   // ---- analogWrite(): all 6 PWM channels + one independence pair
   //      (was test_analogWrite_all_channels, trimmed to one pair instead
   //      of all three to keep this section shorter) ----
-  Serial.println("--- analogWrite(): all 6 channels, distinct duty each ---");
+  Serial.println("--- analogWrite(): every PWM channel, distinct duty each ---");
   {
     struct { int pin; const char *name; uint8_t value; } chans[] = {
+#if defined(FRDM_MCXC444)
+      { D3, "D3", 26 },     // ~10%
+      { D9, "D9", 128 },    // ~50%
+      { D10, "D10", 230 },  // ~90%
+#else
       { PWM0, "PWM0", 26 },   // ~10%
       { PWM1, "PWM1", 77 },   // ~30%
       { PWM2, "PWM2", 128 },  // ~50%
       { PWM3, "PWM3", 179 },  // ~70%
       { PWM4, "PWM4", 230 },  // ~90%
       { PWM5, "PWM5", 51 },   // ~20%
+#endif
     };
     for (auto &c : chans) {
       Serial.print(c.name); Serial.print(" = "); Serial.println(c.value);
@@ -94,30 +128,30 @@ void setup() {
     Serial.println("holding for 3s ...");
     delay(3000);
 
-    Serial.println("--- PWM1 fixed 50%, sweeping PWM0 (independence check) ---");
-    analogWrite(PWM1, 128);
+    Serial.println("--- " PWM_FIXED_NAME " fixed 50%, sweeping " PWM_SWEEP_NAME " (independence check) ---");
+    analogWrite(PWM_FIXED, 128);
     uint8_t steps[] = { 0, 64, 128, 191, 255 };
     for (uint8_t v : steps) {
-      Serial.print("PWM0 = "); Serial.print(v);
-      Serial.println(" (PWM1 should stay at 128/50%)");
-      analogWrite(PWM0, v);
+      Serial.print(PWM_SWEEP_NAME " = "); Serial.print(v);
+      Serial.println(" (" PWM_FIXED_NAME " should stay at 128/50%)");
+      analogWrite(PWM_SWEEP, v);
       delay(1500);
     }
   }
 
   // ---- analogWriteFrequency() (was test_analogWriteFrequency) ----
-  Serial.println("--- analogWriteFrequency(): PWM0 through a few rates, 50% duty ---");
+  Serial.println("--- analogWriteFrequency(): " PWM_FREQ_NAME " through a few rates, 50% duty ---");
   {
     uint32_t freqs[] = { 1000, 50, 20, 5000 };
     for (uint32_t f : freqs) {
-      analogWriteFrequency(PWM0, f);
-      analogWrite(PWM0, 128);
-      Serial.print("PWM0: "); Serial.print(f); Serial.print(" Hz (period ");
+      analogWriteFrequency(PWM_FREQ, f);
+      analogWrite(PWM_FREQ, 128);
+      Serial.print(PWM_FREQ_NAME ": "); Serial.print(f); Serial.print(" Hz (period ");
       Serial.print(1000000UL / f); Serial.println(" us), 50% duty");
       delay(2000);
     }
-    analogWriteFrequency(PWM0, 1000);  // restore default before moving on
-    analogWrite(PWM0, 0);
+    analogWriteFrequency(PWM_FREQ, 1000);  // restore default before moving on
+    analogWrite(PWM_FREQ, 0);
   }
 
   // ---- tone()/noTone() melody (was test_tone) ----

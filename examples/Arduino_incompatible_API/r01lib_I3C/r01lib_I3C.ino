@@ -10,9 +10,21 @@
  * renumbering, so they always mean the same raw r01lib value whether or
  * not <Arduino.h> has been included -- no need to spell out the physical
  * pin per board.
+ *
+ * FRDM-MCXC444 has no I3C: there the sketch only says so.
  */
 
 #include <Arduino.h>
+
+#if defined(FRDM_MCXC444)
+void setup() {
+  Serial.begin(115200);
+  Serial.println("FRDM-MCXC444 has no I3C");
+}
+
+void loop() {
+}
+#else
 
 I3C i3c(I3C_SDA, I3C_SCL);  //	SDA, SCL
 
@@ -43,3 +55,4 @@ int main(void) {
     wait(1);
   }
 }
+#endif

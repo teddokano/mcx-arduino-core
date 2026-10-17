@@ -18,9 +18,15 @@ void loop( void )
 {
     static int count = 0;
 
+#if defined( FRDM_MCXC444 )
+    //  on FRDM-MCXC444, the LED_BUILTIN (the green LED, D13) is mapped on PTD5
+    //	The PTD5 becomes port=GPIOD and pin=5
+    GPIO_PinWrite( GPIOD, 5, count++ & 0x1 );
+#else
     //  on MCX-A153, the LED_BUILTIN is mapped on P3_13
     //	The P3_13 becomes port=GPIO3 and pin=13
     GPIO_PinWrite( GPIO3, 13, count++ & 0x1 );
+#endif
 
     delay( 100 );
 }

@@ -14,6 +14,16 @@
 
 #include <Arduino.h>
 
+// The pin driven: PWM0, or on FRDM-MCXC444, which has no PWM0-PWM5 pins,
+// D3 (TPM1_CH0)
+#if defined(FRDM_MCXC444)
+#define PWM_PIN D3
+#define PWM_PIN_NAME "D3"
+#else
+#define PWM_PIN PWM0
+#define PWM_PIN_NAME "PWM0"
+#endif
+
 void check(const char *label, bool ok) {
   Serial.print(label);
   Serial.print(": ");
@@ -52,9 +62,9 @@ void setup() {
 
   // ---- analogWriteResolution (exercised, not independently verified) ----
   analogWriteResolution(10);
-  analogWrite(PWM0, 512);  // ~50% duty at 10bit
+  analogWrite(PWM_PIN, 512);  // ~50% duty at 10bit
   analogWriteResolution(8);
-  analogWrite(PWM0, 128);  // ~50% duty at 8bit (back to default)
+  analogWrite(PWM_PIN, 128);  // ~50% duty at 8bit (back to default)
   Serial.println("analogWriteResolution + analogWrite exercised, no crash");
 
   // ---- yield ----

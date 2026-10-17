@@ -8,6 +8,9 @@
  *  Uses the on-board P3T1755 over Wire1 for the Wire.end() test (over
  *  Wire on FRDM-MCXA156; the messages still say Wire1) -- no extra wiring
  *  needed for that part.
+ *
+ *  FRDM-MCXC444 has no Serial1 (its Serial is D0/D1 itself), so the
+ *  find()/findUntil() checks are left out there.
  */
 
 #include <P3T1755.h>
@@ -15,10 +18,12 @@
 
 // The on-board P3T1755's bus: Wire1 on FRDM-MCXA153 and FRDM-MCXN947,
 // Wire (D18/D19) on FRDM-MCXA156, whose sensor is on the Arduino I2C pins
-// FRDM-MCXN236 has none on board: connect one to its MikroBus I2C (Wire1)
+// FRDM-MCXN236 has none on board: connect one to its MikroBus I2C (Wire1).
+// FRDM-MCXC444 has none either, and its Wire1 reaches no header pin:
+// connect one to D18/D19 (Wire)
 #if defined(FRDM_MCXA153) || defined(FRDM_MCXN947) || defined(FRDM_MCXN236)
 #define SENSOR_WIRE Wire1
-#elif defined(FRDM_MCXA156)
+#elif defined(FRDM_MCXA156) || defined(FRDM_MCXC444)
 #define SENSOR_WIRE Wire
 #else
 #error "This sketch has no settings for this board yet"
@@ -79,6 +84,9 @@ void setup() {
   check("availableForWrite recovers after flush", free3 > free2 || free3 == 255);
 
   // ---- Serial1 loopback: find(target,length) / findUntil(target,terminator) ----
+#if defined(FRDM_MCXC444)
+  Serial.println("Serial1 sections: SKIP (FRDM-MCXC444 has no Serial1)");
+#else
   Serial1.begin(9600);
   Serial1.setTimeout(1000);
 
@@ -101,6 +109,7 @@ void setup() {
   Serial.println(elapsed);
   check("findUntil() aborts on terminator (returns false)", !f3);
   check("findUntil() aborts quickly (not full timeout)", elapsed < 500);
+#endif
 
   // ---- INPUT_PULLDOWN / INPUT_PULLUP, rigorously (D2-D3 jumper) ----
   // Just reading a pin claimed to have a pull enabled isn't a reliable

@@ -45,3 +45,7 @@ A153のものを元に、SRAMを1つ（`0x1FFFE000`から32KB）にし、Kinetis
 ## 実機確認
 
 まだ実機では動かしていない（0.10.0の作業中）。
+
+最初に流すのは[`examples/Arduino_compatible_API/test_bringup_C444`](../../../../../examples/Arduino_compatible_API/test_bringup_C444)。
+配線なしで、`docs/porting_a_new_board.md`の立ち上げの順（赤のLED、`Serial`、クロック、`millis()`/`micros()`、全ピンのプルアップ・プルダウン、割り込み、`analogRead()`、`analogWrite()`、`tone()`、`Wire1`の加速度センサー、`SPI`、`EEPROM`、`Servo`、`Wire`のスキャン）を1本で確かめる。
+TPMのレジスタと、ピンを`GPIOx_PDIR`で読んだ波形の両方を見る。D11-D12のジャンパがあれば`SPI`のループバックも見る。
