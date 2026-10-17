@@ -42,22 +42,37 @@
  *       On FRDM-MCXN236, PWM0 is D6 itself, so jumper 3 already carries
  *       the servo pulses to D7 and the sketch measures them there: no
  *       jumper 4 on that board.
+ *
+ *  FRDM-MCXC444: D0/D1 are Serial there (the USB serial port's own lines,
+ *  driven by the MCU-LINK), so jumper 1's data pair moves to D8 <-> D9.
+ *  It has no PWM0-PWM5: the servo pulses come out of D6 (TPM0_CH2) and
+ *  jumper 3 carries them to D7, as on FRDM-MCXN236. So four jumpers:
+ *  D8-D9, D2-D3, D4-D5, D6-D7. The blue LED (D6) flickers meanwhile.
  */
 
 #include <Arduino.h>
 #include <SG90.h>          // bundled with this core: libraries/mcxRCServo
 
+#if defined(FRDM_MCXC444)
+#define SHIFTOUT_DATA      D8   // D0/D1 are Serial there
+#define MONITOR_DATA       D9
+#else
 #define SHIFTOUT_DATA      D0
 #define MONITOR_DATA       D1
+#endif
 #define SHIFTOUT_CLOCK     D2
 #define MONITOR_CLOCK      D3
 #define SHIFTIN_DATA       D4
 #define SHIFTIN_CLOCK      D5
 #define TONE_PIN           D6
 #define PULSE_MONITOR_PIN  D7
+#if defined(FRDM_MCXC444)
+#define SERVO_PWM_PIN      D6   // no PWM0-PWM5 there: D6 (TPM0_CH2)
+#else
 #define SERVO_PWM_PIN      PWM0
-#if defined(FRDM_MCXN236)
-#define SERVO_MONITOR_PIN  D7   // PWM0 is D6 itself here: jumper 3 carries it
+#endif
+#if defined(FRDM_MCXN236) || defined(FRDM_MCXC444)
+#define SERVO_MONITOR_PIN  D7   // the servo pin is D6 here: jumper 3 carries it
 #elif defined(FRDM_MCXA153) || defined(FRDM_MCXA156) || defined(FRDM_MCXN947)
 #define SERVO_MONITOR_PIN  D8
 #else

@@ -4,6 +4,8 @@
  *  is needed. One jumper, the same as release_check/13's servo check:
  *    FRDM-MCXA153, FRDM-MCXA156, FRDM-MCXN947: PWM0 <-> D8
  *    FRDM-MCXN236: D6 <-> D7 (PWM0 is D6 itself there)
+ *    FRDM-MCXC444: D6 <-> D7 (no PWM0-PWM5 there: the servo is on D6,
+ *    TPM0_CH2; the messages still say PWM0)
  *
  *  Checks the pulse widths for write() in degrees and microseconds, the
  *  clamping, attach() with its own min/max, a value written before
@@ -20,8 +22,12 @@
 #include <Arduino.h>
 #include <Servo.h>
 
+#if defined(FRDM_MCXC444)
+#define SERVO_PIN D6
+#else
 #define SERVO_PIN PWM0
-#if defined(FRDM_MCXN236)
+#endif
+#if defined(FRDM_MCXN236) || defined(FRDM_MCXC444)
 #define MONITOR_PIN D7
 #elif defined(FRDM_MCXA153) || defined(FRDM_MCXA156) || defined(FRDM_MCXN947)
 #define MONITOR_PIN D8

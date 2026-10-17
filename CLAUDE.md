@@ -16,8 +16,8 @@
   `Servo.h`の互換ライブラリ、A4/A5のI²C（`setPins`、Pendingタスク10）、`<avr/pgmspace.h>`、**FRDM-MCXC444**（2026-10-16、ユーザーが決定）。
   機能の追加だけなのでパッチではなくマイナーの版にした。C444は「ビルドが通るだけ」のスパイク（`c444-spike`ブランチ、未push）の結果を見て入れると決めた。結果はmemoの§4-5で、スパイクのスタブは持ち込まず`0.10.0-dev`の上で作り直す。
   N947のEthernet（ENET・lwIP）は0.11.0。1.0までの版の割り振りは[memo/notes_toward_1.0.0.md](memo/notes_toward_1.0.0.md)の§9。
-  **`Servo`（`libraries/Servo/`）は4ボードでビルドが通るだけで、実機は未確認**（2026-10-16、ユーザーが後でやると判断）。
-  `test_Servo`をジャンパ1本（A153・A156・N947は`PWM0`-`D8`、N236は`D6`-`D7`）で流す
+  **`Servo`（`libraries/Servo/`）はC444の実機で`test_Servo`がALL PASS（2026-10-18）。MCXの4ボードはビルドが通るだけで、実機は未確認**（2026-10-16、ユーザーが後でやると判断）。
+  `test_Servo`をジャンパ1本（A153・A156・N947は`PWM0`-`D8`、N236とC444は`D6`-`D7`）で流す
 - **ADCの無いピンへの`analogRead()`（A153の`analogRead(A5)`など）をビルド時に検出する案は入れない**（2026-10-11、ユーザー判断）。
   `__builtin_constant_p`と`__attribute__((error))`で、定数のピンならビルドエラーにできることは試作で確かめた（常に`-O2`なので確実に効く）。
   入れない理由は副作用で、実行されないコード（実行時の変数でボードを分ける分岐など）でもビルドが止まり、AVRなどでビルドできるコードがこのコアではビルドできなくなる。
@@ -324,7 +324,7 @@ xPack checksums（正しい値）：
   ADC16のクロックがSDKの既定（非同期クロックの8分周、0.38〜0.91MHz）で16ビットの下限を下回っていた（バスクロックの8分周、3MHzにした）。
   SPI1にSDKの作例（SPI0用）のバスクロックを渡していて、SCKが要求の2倍になっていた（システムクロックにした）
 - **実機で確かめたこと（2026-10-18）**: `examples/Arduino_compatible_API/test_bringup_C444`（配線なし、立ち上げの順を1本で）がALL OK。
-  `release_check`の`01`・`06`（2回、書き込みをまたいだ保持も）・`09`・`11`（案A: D2-D3のジャンパだけ、`Serial1`の節はSKIP。2026-10-18にユーザーが決定）・`12`（D11-D12）、`test_avr_pgmspace`（M0+でアドレスのそろっていない読み出しも）、`test_network_base_classes`がALL OK/ALL PASS。
+  `release_check`の`01`・`06`（2回、書き込みをまたいだ保持も）・`09`・`11`（案A: D2-D3のジャンパだけ、`Serial1`の節はSKIP。2026-10-18にユーザーが決定）・`12`（D11-D12）・`13`（D8-D9・D2-D3・D4-D5・D6-D7。データの組をD0-D1から移し、サーボはD6からD7で測る。2026-10-18にユーザーが決定）、`test_Servo`（D6-D7）、`test_avr_pgmspace`（M0+でアドレスのそろっていない読み出しも）、`test_network_base_classes`がALL OK/ALL PASS。
   `test_fault_report`は8種類のうち7種類で`error: HardFault at PC ...`がクラッシュした行を指す（M0+にはCFSRが無いので種類は出ない。割り込みの中は`in an interrupt`）。
   **スタックあふれ（kind 4）は報告されず、リセットを繰り返す**（M0+には`MSPLIM`が無い）。
   書き込みはLinkServer 26.6.137で、フラッシュを正しく判定する
@@ -346,7 +346,7 @@ xPack checksums（正しい値）：
   `Serial`（`USBTX`/`USBRX`が`D1`/`D0`なので、ピン番号の付け替えの前に生の値を取る）、`Wire`/`Wire1`、`SPI`（r01libに無かった`bit_order()`を足し、CSは転送ごとに動かさずスケッチに任せる。MCXのボードと同じ）、`analogRead`（ADC16、16ビット、校正）、
   `analogWrite`/`analogWriteFrequency`（TPM、D5/D6/D9の取り合い）、`tone`（PITのチャネル0）、`EEPROM`（FTFA、16バイト単位、フラッシュの最後の8KB、命令の間は割り込みを止める）、`Servo`。
   `PIN_MAPPING_C444.md`・README・API_COMPATIBILITY・CHANGELOG・LICENSE（`startup_mcxc444.cpp`のFOPTの変更）・`docs/porting_a_new_board.md`
-- **残り**: 実機確認の続き（`02`は流れ、`03`はSW2の3つの割り込みとも期待どおり。ジャンパの要る`13`・`14`、`2n`、`Servo`の実物、`analogRead()`を既知の電圧で）、スタックあふれの扱い、`Wire`のターゲットモードと`setWireTimeout()`（Kinetisの`fsl_i2c`で）、
+- **残り**: 実機確認の続き（`02`は流れ、`03`はSW2の3つの割り込みとも期待どおり。ジャンパの要る`14`、`2n`、`Servo`の実物、`analogRead()`を既知の電圧で）、スタックあふれの扱い、`Wire`のターゲットモードと`setWireTimeout()`（Kinetisの`fsl_i2c`で）、
   作例の約35本（`#error "This sketch has no settings for this board yet"`と`PWM0`を使うもの。`release_check`の01・08・11・13・14・21・24はジャンパの決め方を実機と一緒に）、
   mcxPinStateとmcxRCServoの作例（上流のリポジトリ。pushはユーザーの了承が要る）、CIのボードの表への追加（作例がそろってから）
 
