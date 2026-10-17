@@ -27,7 +27,7 @@ with one setup each:
 | 07 | `07_eeprom_reset` | none | automatic, over 1000 resets it causes itself with the watchdog, about six minutes ("ALL OK" at the end). Run it after both runs of 06, since it overwrites the EEPROM |
 | 08 | `08_pin_modes_with_interrupts_and_analog` | none, with D2, D4, D5, A0/A1/A2 (A2/A3/A4 on N947, A0/A4/A5 on N236) and the PWM pins left unconnected: it moves the first ones with the internal pulls and reads the PWM pins' levels | automatic (reads "ALL OK"/"N FAILED") |
 | 09 | `09_no_wiring_software_checks` | none | automatic (reads "ALL OK"/"N FAILED") |
-| 11 | `11_serial1_and_gpio_loopback` | Serial1 TX/RX loopback jumper (D0-D1 on A153, A156 and N236, MikroBus MB_TX-MB_RX on N947) + D2-D3 jumper | automatic |
+| 11 | `11_serial1_and_gpio_loopback` | Serial1 TX/RX loopback jumper (D0-D1 on A153, A156 and N236, MikroBus MB_TX-MB_RX on N947) + D2-D3 jumper. C444 has no Serial1 (D0/D1 are `Serial`, driven by the MCU-LINK): the D2-D3 jumper only, and the Serial1 sections print SKIP | automatic |
 | 12 | `12_spi_loopback` | D11-D12 jumper + MikroBus MOSI-MISO jumper (only the first on N236 and C444, which have no `SPI1`: their MikroBus MOSI/MISO are D11/D12) | automatic |
 | 13 | `13_shiftout_pulsein_loopback` | D0-D1, D2-D3, D4-D5, D6-D7 jumpers (4 adjacent pairs) + PWM0-D8 jumper (not on FRDM-MCXN236, where PWM0 is D6 itself) | automatic |
 | 14 | `14_wire_timeout` | D19(SCL)-D8 + D18(SDA)-D7 jumpers, nothing else on `Wire`; on FRDM-MCXN947 also MB_SCL-MB_PWM + MB_SDA-MB_INT, for `Wire2`, and the same on FRDM-MCXA156 and FRDM-MCXN236, for `Wire1` | automatic |

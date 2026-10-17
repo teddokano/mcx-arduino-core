@@ -13,6 +13,11 @@
  *  there conflicts with Wire over FlexComm2 (see PIN_MAPPING_N947.md) --
  *  plus a D2-D3 jumper
  *  (fast-GPIO register test drives D2, observes it on D3).
+ *
+ *  FRDM-MCXC444 has no Serial1: its Serial is D0/D1 itself, the same lines
+ *  as the USB serial port, which the MCU-LINK drives, so D0-D1 can't be
+ *  jumpered. There only the D2-D3 jumper is needed, and the Serial1
+ *  sections print SKIP.
  */
 
 #include <Arduino.h>
@@ -26,6 +31,8 @@ const int S1_RX = MB_RX;
 #elif defined(FRDM_MCXA153) || defined(FRDM_MCXA156) || defined(FRDM_MCXN236)
 const int S1_TX = D1;
 const int S1_RX = D0;
+#elif defined(FRDM_MCXC444)
+#define NO_SERIAL1
 #else
 #error "This sketch has no settings for this board yet"
 #endif
@@ -105,6 +112,7 @@ bool findViaStreamRef(Stream &s, const char *target) {
   return s.find(target);
 }
 
+#if !defined(NO_SERIAL1)
 GPIO_Type *rxPort;
 uint32_t rxMask;
 
@@ -204,6 +212,7 @@ void serialEvent1() {
   eventByte = Serial1.read();
 }
 
+#endif
 void setup() {
   Serial.begin(115200);
   while (!Serial)
@@ -211,8 +220,10 @@ void setup() {
 
   Serial.println("=== Release check 11: Serial1 + fast-GPIO checks (D0-D1, D2-D3 jumpers) ===");
 
+#if !defined(NO_SERIAL1)
   Serial1.begin(9600);
   Serial1.setTimeout(500);
+#endif
 
   // ---- Print without hardware, byte-count return values, Printable
   //      (was test_Print_Stream_hierarchy, part 1) ----
@@ -239,6 +250,7 @@ void setup() {
     check("Printable printTo() byte-count accumulation", pn == 5);
   }
 
+#if !defined(NO_SERIAL1)
   // ---- basic Serial1 loopback sanity (was test_Serial1) ----
   Serial.println("--- Serial1 basic loopback ---");
   {
@@ -251,6 +263,9 @@ void setup() {
     check("Serial1 basic loopback", strncmp(buf, "hello from Serial1", 18) == 0);
   }
 
+#else
+  Serial.println("--- Serial1 basic loopback: SKIP (no Serial1 on this board) ---");
+#endif
   // ---- Serial.print(x, BIN) + Serial1.write() overloads
   //      (was test_Serial_BIN_and_write) ----
   Serial.println("--- Serial print BIN / write() overloads ---");
@@ -259,6 +274,7 @@ void setup() {
   check("0 BIN == 0", String(0, BIN) == "0");
   check("-5 BIN == -101", String(-5, BIN) == "-101");
 
+#if !defined(NO_SERIAL1)
   {
     size_t n1 = Serial1.write((uint8_t)'A');
     delay(30);
@@ -403,6 +419,10 @@ void setup() {
           p1 == 'A' && p2 == 'A' && availAfterPeek == availBeforePeek && r == 'A' && p3 == 'B');
   }
 
+#else
+  Serial.println("--- write() overloads, Stream& polymorphism, Stream helpers: SKIP (no Serial1 on this board) ---");
+
+#endif
   // ---- String + numeric/F(), NOT_AN_INTERRUPT, fast GPIO register
   //      access (was test_String_plus_numeric_Printable_fastGPIO) ----
   Serial.println("--- String+numeric/F(), NOT_AN_INTERRUPT, fast GPIO ---");
@@ -450,6 +470,7 @@ void setup() {
     check("portInputRegister reflects own pin LOW", self_read_low == false);
   }
 
+#if !defined(NO_SERIAL1)
   // ---- Serial.begin(baud, config), end(), write(0)
   //      (was test_Serial1_format_end_serialEvent; serialEvent1() is
   //      checked in loop(), since it's called after each loop()) ----
@@ -548,12 +569,26 @@ void setup() {
 
   Serial.println("--- serialEvent1(), called after loop() ---");
   drainSerial1();
+#else
+  Serial.println("--- Serial1 frame formats, end(), serialEvent1(): SKIP (no Serial1 on this board) ---");
+#endif
 }
 
 int loops = 0;
 
 void loop() {
   loops++;
+#if defined(NO_SERIAL1)
+  if (loops == 1) {
+    Serial.println();
+    if (failCount == 0)
+      Serial.println("ALL OK");
+    else {
+      Serial.print(failCount);
+      Serial.println(" FAILED");
+    }
+  }
+#else
   if (loops == 1) {
     check("serialEvent1() not called with nothing to read", eventCalls == 0);
     Serial1.write('E');
@@ -572,4 +607,5 @@ void loop() {
       Serial.println(" FAILED");
     }
   }
+#endif
 }
