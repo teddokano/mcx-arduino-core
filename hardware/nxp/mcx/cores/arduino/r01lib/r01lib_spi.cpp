@@ -26,8 +26,11 @@ extern "C" {
 #ifdef	CPU_MCXC444VLH
 
 #define EXAMPLE_SPI_MASTER              SPI1
-#define EXAMPLE_SPI_MASTER_SOURCE_CLOCK kCLOCK_BusClk
-#define EXAMPLE_SPI_MASTER_CLK_FREQ     CLOCK_GetFreq( kCLOCK_BusClk )
+//	SPI1 runs on the system clock, SPI0 on the bus clock (reference manual,
+//	the clock distribution chapter). The SDK's examples use SPI0, and their
+//	bus clock would double SPI1's SCK
+#define EXAMPLE_SPI_MASTER_SOURCE_CLOCK kCLOCK_CoreSysClk
+#define EXAMPLE_SPI_MASTER_CLK_FREQ     CLOCK_GetFreq( kCLOCK_CoreSysClk )
 
 SPI::SPI( int mosi, int miso, int sclk, int cs ) : Obj( true ), chip_select( cs )
 {

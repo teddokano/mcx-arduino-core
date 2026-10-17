@@ -47,7 +47,7 @@
 | リリース前の実機チェック手順 | [examples/release_check/README.md](examples/release_check/README.md) |
 | 過去の作業記録・バグの切り分け経緯 | [docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md) |
 |リリース1.0.0にむけてやっておくべきこと|[memo/notes_toward_1.0.0.md](memo/notes_toward_1.0.0.md)|
-| チップのレジスタ・ペリフェラルの仕様 | NXPのドキュメントのMCPサーバー**ChipDocs**（2026-10-14に接続）。RMはA153=`MCXAP64M96FS3RM`、A156=`MCXAP100M96FS6RM`、N947=`MCXNP184M150F70RM`（MCX NのRM。N23xは対象外）。N236はデータシート`MCXN23x`とセキュリティRMだけ、C444は無い。ボードの回路図は`ref/`（ページを画像で読む）、ピンのALTはZephyrのpinctrlヘッダで確かめる |
+| チップのレジスタ・ペリフェラルの仕様 | NXPのドキュメントのMCPサーバー**ChipDocs**（2026-10-14に接続）。RMはA153=`MCXAP64M96FS3RM`、A156=`MCXAP100M96FS6RM`、N947=`MCXNP184M150F70RM`（MCX NのRM。N23xは対象外）。N236はデータシート`MCXN23x`とセキュリティRMだけ。C444はChipDocsに無く、ユーザーが`ref/MCXC444-RM.pdf`（RM Rev.1）と`ref/MCXC444-DS.pdf`（データシート Rev.4）を置いた（2026-10-17。RMは1段組みなので`pdftotext -layout`で読める）。ボードの回路図は`ref/`（ページを画像で読む）、ピンのALTはZephyrのpinctrlヘッダで確かめる |
 
 ---
 
@@ -314,6 +314,15 @@ xPack checksums（正しい値）：
   `PWM0`〜`PWM5`のピンは無い
 - **`cores/arduino/sdk/`の`fsl_i3c`・`fsl_pwm`・`fsl_spc`・`fsl_utick`・`fsl_inputmux`はMCXの4つのvariantへ移した**（2026-10-16、ユーザーが決定）。
   `cores/arduino/sdk/`の`.c`は全ボードでビルドされるので、C444に無い周辺回路のドライバは置けない。zipと同じファイルを4つのvariantに置いている
+- **RMとデータシートで確かめたこと（2026-10-17）**: TPMの分周比（`SC[PS]`）はカウンタを止めたときしか書けない。デューティ100%は`CnV > MOD`で、そのためMODは`0xFFFF`未満にする。
+  ADC16の校正は平均32回で、ADCのクロックは4MHz以下が望ましい。16ビットのモードのADCのクロックは2.0〜12.0MHz（データシート）。
+  FTFAは4バイト単位で書き、消去せずに同じ場所へもう一度書けない。命令の実行中はそのフラッシュを読めない（SDKのドライバは待ちをRAMで行う）。
+  PITとLPUART0/1はバスクロック、I2C0・I2C1・SPI1はシステムクロック、SPI0はバスクロック。デジタルの機能のピン（TPMを含む）は`GPIOx_PDIR`で読める。
+  `SIM_COPC`（ウォッチドッグ）はリセット後に一度だけ書けて、SDKの`SystemInit()`が0を書くので、スケッチからは動かせない。
+  回路図: A4/A5（PTC2/PTC1）にはR26・R27（4.7kΩ）のプルアップがある。D18/D19にはプルアップが無い（`Wire.begin()`の内蔵プルアップで持ち上がる）。SW3（D4）はR15（10kΩ）でプルアップ。VREFHはJP6で3.3V
+- **RMとデータシートで見つけて直した不具合（2026-10-17、ビルドだけ）**: TPMの周期が65536カウントのときMODが`0xFFFF`になり、`analogWrite(pin, 255)`の`CnV`が16ビットに切り詰められて0%になっていた（上限を65535カウントにした）。
+  ADC16のクロックがSDKの既定（非同期クロックの8分周、0.38〜0.91MHz）で16ビットの下限を下回っていた（バスクロックの8分周、3MHzにした）。
+  SPI1にSDKの作例（SPI0用）のバスクロックを渡していて、SCKが要求の2倍になっていた（システムクロックにした）
 - **できているもの（2026-10-16、ビルドだけ、実機は未確認）**: `variants/frdm_mcxc444/`（`README.md`に出どころ）、`boards.txt`（デバッグまで）、`gdb-bridge`の`c444.cfg`、
   `micros()`（SysTick。`__ARM_ARCH_6M__`で分ける）、HardFaultの報告（PCだけ）と`semihost_hardfault.c`（M0+ではスタックしたPCがフラッシュの中のときだけBKPTを見る）、
   `Serial`（`USBTX`/`USBRX`が`D1`/`D0`なので、ピン番号の付け替えの前に生の値を取る）、`Wire`/`Wire1`、`SPI`（r01libに無かった`bit_order()`を足し、CSは転送ごとに動かさずスケッチに任せる。MCXのボードと同じ）、`analogRead`（ADC16、16ビット、校正）、

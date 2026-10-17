@@ -640,19 +640,20 @@ void PwmOut::apply( void )
     uint32_t    src_clk = source_clock();
 
     // The smallest prescaler (highest resolution) for which the period
-    // still fits the 16-bit counter
+    // still fits the 16-bit counter. At most 0xFFFF ticks, so MOD stays
+    // below 0xFFFF: a 100% pulse needs CnV > MOD, and CnV is 16 bits too
     uint8_t     prescale    = 0;
     uint64_t    ticks       = 0;
     for ( prescale = 0; prescale <= 7; prescale++ )
     {
         ticks = ( (uint64_t)st.period_us * ( src_clk >> prescale ) ) / 1000000ULL;
-        if ( ticks <= 0x10000u || prescale == 7 )
+        if ( ticks <= 0xFFFFu || prescale == 7 )
             break;
     }
     if ( ticks < 2 )
         ticks = 2;
-    if ( ticks > 0x10000u )
-        ticks = 0x10000u;
+    if ( ticks > 0xFFFFu )
+        ticks = 0xFFFFu;
 
     // The prescaler can only change with the counter stopped
     uint32_t    cur_ps  = ( base->SC & TPM_SC_PS_MASK ) >> TPM_SC_PS_SHIFT;
@@ -692,7 +693,7 @@ void PwmOut::period( float seconds )
     TpmState    &st         = s_state[ _tpm ];
     uint32_t    src_clk     = source_clock();
     float       min_period  = 2.0e6f / (float)src_clk;                      // 2 ticks @ prescale/1
-    float       max_period  = 1.0e6f * 65536.0f * 128.0f / (float)src_clk;  // 65536 ticks @ prescale/128
+    float       max_period  = 1.0e6f * 65535.0f * 128.0f / (float)src_clk;  // 65535 ticks @ prescale/128
     float       period_us   = seconds * 1.0e6f;
 
     if ( period_us < min_period )

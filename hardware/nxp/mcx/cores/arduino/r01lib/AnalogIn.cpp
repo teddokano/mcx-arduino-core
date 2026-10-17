@@ -463,8 +463,15 @@ void AnalogIn::_acquire_peripheral( void )
     if ( _instance_count == 0 )
     {
         adc16_config_t cfg;
-        ADC16_GetDefaultConfig( &cfg );     // VREFH/VREFL, asynchronous clock
+        ADC16_GetDefaultConfig( &cfg );     // VREFH/VREFL
         cfg.resolution = kADC16_ResolutionSE16Bit;
+
+        // The default, the asynchronous clock divided by 8, is 0.38-0.91MHz,
+        // below the data sheet's 2.0MHz floor for 16-bit conversions. The
+        // 24MHz bus clock divided by 8 is 3MHz: inside 2.0-12.0MHz, and at
+        // most the 4MHz the reference manual asks for while calibrating
+        cfg.clockSource     = kADC16_ClockSourceAlt0;   // bus clock
+        cfg.clockDivider    = kADC16_ClockDivider8;
         ADC16_Init( ADC0, &cfg );           // also turns the ADC0 clock on
         ADC16_EnableHardwareTrigger( ADC0, false );
 
