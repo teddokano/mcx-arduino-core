@@ -54,7 +54,7 @@ A153のものを元に、SRAMを1つ（`0x1FFFE000`から32KB）にし、Kinetis
 - `release_check`の`04`（mcxPinStateでピンの持ち主を表にする）で`CONFLICT`・`MISMATCH`なし
 - `release_check`の`08`（配線なし。PWMのピンの組と周期、D5/D6/D9の受け渡し、プル、割り込み、`analogRead()`のあとの入力）がALL OK
 - `test_analogRead_precision_C444`で、定電圧源の1V（テスターで0.97V、VDDAは3.27V）を`A2`が0.974Vと読んだ。GNDは0、3.3Vはフルスケール、内部のバンドギャップは0.994V
-- `release_check`の`07`（EEPROMの書き込み中に1000回リセット）がALL OK。ウォッチドッグはCOPで、`07`は起動コードにCOPを止めないよう伝え（`mcx_sketch_sets_cop`）、自分で設定する
+- `release_check`の`07`（EEPROMの書き込み中に1000回リセット）がALL OK。ウォッチドッグはCOPで、`07`は起動コードにCOPを止めないよう伝え（`mcx_sketch_sets_cop`）、自分で設定する。`mcx_sketch_sets_cop`はテストのための内部の口で、利用者向けの機能ではない（名前や動きは予告なく変わりうる）
 - `release_check`の`22`（外付けのLM75系のセンサー）と`23`（`Waveshare_TFT_Touch`の`SDBitmapViewer`）は、ユーザーがIDEで流して問題なし（5つのボードとも）
 - `test_avr_pgmspace`（アドレスのそろっていない`pgm_read_*`も）と`test_network_base_classes`がALL PASS
 - `test_fault_report`: 8種類のうち7種類で`error: HardFault at PC ...`がクラッシュした行を指す。

@@ -282,6 +282,8 @@ extern unsigned int __bss_section_table_end;
 // does, the COP runs at its reset default (1kHz LPO, 1024ms), which the
 // sketch must serve (SIM_SRVCOP) to keep it from resetting the board.
 // release_check/07 uses it to reset the board in the middle of a write.
+// It is an internal hook for the core's tests, not a feature for sketches:
+// its name and behaviour may change without notice.
 //*****************************************************************************
 extern "C" const int mcx_sketch_sets_cop __attribute__ ((weak));
 
