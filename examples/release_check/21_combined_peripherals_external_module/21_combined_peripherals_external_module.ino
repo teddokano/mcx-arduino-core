@@ -47,6 +47,15 @@
  *  instead of SPI1, which it has none of (its MikroBus MOSI/MISO are D11/
  *  D12, so it is the same MB_MOSI->MB_MISO jumper).
  *
+ *  FRDM-MCXC444 has no temperature sensor on board either: it reads a
+ *  P3T1755 connected to Wire (D18/D19). An FRDM-MCXN947's on-board one
+ *  does, wired C444 D18-N947 MB_RX, D19-MB_TX, GND-GND, with the N947
+ *  running a sketch that leaves those pins alone. It has no Serial1 (D0/D1
+ *  are Serial itself), so in its place it reads the on-board FXLS8974CF
+ *  accelerometer's WHO_AM_I over Wire1 every loop. It loops SPI back over a
+ *  D11->D12 jumper as FRDM-MCXN236 does, runs analogWrite on D3 (it has no
+ *  PWM0), and sounds the tone on D8: its D13 is SPI's SCK.
+ *
  *  If any of these peripherals share a clock/interrupt resource incorrectly,
  *  expect symptoms here: I2C/I3C read errors or hangs, out-of-range ADC
  *  values, PWM/tone glitches, millis()/micros() drifting/stalling, Serial1
@@ -61,21 +70,29 @@
 // The on-board P3T1755's bus: Wire1 on FRDM-MCXA153 and FRDM-MCXN947,
 // Wire (D18/D19) on FRDM-MCXA156, whose sensor is on the Arduino I2C pins
 // FRDM-MCXN236 has none on board: connect one to its MikroBus I2C (Wire1)
+// Nor has FRDM-MCXC444: connect one to Wire (D18/D19)
 #if defined(FRDM_MCXA153) || defined(FRDM_MCXN947) || defined(FRDM_MCXN236)
 #define SENSOR_WIRE Wire1
-#elif defined(FRDM_MCXA156)
+#elif defined(FRDM_MCXA156) || defined(FRDM_MCXC444)
 #define SENSOR_WIRE Wire
 #else
 #error "This sketch has no settings for this board yet"
 #endif
 
+// FRDM-MCXC444 has no PWM0, and its D13 is SPI's SCK
+#if defined(FRDM_MCXC444)
+#define BUZZER_PIN  D8
+#define PWM_PIN     D3
+#else
 #define BUZZER_PIN  D13
 #define PWM_PIN     PWM0
+#endif
 
 // The SPI loopback: SPI1, on the MikroBus header. FRDM-MCXN236 has no SPI1:
 // its MikroBus MOSI/MISO are SPI's own D11/D12, so the same jumper loops
-// SPI back, with D10 as chip select (MB_CS is D18 there).
-#if defined(FRDM_MCXN236)
+// SPI back, with D10 as chip select (MB_CS is D18 there). So does
+// FRDM-MCXC444, with a D11->D12 jumper.
+#if defined(FRDM_MCXN236) || defined(FRDM_MCXC444)
 #define LOOP_SPI    SPI
 #define LOOP_CS     D10
 #elif defined(FRDM_MCXA153) || defined(FRDM_MCXA156) || defined(FRDM_MCXN947)
@@ -84,7 +101,7 @@
 #else
 #error "This sketch has no settings for this board yet"
 #endif
-#if defined(FRDM_MCXA153) || defined(FRDM_MCXA156) || defined(FRDM_MCXN236)
+#if defined(FRDM_MCXA153) || defined(FRDM_MCXA156) || defined(FRDM_MCXN236) || defined(FRDM_MCXC444)
 #define ADC_PIN     A0
 #elif defined(FRDM_MCXN947)
 #define ADC_PIN     A2
@@ -118,6 +135,8 @@ void setup() {
   Serial1.begin(9600);  // D0/D1 hardware UART -- jumper D1->D0 to loop back
   Serial2.begin(9600);  // MikroBus UART -- jumper MB_TX->MB_RX to loop back
   Wire1.begin();        // MikroBus I2C -- no device required, see header comment
+#elif defined(FRDM_MCXC444)
+  Wire1.begin();  // the on-board accelerometer, see header comment
 #endif
 
   pinMode(LOOP_CS, OUTPUT);
@@ -133,6 +152,8 @@ void setup() {
   Serial.println("Combined peripheral test (N947): I3C(Wire1) + analogRead + analogWrite + tone + millis/micros + Wire2 + SPI1");
 #elif defined(FRDM_MCXA156)
   Serial.println("Combined peripheral test (A156): sensor(Wire) + analogRead + analogWrite + tone + millis/micros + Serial1 + Serial2 + Wire1 + SPI1");
+#elif defined(FRDM_MCXC444)
+  Serial.println("Combined peripheral test (C444): sensor(Wire) + analogRead + analogWrite + tone + millis/micros + accelerometer(Wire1) + SPI");
 #endif
 }
 
@@ -197,6 +218,13 @@ void loop() {
   // Wire1 (MikroBus I2C) -- the same probe as FRDM-MCXN947's Wire2
   Wire1.beginTransmission(0x08);
   uint8_t wire1Err = Wire1.endTransmission();
+#elif defined(FRDM_MCXC444)
+  // Wire1 -- the on-board FXLS8974CF accelerometer's WHO_AM_I (0x13), 0x86
+  Wire1.beginTransmission(0x18);
+  Wire1.write(0x13);
+  int accelId = -1;
+  if (Wire1.endTransmission(false) == 0 && Wire1.requestFrom((uint8_t)0x18, (size_t)1) == 1)
+    accelId = Wire1.read();
 #endif
 
   Serial.print("millis=");
@@ -225,6 +253,9 @@ void loop() {
   Serial.print(serial2Rx);
   Serial.print("\" wire1Err=");
   Serial.print(wire1Err);
+#elif defined(FRDM_MCXC444)
+  Serial.print(" accelId=0x");
+  Serial.print(accelId, HEX);
 #endif
 
   if (adc < 0 || adc > 1023)
@@ -246,6 +277,9 @@ void loop() {
     Serial.print("  <-- WARNING: Serial1 loopback got nothing!");
   if (loopCount > 0 && serial2Avail == 0)
     Serial.print("  <-- WARNING: Serial2 loopback got nothing!");
+#elif defined(FRDM_MCXC444)
+  if (accelId != 0x86)
+    Serial.print("  <-- WARNING: accelerometer WHO_AM_I mismatch!");
 #endif
 
   Serial.println();
