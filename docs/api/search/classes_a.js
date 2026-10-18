@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['wiretarget_0',['WireTarget',['../struct_wire_target.html',1,'']]]
+  ['ticker_0',['Ticker',['../class_ticker.html',1,'']]],
+  ['twowire_1',['TwoWire',['../class_two_wire.html',1,'']]]
 ];

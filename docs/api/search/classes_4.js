@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['i2c_0',['I2C',['../class_i2_c.html',1,'']]],
-  ['i3c_1',['I3C',['../class_i3_c.html',1,'']]],
-  ['interruptin_2',['InterruptIn',['../class_interrupt_in.html',1,'']]]
+  ['digitalin_0',['DigitalIn',['../class_digital_in.html',1,'']]],
+  ['digitalinout_1',['DigitalInOut',['../class_digital_in_out.html',1,'']]],
+  ['digitalout_2',['DigitalOut',['../class_digital_out.html',1,'']]]
 ];

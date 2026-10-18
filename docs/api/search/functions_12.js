@@ -1,4 +1,7 @@
 var searchData=
 [
-  ['value_0',['value',['../class_bus_in_out.html#a66e048f49c436aaa298f5eb135455ae7',1,'BusInOut::value(uint8_t v)'],['../class_bus_in_out.html#a7769f756b07ada0280a0005e0e8ba90e',1,'BusInOut::value(void)'],['../class_digital_in_out.html#a76be5769a0ae1e0ca854213ddca005a4',1,'DigitalInOut::value(bool value)'],['../class_digital_in_out.html#a0b8136561d03090fee66c09f467bc65a',1,'DigitalInOut::value(void)']]]
+  ['ultoa_0',['ultoa',['../_arduino_8h.html#a904a901b9eca04913948044d698348ee',1,'ultoa(unsigned long value, char *str, int base):&#160;arduino_stdlib.cpp'],['../arduino__stdlib_8cpp.html#a904a901b9eca04913948044d698348ee',1,'ultoa(unsigned long value, char *str, int base):&#160;arduino_stdlib.cpp']]],
+  ['update_5firq_5fenables_1',['update_irq_enables',['../class_serial.html#ad483361fab79ce00a0c630a5336ab51c',1,'Serial']]],
+  ['usinginterrupt_2',['usingInterrupt',['../class_s_p_i_class.html#a1f21d6f84d89334bf1a897ec116860b4',1,'SPIClass']]],
+  ['utoa_3',['utoa',['../_arduino_8h.html#a8a43094a12dd8ee8fea0227692c60475',1,'Arduino.h']]]
 ];

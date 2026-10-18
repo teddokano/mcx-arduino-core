@@ -23,7 +23,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.9.1</span>
+   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.10.0</span>
    </div>
    <div id="projectbrief">Arduino board support package for NXP FRDM MCX Series boards</div>
   </td>
@@ -158,12 +158,65 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 <div class="line"><a id="l00153" name="l00153"></a><span class="lineno">  153</span>};</div>
 </div>
 <div class="line"><a id="l00154" name="l00154"></a><span class="lineno">  154</span> </div>
-<div class="line"><a id="l00155" name="l00155"></a><span class="lineno">  155</span><span class="preprocessor">#else</span></div>
-<div class="line"><a id="l00156" name="l00156"></a><span class="lineno">  156</span><span class="preprocessor">#error &quot;PwmOut.h: no PWM outputs for this chip&quot;</span></div>
-<div class="line"><a id="l00157" name="l00157"></a><span class="lineno">  157</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00158" name="l00158"></a><span class="lineno">  158</span> </div>
-<div class="line"><a id="l00159" name="l00159"></a><span class="lineno">  159</span><span class="preprocessor">#endif </span><span class="comment">// R01LIB_PWMOUT_H</span></div>
+<div class="line"><a id="l00155" name="l00155"></a><span class="lineno">  155</span><span class="preprocessor">#elif defined( CPU_MCXC444VLH )</span></div>
+<div class="line"><a id="l00156" name="l00156"></a><span class="lineno">  156</span> </div>
+<div class="line"><a id="l00157" name="l00157"></a><span class="lineno">  157</span><span class="keyword">extern</span> <span class="stringliteral">&quot;C&quot;</span> {</div>
+<div class="line"><a id="l00158" name="l00158"></a><span class="lineno">  158</span><span class="preprocessor">#include &quot;fsl_tpm.h&quot;</span></div>
+<div class="line"><a id="l00159" name="l00159"></a><span class="lineno">  159</span><span class="preprocessor">#include &quot;fsl_clock.h&quot;</span></div>
+<div class="line"><a id="l00160" name="l00160"></a><span class="lineno">  160</span><span class="preprocessor">#include &quot;fsl_port.h&quot;</span></div>
+<div class="line"><a id="l00161" name="l00161"></a><span class="lineno">  161</span>}</div>
+<div class="line"><a id="l00162" name="l00162"></a><span class="lineno">  162</span> </div>
+<div class="line"><a id="l00163" name="l00163"></a><span class="lineno">  163</span><span class="preprocessor">#include &quot;<a class="code" href="obj_8h.html">obj.h</a>&quot;</span></div>
+<div class="line"><a id="l00164" name="l00164"></a><span class="lineno">  164</span><span class="preprocessor">#include &quot;<a class="code" href="io_8h.html">io.h</a>&quot;</span></div>
+<div class="line"><a id="l00165" name="l00165"></a><span class="lineno">  165</span></div>
+<div class="line"><a id="l00175" name="l00175"></a><span class="lineno">  175</span><span class="keyword">class </span><a class="code hl_class" href="class_pwm_out.html">PwmOut</a> : <span class="keyword">public</span> <a class="code hl_class" href="class_obj.html">Obj</a></div>
+<div class="line"><a id="l00176" name="l00176"></a><span class="lineno">  176</span>{</div>
+<div class="line"><a id="l00177" name="l00177"></a><span class="lineno">  177</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00179" name="l00179"></a><span class="lineno">  179</span>    <span class="keyword">explicit</span> <a class="code hl_function" href="class_pwm_out.html#ab9e14adc0a7c64520f9c647cdbeabcec">PwmOut</a>( <span class="keywordtype">int</span> pin );</div>
+<div class="line"><a id="l00181" name="l00181"></a><span class="lineno">  181</span>    <span class="keyword">virtual</span> <a class="code hl_function" href="class_pwm_out.html#ab9e14adc0a7c64520f9c647cdbeabcec">~PwmOut</a>();</div>
+<div class="line"><a id="l00182" name="l00182"></a><span class="lineno">  182</span></div>
+<div class="line"><a id="l00184" name="l00184"></a><span class="lineno">  184</span>    <span class="keywordtype">void</span>  <a class="code hl_function" href="class_pwm_out.html#a4c1ff6c634c682e2c18d8ddcee31b0f5">period</a>( <span class="keywordtype">float</span> seconds );</div>
+<div class="line"><a id="l00186" name="l00186"></a><span class="lineno">  186</span>    <span class="keywordtype">void</span>  <a class="code hl_function" href="class_pwm_out.html#ab992254dbb79b4cd796707848a90e501">period_ms</a>( <span class="keywordtype">int</span> ms );</div>
+<div class="line"><a id="l00188" name="l00188"></a><span class="lineno">  188</span>    <span class="keywordtype">void</span>  <a class="code hl_function" href="class_pwm_out.html#ad09052cd11bca81702be83beaf751851">period_us</a>( <span class="keywordtype">int</span> us );</div>
+<div class="line"><a id="l00189" name="l00189"></a><span class="lineno">  189</span></div>
+<div class="line"><a id="l00191" name="l00191"></a><span class="lineno">  191</span>    <span class="keywordtype">void</span>  <a class="code hl_function" href="class_pwm_out.html#a459fd3989531768d87769adc43b5d55f">pulsewidth</a>( <span class="keywordtype">float</span> seconds );</div>
+<div class="line"><a id="l00193" name="l00193"></a><span class="lineno">  193</span>    <span class="keywordtype">void</span>  <a class="code hl_function" href="class_pwm_out.html#ad821e98b82bab332a3e53499f44fb188">pulsewidth_ms</a>( <span class="keywordtype">int</span> ms );</div>
+<div class="line"><a id="l00195" name="l00195"></a><span class="lineno">  195</span>    <span class="keywordtype">void</span>  <a class="code hl_function" href="class_pwm_out.html#a862bf72b654374398ac730b4940d41ed">pulsewidth_us</a>( <span class="keywordtype">int</span> us );</div>
+<div class="line"><a id="l00196" name="l00196"></a><span class="lineno">  196</span></div>
+<div class="line"><a id="l00198" name="l00198"></a><span class="lineno">  198</span>    <span class="keywordtype">void</span>  <a class="code hl_function" href="class_pwm_out.html#a4d95bd01f786eee501bc948e39c5e6e4">write</a>( <span class="keywordtype">float</span> duty );</div>
+<div class="line"><a id="l00200" name="l00200"></a><span class="lineno">  200</span>    <span class="keywordtype">float</span> <a class="code hl_function" href="class_pwm_out.html#a4e4f332621e66e098c157fe9f0eb2a3d">read</a>( <span class="keywordtype">void</span> );</div>
+<div class="line"><a id="l00201" name="l00201"></a><span class="lineno">  201</span></div>
+<div class="line"><a id="l00203" name="l00203"></a><span class="lineno">  203</span>    <a class="code hl_function" href="class_pwm_out.html#ab9e14adc0a7c64520f9c647cdbeabcec">PwmOut</a> &amp;<a class="code hl_function" href="class_pwm_out.html#a673fa0919719b180b6ed623e7e7e6b12">operator=</a>( <span class="keywordtype">float</span> duty );</div>
+<div class="line"><a id="l00205" name="l00205"></a><span class="lineno">  205</span>    <span class="keyword">operator</span> float();</div>
+<div class="line"><a id="l00206" name="l00206"></a><span class="lineno">  206</span></div>
+<div class="line"><a id="l00209" name="l00209"></a><span class="lineno">  209</span>    <span class="keywordtype">void</span>  <a class="code hl_function" href="class_pwm_out.html#a9997d00aaed4279a61814e2f8d556442">claim_pin</a>( <span class="keywordtype">void</span> );</div>
+<div class="line"><a id="l00212" name="l00212"></a><span class="lineno">  212</span>    <span class="keywordtype">void</span>  <a class="code hl_function" href="class_pwm_out.html#a1a41b0eba70e475fbbbcd9b11fbeeedc">release_pin</a>( <span class="keywordtype">void</span> );</div>
+<div class="line"><a id="l00213" name="l00213"></a><span class="lineno">  213</span></div>
+<div class="line"><a id="l00215" name="l00215"></a><span class="lineno">  215</span>    <span class="keyword">static</span> <span class="keywordtype">bool</span> <a class="code hl_function" href="class_pwm_out.html#a349a64f4629a902085273471fed58e35">is_pwm_pin</a>( <span class="keywordtype">int</span> pin );</div>
+<div class="line"><a id="l00217" name="l00217"></a><span class="lineno">  217</span>    <span class="keyword">static</span> <span class="keywordtype">bool</span> <a class="code hl_function" href="class_pwm_out.html#a86e8cf280a1d085ba59b0eb790076e45">shares_running_period</a>( <span class="keywordtype">int</span> pin );</div>
+<div class="line"><a id="l00218" name="l00218"></a><span class="lineno">  218</span> </div>
+<div class="line"><a id="l00219" name="l00219"></a><span class="lineno">  219</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00220" name="l00220"></a><span class="lineno">  220</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="class_pwm_out.html#a47d7d7a668ff0ad4429428262452bab5">apply</a>( <span class="keywordtype">void</span> );  <span class="comment">// push the TPM&#39;s period and its channels&#39; pulses to hardware</span></div>
+<div class="line"><a id="l00221" name="l00221"></a><span class="lineno">  221</span>    <span class="keywordtype">void</span> take_channel( <span class="keywordtype">void</span> );</div>
+<div class="line"><a id="l00222" name="l00222"></a><span class="lineno">  222</span> </div>
+<div class="line"><a id="l00223" name="l00223"></a><span class="lineno">  223</span>    uint8_t  _tpm;        <span class="comment">// 0 = TPM0, 1 = TPM1</span></div>
+<div class="line"><a id="l00224" name="l00224"></a><span class="lineno">  224</span>    uint8_t  <a class="code hl_variable" href="class_pwm_out.html#a6e778861408176315f290861b7a77528">_channel</a>;    <span class="comment">// TPMn_CHx</span></div>
+<div class="line"><a id="l00225" name="l00225"></a><span class="lineno">  225</span>    uint8_t  <a class="code hl_variable" href="class_pwm_out.html#ab691517c43a4a35f4b901bd02df24325">_alt</a>;        <span class="comment">// PORT mux ALT for the pin</span></div>
+<div class="line"><a id="l00226" name="l00226"></a><span class="lineno">  226</span>    <span class="keywordtype">bool</span>     _holds_pin;  <span class="comment">// the pin is muxed to the TPM for this PwmOut</span></div>
+<div class="line"><a id="l00227" name="l00227"></a><span class="lineno">  227</span>    uint32_t _pulse_us;</div>
+<div class="line"><a id="l00228" name="l00228"></a><span class="lineno">  228</span>    <span class="keywordtype">int</span>      <a class="code hl_variable" href="class_pwm_out.html#a4136710a5104e6f2ef85165116ff771d">_pin</a>;</div>
+<div class="line"><a id="l00229" name="l00229"></a><span class="lineno">  229</span>};</div>
+<div class="line"><a id="l00230" name="l00230"></a><span class="lineno">  230</span></div>
+<div class="line"><a id="l00233" name="l00233"></a><span class="lineno">  233</span><span class="keywordtype">void</span> pwm_tpm_service( uint32_t now );</div>
+<div class="line"><a id="l00234" name="l00234"></a><span class="lineno">  234</span> </div>
+<div class="line"><a id="l00235" name="l00235"></a><span class="lineno">  235</span><span class="preprocessor">#else</span></div>
+<div class="line"><a id="l00236" name="l00236"></a><span class="lineno">  236</span><span class="preprocessor">#error &quot;PwmOut.h: no PWM outputs for this chip&quot;</span></div>
+<div class="line"><a id="l00237" name="l00237"></a><span class="lineno">  237</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00238" name="l00238"></a><span class="lineno">  238</span> </div>
+<div class="line"><a id="l00239" name="l00239"></a><span class="lineno">  239</span><span class="preprocessor">#endif </span><span class="comment">// R01LIB_PWMOUT_H</span></div>
+<div class="ttc" id="aclass_obj_html"><div class="ttname"><a href="class_obj.html">Obj</a></div><div class="ttdef"><b>Definition</b> <a href="obj_8h_source.html#l00022">obj.h:23</a></div></div>
 <div class="ttc" id="aclass_obj_html_a963b6bbaf9c2b6c3c401ac02131744fa"><div class="ttname"><a href="class_obj.html#a963b6bbaf9c2b6c3c401ac02131744fa">Obj::Obj</a></div><div class="ttdeci">Obj(bool done=false)</div><div class="ttdef"><b>Definition</b> <a href="obj_8cpp_source.html#l00013">obj.cpp:13</a></div></div>
+<div class="ttc" id="aclass_pwm_out_html"><div class="ttname"><a href="class_pwm_out.html">PwmOut</a></div><div class="ttdoc">Mbed-compatible PWM output class.</div><div class="ttdef"><b>Definition</b> <a href="#l00061">PwmOut.h:62</a></div></div>
 <div class="ttc" id="aclass_pwm_out_html_a1a41b0eba70e475fbbbcd9b11fbeeedc"><div class="ttname"><a href="class_pwm_out.html#a1a41b0eba70e475fbbbcd9b11fbeeedc">PwmOut::release_pin</a></div><div class="ttdeci">void release_pin(void)</div><div class="ttdoc">Stop recording this PwmOut as the pin&#39;s owner.</div><div class="ttdef"><b>Definition</b> <a href="_pwm_out_8cpp_source.html#l00321">PwmOut.cpp:321</a></div></div>
 <div class="ttc" id="aclass_pwm_out_html_a349a64f4629a902085273471fed58e35"><div class="ttname"><a href="class_pwm_out.html#a349a64f4629a902085273471fed58e35">PwmOut::is_pwm_pin</a></div><div class="ttdeci">static bool is_pwm_pin(int pin)</div><div class="ttdoc">Is this pin one FlexPWM can actually drive?</div><div class="ttdef"><b>Definition</b> <a href="_pwm_out_8cpp_source.html#l00208">PwmOut.cpp:208</a></div></div>
 <div class="ttc" id="aclass_pwm_out_html_a4136710a5104e6f2ef85165116ff771d"><div class="ttname"><a href="class_pwm_out.html#a4136710a5104e6f2ef85165116ff771d">PwmOut::_pin</a></div><div class="ttdeci">int _pin</div><div class="ttdef"><b>Definition</b> <a href="#l00152">PwmOut.h:152</a></div></div>

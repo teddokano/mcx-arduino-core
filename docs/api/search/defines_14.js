@@ -1,6 +1,7 @@
 var searchData=
 [
-  ['wire_5fbuffer_5fsize_0',['WIRE_BUFFER_SIZE',['../arduino__i2c_8h.html#aee2280922daffee7f3faaf894ec04f72',1,'arduino_i2c.h']]],
-  ['wire_5fhas_5ftimeout_1',['WIRE_HAS_TIMEOUT',['../arduino__i2c_8h.html#ae0d021a74da01c9f3921a7785dffad63',1,'arduino_i2c.h']]],
-  ['word_2',['word',['../_arduino_8h.html#a5487d1c0ecfed21733f7b13a06cffc5e',1,'Arduino.h']]]
+  ['vfprintf_5fp_0',['vfprintf_P',['../pgmspace_8h.html#a246def7cbbc23297a25dd2449728d186',1,'pgmspace.h']]],
+  ['vsnprintf_5fp_1',['vsnprintf_P',['../pgmspace_8h.html#a7df0547648b2e703a2bbb2870b79c80b',1,'pgmspace.h']]],
+  ['vsprintf_5fp_2',['vsprintf_P',['../pgmspace_8h.html#a2bb8a4ef0d1758c32ec9d6bde56d72c3',1,'pgmspace.h']]],
+  ['vsscanf_5fp_3',['vsscanf_P',['../pgmspace_8h.html#a48572f239e8aed921e6d8643ab2a9a84',1,'pgmspace.h']]]
 ];

@@ -23,7 +23,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.9.1</span>
+   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.10.0</span>
    </div>
    <div id="projectbrief">Arduino board support package for NXP FRDM MCX Series boards</div>
   </td>
@@ -205,11 +205,46 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 <div class="line"><a id="l00212" name="l00212"></a><span class="lineno">  212</span>    <span class="keywordtype">int</span>     <a class="code hl_variable" href="class_analog_in.html#acaf40927f372e2a848fb40fc7fbe16c3">_pin</a>;</div>
 <div class="line"><a id="l00213" name="l00213"></a><span class="lineno">  213</span>};</div>
 <div class="line"><a id="l00214" name="l00214"></a><span class="lineno">  214</span> </div>
-<div class="line"><a id="l00215" name="l00215"></a><span class="lineno">  215</span><span class="preprocessor">#else</span></div>
-<div class="line"><a id="l00216" name="l00216"></a><span class="lineno">  216</span><span class="preprocessor">#error &quot;AnalogIn.h: no analog inputs for this chip&quot;</span></div>
-<div class="line"><a id="l00217" name="l00217"></a><span class="lineno">  217</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00218" name="l00218"></a><span class="lineno">  218</span> </div>
-<div class="line"><a id="l00219" name="l00219"></a><span class="lineno">  219</span><span class="preprocessor">#endif </span><span class="comment">// R01LIB_ANALOGIN_H</span></div>
+<div class="line"><a id="l00215" name="l00215"></a><span class="lineno">  215</span><span class="preprocessor">#elif defined( CPU_MCXC444VLH )</span></div>
+<div class="line"><a id="l00216" name="l00216"></a><span class="lineno">  216</span> </div>
+<div class="line"><a id="l00217" name="l00217"></a><span class="lineno">  217</span><span class="comment">/*</span></div>
+<div class="line"><a id="l00218" name="l00218"></a><span class="lineno">  218</span><span class="comment"> *  FRDM-MCXC444 has an ADC16 (ADC0), not an LPADC: A0-A5 are PTB0, PTB1,</span></div>
+<div class="line"><a id="l00219" name="l00219"></a><span class="lineno">  219</span><span class="comment"> *  PTB2, PTB3, PTC2, PTC1, on ADC0_SE8, SE9, SE12, SE13, SE11, SE15</span></div>
+<div class="line"><a id="l00220" name="l00220"></a><span class="lineno">  220</span><span class="comment"> *  (Zephyr&#39;s MCXC444VLH-pinctrl.h). It converts at 16 bits single-ended,</span></div>
+<div class="line"><a id="l00221" name="l00221"></a><span class="lineno">  221</span><span class="comment"> *  so read_u16() is the conversion itself, not a scaled-up 12-bit one.</span></div>
+<div class="line"><a id="l00222" name="l00222"></a><span class="lineno">  222</span><span class="comment"> */</span></div>
+<div class="line"><a id="l00223" name="l00223"></a><span class="lineno">  223</span><span class="keyword">extern</span> <span class="stringliteral">&quot;C&quot;</span> {</div>
+<div class="line"><a id="l00224" name="l00224"></a><span class="lineno">  224</span><span class="preprocessor">#include &quot;fsl_adc16.h&quot;</span></div>
+<div class="line"><a id="l00225" name="l00225"></a><span class="lineno">  225</span><span class="preprocessor">#include &quot;fsl_port.h&quot;</span></div>
+<div class="line"><a id="l00226" name="l00226"></a><span class="lineno">  226</span>}</div>
+<div class="line"><a id="l00227" name="l00227"></a><span class="lineno">  227</span> </div>
+<div class="line"><a id="l00228" name="l00228"></a><span class="lineno">  228</span><span class="preprocessor">#include &quot;<a class="code" href="obj_8h.html">obj.h</a>&quot;</span></div>
+<div class="line"><a id="l00229" name="l00229"></a><span class="lineno">  229</span><span class="preprocessor">#include &quot;<a class="code" href="io_8h.html">io.h</a>&quot;</span></div>
+<div class="line"><a id="l00230" name="l00230"></a><span class="lineno">  230</span></div>
+<div class="line"><a id="l00234" name="l00234"></a><span class="lineno">  234</span><span class="keyword">class </span><a class="code hl_class" href="class_analog_in.html">AnalogIn</a> : <span class="keyword">public</span> <a class="code hl_class" href="class_obj.html">Obj</a></div>
+<div class="line"><a id="l00235" name="l00235"></a><span class="lineno">  235</span>{</div>
+<div class="line"><a id="l00236" name="l00236"></a><span class="lineno">  236</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00238" name="l00238"></a><span class="lineno">  238</span>    <span class="keyword">explicit</span> <a class="code hl_function" href="class_analog_in.html#a29d1ca5a56ced8294a2eaf759aaed003">AnalogIn</a>( <span class="keywordtype">int</span> pin );</div>
+<div class="line"><a id="l00239" name="l00239"></a><span class="lineno">  239</span>    <span class="keyword">virtual</span> <a class="code hl_function" href="class_analog_in.html#a29d1ca5a56ced8294a2eaf759aaed003">~AnalogIn</a>();</div>
+<div class="line"><a id="l00240" name="l00240"></a><span class="lineno">  240</span></div>
+<div class="line"><a id="l00242" name="l00242"></a><span class="lineno">  242</span>    <span class="keywordtype">float</span> <a class="code hl_function" href="class_analog_in.html#a3a3c7e7480be5ee246f02a39e9e4497b">read</a>( <span class="keywordtype">void</span> );</div>
+<div class="line"><a id="l00244" name="l00244"></a><span class="lineno">  244</span>    uint16_t <a class="code hl_function" href="class_analog_in.html#ae2b965917004c599a0e4cf261986a6bd">read_u16</a>( <span class="keywordtype">void</span> );</div>
+<div class="line"><a id="l00246" name="l00246"></a><span class="lineno">  246</span>    <span class="keyword">operator</span> float();</div>
+<div class="line"><a id="l00247" name="l00247"></a><span class="lineno">  247</span> </div>
+<div class="line"><a id="l00248" name="l00248"></a><span class="lineno">  248</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00249" name="l00249"></a><span class="lineno">  249</span>    <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code hl_function" href="class_analog_in.html#a4bca447951159de1e0b106c4482ab319">_acquire_peripheral</a>( <span class="keywordtype">void</span> );</div>
+<div class="line"><a id="l00250" name="l00250"></a><span class="lineno">  250</span>    <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code hl_function" href="class_analog_in.html#ae602326e2068a18bca58ddc52c97b89e">_release_peripheral</a>( <span class="keywordtype">void</span> );</div>
+<div class="line"><a id="l00251" name="l00251"></a><span class="lineno">  251</span>    <span class="keyword">static</span> uint8_t <a class="code hl_variable" href="class_analog_in.html#a7589a70eeb1a11f44a16b3065e856812">_instance_count</a>;</div>
+<div class="line"><a id="l00252" name="l00252"></a><span class="lineno">  252</span> </div>
+<div class="line"><a id="l00253" name="l00253"></a><span class="lineno">  253</span>    uint8_t _channel;   <span class="comment">// ADC0_SEn</span></div>
+<div class="line"><a id="l00254" name="l00254"></a><span class="lineno">  254</span>    <span class="keywordtype">int</span>     <a class="code hl_variable" href="class_analog_in.html#acaf40927f372e2a848fb40fc7fbe16c3">_pin</a>;</div>
+<div class="line"><a id="l00255" name="l00255"></a><span class="lineno">  255</span>};</div>
+<div class="line"><a id="l00256" name="l00256"></a><span class="lineno">  256</span> </div>
+<div class="line"><a id="l00257" name="l00257"></a><span class="lineno">  257</span><span class="preprocessor">#else</span></div>
+<div class="line"><a id="l00258" name="l00258"></a><span class="lineno">  258</span><span class="preprocessor">#error &quot;AnalogIn.h: no analog inputs for this chip&quot;</span></div>
+<div class="line"><a id="l00259" name="l00259"></a><span class="lineno">  259</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00260" name="l00260"></a><span class="lineno">  260</span> </div>
+<div class="line"><a id="l00261" name="l00261"></a><span class="lineno">  261</span><span class="preprocessor">#endif </span><span class="comment">// R01LIB_ANALOGIN_H</span></div>
 <div class="ttc" id="aclass_analog_in_html"><div class="ttname"><a href="class_analog_in.html">AnalogIn</a></div><div class="ttdoc">Mbed-compatible single-shot ADC input class.</div><div class="ttdef"><b>Definition</b> <a href="#l00060">AnalogIn.h:61</a></div></div>
 <div class="ttc" id="aclass_analog_in_html_a17ac98bd80dc34b1da9c6ab3bccce0f8"><div class="ttname"><a href="class_analog_in.html#a17ac98bd80dc34b1da9c6ab3bccce0f8">AnalogIn::_channel_id</a></div><div class="ttdeci">uint8_t _channel_id</div><div class="ttdef"><b>Definition</b> <a href="#l00106">AnalogIn.h:106</a></div></div>
 <div class="ttc" id="aclass_analog_in_html_a29d1ca5a56ced8294a2eaf759aaed003"><div class="ttname"><a href="class_analog_in.html#a29d1ca5a56ced8294a2eaf759aaed003">AnalogIn::AnalogIn</a></div><div class="ttdeci">AnalogIn(int pin)</div><div class="ttdoc">Construct and configure an analog input on the given pin.</div><div class="ttdef"><b>Definition</b> <a href="_analog_in_8cpp_source.html#l00164">AnalogIn.cpp:164</a></div></div>

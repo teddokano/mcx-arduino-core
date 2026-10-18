@@ -23,7 +23,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.9.1</span>
+   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.10.0</span>
    </div>
    <div id="projectbrief">Arduino board support package for NXP FRDM MCX Series boards</div>
   </td>
@@ -111,9 +111,12 @@ Inheritance diagram for Print:</div>
  <div class="center">
   <img src="class_print.png" usemap="#Print_map" alt=""/>
   <map id="Print_map" name="Print_map">
-<area href="class_stream.html" alt="Stream" shape="rect" coords="43,56,119,80"/>
-<area href="class_serial_class.html" title="Arduino-compatible Serial class for NXP MCX BSP." alt="SerialClass" shape="rect" coords="0,112,76,136"/>
-<area href="class_two_wire.html" alt="TwoWire" shape="rect" coords="86,112,162,136"/>
+<area href="class_server.html" alt="Server" shape="rect" coords="0,56,76,80"/>
+<area href="class_stream.html" alt="Stream" shape="rect" coords="129,56,205,80"/>
+<area href="class_client.html" alt="Client" shape="rect" coords="0,112,76,136"/>
+<area href="class_serial_class.html" title="Arduino-compatible Serial class for NXP MCX BSP." alt="SerialClass" shape="rect" coords="86,112,162,136"/>
+<area href="class_two_wire.html" alt="TwoWire" shape="rect" coords="172,112,248,136"/>
+<area href="class_u_d_p.html" alt="UDP" shape="rect" coords="258,112,334,136"/>
   </map>
 </div></div>
 <table class="memberdecls">
@@ -449,7 +452,7 @@ Private Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>Wait until everything written so far has gone out. Does nothing unless the derived class overrides it &ndash; as in ArduinoCore-API's <a class="el" href="class_print.html">Print</a>, so code holding only a <a class="el" href="class_print.html">Print</a>&amp; or <a class="el" href="class_stream.html">Stream</a>&amp; can still call it. </p>
 
-<p>Reimplemented in <a class="el" href="class_serial_class.html#a169903091267008ee9019d9d816129a6">SerialClass</a>, and <a class="el" href="class_two_wire.html#af3d4f7264eb1756f8fcdce7b67748ddc">TwoWire</a>.</p>
+<p>Reimplemented in <a class="el" href="classarduino_1_1_client.html#a2ddbd7aa6b5d18e1e463c359b22829aa">arduino::Client</a>, <a class="el" href="classarduino_1_1_u_d_p.html#a2bf28910b39ccd0da18c27d451552b45">arduino::UDP</a>, <a class="el" href="class_client.html#a2ddbd7aa6b5d18e1e463c359b22829aa">Client</a>, <a class="el" href="class_serial_class.html#a169903091267008ee9019d9d816129a6">SerialClass</a>, <a class="el" href="class_two_wire.html#af3d4f7264eb1756f8fcdce7b67748ddc">TwoWire</a>, and <a class="el" href="class_u_d_p.html#a2bf28910b39ccd0da18c27d451552b45">UDP</a>.</p>
 
 <p class="definition">Definition at line <a class="el" href="_print_8h_source.html#l00068">68</a> of file <a class="el" href="_print_8h_source.html">Print.h</a>.</p>
 
@@ -1277,7 +1280,7 @@ Private Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>number of bytes actually written </dd></dl>
 
-<p>Reimplemented in <a class="el" href="class_serial_class.html#a4943b0bc9273eb17d437c7d8bc68085f">SerialClass</a>, and <a class="el" href="class_two_wire.html#a5fa72b82a960d717debeea28a0b9e86f">TwoWire</a>.</p>
+<p>Reimplemented in <a class="el" href="classarduino_1_1_client.html#a253996b6d6c563a50e3b2c8265b6e9c6">arduino::Client</a>, <a class="el" href="classarduino_1_1_u_d_p.html#afa7e3894d353b62c74b69e8cb39d303a">arduino::UDP</a>, <a class="el" href="class_client.html#a253996b6d6c563a50e3b2c8265b6e9c6">Client</a>, <a class="el" href="class_serial_class.html#a4943b0bc9273eb17d437c7d8bc68085f">SerialClass</a>, <a class="el" href="class_two_wire.html#a5fa72b82a960d717debeea28a0b9e86f">TwoWire</a>, and <a class="el" href="class_u_d_p.html#afa7e3894d353b62c74b69e8cb39d303a">UDP</a>.</p>
 
 <p class="definition">Definition at line <a class="el" href="_print_8cpp_source.html#l00015">15</a> of file <a class="el" href="_print_8cpp_source.html">Print.cpp</a>.</p>
 
@@ -1313,7 +1316,7 @@ Private Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>1 on success, 0 on failure </dd></dl>
 
-<p>Implemented in <a class="el" href="class_serial_class.html#ac42e083777193299a1c8a9d026d7e9bb">SerialClass</a>, and <a class="el" href="class_two_wire.html#ae7d4db93ec4f9cf27a81c9aea5629b0c">TwoWire</a>.</p>
+<p>Implemented in <a class="el" href="classarduino_1_1_client.html#a1f7ebd29d8e7967d786482af32629e98">arduino::Client</a>, <a class="el" href="classarduino_1_1_u_d_p.html#a9f475c478fecbf79c3729ca534f90842">arduino::UDP</a>, <a class="el" href="class_client.html#a1f7ebd29d8e7967d786482af32629e98">Client</a>, <a class="el" href="class_serial_class.html#ac42e083777193299a1c8a9d026d7e9bb">SerialClass</a>, <a class="el" href="class_two_wire.html#ae7d4db93ec4f9cf27a81c9aea5629b0c">TwoWire</a>, and <a class="el" href="class_u_d_p.html#a9f475c478fecbf79c3729ca534f90842">UDP</a>.</p>
 
 </div>
 </div>

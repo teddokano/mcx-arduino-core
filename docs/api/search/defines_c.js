@@ -35,7 +35,15 @@ var searchData=
   ['mcx_5farduino_5fcore_5fversion_5fstr2_32',['MCX_ARDUINO_CORE_VERSION_STR2',['../mcx__arduino__core__version_8h.html#a6ca0f76a1d408b486b6a52a87b76f669',1,'mcx_arduino_core_version.h']]],
   ['mcx_5farduino_5fcore_5fversion_5fval_33',['MCX_ARDUINO_CORE_VERSION_VAL',['../mcx__arduino__core__version_8h.html#a089e3831931d97d01460e03c93b8b7af',1,'mcx_arduino_core_version.h']]],
   ['mcx_5farduino_5fcore_5fversion_5fxstr_34',['MCX_ARDUINO_CORE_VERSION_XSTR',['../mcx__arduino__core__version_8h.html#a31483e7b5ebf6ad24ac4293bf6899d05',1,'mcx_arduino_core_version.h']]],
-  ['microsecondstoclockcycles_35',['microsecondsToClockCycles',['../_arduino_8h.html#aa4a5bbc71d71ab25856c1366b6ca15bb',1,'Arduino.h']]],
-  ['miso_36',['MISO',['../arduino__io_8h.html#a7334c540878c8c4d801fd75ed9fd8063',1,'arduino_io.h']]],
-  ['mosi_37',['MOSI',['../arduino__io_8h.html#a5d3f11f2fdf8a7e27b975291e0c2c8cc',1,'arduino_io.h']]]
+  ['memccpy_5fp_35',['memccpy_P',['../pgmspace_8h.html#aed355c72688fa91fa2b1c905c794fb61',1,'pgmspace.h']]],
+  ['memchr_5fp_36',['memchr_P',['../pgmspace_8h.html#a217bcca13421a4020bb0c64a17183dcc',1,'pgmspace.h']]],
+  ['memcmp_5fp_37',['memcmp_P',['../pgmspace_8h.html#ab8872ca44f17f7a9aca50ef667207bb9',1,'pgmspace.h']]],
+  ['memcmp_5fpf_38',['memcmp_PF',['../pgmspace_8h.html#abae75ca0b5545842d55688a3cd249a6c',1,'pgmspace.h']]],
+  ['memcpy_5fp_39',['memcpy_P',['../pgmspace_8h.html#a2bb0b4190a3462efa0d632561cc7f3e6',1,'pgmspace.h']]],
+  ['memcpy_5fpf_40',['memcpy_PF',['../pgmspace_8h.html#a11c21fe6f4e816eaf24c2cdaa935f983',1,'pgmspace.h']]],
+  ['memmem_5fp_41',['memmem_P',['../pgmspace_8h.html#a4938edb79b10775100ce7358713b9474',1,'pgmspace.h']]],
+  ['memrchr_5fp_42',['memrchr_P',['../pgmspace_8h.html#a38d9d52cbd7eca8e66b68ed6c6aedd15',1,'pgmspace.h']]],
+  ['microsecondstoclockcycles_43',['microsecondsToClockCycles',['../_arduino_8h.html#aa4a5bbc71d71ab25856c1366b6ca15bb',1,'Arduino.h']]],
+  ['miso_44',['MISO',['../arduino__io_8h.html#a7334c540878c8c4d801fd75ed9fd8063',1,'arduino_io.h']]],
+  ['mosi_45',['MOSI',['../arduino__io_8h.html#a5d3f11f2fdf8a7e27b975291e0c2c8cc',1,'arduino_io.h']]]
 ];

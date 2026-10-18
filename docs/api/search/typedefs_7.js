@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['ticker_5fcallback_5ffp_5ft_0',['ticker_callback_fp_t',['../_ticker_8h.html#ac35acab1869d65eb7162f0ce9642abb0',1,'Ticker.h']]]
+  ['r01libspi_0',['r01libSPI',['../arduino__spi_8cpp.html#abcce430271d5c637345874b2091f51ea',1,'arduino_spi.cpp']]]
 ];

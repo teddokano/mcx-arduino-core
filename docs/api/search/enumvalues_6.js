@@ -6,5 +6,7 @@ var searchData=
   ['i2c_5fmode_5fod_5fratio_3',['I2C_MODE_OD_RATIO',['../class_i3_c.html#ac4c6baa4f489f1a470b86ad579fb0107a6606ca67761ee5eb51c1f647190c2238',1,'I3C']]],
   ['i3c_5fmode_4',['I3C_MODE',['../class_i3_c.html#a90bae46fc3e240503e1384f4a2a324a8a3be9d5c70602ea19d8bcfc130b7d72ff',1,'I3C']]],
   ['i3cddr_5fmode_5',['I3CDDR_MODE',['../class_i3_c.html#a90bae46fc3e240503e1384f4a2a324a8a0fc0b83f58ae51a17769758d30da3007',1,'I3C']]],
-  ['input_6',['INPUT',['../class_bus_in_out.html#a55cd6d430f2c6c81ce6ad6d8396d3ea5a74970cda66172cc4d6a54f5ef8a3d3e3',1,'BusInOut::INPUT'],['../class_digital_in_out.html#a6042e4468e550347265bda8db2325be4a0225c92c4cb1366066e9c456022ff453',1,'DigitalInOut::INPUT']]]
+  ['input_6',['INPUT',['../class_bus_in_out.html#a55cd6d430f2c6c81ce6ad6d8396d3ea5a74970cda66172cc4d6a54f5ef8a3d3e3',1,'BusInOut::INPUT'],['../class_digital_in_out.html#a6042e4468e550347265bda8db2325be4a0225c92c4cb1366066e9c456022ff453',1,'DigitalInOut::INPUT']]],
+  ['ipv4_7',['IPv4',['../_i_p_address_8h.html#aadb1cfb5fcd8adc562a07248be433d45ac7ecb5234abd540dcc2ac0c8d37e12a5',1,'IPv4:&#160;IPAddress.h'],['../namespacearduino.html#ac7ecb5234abd540dcc2ac0c8d37e12a5',1,'arduino::IPv4']]],
+  ['ipv6_8',['IPv6',['../_i_p_address_8h.html#aadb1cfb5fcd8adc562a07248be433d45aee0722baf12a9db075fb08d0734710a6',1,'IPv6:&#160;IPAddress.h'],['../namespacearduino.html#aee0722baf12a9db075fb08d0734710a6',1,'arduino::IPv6']]]
 ];
