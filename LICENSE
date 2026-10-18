@@ -78,7 +78,8 @@ where marked in the file, to report a crash on the serial port instead
 of stopping silently; and FRDM-MCXC444's
 `hardware/nxp/mcx/variants/frdm_mcxc444/src/startup_mcxc444.cpp` has its
 flash option byte changed, where marked, so a low NMI pin at reset does
-not stop the board. Each file retains its own original copyright
+not stop the board, and turns the watchdog (COP) off itself, where
+marked, so that a sketch can keep it. Each file retains its own original copyright
 header.
 
 - NXP MCUXpresso SDK — https://github.com/nxp-mcuxpresso/mcux-sdk (BSD-3-Clause)

@@ -10,9 +10,8 @@ MCU port pin. The pins were checked against the board's schematic
 > **Support for this board is new in 0.10.0 and is still being checked on
 > hardware.** GPIO, `Serial`, `analogRead`, `analogWrite`, `tone`,
 > `Wire`, `Wire1`, `SPI`, `EEPROM` and `Servo` have run on the board, as
-> have the release checks that need jumpers, a second board, an external
-> temperature sensor or the Waveshare TFT. Not yet: `07` (EEPROM writes cut
-> by a reset).
+> have the release checks, except `04` and `08`, which have no settings
+> for this board yet.
 
 This board differs from the other FRDM boards in three ways a sketch may
 notice:

@@ -318,7 +318,7 @@ xPack checksums（正しい値）：
   ADC16の校正は平均32回で、ADCのクロックは4MHz以下が望ましい。16ビットのモードのADCのクロックは2.0〜12.0MHz（データシート）。
   FTFAは4バイト単位で書き、消去せずに同じ場所へもう一度書けない。命令の実行中はそのフラッシュを読めない（SDKのドライバは待ちをRAMで行う）。
   PITとLPUART0/1はバスクロック、I2C0・I2C1・SPI1はシステムクロック、SPI0はバスクロック。デジタルの機能のピン（TPMを含む）は`GPIOx_PDIR`で読める。
-  `SIM_COPC`（ウォッチドッグ）はリセット後に一度だけ書けて、SDKの`SystemInit()`が0を書くので、スケッチからは動かせない。
+  `SIM_COPC`（ウォッチドッグ）はリセット後に一度だけ書ける（最初の書き込みでカウンタが0から数え始める）。カウンタの値は読めない。
   回路図: A4/A5（PTC2/PTC1）にはR26・R27（4.7kΩ）のプルアップがある。D18/D19にはプルアップが無い（`Wire.begin()`の内蔵プルアップで持ち上がる）。SW3（D4）はR15（10kΩ）でプルアップ。**VREFHの端子はJP6が開いていてどこにもつながっていない**（ボードの`board.h`が`BOARD_ADC_USE_ALT_VREF`を立て、SDKのADC16の作例はVALTH＝VDDAを使う。2026-10-17に「JP6で3.3V」と書いたのは誤りで、実機でVREFHを基準にすると全部の入力が最大値になった）
 - **RMとデータシートで見つけて直した不具合（2026-10-17、ビルドだけ）**: TPMの周期が65536カウントのときMODが`0xFFFF`になり、`analogWrite(pin, 255)`の`CnV`が16ビットに切り詰められて0%になっていた（上限を65535カウントにした）。
   ADC16のクロックがSDKの既定（非同期クロックの8分周、0.38〜0.91MHz）で16ビットの下限を下回っていた（バスクロックの8分周、3MHzにした）。
@@ -326,6 +326,9 @@ xPack checksums（正しい値）：
 - **実機で確かめたこと（2026-10-18）**: `examples/Arduino_compatible_API/test_bringup_C444`（配線なし、立ち上げの順を1本で）がALL OK。
   `release_check`の`01`・`06`（2回、書き込みをまたいだ保持も）・`09`・`11`（案A: D2-D3のジャンパだけ、`Serial1`の節はSKIP。2026-10-18にユーザーが決定）・`12`（D11-D12）・`13`（D8-D9・D2-D3・D4-D5・D6-D7。データの組をD0-D1から移し、サーボはD6からD7で測る。2026-10-18にユーザーが決定）、`test_Servo`（D6-D7）、`test_avr_pgmspace`（M0+でアドレスのそろっていない読み出しも）、`test_network_base_classes`がALL OK/ALL PASS。
   `22`（外付けのLM75系）と`23`（`Waveshare_TFT_Touch`の`SDBitmapViewer`）は、ユーザーが5つのボードともIDEで流して問題なし。
+  `07`はCOP（ウォッチドッグ）で1000回リセットしてALL OK（約1分半。普通の書き込みは約0.2ms、詰め直しは約37ms）。
+  そのため**COPを止めるのは`SystemInit()`ではなく起動コードの`ResetISR()`にした**（C444だけ`-DDISABLE_WDOG=0`）。スケッチが`mcx_sketch_sets_cop`を定義したときだけ止めずに任せ、スケッチは`SIM_COPC`を自分で1回書くまで、リセット後の既定（LPOで1024ms）のCOPを`SIM_SRVCOP`でリセットし続ける。
+  テストのための内部の口で、利用者向けの機能として文書に載せるかは未決。`07`のCOPはMCGIRCLK（8MHzのLIRCを4分周した2MHz、コアは使っていない）で数え、LPTMRで`micros()`と比べて速さを測る。実機でのリセットの時刻は計算と0.25%以内で合った
   `21`はN947のオンボードのP3T1755を`Wire`（C444のD18-N947の`MB_RX`、D19-`MB_TX`）で読み、`Serial1`の代わりに`Wire1`の加速度センサーのWHO_AM_Iを毎周読む（D11-D12のジャンパで`SPI`、`analogWrite`はD3、`tone`はD8）。約130周回してWARNINGなし（加速度センサーのCS/WAKEはR40でD11＝MOSIにつながるが、影響は無かった）。
   `test_fault_report`は8種類のうち7種類で`error: HardFault at PC ...`がクラッシュした行を指す（M0+にはCFSRが無いので種類は出ない。割り込みの中は`in an interrupt`）。
   **スタックあふれ（kind 4）は報告されず、リセットを繰り返す**（M0+には`MSPLIM`が無い）。
@@ -356,8 +359,8 @@ xPack checksums（正しい値）：
   `Serial`（`USBTX`/`USBRX`が`D1`/`D0`なので、ピン番号の付け替えの前に生の値を取る）、`Wire`/`Wire1`、`SPI`（r01libに無かった`bit_order()`を足し、CSは転送ごとに動かさずスケッチに任せる。MCXのボードと同じ）、`analogRead`（ADC16、16ビット、校正）、
   `analogWrite`/`analogWriteFrequency`（TPM、D5/D6/D9の取り合い）、`tone`（PITのチャネル0）、`EEPROM`（FTFA、16バイト単位、フラッシュの最後の8KB、命令の間は割り込みを止める）、`Servo`。
   `PIN_MAPPING_C444.md`・README・API_COMPATIBILITY・CHANGELOG・LICENSE（`startup_mcxc444.cpp`のFOPTの変更）・`docs/porting_a_new_board.md`
-- **残り**: 実機確認の続き（`02`は流れ、`03`はSW2の3つの割り込みとも期待どおり。`07`（書き込み中のリセットのやり方）、`Servo`の実物、`analogRead()`を既知の電圧で）、スタックあふれの扱い、
-  作例の約35本（`#error "This sketch has no settings for this board yet"`と`PWM0`を使うもの。`release_check`では04・07・08がまだ。ジャンパの決め方は実機と一緒に）、
+- **残り**: 実機確認の続き（`02`は流れ、`03`はSW2の3つの割り込みとも期待どおり。`Servo`の実物、`analogRead()`を既知の電圧で）、スタックあふれの扱い、
+  作例の約35本（`#error "This sketch has no settings for this board yet"`と`PWM0`を使うもの。`release_check`では04・08がまだ。ジャンパの決め方は実機と一緒に）、
   mcxPinStateとmcxRCServoの作例（上流のリポジトリ。pushはユーザーの了承が要る）、CIのボードの表への追加（作例がそろってから）
 
 ## 動作確認済み

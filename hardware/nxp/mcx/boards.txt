@@ -230,7 +230,9 @@ frdm_mcxc444.build.core=arduino
 frdm_mcxc444.build.variant=frdm_mcxc444
 
 # Board-specific preprocessor defines
-frdm_mcxc444.build.board_defines=-DCPU_MCXC444VLH -DTARGET_C444 -DFRDM_MCXC444
+# DISABLE_WDOG=0: SystemInit() leaves the COP alone; ResetISR() turns it off
+# (startup_mcxc444.cpp)
+frdm_mcxc444.build.board_defines=-DCPU_MCXC444VLH -DTARGET_C444 -DFRDM_MCXC444 -DDISABLE_WDOG=0
 
 # Optimization (release build)
 frdm_mcxc444.build.opt_flags=-O2

@@ -275,6 +275,17 @@ extern unsigned int __bss_section_table;
 extern unsigned int __bss_section_table_end;
 
 //*****************************************************************************
+// mcx-arduino-core: the COP (watchdog) is turned off in ResetISR() below,
+// not in SystemInit() (built with DISABLE_WDOG=0), unless the sketch
+// defines this symbol. SIM_COPC can be written only once after a reset, so
+// a sketch that wants the COP has to make that one write itself: until it
+// does, the COP runs at its reset default (1kHz LPO, 1024ms), which the
+// sketch must serve (SIM_SRVCOP) to keep it from resetting the board.
+// release_check/07 uses it to reset the board in the middle of a write.
+//*****************************************************************************
+extern "C" const int mcx_sketch_sets_cop __attribute__ ((weak));
+
+//*****************************************************************************
 // Reset entry point for your code.
 // Sets up a simple runtime environment and initializes the C/C++
 // library.
@@ -287,6 +298,10 @@ void ResetISR(void) {
 #if defined (__USE_CMSIS)
 // If __USE_CMSIS defined, then call CMSIS SystemInit code
     SystemInit();
+
+    // mcx-arduino-core: see mcx_sketch_sets_cop above
+    if (&mcx_sketch_sets_cop == 0)
+        *((volatile unsigned int *)0x40048100) = 0x00u;   // SIM->COPC: off
 
 #else
     // Disable Watchdog
