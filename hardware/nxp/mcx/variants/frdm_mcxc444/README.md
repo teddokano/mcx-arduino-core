@@ -48,7 +48,7 @@ A153のものを元に、SRAMを1つ（`0x1FFFE000`から32KB）にし、Kinetis
 
 - `test_bringup_C444`（下記）がALL OK
 - `release_check`の`01`・`06`（2回。書き込みをまたいだ保持も）・`09`・`11`（D2-D3のジャンパだけ。`Serial1`の節はSKIP）・`12`（D11-D12のジャンパ）・`13`（D8-D9・D2-D3・D4-D5・D6-D7のジャンパ）・`14`（D19-D8・D18-D7のジャンパ）・`24`（FRDM-MCXN947との2枚）がALL OK。
-  `01`と`14`の`Wire`のターゲットの節はSKIP（KinetisのI2Cはマスターかスレーブのどちらかで、自分のターゲットを呼べない）。`test_Servo`（D6-D7）がALL PASS。
+  `01`と`14`の`Wire`のターゲットの節はSKIP（KinetisのI2Cはマスターかスレーブのどちらかで、自分のターゲットを呼べない）。`test_Servo`（D6-D7）がALL PASS。同梱の`Servo`の作例`Sweep`・`Knob`と、同梱のmcxRCServoの作例3本（`D3`）も、実物のサーボで動いた。
   `02`（人が見る）は最後まで流れ、`03`（SW2を押す）は立ち下がり・`detachInterrupt()`・LOWの割り込みとも期待どおり
 - `release_check`の`21`（FRDM-MCXN947のオンボードのP3T1755を`Wire`で読む。C444のD18-N947の`MB_RX`、D19-`MB_TX`、GND-GND、D11-D12のジャンパ）を約130周回してWARNINGなし。`Wire1`のオンボードの加速度センサーのWHO_AM_IとSPIのループバックも毎周正しい
 - `release_check`の`04`（mcxPinStateでピンの持ち主を表にする）で`CONFLICT`・`MISMATCH`なし

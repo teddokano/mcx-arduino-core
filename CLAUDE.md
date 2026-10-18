@@ -16,7 +16,7 @@
   `Servo.h`の互換ライブラリ、A4/A5のI²C（`setPins`、Pendingタスク10）、`<avr/pgmspace.h>`、**FRDM-MCXC444**（2026-10-16、ユーザーが決定）。
   機能の追加だけなのでパッチではなくマイナーの版にした。C444は「ビルドが通るだけ」のスパイク（`c444-spike`ブランチ、未push）の結果を見て入れると決めた。結果はmemoの§4-5で、スパイクのスタブは持ち込まず`0.10.0-dev`の上で作り直す。
   N947のEthernet（ENET・lwIP）は0.11.0。1.0までの版の割り振りは[memo/notes_toward_1.0.0.md](memo/notes_toward_1.0.0.md)の§9。
-  **`Servo`（`libraries/Servo/`）はC444の実機で`test_Servo`がALL PASS（2026-10-18）。MCXの4ボードはビルドが通るだけで、実機は未確認**（2026-10-16、ユーザーが後でやると判断）。
+  **`Servo`（`libraries/Servo/`）はC444の実機で`test_Servo`がALL PASS（2026-10-18）。作例の`Sweep`と`Knob`（ポテンショメータは`A2`）も、5つのボードで実物のSG90を動かせた（2026-10-18、ユーザーが確認。C444は`D9`、MCXの4ボードは`PWM0`（N236では`D6`と同じピン））**。
   `test_Servo`をジャンパ1本（A153・A156・N947は`PWM0`-`D8`、N236とC444は`D6`-`D7`）で流す
 - **ADCの無いピンへの`analogRead()`（A153の`analogRead(A5)`など）をビルド時に検出する案は入れない**（2026-10-11、ユーザー判断）。
   `__builtin_constant_p`と`__attribute__((error))`で、定数のピンならビルドエラーにできることは試作で確かめた（常に`-O2`なので確実に効く）。
@@ -373,8 +373,7 @@ xPack checksums（正しい値）：
   上流（`~/dev/Arduino/libraries/mcxRCServo`）と同梱のコピーの両方に入れ、5つのボードでビルドが通る。CIのボードの表（`regression_check.yml`）にC444を足した。
   実物のサーボで3本ともC444の`D3`から動くことをユーザーが確かめた（2026-10-18。SG90はボードの5V、FS90Rは別の電源）。READMEにも書いた
   `release_check/02`は波形もユーザーが確かめて問題なし（2026-10-18）
-- **残り**: 実機確認の続き（`Servo`を実物のサーボで、`analogRead()`を既知の電圧で）、スタックあふれの扱い、
-  mcxRCServoの上流へのコミットとpush（ユーザーの了承が要る）
+- **残り**: 実機確認の続き（`analogRead()`を既知の電圧で）、スタックあふれの扱い
 
 ## 動作確認済み
 
