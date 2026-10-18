@@ -73,6 +73,11 @@ struct WireTarget
 	size_t		tx_size;
 	uint8_t		fill;		// what a controller gets past the reply
 	uint8_t		sink;		// where a NAKed byte is read to
+#if defined( CPU_MCXC444VLH )
+	bool		in_write;	// a controller is writing to this target
+	size_t		rx_count;	// bytes of that write in rx[]
+	size_t		tx_index;	// next byte of tx[] to send
+#endif
 };
 
 #if !defined( CPU_MCXC444VLH )	// LPI2C and I3C; FRDM-MCXC444 has the Kinetis I2C
@@ -121,9 +126,6 @@ void TwoWire::begin( uint8_t address )
 	 */
 	if ( _sda == MB_SDA && _scl == MB_SCL )
 		panic( "Wire2: target (slave) mode doesn't work on Wire2 (LPI2C3 on FRDM-MCXN947). Use Wire" );
-#endif
-#if defined( CPU_MCXC444VLH )
-	panic( "Wire: target (slave) mode is not done yet for FRDM-MCXC444" );
 #endif
 	if ( address > 127 )
 		panic( "Wire: begin(address) given an address over 127" );
@@ -295,10 +297,211 @@ void TwoWire::target_event( void *p )
 	}
 }
 #else
-// Target mode isn't done yet for the Kinetis I2C (begin(address) stops above)
-void TwoWire::target_arm( void ) {}
-void TwoWire::target_stop( void ) {}
-void TwoWire::target_event( void *p ) { (void)p; }
+/*
+ *  Target (slave) mode on FRDM-MCXC444's Kinetis I2C, driven from the I2C
+ *  interrupt here: the SDK's I2C_SlaveInit() would rewrite the master's
+ *  settings on the same module too.
+ *
+ *  One Kinetis I2C is master or slave at a time, never both at once, so
+ *  unlike an LPI2C it can't address its own target. r01lib's controller
+ *  transfers turn this interrupt and FLT[SSIE] off while they run (they
+ *  poll the same IICIF, which SSIE would set for their own START), and a
+ *  controller transfer can't start while another controller is talking to
+ *  this target (the bus is busy).
+ *
+ *  The STOP and START detection interrupt (FLT[SSIE]) ends a write. Flags
+ *  are cleared in the order the reference manual asks: STOPF/STARTF first,
+ *  then IICIF.
+ */
+namespace {
+
+TwoWire	*s_target_of[ 2 ]	= {};	// the TwoWire armed on I2C0, I2C1
+
+constexpr uint8_t	FLT_W1C	= I2C_FLT_STOPF_MASK | I2C_FLT_STARTF_MASK;
+
+int instance_of( I2C_Type *base )
+{
+	return ( base == I2C0 ) ? 0 : 1;
+}
+
+void target_irq( int n )
+{
+	if ( s_target_of[ n ] )
+		s_target_of[ n ]->target_event( nullptr );
+	else
+	{
+		I2C_Type	*base	= n ? I2C1 : I2C0;
+
+		base->FLT	= base->FLT;			// clears STOPF/STARTF that are set
+		base->S		= I2C_S_IICIF_MASK;
+	}
+}
+
+}	// namespace
+
+extern "C" void I2C0_IRQHandler( void )
+{
+	target_irq( 0 );
+	SDK_ISR_EXIT_BARRIER;
+}
+
+extern "C" void I2C1_IRQHandler( void )
+{
+	target_irq( 1 );
+	SDK_ISR_EXIT_BARRIER;
+}
+
+void TwoWire::target_arm( void )
+{
+	I2C_Type	*base	= i2c->kinetis_base();
+	WireTarget	*t		= target;
+	int			n		= instance_of( base );
+
+	t->in_write		= false;
+	t->rx_count		= 0;
+	t->rx_full		= false;
+	t->tx_size		= 0;
+	t->tx_index		= 0;
+	t->in_request	= false;
+	t->fill			= 0xFF;
+
+	s_target_of[ n ]	= this;
+
+	// The address register is named A1, as is the Arduino pin (io.h)
+#pragma push_macro( "A1" )
+#undef A1
+	base->A1	= (uint8_t)( t->address << 1 );
+#pragma pop_macro( "A1" )
+	base->FLT	= ( base->FLT & (uint8_t)~FLT_W1C ) | I2C_FLT_SSIE_MASK;
+	base->FLT	= base->FLT;			// clear stale STOPF/STARTF
+	base->S		= I2C_S_IICIF_MASK | I2C_S_ARBL_MASK;
+	base->C1	= ( base->C1 & (uint8_t)~( I2C_C1_TX_MASK | I2C_C1_TXAK_MASK ) ) | I2C_C1_IICIE_MASK;
+
+	EnableIRQ( n ? I2C1_IRQn : I2C0_IRQn );
+}
+
+void TwoWire::target_stop( void )
+{
+	if ( !target || !target->active )
+		return;
+
+	target->active	= false;
+
+	if ( i2c )
+	{
+		I2C_Type	*base	= i2c->kinetis_base();
+
+		base->C1	&= (uint8_t)~I2C_C1_IICIE_MASK;
+		base->FLT	= base->FLT & (uint8_t)~( FLT_W1C | I2C_FLT_SSIE_MASK );
+#pragma push_macro( "A1" )
+#undef A1
+		base->A1	= 0;
+#pragma pop_macro( "A1" )
+		s_target_of[ instance_of( base ) ]	= nullptr;
+	}
+}
+
+void TwoWire::target_event( void *p )
+{
+	(void)p;
+
+	I2C_Type	*base	= i2c->kinetis_base();
+	WireTarget	*t		= target;
+	uint8_t		flt		= base->FLT;
+
+	if ( flt & FLT_W1C )
+	{
+		base->FLT	= flt;					// STOPF/STARTF first ...
+		base->S		= I2C_S_IICIF_MASK;		// ... then IICIF
+		base->C1	&= (uint8_t)~I2C_C1_TXAK_MASK;
+
+		// A controller's write just ended (STOP or repeated START): hand it
+		// to onReceive(), as AVR does even for a write of no bytes
+		if ( t->in_write )
+		{
+			size_t	count	= t->rx_count;
+
+			// Its own buffer, not rx_buf: this can land in the middle of a
+			// requestFrom() of our own, which reads into rx_buf
+			memcpy( t->received, t->rx, count );
+			rx_data		= t->received;
+			rx_index	= 0;
+			rx_size		= count;
+			t->in_write	= false;
+
+			if ( user_onReceive )
+				user_onReceive( (int)count );
+		}
+		return;
+	}
+
+	uint8_t	s	= base->S;
+
+	if ( !( s & I2C_S_IICIF_MASK ) )
+		return;
+
+	base->S	= I2C_S_IICIF_MASK;
+
+	if ( base->C1 & I2C_C1_MST_MASK )		// a controller transfer of our own
+		return;
+
+	if ( s & I2C_S_ARBL_MASK )
+	{
+		base->S	= I2C_S_ARBL_MASK;
+		if ( !( s & I2C_S_IAAS_MASK ) )
+			return;
+	}
+
+	if ( s & I2C_S_IAAS_MASK )
+	{
+		if ( s & I2C_S_SRW_MASK )			// the controller reads
+		{
+			base->C1		|= I2C_C1_TX_MASK;
+			t->tx_size		= 0;
+			t->tx_index		= 0;
+			if ( user_onRequest )
+			{
+				t->in_request	= true;
+				user_onRequest();
+				t->in_request	= false;
+			}
+			base->D	= ( t->tx_index < t->tx_size ) ? t->tx[ t->tx_index++ ] : t->fill;
+		}
+		else								// the controller writes
+		{
+			base->C1	&= (uint8_t)~( I2C_C1_TX_MASK | I2C_C1_TXAK_MASK );
+			t->in_write	= true;
+			t->rx_count	= 0;
+			t->rx_full	= false;
+			(void)base->D;					// lets go of SCL
+		}
+		return;
+	}
+
+	if ( base->C1 & I2C_C1_TX_MASK )		// sending to the controller
+	{
+		if ( s & I2C_S_RXAK_MASK )			// it NAKed: the read is over
+		{
+			base->C1	&= (uint8_t)~I2C_C1_TX_MASK;
+			(void)base->D;
+		}
+		else								// past the reply: 0xFF, as on AVR
+			base->D	= ( t->tx_index < t->tx_size ) ? t->tx[ t->tx_index++ ] : t->fill;
+		return;
+	}
+
+	// Receiving. TXAK is the ACK of the byte after this one: NAK it once
+	// the buffer is full (a NAKed byte still arrives here, and is dropped)
+	uint8_t	b	= base->D;
+
+	if ( t->rx_count < sizeof( t->rx ) )
+		t->rx[ t->rx_count++ ]	= b;
+	else
+		t->rx_full	= true;
+
+	if ( t->rx_count >= sizeof( t->rx ) )
+		base->C1	|= I2C_C1_TXAK_MASK;
+}
 #endif
 
 void TwoWire::start( int baud )
@@ -386,7 +589,8 @@ void TwoWire::start( int baud )
 	}
 #else
 	(void)is_i3c;
-	i2c->frequency( baudrate );	// no pin-low timeout yet on the Kinetis I2C
+	i2c->pin_low_timeout( timeout_us );	// the Kinetis I2C's SCL low timeout
+	i2c->frequency( baudrate );
 #endif
 
 	i2c->err_callback( nullptr );
@@ -523,6 +727,9 @@ void TwoWire::setWireTimeout( uint32_t timeout, bool reset_with_timeout )
 #if !defined( CPU_MCXC444VLH )	// LPI2C and I3C; FRDM-MCXC444 has the Kinetis I2C
 	if ( i2c && !on_i3c_pins() )
 		i2c->pin_low_timeout( timeout_us );
+#else
+	if ( i2c )
+		i2c->pin_low_timeout( timeout_us );
 #endif
 }
 
@@ -542,8 +749,8 @@ void TwoWire::check_timeout( int status )
 	if ( status != kStatus_LPI2C_PinLowTimeout )
 		return;
 #else
-	(void)status;	// no pin-low timeout yet on the Kinetis I2C
-	return;
+	if ( status != kStatus_I2C_Timeout )	// the Kinetis I2C's SCL low timeout
+		return;
 #endif
 
 	timed_out	= true;

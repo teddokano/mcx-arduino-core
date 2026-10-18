@@ -9,8 +9,10 @@ MCU port pin. The pins were checked against the board's schematic
 > [!NOTE]
 > **Support for this board is new in 0.10.0 and is still being checked on
 > hardware.** GPIO, `Serial`, `analogRead`, `analogWrite`, `tone`,
-> `Wire1`, `SPI`'s clock, `EEPROM` and `Servo` have run on the board;
-> the sketches that need jumpers have not yet.
+> `Wire`, `Wire1`, `SPI`, `EEPROM` and `Servo` have run on the board, as
+> have the release checks that need jumpers or a second board. Not yet:
+> `07` (EEPROM writes cut by a reset) and the checks that need external
+> modules.
 
 This board differs from the other FRDM boards in three ways a sketch may
 notice:
@@ -89,10 +91,15 @@ notice:
 > input is tied to `D11` through a 0Ω resistor (R40).
 
 > **`Wire`** (`D18`/`D19`) and **`A4`/`A5`** both reach the same `I2C1`, so
-> they cannot be two buses at once. **I2C target (slave) mode
-> (`Wire.begin(address)`) and `Wire.setWireTimeout()` are not done yet for
-> this board**: `begin(address)` stops the sketch with a message, and the
-> timeout never fires.
+> they cannot be two buses at once. Both buses are Kinetis I2Cs, which
+> differ from the other boards' LPI2C in two ways:
+>
+> - **I2C target (slave) mode** (`Wire.begin(address)`) works, but a bus is
+>   a controller or a target, never both at once, so a sketch can't
+>   address its own target.
+> - **`Wire.setWireTimeout()` times SCL only** (up to ~87ms at any speed).
+>   A timeout returns `80`; SDA held low makes the bus busy, and a transfer
+>   fails at once with `76`.
 
 > **7-bit serial formats** (`SERIAL_7N1` and the like) are not available:
 > this chip's LPUART has no 7-bit mode, and `Serial.begin()` stops the

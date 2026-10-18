@@ -328,6 +328,14 @@ xPack checksums（正しい値）：
   `test_fault_report`は8種類のうち7種類で`error: HardFault at PC ...`がクラッシュした行を指す（M0+にはCFSRが無いので種類は出ない。割り込みの中は`in an interrupt`）。
   **スタックあふれ（kind 4）は報告されず、リセットを繰り返す**（M0+には`MSPLIM`が無い）。
   書き込みはLinkServer 26.6.137で、フラッシュを正しく判定する
+- **`Wire`の`setWireTimeout()`とターゲットモード（2026-10-18）**: SDKの`I2C_MasterTransferBlocking()`は待ちに上限が無く（`I2C_RETRY_TIMES`が0）、SCLを押さえられると止まったままになるので、
+  コントローラの転送はr01libの`transfer_kinetis()`（`i2c.cpp`）で自前に書いた。タイムアウトはSMBusのSCL low timeout（`SLTH`/`SLTL`、モジュールのクロックの64分の1で数える）で、**SCLだけ**を見る。上限はどの速度でも約87ms。
+  コードは`uint8_t`に切り詰めて、タイムアウトが`80`、アドレスのNAKが`81`、データのNAKが`78`、ビジーが`76`。SDAを押さえられたまま始めるとバスがビジーで即座に`76`、SCLを押さえられたまま始めるとタイムアウトになる。
+  SLTFはIICIFも立てるので、IICIFが立ったあとにもSLTFを見る（見ないと成功として返った）。
+  ターゲットは`arduino_i2c.cpp`がI2Cの割り込みで動かす（SDKの`I2C_SlaveInit()`は同じモジュールのマスターの設定も書き換えるので使わない）。**Kinetisの1つのI2Cはマスターかスレーブのどちらかで、自分のターゲットを呼べない**
+  （LPI2Cは両方が独立して動く）。そのため`release_check/01`と`14`のターゲットの節、`test_Wire_target_self`はC444ではSKIPを出し、ターゲットモードは`24`（N947との2枚）だけで確かめる。
+  **コントローラの転送の間は`C1[IICIE]`と`FLT[SSIE]`の両方を止める**: SSIEが立っていると自分の転送のSTARTでもIICIFが立ち、アドレスを送り終える前に「1バイト終わった」と読んでいた
+  （`24`で、応答の確認だけが通り、データを送る項目が全部FAILした）。`14`（D19-D8・D18-D7、ターゲットの節はSKIP）と`24`（C444が`0x42`・先攻）がALL OK
 - **実機で見つけて直した不具合（2026-10-18）**: どれもC444の分岐か、MCXでは値の変わらない形で直した。
   - **ポートのクロック**: SDKのテンプレートの`BOARD_InitBootPins()`はPORTAのクロックしか入れず、`pinMode(RED, OUTPUT)`（PTE31）でHardFaultになった。`mcu.cpp`で5つとも入れる
   - **GPIOのALT**: KinetisはALT0が「無効（アナログ）」でGPIOはALT1（MCXはALT0がGPIO）。`DigitalInOut`がMUXを設定せず、`pinMode()`と`Serial.end()`は`pin_mux( 0 )`でGPIOに戻していたので、入出力・プル・割り込み・`tone`・`Wire`の内蔵プルアップが全部効かなかった。
@@ -346,8 +354,8 @@ xPack checksums（正しい値）：
   `Serial`（`USBTX`/`USBRX`が`D1`/`D0`なので、ピン番号の付け替えの前に生の値を取る）、`Wire`/`Wire1`、`SPI`（r01libに無かった`bit_order()`を足し、CSは転送ごとに動かさずスケッチに任せる。MCXのボードと同じ）、`analogRead`（ADC16、16ビット、校正）、
   `analogWrite`/`analogWriteFrequency`（TPM、D5/D6/D9の取り合い）、`tone`（PITのチャネル0）、`EEPROM`（FTFA、16バイト単位、フラッシュの最後の8KB、命令の間は割り込みを止める）、`Servo`。
   `PIN_MAPPING_C444.md`・README・API_COMPATIBILITY・CHANGELOG・LICENSE（`startup_mcxc444.cpp`のFOPTの変更）・`docs/porting_a_new_board.md`
-- **残り**: 実機確認の続き（`02`は流れ、`03`はSW2の3つの割り込みとも期待どおり。ジャンパの要る`14`、`2n`、`Servo`の実物、`analogRead()`を既知の電圧で）、スタックあふれの扱い、`Wire`のターゲットモードと`setWireTimeout()`（Kinetisの`fsl_i2c`で）、
-  作例の約35本（`#error "This sketch has no settings for this board yet"`と`PWM0`を使うもの。`release_check`の01・08・11・13・14・21・24はジャンパの決め方を実機と一緒に）、
+- **残り**: 実機確認の続き（`02`は流れ、`03`はSW2の3つの割り込みとも期待どおり。`07`（書き込み中のリセットのやり方）、`21`〜`23`、`Servo`の実物、`analogRead()`を既知の電圧で）、スタックあふれの扱い、
+  作例の約35本（`#error "This sketch has no settings for this board yet"`と`PWM0`を使うもの。`release_check`では04・07・08・21がまだ。ジャンパの決め方は実機と一緒に）、
   mcxPinStateとmcxRCServoの作例（上流のリポジトリ。pushはユーザーの了承が要る）、CIのボードの表への追加（作例がそろってから）
 
 ## 動作確認済み
@@ -387,8 +395,8 @@ xPack checksums（正しい値）：
 | UNO R3/R4互換マクロ・定数一式 | ✅ | `release_check/09`の「compat macros」節で実行時に値を確認（0.8.0までは`01`） |
 | String クラス | ✅ | 独自実装（WString移植ではない）。連結・数値変換・検索・置換・大小文字変換・trim等を実機確認、全項目OK |
 | EEPROM（0.7.0） | ✅ | 1KB、内蔵フラッシュの末尾。`release_check/06`（API・書き込み・リセット後と書き込み後の保持）と`07`（ウォッチドッグで書き込み中に1000回リセット）で両ボード確認。CLIの`upload`とgdbの`load`、IDE（macOS）の書き込みボタンとDebugボタンで消えないことも確認 |
-| Wire.setWireTimeout / getWireTimeoutFlag / clearWireTimeoutFlag（0.7.0） | ✅ | LPI2Cのピンlowタイムアウト。`Wire`・N947の`Wire2`・A156の`Wire1`（A153・N947の`Wire1`はI3Cで無効）。`release_check/14`（ジャンパ）で3ボードとも確認 |
-| I2Cターゲット（スレーブ）モード（0.7.0） | ✅ | `Wire`とA156の`Wire1`（A153・N947の`Wire1`とN947の`Wire2`は`begin(address)`で止まる）。自分自身をターゲットにする形（`release_check/01`）と2枚接続（`release_check/24`）で確認 |
+| Wire.setWireTimeout / getWireTimeoutFlag / clearWireTimeoutFlag（0.7.0） | ✅ | LPI2Cのピンlowタイムアウト。`Wire`・N947の`Wire2`・A156の`Wire1`（A153・N947の`Wire1`はI3Cで無効）。`release_check/14`（ジャンパ）で3ボードとも確認。C444（0.10.0）はKinetisのSMBusのSCL low timeoutで、SCLだけを見る。`14`で確認 |
+| I2Cターゲット（スレーブ）モード（0.7.0） | ✅ | `Wire`とA156の`Wire1`（A153・N947の`Wire1`とN947の`Wire2`は`begin(address)`で止まる）。自分自身をターゲットにする形（`release_check/01`）と2枚接続（`release_check/24`）で確認。C444（0.10.0）は自分のターゲットを呼べないので、`24`だけで確認 |
 | Wire: begin()のオーバーロード・内部プルアップ・Stream化・5引数requestFrom・バッファ上限（0.7.0） | ✅ | `test_Wire_begin_address`と`test_Wire_Stream_requestFrom5`で両ボード確認（後者は`release_check/01`に統合） |
 | Serial.begin(baud, config) / end() / serialEvent（0.7.0） | ✅ | 12形式をRXピンからビット単位で読んで確認（`release_check/11`に統合） |
 | AVR互換の補助関数（0.7.0） | ✅ | `itoa`/`dtostrf`/`word`/`_BV`/`analogReference`の定数/`HardwareSerial`/avr-libcの文字列関数/`M_`定数/`SDA`・`SCL`/`BitOrder`のenum化。`test_avr_compat_helpers`（`release_check/09`に統合、0.8.0までは`01`。単体でもA156を含む3ボードでALL PASS） |

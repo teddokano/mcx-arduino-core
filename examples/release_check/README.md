@@ -18,7 +18,7 @@ with one setup each:
 
 | # | Sketch | Wiring | Judgment |
 |---|--------|--------|----------|
-| 01 | `01_no_wiring_checks` | none (on N947, #11's MB_TX-MB_RX jumper must be off: those pins are `Wire1`'s SDA/SCL there). On C444 the `Wire` target section prints SKIP: target mode is not done yet there | automatic (reads "ALL OK"/"N FAILED") |
+| 01 | `01_no_wiring_checks` | none (on N947, #11's MB_TX-MB_RX jumper must be off: those pins are `Wire1`'s SDA/SCL there). On C444 the `Wire` target section prints SKIP: its I2C can't address its own target (#24 checks target mode) | automatic (reads "ALL OK"/"N FAILED") |
 | 02 | `02_no_wiring_manual_observe` | none (on C444 the pin walk leaves out D0/D1, which are `Serial` there, and the PWM sections use D3, D9 and D10) | manual (watch/listen -- scope, LA, multimeter, ears) |
 | 03 | `03_sw2_interrupts` | none (press the on-board SW2 button as prompted) | manual |
 | 04 | `04_mcxpinstate_audit` | none | manual (no `*** CONFLICT ***` / `*** MISMATCH ***` in the tables) |
@@ -30,12 +30,12 @@ with one setup each:
 | 11 | `11_serial1_and_gpio_loopback` | Serial1 TX/RX loopback jumper (D0-D1 on A153, A156 and N236, MikroBus MB_TX-MB_RX on N947) + D2-D3 jumper. C444 has no Serial1 (D0/D1 are `Serial`, driven by the MCU-LINK): the D2-D3 jumper only, and the Serial1 sections print SKIP | automatic |
 | 12 | `12_spi_loopback` | D11-D12 jumper + MikroBus MOSI-MISO jumper (only the first on N236 and C444, which have no `SPI1`: their MikroBus MOSI/MISO are D11/D12) | automatic |
 | 13 | `13_shiftout_pulsein_loopback` | D0-D1, D2-D3, D4-D5, D6-D7 jumpers (4 adjacent pairs) + PWM0-D8 jumper (not on FRDM-MCXN236, where PWM0 is D6 itself). On FRDM-MCXC444: D8-D9 in place of D0-D1 (those are `Serial` there), and the servo pulses come out of D6 to D7 as on N236, so D8-D9, D2-D3, D4-D5, D6-D7 | automatic |
-| 14 | `14_wire_timeout` | D19(SCL)-D8 + D18(SDA)-D7 jumpers, nothing else on `Wire`; on FRDM-MCXN947 also MB_SCL-MB_PWM + MB_SDA-MB_INT, for `Wire2`, and the same on FRDM-MCXA156 and FRDM-MCXN236, for `Wire1` | automatic |
+| 14 | `14_wire_timeout` | D19(SCL)-D8 + D18(SDA)-D7 jumpers, nothing else on `Wire`; on FRDM-MCXN947 also MB_SCL-MB_PWM + MB_SDA-MB_INT, for `Wire2`, and the same on FRDM-MCXA156 and FRDM-MCXN236, for `Wire1`. On FRDM-MCXC444 the target section prints SKIP (see #01) | automatic |
 | 15 | `15_wire_wire1_jumpered_A156` | A156 only: MB_SDA-D18 + MB_SCL-D19, nothing else on either bus (joins `Wire` and `Wire1` into one bus) | automatic |
 | 21 | `21_combined_peripherals_external_module` | needs the external `P3T1755.h` library + (A153, A156 and N236) D1-D0 jumper + (A156 only) MikroBus MB_TX-MB_RX jumper + MikroBus MOSI-MISO jumper + (N236 only) a P3T1755 on its MikroBus I2C: an FRDM-MCXN947's on-board one does, wired N236 MB_SDA-N947 MB_RX, MB_SCL-MB_TX, GND-GND, with the N947 running a sketch that leaves those pins alone | manual (watch the Serial log for WARNING lines) |
 | 22 | `22_wire_lm75b_external_module` | needs an external LM75-family sensor module on D18(SDA)/D19(SCL)/3V3/GND | manual (read the printed temperature) |
 | 23 | `23_waveshare_tft_touch_external_library` | needs the external `Waveshare_TFT_Touch` library + its LCD/SD hardware (see its own README), running its `SDBitmapViewer` example (1.3.1 or later) | manual (judge the rendered image + draw speed) |
-| 24 | `24_wire_target_two_boards` | an FRDM-MCXA153 (or FRDM-MCXA156, or FRDM-MCXN236) and an FRDM-MCXN947 wired D18-D18, D19-D19, GND-GND, both running this sketch (reset both together if either already was) | automatic, on each board |
+| 24 | `24_wire_target_two_boards` | an FRDM-MCXA153 (or FRDM-MCXA156, FRDM-MCXN236 or FRDM-MCXC444) and an FRDM-MCXN947 wired D18-D18, D19-D19, GND-GND, both running this sketch (reset both together if either already was) | automatic, on each board |
 
 `06_eeprom` mirrors
 [`Arduino_compatible_API/test_EEPROM`](../Arduino_compatible_API/test_EEPROM)

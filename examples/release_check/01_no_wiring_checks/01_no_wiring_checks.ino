@@ -28,8 +28,9 @@
  *
  *  FRDM-MCXC444 is the same as FRDM-MCXN236 here: the accelerometer is on
  *  its Wire1 (I2C0, which no header pin reaches). It has no PWM0-PWM5, so
- *  analogWrite() goes to D3, and Wire's target mode is not done yet on
- *  that board, so that section only says so.
+ *  analogWrite() goes to D3. Its I2C is a controller or a target, never
+ *  both at once, so Wire can't address its own target: that section only
+ *  says so, and release_check/24 checks target mode with a second board.
  *
  *  Every check here is fully automatic -- read the final "ALL OK"/
  *  "N FAILED" line, no jumpers, no scope, no button presses. Sketches
@@ -512,7 +513,8 @@ void setup() {
   //      release_check/24 for more). Needs nothing on D18/D19 ----
   Serial.println("--- Wire as its own target (begin(address)/onReceive/onRequest) ---");
 #if defined(FRDM_MCXC444)
-  Serial.println("SKIP: target mode is not done yet on FRDM-MCXC444");
+  // The Kinetis I2C is a controller or a target, never both at once
+  Serial.println("SKIP: Wire can't address its own target on FRDM-MCXC444 (release_check/24 checks target mode)");
 #else
   {
     const uint8_t ADDR = 0x42;

@@ -36,8 +36,14 @@ const uint8_t TARGET = 0x50;
 const uint8_t SELF = 0x42;  // Wire's own target address, for the target-mode checks
 
 // endTransmission() returns this core's status code truncated to uint8_t
+#if defined(FRDM_MCXC444)
+// The Kinetis I2C: a target that doesn't answer NAKs the address
+const uint8_t CODE_NAK = 81;       // kStatus_I2C_Addr_Nak (1105)
+const uint8_t CODE_TIMEOUT = 80;   // kStatus_I2C_Timeout (1104)
+#else
 const uint8_t CODE_NAK = 134;      // kStatus_LPI2C_Nak (902)
 const uint8_t CODE_TIMEOUT = 138;  // kStatus_LPI2C_PinLowTimeout (906)
+#endif
 
 // The bus under test and its two hold pins
 TwoWire *bus;
@@ -167,6 +173,11 @@ bool target_answers(uint8_t v) {
 
 void target_cases() {
   Serial.println("--- Wire as its own target at 0x42, through timeouts ---");
+#if defined(FRDM_MCXC444)
+  // The Kinetis I2C is a controller or a target, never both at once
+  Serial.println("  SKIP: Wire can't address its own target on FRDM-MCXC444 (release_check/24 checks target mode)");
+  return;
+#endif
   bus->onReceive(onRx);
   bus->onRequest(onReq);
   bus->setWireTimeout(25000, true);
@@ -249,7 +260,13 @@ void suite(TwoWire &w, const char *name, int scl, int sda, uint32_t cap400k_us) 
   hold(sclHold);
   r = transfer("SCL held before the transfer starts");
   release(sclHold);
+#if defined(FRDM_MCXC444)
+  // The Kinetis I2C doesn't take a low SCL alone for a busy bus (a held SDA
+  // it does, below): it starts, and the SCL low timeout ends the transfer
+  check("times out instead of hanging", r.code == CODE_TIMEOUT && r.us <= 25000 * 12 / 10 + 1000);
+#else
   check("refused at once instead of hanging", r.code != 0 && r.us < 1000);
+#endif
   r = transfer("  then, SCL released");
   check("bus usable again", healthy(r));
 
@@ -289,6 +306,10 @@ void setup() {
   const uint32_t cap400k = 87360;
 #elif defined(FRDM_MCXA153) || defined(FRDM_MCXA156)
   const uint32_t cap400k = 21840;
+#elif defined(FRDM_MCXC444)
+  // The Kinetis I2C's SCL low timeout: 65535 counts of 48MHz / 64, at any
+  // bus speed
+  const uint32_t cap400k = 87381;
 #else
 #error "This sketch has no settings for this board yet"
 #endif

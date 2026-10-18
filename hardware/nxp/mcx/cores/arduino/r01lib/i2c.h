@@ -77,7 +77,21 @@ public:
 	 */
 	virtual void		pullup( bool enable );
 
-#ifndef	CPU_MCXC444VLH
+#if	CPU_MCXC444VLH
+	/** SCL low timeout: fail a transfer with kStatus_I2C_Timeout when SCL
+	 *  stays low longer than this, instead of blocking forever on a target
+	 *  that holds it.
+	 *
+	 *  Uses the Kinetis I2C's SMBus SCL low timeout (SLTH/SLTL, SMB[SLTF]),
+	 *  which counts the module clock / 64: 1.33us a count at 48MHz, so at
+	 *  most ~87.4ms, whatever the bus speed. Rounded up and clamped to that.
+	 *  A line held low before a transfer starts (SDA) makes the bus look
+	 *  busy, and the transfer is refused with kStatus_I2C_Busy instead.
+	 *
+	 * @param timeout_us timeout in microseconds, 0 to disable
+	 */
+	void				pin_low_timeout( uint32_t timeout_us );
+#else
 	/** Pin-low timeout: fail a transfer with kStatus_LPI2C_PinLowTimeout
 	 *  when SCL or SDA stays low longer than this, instead of blocking
 	 *  forever on a target that holds the bus.
@@ -263,7 +277,16 @@ public:
 	 */
 	virtual status_t	ccc_get( uint8_t ccc, uint8_t addr, uint8_t *dp, uint8_t length );
 
-#if	!CPU_MCXC444VLH
+#if	CPU_MCXC444VLH
+	/** The Kinetis I2C this bus runs on, for code that drives its target
+	 *  (slave) side from the I2C interrupt. One module is master or slave
+	 *  at a time; write_core()/read_core() turn its interrupt and its
+	 *  START/STOP detection (FLT[SSIE]) off while they run a controller
+	 *  transfer, which polls the same flags.
+	 * @return I2C base address
+	 */
+	I2C_Type				*kinetis_base( void ) const { return unit_base; }
+#else
 	/** The LPI2C peripheral this bus runs on, for code that drives its
 	 *  target (slave) side through the SDK's LPI2C_Slave* API; the master
 	 *  and target halves of one LPI2C run independently. Not meaningful on
@@ -321,6 +344,8 @@ private:
 	i2c_master_config_t		masterConfig;
 	I2C_Type				*unit_base;
 	bool					repeated_start_required_flag;
+
+	status_t				transfer_kinetis( uint8_t address, bool read, uint8_t *dp, int length, bool stop );
 #else
 	lpi2c_master_config_t	masterConfig;
 	LPI2C_Type				*unit_base;

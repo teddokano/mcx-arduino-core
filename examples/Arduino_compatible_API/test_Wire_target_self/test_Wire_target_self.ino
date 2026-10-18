@@ -12,11 +12,29 @@
  *  P3T1755 (at 0x48) and its pull-ups, and its MikroBus I2C has pull-ups
  *  on the board too.
  *
+ *  FRDM-MCXC444 can't run it: its I2C (the Kinetis I2C) is a controller or
+ *  a target, never both at once, so Wire can't address its own target.
+ *  There the sketch only says so; release_check/24 checks target mode with
+ *  a second board.
+ *
  *  Automatic: reads "ALL OK" or "N FAILED" at the end.
  */
 
 #include <Arduino.h>
 #include <Wire.h>
+
+#if defined(FRDM_MCXC444)
+void setup() {
+  Serial.begin(115200);
+  while (!Serial)
+    ;
+  Serial.println("=== Wire target mode, against itself (no wiring) ===");
+  Serial.println("SKIP: Wire can't address its own target on FRDM-MCXC444 (release_check/24 checks target mode)");
+}
+
+void loop() {
+}
+#else
 #include "fsl_lpi2c.h"
 
 int failCount = 0;
@@ -243,3 +261,4 @@ void setup() {
 
 void loop() {
 }
+#endif  // FRDM_MCXC444

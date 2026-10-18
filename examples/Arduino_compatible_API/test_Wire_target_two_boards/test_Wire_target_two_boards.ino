@@ -20,7 +20,8 @@
  *  An FRDM-MCXA156 takes the FRDM-MCXA153's side, so it pairs with an
  *  FRDM-MCXN947 (its D18/D19 also carry the on-board P3T1755, at 0x48).
  *  An FRDM-MCXN236 takes the FRDM-MCXA153's side too, so it also pairs
- *  with an FRDM-MCXN947.
+ *  with an FRDM-MCXN947. So does an FRDM-MCXC444, whose Kinetis I2C
+ *  can't address its own target: this is the check of its target mode.
  *
  *  Each target acts as a small register file, as target sketches usually
  *  do: a write's first byte sets the register pointer and the rest are
@@ -34,11 +35,18 @@
 #if defined(FRDM_MCXN947)
 const uint8_t SELF = 0x43, PEER = 0x42;
 const bool GOES_FIRST = false;
-#elif defined(FRDM_MCXA153) || defined(FRDM_MCXA156) || defined(FRDM_MCXN236)
+#elif defined(FRDM_MCXA153) || defined(FRDM_MCXA156) || defined(FRDM_MCXN236) || defined(FRDM_MCXC444)
 const uint8_t SELF = 0x42, PEER = 0x43;
 const bool GOES_FIRST = true;
 #else
 #error "This sketch has no settings for this board yet"
+#endif
+
+// An address nobody has: endTransmission()'s NAK code, truncated to uint8_t
+#if defined(FRDM_MCXC444)
+const uint8_t CODE_NAK = 81;   // kStatus_I2C_Addr_Nak (1105), the Kinetis I2C
+#else
+const uint8_t CODE_NAK = 134;  // kStatus_LPI2C_Nak (902)
 #endif
 
 const uint8_t YOUR_TURN = 0x10;
@@ -113,7 +121,7 @@ void runChecks() {
 
   Wire.beginTransmission(PEER ^ 0x08);
   Wire.write(0);
-  check("an address nobody has is NAKed", Wire.endTransmission() == 134);
+  check("an address nobody has is NAKed", Wire.endTransmission() == CODE_NAK);
 
   Wire.beginTransmission(PEER);
   Wire.write(YOUR_TURN);

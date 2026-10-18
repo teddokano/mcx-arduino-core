@@ -433,64 +433,248 @@ status_t I2C::read( uint8_t address, uint8_t *dp, int length, bool stop )
 }
 
 #if	CPU_MCXC444VLH
+/*	The Kinetis I2C transfer, written here rather than run through the
+ *	SDK's I2C_MasterTransferBlocking(): that waits for each flag with no
+ *	limit (I2C_RETRY_TIMES is 0) and never looks at the SCL low timeout, so
+ *	a target holding SCL stopped the sketch for good.
+ *
+ *	A data byte the target NAKs fails the transfer, the last one included,
+ *	as on the LPI2C boards (the SDK let the last one pass). On an error the
+ *	master lets go of the bus (a STOP once the lines are free), and the next
+ *	transfer starts with a START, not a repeated START.
+ */
+namespace {
+
+constexpr uint8_t	SMB_W1C	= I2C_SMB_SLTF_MASK | I2C_SMB_SHTF2_MASK;	// write-1-to-clear
+
+inline bool scl_timed_out( I2C_Type *base )
+{
+	return ( base->SMB & I2C_SMB_SLTF_MASK ) != 0U;
+}
+
+//	Waits for the byte's interrupt flag, or the SCL low timeout. The
+//	timeout sets IICIF too (reference manual, the I2C interrupt summary), so
+//	SLTF is checked again once IICIF is up: taken for a finished byte, the
+//	transfer went on, and once came back as a success
+status_t wait_byte( I2C_Type *base )
+{
+	while ( !( base->S & I2C_S_IICIF_MASK ) )
+	{
+		if ( scl_timed_out( base ) )
+			return kStatus_I2C_Timeout;
+	}
+
+	if ( scl_timed_out( base ) )
+		return kStatus_I2C_Timeout;
+
+	base->S	= I2C_S_IICIF_MASK;
+
+	if ( base->S & I2C_S_ARBL_MASK )
+	{
+		base->S	= I2C_S_ARBL_MASK;
+		return kStatus_I2C_ArbitrationLost;
+	}
+
+	return kStatus_Success;
+}
+
+//	Gives up the bus: clearing MST makes the STOP. Waits a while for the
+//	bus to go idle, but not for ever: a line still held keeps it busy
+void stop( I2C_Type *base )
+{
+	base->C1	&= (uint8_t)~( I2C_C1_MST_MASK | I2C_C1_TX_MASK | I2C_C1_TXAK_MASK );
+
+	for ( int i = 0; i < 20000 && ( base->S & I2C_S_BUSY_MASK ); i++ )
+		;
+}
+
+}	// namespace
+
+void I2C::pin_low_timeout( uint32_t timeout_us )
+{
+	if ( _no_hw )
+		return;
+
+	_pin_low_timeout_us	= timeout_us;
+
+	//	TCKSEL = 0: the counter runs at the module clock / 64
+	uint32_t	per_us	= I2C_MASTER_CLOCK_FREQUENCY / 64u;		// counts a second
+	uint32_t	count	= 0;
+
+	if ( timeout_us )
+	{
+		uint64_t	c	= ( (uint64_t)timeout_us * per_us + 999999ULL ) / 1000000ULL;
+		count	= ( c < 1 ) ? 1 : ( c > 0xFFFFu ) ? 0xFFFFu : (uint32_t)c;
+	}
+
+	unit_base->SMB	= unit_base->SMB & (uint8_t)~( SMB_W1C | I2C_SMB_TCKSEL_MASK );
+	unit_base->SLTH	= (uint8_t)( count >> 8 );
+	unit_base->SLTL	= (uint8_t)count;
+	unit_base->SMB	= ( unit_base->SMB & (uint8_t)~SMB_W1C ) | I2C_SMB_SLTF_MASK;	// clear a stale flag
+}
+
+status_t I2C::transfer_kinetis( uint8_t address, bool read, uint8_t *dp, int length, bool stop_after )
+{
+	I2C_Type	*base		= unit_base;
+	bool		repeated	= repeated_start_required_flag;
+	status_t	r			= kStatus_Success;
+
+	repeated_start_required_flag	= false;
+
+	base->SMB	= ( base->SMB & (uint8_t)~SMB_W1C ) | I2C_SMB_SLTF_MASK;
+	base->S		= I2C_S_IICIF_MASK | I2C_S_ARBL_MASK;
+
+	if ( repeated )
+	{
+		//	MULT = 0 while RSTA is set, as the SDK's I2C_MasterRepeatedStart()
+		//	does, then a moment before the address goes out
+		uint8_t	f	= base->F;
+
+		base->F		= f & (uint8_t)~I2C_F_MULT_MASK;
+		base->C1	|= I2C_C1_RSTA_MASK | I2C_C1_TX_MASK;
+		base->F		= f;
+		for ( int i = 0; i < 6; i++ )
+			__NOP();
+	}
+	else
+	{
+		//	A line held low, or another master, keeps the bus busy: refuse
+		if ( base->S & I2C_S_BUSY_MASK )
+			return kStatus_I2C_Busy;
+
+		base->C1	|= I2C_C1_MST_MASK | I2C_C1_TX_MASK;
+	}
+
+	//	Double-buffered: the data register takes the address once empty
+	while ( !( base->S2 & I2C_S2_EMPTY_MASK ) )
+	{
+		if ( scl_timed_out( base ) )
+		{
+			r	= kStatus_I2C_Timeout;
+			goto fail;
+		}
+	}
+
+	base->D	= (uint8_t)( ( address << 1 ) | ( read ? 1u : 0u ) );
+
+	if ( ( r = wait_byte( base ) ) != kStatus_Success )
+		goto fail;
+
+	if ( base->S & I2C_S_RXAK_MASK )
+	{
+		r	= kStatus_I2C_Addr_Nak;
+		goto fail;
+	}
+
+	if ( !read )
+	{
+		for ( int i = 0; i < length; i++ )
+		{
+			base->D	= dp[ i ];
+
+			if ( ( r = wait_byte( base ) ) != kStatus_Success )
+				goto fail;
+
+			if ( base->S & I2C_S_RXAK_MASK )
+			{
+				r	= kStatus_I2C_Nak;
+				goto fail;
+			}
+		}
+
+		if ( stop_after )
+			stop( base );
+		else
+			repeated_start_required_flag	= true;
+
+		return kStatus_Success;
+	}
+
+	if ( length <= 0 )
+	{
+		stop( base );
+		return kStatus_Success;
+	}
+
+	//	Receive. The byte the master NAKs, the last, needs TXAK set before
+	//	it comes in; reading D starts the next byte, so the STOP goes before
+	//	the last read
+	base->C1	&= (uint8_t)~( I2C_C1_TX_MASK | I2C_C1_TXAK_MASK );
+	if ( length == 1 )
+		base->C1	|= I2C_C1_TXAK_MASK;
+	(void)base->D;		// the dummy read that clocks in the first byte
+
+	for ( int i = 0; i < length; i++ )
+	{
+		if ( ( r = wait_byte( base ) ) != kStatus_Success )
+			goto fail;
+
+		if ( i == length - 1 )
+		{
+			if ( stop_after )
+				stop( base );
+			else
+			{
+				base->C1	|= I2C_C1_TX_MASK;	// no further clocks
+				repeated_start_required_flag	= true;
+			}
+		}
+		else if ( i == length - 2 )
+			base->C1	|= I2C_C1_TXAK_MASK;
+
+		dp[ i ]	= base->D;
+	}
+
+	return kStatus_Success;
+
+fail:
+	if ( kStatus_I2C_Timeout == r )
+	{
+		//	Let go of the bus without waiting for it to go idle: the line is
+		//	still held, and waiting added ~4ms to every timeout. The STOP
+		//	goes out once it is released
+		base->SMB	= ( base->SMB & (uint8_t)~SMB_W1C ) | I2C_SMB_SLTF_MASK;
+		base->S		= I2C_S_IICIF_MASK;
+		base->C1	&= (uint8_t)~( I2C_C1_MST_MASK | I2C_C1_TX_MASK | I2C_C1_TXAK_MASK );
+	}
+	else if ( kStatus_I2C_ArbitrationLost == r )	// no longer the master
+		base->C1	&= (uint8_t)~( I2C_C1_MST_MASK | I2C_C1_TX_MASK | I2C_C1_TXAK_MASK );
+	else
+		stop( base );
+
+	return r;
+}
+
+//	A target armed on this module (Wire's begin(address)) runs from the
+//	I2C interrupt, which polls the same IICIF: it is off for the transfer.
+//	So is the target's START/STOP detection (FLT[SSIE]): it sets IICIF for
+//	the START of our own transfer too, and wait_byte() took that for the
+//	address byte done, before it was sent. The START/STOP flags of our own
+//	transfer are cleared when it is put back
 status_t I2C::write_core( uint8_t address, const uint8_t *dp, int length, bool stop )
 {
-	i2c_master_transfer_t	masterXfer;
-	
-	memset( &masterXfer, 0, sizeof( masterXfer ) );
+	uint8_t		ie		= unit_base->C1 & I2C_C1_IICIE_MASK;
+	uint8_t		ssie	= unit_base->FLT & I2C_FLT_SSIE_MASK;
 
-	masterXfer.slaveAddress   = address;
-	masterXfer.direction      = kI2C_Write;
-	masterXfer.subaddress     = 0;
-	masterXfer.subaddressSize = 0;
-	masterXfer.data           = const_cast<uint8_t *>( dp );
-	masterXfer.dataSize       = length;
-	masterXfer.flags          = kI2C_TransferDefaultFlag;
-
-	masterXfer.flags	|= !stop						? kI2C_TransferNoStopFlag			: 0x0;
-	masterXfer.flags	|= repeated_start_required_flag	? kI2C_TransferRepeatedStartFlag	: 0x0;
-
-	repeated_start_required_flag	= !stop;
-
-	status_t	r	= I2C_MasterTransferBlocking( unit_base, &masterXfer );
-
-	//	On an error the SDK has sent a STOP (NAK) or the bus was lost
-	//	(arbitration): the next transfer starts with a START, not a repeated
-	//	START. Left set, the transfer after a NAK on a requestFrom() with a
-	//	register address failed too
-	if ( kStatus_Success != r )
-		repeated_start_required_flag	= false;
+	unit_base->C1	&= (uint8_t)~I2C_C1_IICIE_MASK;
+	unit_base->FLT	&= (uint8_t)~( I2C_FLT_STOPF_MASK | I2C_FLT_STARTF_MASK | I2C_FLT_SSIE_MASK );
+	status_t	r	= transfer_kinetis( address, false, const_cast<uint8_t *>( dp ), length, stop );
+	unit_base->FLT	|= ssie;	// writing back the flags that are set clears them
+	unit_base->C1	|= ie;
 
 	return r;
 }
 
 status_t I2C::read_core( uint8_t address, uint8_t *dp, int length, bool stop )
 {
-	i2c_master_transfer_t	masterXfer;
-	
-	memset( &masterXfer, 0, sizeof( masterXfer ) );
+	uint8_t		ie		= unit_base->C1 & I2C_C1_IICIE_MASK;
+	uint8_t		ssie	= unit_base->FLT & I2C_FLT_SSIE_MASK;
 
-	masterXfer.slaveAddress   = address;
-	masterXfer.direction      = kI2C_Read;
-	masterXfer.subaddress     = 0;
-	masterXfer.subaddressSize = 0;
-	masterXfer.data           = dp;
-	masterXfer.dataSize       = length;
-	masterXfer.flags          = kI2C_TransferDefaultFlag;
-
-	masterXfer.flags	|= !stop						? kI2C_TransferNoStopFlag			: 0x0;
-	masterXfer.flags	|= repeated_start_required_flag	? kI2C_TransferRepeatedStartFlag	: 0x0;
-
-	repeated_start_required_flag	= !stop;
-
-	status_t	r	= I2C_MasterTransferBlocking( unit_base, &masterXfer );
-
-	//	On an error the SDK has sent a STOP (NAK) or the bus was lost
-	//	(arbitration): the next transfer starts with a START, not a repeated
-	//	START. Left set, the transfer after a NAK on a requestFrom() with a
-	//	register address failed too
-	if ( kStatus_Success != r )
-		repeated_start_required_flag	= false;
+	unit_base->C1	&= (uint8_t)~I2C_C1_IICIE_MASK;
+	unit_base->FLT	&= (uint8_t)~( I2C_FLT_STOPF_MASK | I2C_FLT_STARTF_MASK | I2C_FLT_SSIE_MASK );
+	status_t	r	= transfer_kinetis( address, true, dp, length, stop );
+	unit_base->FLT	|= ssie;	// writing back the flags that are set clears them
+	unit_base->C1	|= ie;
 
 	return r;
 }

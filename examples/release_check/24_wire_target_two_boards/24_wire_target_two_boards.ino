@@ -6,8 +6,8 @@
  *  exactly -- edit that one, then copy it here.
  *
  *  Wiring: FRDM-MCXA153 D18-D18, D19-D19 and GND-GND to an FRDM-MCXN947;
- *  nothing else on D18/D19. An FRDM-MCXA156 or an FRDM-MCXN236 can take
- *  the FRDM-MCXA153's place. Flash this to both; each
+ *  nothing else on D18/D19. An FRDM-MCXA156, an FRDM-MCXN236 or an
+ *  FRDM-MCXC444 can take the FRDM-MCXA153's place. Flash this to both; each
  *  prints its own "ALL OK"/"N FAILED". If either was already running it,
  *  press RESET on both, close together, so the two runs meet.
  */
@@ -18,11 +18,18 @@
 #if defined(FRDM_MCXN947)
 const uint8_t SELF = 0x43, PEER = 0x42;
 const bool GOES_FIRST = false;
-#elif defined(FRDM_MCXA153) || defined(FRDM_MCXA156) || defined(FRDM_MCXN236)
+#elif defined(FRDM_MCXA153) || defined(FRDM_MCXA156) || defined(FRDM_MCXN236) || defined(FRDM_MCXC444)
 const uint8_t SELF = 0x42, PEER = 0x43;
 const bool GOES_FIRST = true;
 #else
 #error "This sketch has no settings for this board yet"
+#endif
+
+// An address nobody has: endTransmission()'s NAK code, truncated to uint8_t
+#if defined(FRDM_MCXC444)
+const uint8_t CODE_NAK = 81;   // kStatus_I2C_Addr_Nak (1105), the Kinetis I2C
+#else
+const uint8_t CODE_NAK = 134;  // kStatus_LPI2C_Nak (902)
 #endif
 
 const uint8_t YOUR_TURN = 0x10;
@@ -97,7 +104,7 @@ void runChecks() {
 
   Wire.beginTransmission(PEER ^ 0x08);
   Wire.write(0);
-  check("an address nobody has is NAKed", Wire.endTransmission() == 134);
+  check("an address nobody has is NAKed", Wire.endTransmission() == CODE_NAK);
 
   Wire.beginTransmission(PEER);
   Wire.write(YOUR_TURN);
