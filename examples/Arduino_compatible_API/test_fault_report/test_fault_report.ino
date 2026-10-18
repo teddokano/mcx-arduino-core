@@ -28,6 +28,12 @@
  *  <sketch>.elf <PC> gives the source line: here the line that FAULT_KIND
  *  picks in setup(). A stack overflow has no PC, because the processor
  *  could not save one on a stack that has no room left.
+ *
+ *  FRDM-MCXC444 (Cortex-M0+) has no fault status registers, so its line
+ *  is "HardFault at PC ..." with no cause. Kind 4 locks its core up
+ *  instead: the board resets once, and then prints
+ *  "HardFault: stack overflow, most likely (the core locked up and
+ *  reset)". Kind 4's "about to crash" may be cut short there.
  */
 
 #include <Arduino.h>

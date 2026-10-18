@@ -43,6 +43,16 @@ void start_mcu()
 #endif
 
 	Obj	o( false );
+
+#if defined(__ARM_ARCH_6M__)
+	//	The M0+ has no MSPLIM. The stack sits at the bottom of the SRAM
+	//	instead (MCXC444.ld), so an overflow pushes into reserved space,
+	//	and with no room to stack the HardFault the core locks up, which
+	//	resets the chip. Stop here and say so, rather than run the sketch
+	//	into the same overflow again and again.
+	if ( RCM->SRS1 & RCM_SRS1_LOCKUP_MASK )
+		panic( "HardFault: stack overflow, most likely (the core locked up and reset)" );
+#endif
 }
 
 //__attribute__((constructor(1)))

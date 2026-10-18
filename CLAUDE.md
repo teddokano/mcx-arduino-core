@@ -335,7 +335,7 @@ xPack checksums（正しい値）：
   テストのための内部の口で、利用者向けの機能として文書に載せるかは未決。`07`のCOPはMCGIRCLK（8MHzのLIRCを4分周した2MHz、コアは使っていない）で数え、LPTMRで`micros()`と比べて速さを測る。実機でのリセットの時刻は計算と0.25%以内で合った
   `21`はN947のオンボードのP3T1755を`Wire`（C444のD18-N947の`MB_RX`、D19-`MB_TX`）で読み、`Serial1`の代わりに`Wire1`の加速度センサーのWHO_AM_Iを毎周読む（D11-D12のジャンパで`SPI`、`analogWrite`はD3、`tone`はD8）。約130周回してWARNINGなし（加速度センサーのCS/WAKEはR40でD11＝MOSIにつながるが、影響は無かった）。
   `test_fault_report`は8種類のうち7種類で`error: HardFault at PC ...`がクラッシュした行を指す（M0+にはCFSRが無いので種類は出ない。割り込みの中は`in an interrupt`）。
-  **スタックあふれ（kind 4）は報告されず、リセットを繰り返す**（M0+には`MSPLIM`が無い）。
+  スタックあふれ（kind 4）は下の「スタックあふれの扱い」の形で報告される。
   書き込みはLinkServer 26.6.137で、フラッシュを正しく判定する
 - **`Wire`の`setWireTimeout()`とターゲットモード（2026-10-18）**: SDKの`I2C_MasterTransferBlocking()`は待ちに上限が無く（`I2C_RETRY_TIMES`が0）、SCLを押さえられると止まったままになるので、
   コントローラの転送はr01libの`transfer_kinetis()`（`i2c.cpp`）で自前に書いた。タイムアウトはSMBusのSCL low timeout（`SLTH`/`SLTL`、モジュールのクロックの64分の1で数える）で、**SCLだけ**を見る。上限はどの速度でも約87ms。
@@ -378,7 +378,15 @@ xPack checksums（正しい値）：
   GNDは2カウント、3.3Vは65526（フルスケールより9低い）。内部のVREFLは2.6、VALTHは65514、バンドギャップは19910（3.27V換算で0.994V、データシートは0.97〜1.03V）。
   外の入力の1回の中のばらつきは約300カウントで、バンドギャップ（約30）の10倍（定電圧源と配線のノイズと見ている。切り分けはしていない）。
   スケッチの換算の定数を`VREF`にするとビルドが止まる（`MCXC444.h`のVREFペリフェラルのマクロ）
-- **残り**: スタックあふれの扱い
+- **スタックあふれの扱い（2026-10-18、ユーザーが決定）**: M0+には`MSPLIM`もMPUも無い。前は、あふれるとヒープ・bss・dataを上書きし、RAMの下端（`0x1FFFE000`）の下の予約領域に書いた所でバスエラーになっていた。
+  HardFaultを積む場所が無いのでLOCKUPになり（RMの6.2.2.7）、リセットしてスケッチがまた動き、何も報告されずにリセットを繰り返した。
+  いまは**スタックをRAMの下端に置き**（`MCXC444.ld`。data・bss・noinit・ヒープは上端に詰める）、あふれた最初の書き込みで何も上書きせずにLOCKUPのリセットになる。
+  **起動時に`RCM_SRS1[LOCKUP]`を見て**（`mcu.cpp`の`start_mcu()`）、`error: HardFault: stack overflow, most likely (the core locked up and reset)`を出してSOSで止まる。
+  LOCKUPはHardFaultの処理の中の故障でも起きるので「most likely」。実機で確かめたこと: 予約領域への書き込みはHardFault、MSPを下端にして`push`するとLOCKUPでリセット（`SRS1`=`0x2`。書き込みのあとは`0x4`）、`test_fault_report`のkind 4・2・5、LOCKUPで止まったあとのRESETボタンでスケッチが普通に動く（`SRS0`=`0x40`、`SRS1`=`0`）。
+  ほかに試して使えなかった案: GCCの`-fstack-limit-symbol`はM0+では警告なしに何も生成しない。SysTickでの見張りは遅すぎる（再帰なら1msでRAMを何周もする）。
+  リンカスクリプトの注意: 空の出力セクションに付けたアドレスは、セクションごと捨てられて効かない（`.stack`は`. +=`で中身の大きさを持たせた）。
+  RAMの各セクションは8バイトで始まり8バイトで終わるので、すき間も大きさに入り、IDEの「ローカル変数で使える」がスタックの大きさと一致する（`test_fault_report`で20224バイト）。
+  HardFaultの処理で新しいスタックに移る判定は、C444では`_vStackBase`+1KBより下
 
 ## 動作確認済み
 

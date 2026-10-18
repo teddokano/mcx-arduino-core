@@ -93,7 +93,7 @@
 - **Serial**: USBのシリアルとD0/D1は同じUART（LPUART0）なので、両方とも`Serial`にする（2026-10-16、ユーザーが決定。UNO R3と同じ）。`Serial1`は置かない（2026-10-16、ユーザーが決定）。
   スパイクではMikroBusのTX/RX（D18/D19、`Wire`と同じピン）に仮に置いていた。LPUARTに7ビットのモードが無く、`SERIAL_7xx`は工夫が要る
 - **M33前提の作り**: `micros()`のDWT（スパイクではSysTickで代えた）、フォールトの報告のCFSR/HFSR/BFAR/MMFAR、`semihost_hardfault.c`のThumb-2命令とHFSRの読み出し、
-  スタックの上限（`MSPLIM`）がM0+に無い（スタックがあふれても止まらない）
+  スタックの上限（`MSPLIM`）がM0+に無い（スタックがあふれても止まらない。0.10.0でスタックをRAMの下端に置き、LOCKUPのリセットを起動時に報告する形にした。2026-10-18）
 - **周辺回路**: CTIMERが無い（`tone()`はTPMかPIT。§7-2のServoのCTIMER1もC444では別のタイマーにする）、ADC16（`analogRead`）、TPM（`analogWrite`・`analogWriteFrequency`）、
   Kinetisの`fsl_i2c`（`Wire`のターゲットモードと`setWireTimeout()`）、`SPI::bit_order()`がr01libに無い、PORTに`IBE`が無い、EEPROM（FTFA、消去の単位が1KB）
 - **構造**: `cores/arduino/sdk/`の`fsl_i3c.c`・`fsl_pwm.c`・`fsl_spc.c`・`fsl_utick.c`・`fsl_inputmux.c`は全ボードでビルドされ、C444で通らない。

@@ -101,7 +101,8 @@ void HardFault_Handler(void){
         "_hf_report:                 \n"
             "MRS    R2, MSP          \n"
 #if defined( __ARM_ARCH_6M__ )
-            "LDR    R3,=_pvHeapLimit+1024 \n"  // no ADD with an immediate this large in Thumb-1
+        // FRDM-MCXC444's stack is at the bottom of the SRAM, below the data
+            "LDR    R3,=_vStackBase+1024 \n"  // no ADD with an immediate this large in Thumb-1
 #else
             "LDR    R3,=_pvHeapLimit \n"
             "ADD    R3, R3, #1024    \n"

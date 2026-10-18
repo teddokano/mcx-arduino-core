@@ -92,15 +92,38 @@ SECTIONS
 
     _etext = .;
 
-    .uninit_RESERVED (NOLOAD) : ALIGN(4)
+    /* mcx-arduino-core: the stack is at the bottom of the SRAM, and the
+       data, bss, noinit and heap are packed against its top. The M0+ has
+       no MSPLIM or MPU to stop a stack overflow, but below 0x1FFFE000 is
+       reserved space: the first push past the bottom is a bus error, the
+       core can't stack the HardFault for it, and it locks up and resets
+       (RCM_SRS1[LOCKUP]) without having written over anything.
+       start_mcu() (mcu.cpp) reports that on the next boot. The stack gets
+       all the SRAM the rest leaves, and at least _StackSize. */
+    _HeapSize = 0x2000;
+    _StackSize = 0x800;
+    /* Each section starts and ends on 8 bytes, so the sizes add up with no
+       gaps, and the IDE's "for local variables" is the stack's size. */
+    _ram_block_size = SIZEOF(.uninit_RESERVED) + SIZEOF(.data) + SIZEOF(.bss)
+                    + SIZEOF(.noinit) + _HeapSize;
+
+    .stack ORIGIN(SRAM) (NOLOAD) :
+    {
+        _vStackBase = .;
+        . += (LENGTH(SRAM) - _ram_block_size) & ~7;
+        _vStackTop = .;
+    } > SRAM
+    ASSERT(_vStackTop - _vStackBase >= _StackSize, "not enough SRAM left for the stack")
+
+    .uninit_RESERVED (NOLOAD) : ALIGN(8)
     {
         _start_uninit_RESERVED = .;
         KEEP(*(.bss.$RESERVED*))
-        . = ALIGN(4);
+        . = ALIGN(8);
         _end_uninit_RESERVED = .;
     } > SRAM AT> SRAM
 
-    .data : ALIGN(4)
+    .data : ALIGN(8)
     {
         FILL(0xff)
         _data = .;
@@ -112,59 +135,45 @@ SECTIONS
         KEEP(*(DataQuickAccess))
         *(RamFunction)
         *(.data*)
-        . = ALIGN(4);
+        . = ALIGN(8);
         _edata = .;
         PROVIDE(__end_data_RAM = .);
         PROVIDE(__end_data_SRAM = .);
     } > SRAM AT>PROGRAM_FLASH
 
-    .bss (NOLOAD) : ALIGN(4)
+    .bss (NOLOAD) : ALIGN(8)
     {
         _bss = .;
         PROVIDE(__start_bss_RAM = .);
         PROVIDE(__start_bss_SRAM = .);
         *(.bss*)
         *(COMMON)
-        . = ALIGN(4);
+        . = ALIGN(8);
         _ebss = .;
         PROVIDE(__end_bss_RAM = .);
         PROVIDE(__end_bss_SRAM = .);
         PROVIDE(end = .);
     } > SRAM AT> SRAM
 
-    .noinit (NOLOAD) : ALIGN(4)
+    .noinit (NOLOAD) : ALIGN(8)
     {
         _noinit = .;
         PROVIDE(__start_noinit_RAM = .);
         PROVIDE(__start_noinit_SRAM = .);
         *(.noinit*)
-        . = ALIGN(4);
+        . = ALIGN(8);
         _end_noinit = .;
         PROVIDE(__end_noinit_RAM = .);
         PROVIDE(__end_noinit_SRAM = .);
     } > SRAM AT> SRAM
 
-    _HeapSize = 0x2000;
-    .heap (NOLOAD) : ALIGN(4)
+    .heap (NOLOAD) : ALIGN(8)
     {
         _pvHeapStart = .;
         . += _HeapSize;
-        . = ALIGN(4);
         _pvHeapLimit = .;
     } > SRAM
-
-    _StackSize = 0x800;
-    .heap2stackfill (NOLOAD) :
-    {
-        . += _StackSize;
-    } > SRAM
-
-    .stack ORIGIN(SRAM) + LENGTH(SRAM) - _StackSize - 0 (NOLOAD) : ALIGN(4)
-    {
-        _vStackBase = .;
-        . = ALIGN(4);
-        _vStackTop = . + _StackSize;
-    } > SRAM
+    ASSERT(_pvHeapLimit == ORIGIN(SRAM) + LENGTH(SRAM), "the RAM sections don't end at the top of the SRAM")
 
     _image_start = LOADADDR(.text);
     _image_end = LOADADDR(.data) + SIZEOF(.data);

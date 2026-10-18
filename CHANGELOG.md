@@ -15,7 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   of flash; the bundled `Servo`; I2C target mode (a bus can't address its own target there) and
   `Wire.setWireTimeout` (SCL only). The flash
   option byte keeps `D4` (the reset-time NMI pin, also the `SW3` button) from stopping the board when it is low at
-  power-up. See `PIN_MAPPING_C444.md`
+  power-up. The Cortex-M0+ has no stack limit, so the stack sits at the bottom of RAM: an overflow locks the core up
+  before it overwrites anything, and after the reset the board stops with
+  `error: HardFault: stack overflow, most likely (the core locked up and reset)`. See `PIN_MAPPING_C444.md`
 - The bundled `mcxPinState` knows FRDM-MCXC444's pins and instances (`Wire1` on the accelerometer's bus, no `SPI1`
   or `Serial1`), names its pins the Kinetis way (`PTA1`), and tells GPIO from a peripheral on a chip whose GPIO is
   ALT1, not ALT0

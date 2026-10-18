@@ -58,7 +58,10 @@ A153のものを元に、SRAMを1つ（`0x1FFFE000`から32KB）にし、Kinetis
 - `release_check`の`22`（外付けのLM75系のセンサー）と`23`（`Waveshare_TFT_Touch`の`SDBitmapViewer`）は、ユーザーがIDEで流して問題なし（5つのボードとも）
 - `test_avr_pgmspace`（アドレスのそろっていない`pgm_read_*`も）と`test_network_base_classes`がALL PASS
 - `test_fault_report`: 8種類のうち7種類で`error: HardFault at PC ...`がクラッシュした行を指す。
-  Cortex-M0+には故障の種類を示すレジスタが無いので、種類は出ない。スタックあふれ（4）は報告されず、ボードがリセットを繰り返す（M0+にはスタックの上限のレジスタが無い）
+  Cortex-M0+には故障の種類を示すレジスタが無いので、種類は出ない。
+  スタックあふれ（4）は、1回リセットしてから`error: HardFault: stack overflow, most likely (the core locked up and reset)`を出して止まる。
+  M0+にはスタックの上限のレジスタが無いので、スタックをRAMの下端に置いた（`linker/MCXC444.ld`）。あふれると下の予約領域に書いてバスエラーになり、HardFaultを積めずにLOCKUPでリセットする。
+  何も上書きしないうちに止まる。起動時に`RCM_SRS1[LOCKUP]`を見て報告する（`mcu.cpp`の`start_mcu()`）
 
 ADCの基準電圧はVALTH（VDDA）にしている。このボードではVREFHの端子がJP6で切り離されていて、VREFHを基準にすると全部の入力が最大値になる（ボードの`board.h`の`BOARD_ADC_USE_ALT_VREF`、SDKのADC16の作例と同じ）。
 

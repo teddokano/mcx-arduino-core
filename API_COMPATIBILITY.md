@@ -24,7 +24,7 @@ On FRDM-MCXC444 (see [PIN_MAPPING_C444.md](PIN_MAPPING_C444.md)):
 | `EEPROM` | 1024 bytes in the top 8KB of flash, which leaves the sketch 248KB. Interrupts wait while flash is erased or written, as on FRDM-MCXA153 |
 | `Servo` | `D3`, `D5`, `D6`, `D9`, `D10`. `D5`/`D6`/`D9` one at a time, as with `analogWrite` |
 | `micros()` | From SysTick (the Cortex-M0+ has no cycle counter) |
-| HardFault report | The PC only: the Cortex-M0+ has no fault status registers to name the cause, and no stack limit, so a stack overflow is not caught |
+| HardFault report | The PC only: the Cortex-M0+ has no fault status registers to name the cause. It has no stack limit either; the stack sits at the bottom of RAM instead, so an overflow runs into unmapped space and locks the core up before it overwrites anything. The chip resets, and the core then stops with `error: HardFault: stack overflow, most likely (the core locked up and reset)` |
 
 ## GPIO & Interrupts
 
