@@ -11,17 +11,26 @@
  *  within about +/-0.056 of the center leave the shaft stopped -- the ramp
  *  below pauses around zero for that reason, not because it stalled.
  *
- *  The signal line goes to PWM0. Give this servo its own 4.8V-6V supply,
- *  with the grounds tied together -- running it from the board's 5V on an
- *  FRDM-MCXA153 pulled the rail down far enough to make the USB link to the
- *  PC unstable. A continuous rotation servo draws its running current for as
- *  long as it turns, unlike a positional servo that only moves in bursts.
+ *  The signal line goes to PWM0 (D3 on FRDM-MCXC444, which has no
+ *  PWM0-PWM5). Give this servo its own 4.8V-6V supply, with the grounds
+ *  tied together -- running it from the board's 5V on an FRDM-MCXA153
+ *  pulled the rail down far enough to make the USB link to the PC unstable.
+ *  A continuous rotation servo draws its running current for as long as it
+ *  turns, unlike a positional servo that only moves in bursts.
  */
 
 #include <Arduino.h>
 #include <FS90R.h>
 
-FS90R servo(PWM0);
+//  FRDM-MCXC444 has no PWM0-PWM5. D3 has a timer (TPM1) to itself there,
+//  so the servo's 50Hz leaves the other PWM pins' period alone
+#if defined(FRDM_MCXC444)
+#define SERVO_PIN D3
+#else
+#define SERVO_PIN PWM0
+#endif
+
+FS90R servo(SERVO_PIN);
 
 void setup() {
 }

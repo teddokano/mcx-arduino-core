@@ -14,7 +14,9 @@ Every example has been run on both FRDM-MCXA153 and FRDM-MCXN947. On
 FRDM-MCXA156, `SG90_basic` has also turned a servo from each of `D3`, `D5`,
 `D6` and `D9` (mcx-arduino-core 0.9.0). There and on FRDM-MCXN236, the
 library's pulse widths were also measured on the `PWM0` pin, without a servo
-attached (FRDM-MCXA156 from 0.8.0, FRDM-MCXN236 from 0.9.0).
+attached (FRDM-MCXA156 from 0.8.0, FRDM-MCXN236 from 0.9.0). On FRDM-MCXC444,
+which has no `PWM0`, every example has run from `D3` (mcx-arduino-core
+0.10.0).
 
 ## Usage
 
@@ -150,11 +152,12 @@ Three wires, in the usual RC servo colours: brown to ground, red to the
 supply, orange or yellow to the signal pin.
 
 The signal line goes to any pin `analogWrite()` can drive with PWM. Every
-board has `PWM0`-`PWM5`, and FRDM-MCXA156 and FRDM-MCXN236 also four D-pins
-(below); the pin diagrams in mcx-arduino-core's `PIN_MAPPING_*.md` show
-where they are. Every board puts `PWM0`-`PWM5`
-in the same place on the headers, so the same wiring and the same sketch
-work on any of them; what differs is only the MCU pin behind the name.
+board but FRDM-MCXC444 has `PWM0`-`PWM5`, FRDM-MCXA156 and FRDM-MCXN236
+also four D-pins, and FRDM-MCXC444 D-pins only (below); the pin diagrams in
+mcx-arduino-core's `PIN_MAPPING_*.md` show where they are. Every board with
+`PWM0`-`PWM5` puts them in the same place on the headers, so the same wiring
+and the same sketch work on any of them; what differs is only the MCU pin
+behind the name.
 
 | Pin name | FRDM-MCXA153 | FRDM-MCXN947 | FRDM-MCXA156 | FRDM-MCXN236 |
 |---|---|---|---|---|
@@ -176,6 +179,21 @@ FRDM-MCXN236 they are four of the `PWM0`-`PWM5` pins under a second name.
 | `D5` | P3_14 | P2_7 (`PWM4`) |
 | `D6` | P3_16 | P3_17 (`PWM0`) |
 | `D9` | P3_17 | P3_14 (`PWM3`) |
+
+FRDM-MCXC444 (mcx-arduino-core 0.10.0 or later) has no `PWM0`-`PWM5`. Its
+PWM pins are `D3`, `D5`, `D6`, `D9` and `D10`, as on an UNO R3 less `D11`,
+and the examples use `D3` there: it has a timer (TPM1) to itself. `D5`,
+`D6`, `D9` and `D10` share the other timer's period, so a servo on one of
+them sets all four to 50Hz, and `D5`, `D6` and `D9` are one channel, so only
+one of the three can be PWM at a time.
+
+| Pin name | FRDM-MCXC444 |
+|---|---|
+| `D3` | PTA12 (TPM1) |
+| `D5` | PTA5 (TPM0) |
+| `D6` | PTE29 (TPM0) |
+| `D9` | PTD2 (TPM0) |
+| `D10` | PTD4 (TPM0) |
 
 `PWM0`-`PWM5` pair up two to a FlexPWM submodule -- `PWM0`/`PWM1`,
 `PWM2`/`PWM3`, `PWM4`/`PWM5`, and on FRDM-MCXA156 also `D6`/`D9` -- and each
@@ -208,8 +226,8 @@ board's own supply well before stall.
 
 Neither datasheet states an input threshold for the signal line. Both servos
 take the board's 3.3V logic level while running from a 5V supply, which is
-how the examples were verified on FRDM-MCXA153 and FRDM-MCXN947, and
-`SG90_basic` on FRDM-MCXA156's D-pins.
+how the examples were verified on FRDM-MCXA153, FRDM-MCXN947 and
+FRDM-MCXC444, and `SG90_basic` on FRDM-MCXA156's D-pins.
 
 ## Notes
 

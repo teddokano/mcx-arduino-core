@@ -367,9 +367,14 @@ xPack checksums（正しい値）：
   `Serial`（`USBTX`/`USBRX`が`D1`/`D0`なので、ピン番号の付け替えの前に生の値を取る）、`Wire`/`Wire1`、`SPI`（r01libに無かった`bit_order()`を足し、CSは転送ごとに動かさずスケッチに任せる。MCXのボードと同じ）、`analogRead`（ADC16、16ビット、校正）、
   `analogWrite`/`analogWriteFrequency`（TPM、D5/D6/D9の取り合い）、`tone`（PITのチャネル0）、`EEPROM`（FTFA、16バイト単位、フラッシュの最後の8KB、命令の間は割り込みを止める）、`Servo`。
   `PIN_MAPPING_C444.md`・README・API_COMPATIBILITY・CHANGELOG・LICENSE（`startup_mcxc444.cpp`のFOPTの変更）・`docs/porting_a_new_board.md`
-- **残り**: 実機確認の続き（`02`は流れ、`03`はSW2の3つの割り込みとも期待どおり。`Servo`の実物、`analogRead()`を既知の電圧で）、スタックあふれの扱い、
-  作例の約35本（`#error "This sketch has no settings for this board yet"`と`PWM0`を使うもの。`release_check`はそろった。ジャンパの決め方は実機と一緒に）、
-  mcxRCServoの作例（上流のリポジトリ。pushはユーザーの了承が要る）、CIのボードの表への追加（作例がそろってから）
+- **全作例のビルド（2026-10-18）**: CIと同じ`compile_examples.sh frdm_mcxc444 full`で107本のうち96本が通り、8本は他のボード専用で飛ばす。
+  `#error "This sketch has no settings for this board yet"`が残っている作例は、どれもC444の分岐を持っていて、`#error`は知らないボードの`#else`にあるだけ。
+  落ちたのはmcxRCServoの作例3本（`PWM0`）だけで、C444では`D3`（TPM1を独占できるので、サーボの50Hzがほかのピンの周期とぶつからない）を使う形に直し、READMEにC444のピンの表を足した。
+  上流（`~/dev/Arduino/libraries/mcxRCServo`）と同梱のコピーの両方に入れ、5つのボードでビルドが通る。CIのボードの表（`regression_check.yml`）にC444を足した。
+  実物のサーボで3本ともC444の`D3`から動くことをユーザーが確かめた（2026-10-18。SG90はボードの5V、FS90Rは別の電源）。READMEにも書いた
+  `release_check/02`は波形もユーザーが確かめて問題なし（2026-10-18）
+- **残り**: 実機確認の続き（`Servo`を実物のサーボで、`analogRead()`を既知の電圧で）、スタックあふれの扱い、
+  mcxRCServoの上流へのコミットとpush（ユーザーの了承が要る）
 
 ## 動作確認済み
 

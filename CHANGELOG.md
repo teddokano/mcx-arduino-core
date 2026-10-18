@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - The bundled `mcxPinState` knows FRDM-MCXC444's pins and instances (`Wire1` on the accelerometer's bus, no `SPI1`
   or `Serial1`), names its pins the Kinetis way (`PTA1`), and tells GPIO from a peripheral on a chip whose GPIO is
   ALT1, not ALT0
+- The bundled `mcxRCServo`'s examples drive the servo from `D3` on FRDM-MCXC444, which has no `PWM0`-`PWM5`
 - The network base classes `Client`, `Server`, `UDP` and `IPAddress` (`Client.h`, `Server.h`, `Udp.h`,
   `IPAddress.h`), with the same virtual functions as ArduinoCore-API's, so libraries built on them now compile:
   the official `Ethernet` library for W5x00 shields, and libraries that take a `Client&` such as PubSubClient.
@@ -29,7 +30,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   `Arduino.h` includes it, as AVR's does. Libraries such as PubSubClient stopped at `pgm_read_byte_near()` before
 - A bundled `Servo` library with the official Servo library's interface (`#include <Servo.h>`, `attach()`,
   `write()` in degrees or microseconds, `read()`, `detach()`, ...), so sketches written for it build unchanged.
-  It runs on the PWM pins (`PWM0`-`PWM5`, and `D3`/`D5`/`D6`/`D9` on FRDM-MCXA156 and FRDM-MCXN236), with the
+  It runs on the PWM pins (`PWM0`-`PWM5`, and `D3`/`D5`/`D6`/`D9` on FRDM-MCXA156 and FRDM-MCXN236; on FRDM-MCXC444
+  `D3`/`D5`/`D6`/`D9`/`D10`), with the
   pulses from the PWM hardware; on other pins `attach()` stops the sketch with an error message. `#include <Servo.h>` stopped with
   "No such file" before, since the official library has no build for this core. Examples `Sweep` and `Knob`
 - New example sketches `test_network_base_classes` and `test_avr_pgmspace` (no wiring), and `test_Servo` (one jumper)
