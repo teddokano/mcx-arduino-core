@@ -17,9 +17,10 @@
  *
  *  FRDM-MCXC444 has no input buffer switch: a pin's digital input is off
  *  only while it is in its analog function (ALT0), which is what the
- *  "input buffer" checks read there. The interrupt check is left out on
- *  that board: A0-A3 are on PORTB, which has no pin interrupts, and A4/A5
- *  have 4.7k pull-ups (R26/R27) that the pull-down cannot overcome.
+ *  "input buffer" checks read there. Its A0-A3 are on PORTB, which has no
+ *  pin interrupts, so the second pin is A5 (PORTC). A5 has a 4.7k pull-up
+ *  on the board (R27) that the pull-down cannot overcome, so there the
+ *  rising edge comes from driving the pin LOW for a moment and letting go.
  *
  *  Automatic: reads "ALL OK" or "N FAILED" at the end.
  */
@@ -41,8 +42,9 @@ const int PIN_B = A3;
 const int PIN_A = A0;
 const int PIN_B = A4;
 #elif defined(FRDM_MCXC444)
+// A0-A3 have no pin interrupts (PORTB): the second pin is A5
 const int PIN_A = A0;
-const int PIN_B = A1;
+const int PIN_B = A5;
 #else
 #error "This sketch has no settings for this board yet"
 #endif
@@ -63,6 +65,18 @@ bool inputBufferOn(int pin) {
 
 volatile int rises = 0;
 void onRise() { rises = rises + 1; }
+
+#if defined(FRDM_MCXC444)
+// Drive the pin LOW for a moment through the GPIO registers and let go
+void pulseLow(int pin) {
+  GPIO_Type *port = digitalPinToPort(pin);
+  uint32_t mask = digitalPinToBitMask(pin);
+  *portOutputRegister(port) &= ~mask;
+  *portModeRegister(port) |= mask;
+  delayMicroseconds(50);
+  *portModeRegister(port) &= ~mask;
+}
+#endif
 
 void setup() {
   Serial.begin(115200);
@@ -90,19 +104,19 @@ void setup() {
   check("reads the pull-up's HIGH", digitalRead(PIN_B) == HIGH);
 
   Serial.println("--- attachInterrupt() after analogRead() ---");
-#if defined(FRDM_MCXC444)
-  Serial.println("SKIP: no analog pin here has both a pin interrupt and no pull-up on the board");
-#else
   analogRead(PIN_B);
   attachInterrupt(digitalPinToInterrupt(PIN_B), onRise, RISING);
   check("attachInterrupt() turned the input buffer back on", inputBufferOn(PIN_B));
+#if defined(FRDM_MCXC444)
+  pulseLow(PIN_B);  // R27 pulls it back up: a rising edge
+#else
   pinMode(PIN_B, INPUT_PULLDOWN);
   delay(1);
   pinMode(PIN_B, INPUT_PULLUP);  // pulled up again: a rising edge
+#endif
   delay(1);
   check("the rising edge from the pull-up is caught", rises == 1);
   detachInterrupt(digitalPinToInterrupt(PIN_B));
-#endif
 
   Serial.println();
   if (failCount == 0)

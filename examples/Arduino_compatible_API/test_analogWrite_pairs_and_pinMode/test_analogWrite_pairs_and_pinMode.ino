@@ -14,6 +14,10 @@
  *  - On FRDM-MCXA156, D3, D5, D6 and D9 are PWM pins of their own on
  *    FlexPWM1: D6 and D9 share a period, D3 and D5 have one each. On
  *    FRDM-MCXN236 they are four of the PWM0-PWM5 pins themselves.
+ *  - FRDM-MCXC444 has no PWM0-PWM5: its PWM is on the TPMs, one period per
+ *    TPM. D10 and D5 (TPM0) are the pair, and D3 (TPM1) has a period of
+ *    its own. D5, D6 and D9 are one channel: the pin given analogWrite()
+ *    last has it, and the one before goes back to GPIO, LOW.
  *  - digitalPinHasPWM() agrees with all of that.
  *
  *  Leave the PWM pins unconnected.
@@ -50,6 +54,13 @@ Ch chs[] = {
 Ch chs[] = {
   { PWM0, "PWM0", GPIO3, 17 }, { PWM1, "PWM1", GPIO3, 16 }, { PWM2, "PWM2", GPIO3, 15 },
   { PWM3, "PWM3", GPIO3, 14 }, { PWM4, "PWM4", GPIO2, 7 },  { PWM5, "PWM5", GPIO3, 12 },
+};
+#elif defined(FRDM_MCXC444)
+// The TPMs: D3 on TPM1; D10 and D5/D6/D9 on TPM0, D5, D6 and D9 on one
+// channel of it
+Ch chs[] = {
+  { D3, "D3", GPIOA, 12 }, { D5, "D5", GPIOA, 5 }, { D6, "D6", GPIOE, 29 },
+  { D9, "D9", GPIOD, 2 },  { D10, "D10", GPIOD, 4 },
 };
 #else
 #error "This sketch has no settings for this board yet"
@@ -129,6 +140,67 @@ void setup() {
     ;
   Serial.println("=== analogWrite: paired channels, pinMode() in between, D-pins ===");
 
+#if defined(FRDM_MCXC444)
+  // A TPM has one period for all its channels: TPM0 has D10 on a channel
+  // of its own and D5, D6 and D9 on one shared channel; TPM1 has D3
+  Serial.println("--- a pin joining a running partner (TPM0) ---");
+  analogWriteFrequency(D10, 4000);
+  analogWrite(D10, 64);
+  analogWrite(D5, 191);  // D5's first analogWrite(), D10 already at 4kHz
+  check("D10 stays at 4kHz", runs(D10, 4000, 0.25f));
+  check("D5 joins it at 4kHz", runs(D5, 4000, 0.75f));
+
+  Serial.println("--- distinct duties at the default 1kHz (TPM1) ---");
+  analogWrite(D3, 26);
+  check("D3 10%", runs(D3, 1000, 0.10f));
+  analogWrite(D3, 230);
+  check("D3 90%", runs(D3, 1000, 0.90f));
+
+  Serial.println("--- analogWriteFrequency() on one, then analogWrite() on both ---");
+  analogWriteFrequency(D5, 2500);
+  analogWrite(D10, 179);
+  analogWrite(D5, 51);
+  check("D10 at 2.5kHz, 70%", runs(D10, 2500, 0.70f));
+  check("D5 at 2.5kHz, 20%", runs(D5, 2500, 0.20f));
+  analogWrite(D10, 77);
+  check("D10 again: still 2.5kHz, 30%", runs(D10, 2500, 0.30f));
+  check("D5 untouched: 2.5kHz, 20%", runs(D5, 2500, 0.20f));
+  check("TPM1 untouched: D3 1kHz, 90%", runs(D3, 1000, 0.90f));
+
+  Serial.println("--- a shorter period on the partner ---");
+  analogWrite(D5, 230);
+  analogWriteFrequency(D10, 5000);  // D5's 360us no longer fits in 200us
+  analogWrite(D10, 128);
+  analogWrite(D5, 77);
+  check("D10 at 5kHz, 50%", runs(D10, 5000, 0.50f));
+  check("D5 at 5kHz, 30%", runs(D5, 5000, 0.30f));
+
+  Serial.println("--- pinMode() in between ---");
+  pinMode(D10, OUTPUT);
+  digitalWrite(D10, HIGH);
+  check("pinMode(OUTPUT) + HIGH: steady high", runs(D10, 0, 1.0f));
+  digitalWrite(D10, LOW);
+  check("... LOW: steady low", runs(D10, 0, 0.0f));
+  analogWrite(D10, 64);
+  check("analogWrite() puts PWM back: 5kHz, 25%", runs(D10, 5000, 0.25f));
+  check("D5 kept running throughout", runs(D5, 5000, 0.30f));
+
+  Serial.println("--- D5, D6, D9 on one channel: the last one written has it ---");
+  analogWrite(D6, 191);
+  check("D6 takes it: 5kHz, 75%", runs(D6, 5000, 0.75f));
+  check("D5 back to GPIO, LOW", runs(D5, 0, 0.0f));
+  analogWrite(D9, 51);
+  check("D9 takes it: 5kHz, 20%", runs(D9, 5000, 0.20f));
+  check("D6 back to GPIO, LOW", runs(D6, 0, 0.0f));
+  analogWrite(D5, 128);
+  check("D5 takes it back: 5kHz, 50%", runs(D5, 5000, 0.50f));
+  check("D9 back to GPIO, LOW", runs(D9, 0, 0.0f));
+  check("D10 kept running throughout: 5kHz, 25%", runs(D10, 5000, 0.25f));
+  analogWriteFrequency(D3, 1500);
+  analogWrite(D3, 64);
+  check("D3 1.5kHz on a TPM of its own, 25%", runs(D3, 1500, 0.25f));
+  check("TPM0 untouched: D10 5kHz, 25%", runs(D10, 5000, 0.25f));
+#else
   Serial.println("--- a pin joining a running partner ---");
   analogWriteFrequency(PWM5, 4000);
   analogWrite(PWM5, 64);
@@ -200,13 +272,19 @@ void setup() {
   analogWrite(D3, 191);
   check("analogWrite(D3) drives PWM5: 4kHz, 75%", runs(PWM5, 4000, 0.75f));
 #endif
+#endif  // FRDM_MCXC444
 
   Serial.println("--- digitalPinHasPWM() ---");
+#if defined(FRDM_MCXC444)
+  check("D3, D5, D6, D9, D10", digitalPinHasPWM(D3) && digitalPinHasPWM(D5) && digitalPinHasPWM(D6) && digitalPinHasPWM(D9) && digitalPinHasPWM(D10));
+  check("not D2, D11", !digitalPinHasPWM(D2) && !digitalPinHasPWM(D11));
+#else
   bool all = true;
   for (int p = PWM0; p <= PWM5; p++)
     all = all && digitalPinHasPWM(p);
   check("PWM0-PWM5", all);
   check("not D2", !digitalPinHasPWM(D2));
+#endif
 #if defined(FRDM_MCXA156) || defined(FRDM_MCXN236)
   check("D3, D5, D6, D9", digitalPinHasPWM(D3) && digitalPinHasPWM(D5) && digitalPinHasPWM(D6) && digitalPinHasPWM(D9));
 #elif defined(FRDM_MCXA153) || defined(FRDM_MCXN947)

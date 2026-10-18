@@ -326,8 +326,10 @@ xPack checksums（正しい値）：
 - **実機で確かめたこと（2026-10-18）**: `examples/Arduino_compatible_API/test_bringup_C444`（配線なし、立ち上げの順を1本で）がALL OK。
   `release_check`の`01`・`06`（2回、書き込みをまたいだ保持も）・`09`・`11`（案A: D2-D3のジャンパだけ、`Serial1`の節はSKIP。2026-10-18にユーザーが決定）・`12`（D11-D12）・`13`（D8-D9・D2-D3・D4-D5・D6-D7。データの組をD0-D1から移し、サーボはD6からD7で測る。2026-10-18にユーザーが決定）、`test_Servo`（D6-D7）、`test_avr_pgmspace`（M0+でアドレスのそろっていない読み出しも）、`test_network_base_classes`がALL OK/ALL PASS。
   `22`（外付けのLM75系）と`23`（`Waveshare_TFT_Touch`の`SDBitmapViewer`）は、ユーザーが5つのボードともIDEで流して問題なし。
+  `08`（配線なし。PWMはTPM0のD10・D5とTPM1のD3、D5/D6/D9の受け渡し。プルダウンはD8（D4はSW3でプルアップ付き）、`analogRead()`のあとの割り込みはA5（A0〜A3のポートBはピン割り込みが無く、A5のR27のプルアップに対しLOWに駆動して離して立ち上がりを作る））がALL OK。
+  元の`test_analogWrite_pairs_and_pinMode`・`test_attachInterrupt_keeps_pinMode`（D8）・`test_digitalRead_after_analogRead`（A5、割り込みの項目のSKIPをやめた）もALL OK。
   `04`はmcxPinStateをC444に対応させて、配線なしでCONFLICT・MISMATCHなし（2026-10-18）。ライブラリは`Wire1`=`PTE25`/`PTE24`、`SPI1`・`Serial1`・`PWM0`〜`PWM5`なし、`Serial`のピンは`USBTX`/`USBRX`がD1/D0の別名なので付け替え前の値に戻す、
-  GPIOと周辺機能の区別を「ALT0」から`kPORT_MuxAsGpio`（C444はALT1）にした。コアの`pin_registry_pin_name()`はC444で`PTA1`の形で名前を作る。上流（`~/dev/Arduino/mcxPinState`）は作業ツリーだけで未コミット。
+  GPIOと周辺機能の区別を「ALT0」から`kPORT_MuxAsGpio`（C444はALT1）にした。コアの`pin_registry_pin_name()`はC444で`PTA1`の形で名前を作る。上流（`~/dev/Arduino/mcxPinState`）にも同じ内容をコミットしてpushした（`cc472e4`）。
   `07`はCOP（ウォッチドッグ）で1000回リセットしてALL OK（約1分半。普通の書き込みは約0.2ms、詰め直しは約37ms）。
   そのため**COPを止めるのは`SystemInit()`ではなく起動コードの`ResetISR()`にした**（C444だけ`-DDISABLE_WDOG=0`）。スケッチが`mcx_sketch_sets_cop`を定義したときだけ止めずに任せ、スケッチは`SIM_COPC`を自分で1回書くまで、リセット後の既定（LPOで1024ms）のCOPを`SIM_SRVCOP`でリセットし続ける。
   テストのための内部の口で、利用者向けの機能として文書に載せるかは未決。`07`のCOPはMCGIRCLK（8MHzのLIRCを4分周した2MHz、コアは使っていない）で数え、LPTMRで`micros()`と比べて速さを測る。実機でのリセットの時刻は計算と0.25%以内で合った
@@ -355,15 +357,19 @@ xPack checksums（正しい値）：
   - **TPMの`CnV`**: カウンタが動いている間、`CnV`への書き込みは周期の終わりまでバッファで待ち、その間の同じチャネルへの書き込みは捨てられる（RMのとおり。読み戻すと書いた値が返るので、読んでも分からない）。
     1周期に2回の`analogWrite()`の2回目と、D5/D6/D9の取り合いで後から来たピンのデューティが効かなかった。
     **TOF（オーバーフローのフラグ）は、`STATUS`・`SC`のどちらに書いても実機で消えないことが多く**（消えた回もある。理由は分からない）、使えない。
-    そこで書いた時点の`CNT`・`MOD`・分周比から周期の終わりの時刻を出し、それより前の書き込みは覚えておいてSysTick（`pwm_tpm_service()`）が書く。同じ値は書かない
+    そこで書いた時点の`CNT`・`MOD`・分周比から周期の終わりの時刻を出し、それより前の書き込みは覚えておいてSysTick（`pwm_tpm_service()`）が書く。同じ値は書かない。
+    **その時刻の計算が、読んだ`CNT`が`MOD`より大きいと負になり、約89秒先になっていた**（2026-10-18、`release_check/08`で発見）。その間の書き込みは覚えたまま書かれず、TPM0のチャネルが止まって見えた。
+    `MOD`は読むと書いた値が返るが、効くのは次の周期からなので、周期を短くした直後は古い周期の途中で`CNT`が新しい`MOD`を超える。止めて0にした直後の`CNT`も古い値を返した。
+    いまは上限の見積もりにした（`MOD`を書いた直後の1周期は古い`MOD`も見る。`CNT`が`MOD`を超えていれば0xFFFFまで数えて折り返す分を足す）。
+    **`MOD`も同じバッファで、1周期に2回書くと2回目が捨てられる**ので、`CnV`と同じく覚えてSysTickで書く（`set_mod()`）。`analogWriteFrequency()`を続けて2回呼んで、後の周波数になることを実機で確かめた
 - **できているもの（2026-10-16、ビルドだけ。上の項目以外は実機は未確認）**: `variants/frdm_mcxc444/`（`README.md`に出どころ）、`boards.txt`（デバッグまで）、`gdb-bridge`の`c444.cfg`、
   `micros()`（SysTick。`__ARM_ARCH_6M__`で分ける）、HardFaultの報告（PCだけ）と`semihost_hardfault.c`（M0+ではスタックしたPCがフラッシュの中のときだけBKPTを見る）、
   `Serial`（`USBTX`/`USBRX`が`D1`/`D0`なので、ピン番号の付け替えの前に生の値を取る）、`Wire`/`Wire1`、`SPI`（r01libに無かった`bit_order()`を足し、CSは転送ごとに動かさずスケッチに任せる。MCXのボードと同じ）、`analogRead`（ADC16、16ビット、校正）、
   `analogWrite`/`analogWriteFrequency`（TPM、D5/D6/D9の取り合い）、`tone`（PITのチャネル0）、`EEPROM`（FTFA、16バイト単位、フラッシュの最後の8KB、命令の間は割り込みを止める）、`Servo`。
   `PIN_MAPPING_C444.md`・README・API_COMPATIBILITY・CHANGELOG・LICENSE（`startup_mcxc444.cpp`のFOPTの変更）・`docs/porting_a_new_board.md`
 - **残り**: 実機確認の続き（`02`は流れ、`03`はSW2の3つの割り込みとも期待どおり。`Servo`の実物、`analogRead()`を既知の電圧で）、スタックあふれの扱い、
-  作例の約35本（`#error "This sketch has no settings for this board yet"`と`PWM0`を使うもの。`release_check`では08がまだ。ジャンパの決め方は実機と一緒に）、
-  mcxRCServoの作例（上流のリポジトリ。pushはユーザーの了承が要る）、mcxPinStateのC444対応の上流へのコミット・push（作業ツリーにはある。ユーザーの了承が要る）、CIのボードの表への追加（作例がそろってから）
+  作例の約35本（`#error "This sketch has no settings for this board yet"`と`PWM0`を使うもの。`release_check`はそろった。ジャンパの決め方は実機と一緒に）、
+  mcxRCServoの作例（上流のリポジトリ。pushはユーザーの了承が要る）、CIのボードの表への追加（作例がそろってから）
 
 ## 動作確認済み
 

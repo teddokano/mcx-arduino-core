@@ -16,13 +16,22 @@
  *  the pin's own level changes raise, which also checks CHANGE sees both
  *  edges.
  *
- *  Wiring: none. D2, D4 and D5 must be left unconnected.
+ *  Wiring: none. D2, D4 and D5 must be left unconnected (D8 in place of
+ *  D4 on FRDM-MCXC444, where D4 is the SW3 button, with a pull-up).
  *
  *  Automatic: reads "ALL OK" or "N FAILED" at the end.
  */
 
 #include <Arduino.h>
 #include "pin_registry.h"
+
+// The pin the pull-down is checked on: on FRDM-MCXC444, D4 is the SW3
+// button, with a 10k pull-up (R15) that the pull-down can't overcome
+#if defined(FRDM_MCXC444)
+const int PULLDOWN_PIN = D8;
+#else
+const int PULLDOWN_PIN = D4;
+#endif
 
 int failCount = 0;
 
@@ -69,7 +78,7 @@ void setup() {
   Serial.begin(115200);
   while (!Serial)
     ;
-  Serial.println("=== attachInterrupt() keeps pinMode() (no wiring; D2, D4, D5 unconnected) ===");
+  Serial.println("=== attachInterrupt() keeps pinMode() (no wiring) ===");
 
   Serial.println("--- INPUT_PULLUP, then attachInterrupt(FALLING) ---");
   pinMode(D2, INPUT_PULLUP);
@@ -87,14 +96,14 @@ void setup() {
   detachInterrupt(digitalPinToInterrupt(D2));
 
   Serial.println("--- INPUT_PULLDOWN, then attachInterrupt(RISING) ---");
-  pinMode(D4, INPUT_PULLDOWN);
+  pinMode(PULLDOWN_PIN, INPUT_PULLDOWN);
   delay(1);
-  attachInterrupt(digitalPinToInterrupt(D4), onRise, RISING);
+  attachInterrupt(digitalPinToInterrupt(PULLDOWN_PIN), onRise, RISING);
   delay(1);
-  check("pull-down still on (PCR)", pullOf(D4) == 1);
-  check("pulled back LOW after being driven HIGH", levelAfterRelease(D4, HIGH) == LOW);
+  check("pull-down still on (PCR)", pullOf(PULLDOWN_PIN) == 1);
+  check("pulled back LOW after being driven HIGH", levelAfterRelease(PULLDOWN_PIN, HIGH) == LOW);
   check("... and that rising edge was caught", rises == 1);
-  detachInterrupt(digitalPinToInterrupt(D4));
+  detachInterrupt(digitalPinToInterrupt(PULLDOWN_PIN));
 
   Serial.println("--- CHANGE on an input ---");
   attachInterrupt(digitalPinToInterrupt(D2), onChange, CHANGE);

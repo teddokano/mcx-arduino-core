@@ -487,16 +487,22 @@ constexpr int   CHANNELS    = 6;
 TPM_Type *const s_tpm[ TPMS ] = { TPM0, TPM1 };
 
 // Per TPM: the shared period, which PwmOut drives each channel, and the
-// MOD and CnV values on their way to the hardware (set_cnv())
+// MOD and CnV values on their way to the hardware (set_mod(), set_cnv())
+constexpr uint8_t   MOD_BIT     = 1u << CHANNELS;  // in waiting: MOD has a value in mod_later
+
 struct TpmState {
     bool     init;
     uint32_t period_us;
     PwmOut   *owner[ CHANNELS ];
     uint32_t mod;                   // MOD as last written
+    uint32_t mod_free_at;           // micros() when that write has left the MOD buffer
+    uint32_t mod_later;             // a MOD that has to wait for the buffer
+    uint32_t mod_before;            // the MOD before that, which may still be counting
+    uint32_t mod_before_until;      // micros() when it surely isn't any more
     uint16_t cnv[ CHANNELS ];       // CnV as last written
     uint32_t free_at[ CHANNELS ];   // micros() when that write has left the CnV buffer
     uint16_t later[ CHANNELS ];     // a CnV that has to wait for the buffer
-    uint8_t  waiting;               // channels with a value in later[]
+    uint8_t  waiting;               // channels with a value in later[], and MOD_BIT
 };
 
 TpmState    s_state[ TPMS ] = {};
@@ -528,12 +534,26 @@ inline uint32_t source_clock( void )
     return CLOCK_GetFreq( kCLOCK_McgIrc48MClk );   // TPMSRC = 1, set below
 }
 
-// How long until the counter overflows, in microseconds, rounded up
-uint32_t us_to_overflow( int t )
+// At most how long until the counter next goes from MOD to 0, when the
+// buffers hand their values on, in microseconds, rounded up. An upper
+// bound, not a measurement: MOD reads back as last written, which counts
+// only from the next overflow, so for a period after a MOD write the old
+// one may still be running; and CNT, read just after it was cleared with
+// the counter stopped, can still show the old count. A count above MOD
+// runs on to 0xFFFF and wraps first. Getting this short leaves a write in
+// a buffer that is still taken, and the TPM ignores it
+uint32_t us_to_overflow( int t, uint32_t now )
 {
     TPM_Type    *base   = s_tpm[ t ];
+    TpmState    &st     = s_state[ t ];
     uint32_t    ps      = ( base->SC & TPM_SC_PS_MASK ) >> TPM_SC_PS_SHIFT;
-    uint32_t    ticks   = base->MOD + 1u - base->CNT;
+    uint32_t    mod     = st.mod;
+    uint32_t    cnt     = base->CNT;
+
+    if ( (int32_t)( now - st.mod_before_until ) < 0 && st.mod_before > mod )
+        mod = st.mod_before;
+
+    uint32_t    ticks   = ( cnt <= mod ) ? mod + 1u - cnt : 0x10000u - cnt + mod + 1u;
 
     return ( ( ticks << ps ) + ( source_clock() / 1000000u ) - 1u ) / ( source_clock() / 1000000u );
 }
@@ -542,7 +562,60 @@ void write_cnv( int t, int ch, uint16_t value, uint32_t now )
 {
     s_tpm[ t ]->CONTROLS[ ch ].CnV  = value;
     s_state[ t ].cnv[ ch ]          = value;
-    s_state[ t ].free_at[ ch ]      = now + us_to_overflow( t ) + 2u;
+    s_state[ t ].free_at[ ch ]      = now + us_to_overflow( t, now ) + 2u;
+}
+
+void write_mod( int t, uint32_t value, uint32_t now )
+{
+    TpmState    &st     = s_state[ t ];
+    uint32_t    until   = now + us_to_overflow( t, now ) + 2u;
+
+    s_tpm[ t ]->MOD     = value;
+    st.mod_before       = st.mod;
+    st.mod_before_until = until;
+    st.mod              = value;
+    st.mod_free_at      = until;
+}
+
+// MOD is buffered as CnV is (below), and the same way round
+void set_mod( int t, uint32_t value, uint32_t now )
+{
+    TPM_Type    *base   = s_tpm[ t ];
+    TpmState    &st     = s_state[ t ];
+    uint32_t    primask = __get_PRIMASK();
+
+    __disable_irq();
+
+    if ( !( base->SC & TPM_SC_CMOD_MASK ) )
+    {
+        // Stopped: the register takes the value at once
+        base->MOD           = value;
+        st.mod              = value;
+        st.mod_free_at      = now;
+        st.mod_before       = value;
+        st.mod_before_until = now;
+        st.waiting          &= (uint8_t)~MOD_BIT;
+    }
+    else if ( st.waiting & MOD_BIT )
+    {
+        st.mod_later    = value;            // replaces the value waiting
+    }
+    else if ( value == st.mod )
+    {
+        // already there, or on its way
+    }
+    else if ( (int32_t)( now - st.mod_free_at ) < 0 )
+    {
+        st.mod_later    = value;
+        st.waiting      |= MOD_BIT;
+        s_any_waiting   = true;
+    }
+    else
+    {
+        write_mod( t, value, now );
+    }
+
+    __set_PRIMASK( primask );
 }
 
 // While the counter runs, a CnV write waits in a buffer for the end of the
@@ -604,6 +677,17 @@ void pwm_tpm_service( uint32_t now )
     for ( int t = 0; t < TPMS; t++ )
     {
         TpmState    &st = s_state[ t ];
+
+        if ( st.waiting & MOD_BIT )
+        {
+            if ( (int32_t)( now - st.mod_free_at ) >= 0 )
+            {
+                write_mod( t, st.mod_later, now );
+                st.waiting  &= (uint8_t)~MOD_BIT;
+            }
+            else
+                still   = true;
+        }
 
         for ( int ch = 0; ch < CHANNELS; ch++ )
         {
@@ -770,15 +854,9 @@ void PwmOut::apply( void )
         base->SC        = ( base->SC & ~( TPM_SC_PS_MASK | TPM_SC_TOF_MASK ) ) | TPM_SC_PS( prescale );
         base->CNT       = 0u;
         st.waiting      = 0u;
-        st.mod          = 0xFFFFFFFFu;  // so it is written below
     }
 
-    // MOD is buffered like CnV: write it only when it changes
-    if ( st.mod != (uint32_t)( ticks - 1u ) )
-    {
-        base->MOD   = (uint32_t)( ticks - 1u );
-        st.mod      = (uint32_t)( ticks - 1u );
-    }
+    set_mod( _tpm, (uint32_t)( ticks - 1u ), now );
 
     for ( int ch = 0; ch < CHANNELS; ch++ )
     {
