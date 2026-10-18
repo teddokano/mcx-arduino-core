@@ -2,32 +2,31 @@
 
 ## プロジェクト概要
 - **リポジトリ**: https://github.com/teddokano/mcx-arduino-core
-- **内容**: NXP FRDM-MCXA153 / FRDM-MCXN947 / FRDM-MCXA156（0.8.0から）/ FRDM-MCXN236（0.9.0から。いずれもCortex-M33）向けのArduino IDEボードサポートパッケージ。
+- **内容**: NXP FRDM-MCXA153 / FRDM-MCXN947 / FRDM-MCXA156（0.8.0から）/ FRDM-MCXN236（0.9.0から。ここまではCortex-M33）/ FRDM-MCXC444（0.10.0から。Cortex-M0+）向けのArduino IDEボードサポートパッケージ。
   v0.4.0以降は**ソース配布方式**（プリビルド`.a`は廃止）で、`hardware/nxp/mcx/cores/arduino/`（全ボード共有）と
   `hardware/nxp/mcx/variants/<board>/src/`（ボード固有）が唯一の実体。編集すれば次のビルドにそのまま反映される
 - **同梱ライブラリ**: `mcxPinState`（ピン所有状況のデバッグ表示）、`mcxRCServo`（RCサーボ）、`EEPROM`（0.7.0で追加）、`Servo`（0.10.0で追加、公式のServoライブラリと同じAPI、PWMのピンだけ）。
   前の2つは別リポジトリが開発の本拠地で、`hardware/nxp/mcx/libraries/`配下はリリース時に同期する取り込みコピー。
   `EEPROM`はこのリポジトリが本体（フラッシュの配置がリンカスクリプトと一体なので）。`Servo`もこのリポジトリが本体で、コアの`analog_pwm_out()`（`arduino_analog.h`）でピンの`PwmOut`を受け取り、マイクロ秒でパルス幅を設定する（`analogWriteResolution()`に触らない）
-- **現在のリリース**: **v0.9.1**（2026-10-11、パッチリリース。`analogRead(0)`〜`analogRead(5)`を`A0`〜`A5`として扱う修正、
-  関数内の`static`オブジェクトのリンクエラー（`__cxa_guard_acquire`）の修正（`platform.txt`に`-fno-threadsafe-statics`。AVRのコアと同じ）、`r01lib_I3C_demo`の追加）。
-  その前のv0.9.0（2026-10-09）でFRDM-MCXN236の追加と、FRDM-MCXA156のD3/D5/D6/D9での`analogWrite`。macOS・Windows・Linuxの3プラットフォームで
-  インストール〜ビルド〜アップロード〜IDE内蔵デバッガまで検証済み
-- **開発中**: **v0.10.0**（`0.10.0-dev`ブランチ、2026-10-15に`0.9.2-dev`として開始し、2026-10-16に名前を変えた）。範囲は、ネットワーク基底クラス（`Client`/`Server`/`UDP`/`IPAddress`、Pendingタスク8）、
+- **現在のリリース**: **v0.10.0**（2026-10-18。5つ目のボード**FRDM-MCXC444**、同梱の`Servo`ライブラリ、ネットワーク基底クラス（`Client`/`Server`/`UDP`/`IPAddress`）と`<avr/pgmspace.h>`、全ボードで`noInterrupts()`の中の`micros()`が割り込みを入れていたのを直した修正）。macOS・Windows・Linuxの3プラットフォームで、ステージング（`staging-0.10.0`）と本番の`main`のURLの両方から、インストール〜ビルド〜アップロード〜IDE内蔵デバッガまで検証済み。
+  リリースzipはSHA-256 `e2f8b9bf19cbf4ec90cceb02ba655ca5482d1c75821a9093ee4443b59a71e8e3`、11621108 bytes。タグ`0.10.0`は`9cfcf96`、`main`は`49fccaf`（0.10.0のエントリを入れたコミット）。
+  その前はv0.9.1（2026-10-11、パッチリリース。`analogRead(0)`〜`analogRead(5)`を`A0`〜`A5`として扱う修正、関数内の`static`オブジェクトのリンクエラー（`__cxa_guard_acquire`）の修正（`platform.txt`に`-fno-threadsafe-statics`。AVRのコアと同じ）、`r01lib_I3C_demo`の追加）と、v0.9.0（2026-10-09。FRDM-MCXN236の追加と、FRDM-MCXA156のD3/D5/D6/D9での`analogWrite`）
+- **開発中**: **v0.11.0**（`0.11.0-dev`ブランチ、2026-10-18に`main`の`49fccaf`から切った）。範囲の候補はN947のEthernet（ENET・lwIP）。1.0までの版の割り振りは[memo/notes_toward_1.0.0.md](memo/notes_toward_1.0.0.md)の§9。ローカルIDE連携のsymlink名（`~/Library/Arduino15/packages/nxp/hardware/mcx/0.11.0-dev`）は、開発環境を戻すときに付け替える。A4/A5の`setPins`（Pendingタスク10）を入れる版は未定
+- **v0.10.0の経緯**（`0.10.0-dev`ブランチ、2026-10-15に`0.9.2-dev`として開始し、2026-10-16に名前を変えた）。範囲は、ネットワーク基底クラス（`Client`/`Server`/`UDP`/`IPAddress`、Pendingタスク8）、
   `Servo.h`の互換ライブラリ、`<avr/pgmspace.h>`、**FRDM-MCXC444**（2026-10-16、ユーザーが決定）。
-  **A4/A5のI²C（`setPins`、Pendingタスク10）は0.10.0には入れない**（2026-10-18、ユーザーが決定。入れる版は未定）。
-  機能の追加だけなのでパッチではなくマイナーの版にした。C444は「ビルドが通るだけ」のスパイク（`c444-spike`ブランチ、未push）の結果を見て入れると決めた。結果はmemoの§4-5で、スパイクのスタブは持ち込まず`0.10.0-dev`の上で作り直す。
-  N947のEthernet（ENET・lwIP）は0.11.0。1.0までの版の割り振りは[memo/notes_toward_1.0.0.md](memo/notes_toward_1.0.0.md)の§9。
+  **A4/A5のI²C（`setPins`、Pendingタスク10）は0.10.0には入れなかった**（2026-10-18、ユーザーが決定。入れる版は未定）。
+  機能の追加だけなのでパッチではなくマイナーの版にした。C444は「ビルドが通るだけ」のスパイク（`c444-spike`ブランチ、未push）の結果を見て入れると決めた。結果はmemoの§4-5で、スパイクのスタブは持ち込まず`0.10.0-dev`の上で作り直した。
   **`Servo`（`libraries/Servo/`）は5つのボードの実機で`test_Servo`がALL PASS（2026-10-18）。作例の`Sweep`と`Knob`（ポテンショメータは`A2`）も、5つのボードで実物のSG90を動かせた（2026-10-18、ユーザーが確認。C444は`D9`、MCXの4ボードは`PWM0`（N236では`D6`と同じピン））**。
   `test_Servo`をジャンパ1本（A153・A156・N947は`PWM0`-`D8`、N236とC444は`D6`-`D7`）で流す。
   **`micros()`が呼ばれるたびに割り込みを入れていた**（`__disable_irq()`/`__enable_irq()`で囲んでいたので、`noInterrupts()`の中でも）のを、PRIMASKを戻す形に直した（2026-10-18、全ボード）。
   `test_micros_noInterrupts`（配線なし）が直す前のC444で2項目FAIL（3msの間に`millis()`が0から4へ進んだ）、直したあと5つのボードでALL OK
-  **リリース前の実機チェック（2026-10-18、macOS）**: 全サンプルの回帰コンパイルは5ボードともexit 0。`release_check`は5ボードで、`01`・`04`・`06`（2回）・`07`・`08`・`09`、`11`〜`14`（A156は`15`も）、`24`（4組、いずれもN947が相手）、`03`・`02`・`21`が問題なし。`test_Servo`・`test_avr_pgmspace`・`test_network_base_classes`・`test_micros_noInterrupts`も5ボードでALL PASS。`22`・`23`は2026-10-18の確認（5ボードとも）を使い、今回は流していない。5枚をつないだままの書き込みはarduino-cliとIDE（macOS）の両方で各ボードに入り、IDE内蔵デバッガ（macOS）も問題なし。流し直したのは2件で、A156の`15`（`Wire1`のジャンパを直して流し直し、ALL OK）とA156-N947の`24`（1回目は相手が答えずFAIL、そのままもう一度流してALL OK。原因は調べていない）。`21`のA153は、D1-D0のジャンパを直して`Serial1`のWARNINGが消えた。確認の間にN236・C444・N947が1回ずつUSBから消え、挿し直して戻った（原因は調べていない）。残りはWindows・Linuxでの書き込みとデバッグ（ステージング後）。
+  **リリース前の実機チェック（2026-10-18、macOS）**: 全サンプルの回帰コンパイルは5ボードともexit 0。`release_check`は5ボードで、`01`・`04`・`06`（2回）・`07`・`08`・`09`、`11`〜`14`（A156は`15`も）、`24`（4組、いずれもN947が相手）、`03`・`02`・`21`が問題なし。`test_Servo`・`test_avr_pgmspace`・`test_network_base_classes`・`test_micros_noInterrupts`も5ボードでALL PASS。`22`・`23`は2026-10-18の確認（5ボードとも）を使い、今回は流していない。5枚をつないだままの書き込みはarduino-cliとIDE（macOS）の両方で各ボードに入り、IDE内蔵デバッガ（macOS）も問題なし。流し直したのは2件で、A156の`15`（`Wire1`のジャンパを直して流し直し、ALL OK）とA156-N947の`24`（1回目は相手が答えずFAIL、そのままもう一度流してALL OK。原因は調べていない）。`21`のA153は、D1-D0のジャンパを直して`Serial1`のWARNINGが消えた。確認の間にN236・C444・N947が1回ずつUSBから消え、挿し直して戻った（原因は調べていない）。Windows・Linuxの書き込みとデバッグは、ステージング（`staging-0.10.0`）と本番の`main`のURLの両方で、ユーザーが確認して問題なし。
 - **ADCの無いピンへの`analogRead()`（A153の`analogRead(A5)`など）をビルド時に検出する案は入れない**（2026-10-11、ユーザー判断）。
   `__builtin_constant_p`と`__attribute__((error))`で、定数のピンならビルドエラーにできることは試作で確かめた（常に`-O2`なので確実に効く）。
   入れない理由は副作用で、実行されないコード（実行時の変数でボードを分ける分岐など）でもビルドが止まり、AVRなどでビルドできるコードがこのコアではビルドできなくなる。
   また、`-O2`のループ展開や関数の展開で定数になった呼び出しも検出されるので、エラーになるかどうかが最適化の判断に左右される。実行時の`panic()`のままにする。
   `analogWrite()`はPWMの無いピンでAVRと同じく`digitalWrite()`になるのが正しい動きで、panicしない（A153の`A5`で実機確認）
-- ボード追加の順番はA156 → N236 → C444で合意済み。C444は0.10.0で入れる（A4/A5のI²C（Pendingタスク10）は2026-10-18に0.10.0から外した）。
+- ボード追加の順番はA156 → N236 → C444で合意済み。C444は0.10.0で入れた（A4/A5のI²C（Pendingタスク10）は2026-10-18に0.10.0から外した）。
   A156の前提と決定は下の「FRDM-MCXA156の前提と決定事項（0.8.0）」節、N236の分は「FRDM-MCXN236の前提と決定事項（0.9.0）」節
 - **リリースごとの変更点**: [CHANGELOG.md](CHANGELOG.md)
 - **各リリースで何をやり、どこで詰まったかの詳細**: [docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md)
@@ -296,9 +295,9 @@ xPack checksums（正しい値）：
 
 ---
 
-## FRDM-MCXC444の前提と決定事項（0.10.0、作業中）
-0.10.0で対応する（2026-10-16に決定）。回路図は`ref/FRDM-MCXC444.pdf`（SCH-93440 Rev A）、SDKは`ref/SDK_2_16_000_FRDM-MCXC444.zip`。
-「ビルドが通るだけ」のスパイクの結果は[memo/notes_toward_1.0.0.md](memo/notes_toward_1.0.0.md)の§4-5（`c444-spike`ブランチ、未push）。スパイクのスタブは持ち込まず、`0.10.0-dev`の上で作り直す。
+## FRDM-MCXC444の前提と決定事項（0.10.0）
+0.10.0（2026-10-18リリース）で対応した（2026-10-16に決定）。回路図は`ref/FRDM-MCXC444.pdf`（SCH-93440 Rev A）、SDKは`ref/SDK_2_16_000_FRDM-MCXC444.zip`。
+「ビルドが通るだけ」のスパイクの結果は[memo/notes_toward_1.0.0.md](memo/notes_toward_1.0.0.md)の§4-5（`c444-spike`ブランチ、未push）。スパイクのスタブは持ち込まず、`0.10.0-dev`の上で作り直した。
 
 - **Kinetis系でCortex-M0+（ARMv6-M、FPU無し）**、48MHz。DWTのサイクルカウンタ・CFSR/HFSR・`MSPLIM`が無い。周辺回路はLPUART/UART・`fsl_i2c`・`fsl_spi`・ADC16・TPM・PIT/LPTMRで、CTIMER・UTICK・I3C・FlexPWM・LPADCは無い
 - **ピンは回路図とZephyrの`MCXC444VLH-pinctrl.h`で確かめた**（2026-10-16）。r01libの`io.h`のC444の表（D0〜D19・A0〜A5）は回路図と一致する。
@@ -449,7 +448,7 @@ xPack checksums（正しい値）：
 - **リポジトリパス**: `~/dev/mcx-arduino-core`
 - **v0.4.0以降のソース構成**: `MCUXpresso_project/`ディレクトリは廃止（削除済み）。ソースの唯一の実体は`hardware/nxp/mcx/cores/arduino/`（全ボード共有）＋`hardware/nxp/mcx/variants/<board>/src/`（ボード固有）で、プリビルド`.a`のビルド・配置手順も不要になった——編集したソースはそのままarduino-cli/Arduino IDEのビルドに反映される（詳細は[docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md)の「`cores/arduino/`一本化・`platform.txt`書き換え完了」節）
 - **xPackツールチェーン**: `~/.xpacktools/xpack-arm-none-eabi-gcc-14.2.1-1.1/`（`package_nxp_mcx_index.json`記載のものと同一バイナリ、チェックサム確認済み）
-- **ローカルArduino IDE連携**: `~/Library/Arduino15/packages/nxp/hardware/mcx/<version>-dev`（今は`0.10.0-dev`。ブランチ名と同じ。パッチリリースのブランチを並行して進める間は、作業ツリーで切り替えたブランチに合わせてこの名前も付け替える）をこのリポジトリの`hardware/nxp/mcx/`へのシンボリックリンクとして設定済み（編集が即座に反映される）。ツールチェーンも`~/.xpacktools/`への symlink。`-dev`サフィックスにより、Boards Manager経由でインストールする実リリース版とはディレクトリ名が衝突せず共存できる（ただし下の項目のとおり、並んでいるとリリース版が選ばれる）
+- **ローカルArduino IDE連携**: `~/Library/Arduino15/packages/nxp/hardware/mcx/<version>-dev`（今は`0.11.0-dev`。ブランチ名と同じ。パッチリリースのブランチを並行して進める間は、作業ツリーで切り替えたブランチに合わせてこの名前も付け替える）をこのリポジトリの`hardware/nxp/mcx/`へのシンボリックリンクとして設定済み（編集が即座に反映される）。ツールチェーンも`~/.xpacktools/`への symlink。`-dev`サフィックスにより、Boards Manager経由でインストールする実リリース版とはディレクトリ名が衝突せず共存できる（ただし下の項目のとおり、並んでいるとリリース版が選ばれる）
 - **リリース版を入れたままだと`-dev`が使われない**（0.7.0で踏んだ）: `packages/nxp/hardware/mcx/`に
   Boards Managerで入れた`0.6.0`と`0.7.0-dev`のsymlinkが並ぶと、**IDEも既定のarduino-cliもインストール済みの`0.6.0`を選ぶ**。
   開発中の修正がIDEで一切効かず、「直したはずの不具合がIDEでは再現する」形で表に出る。
@@ -519,6 +518,9 @@ v0.4.0の`main`マージ直前、ユーザーから「今回のリリース準�
      **デバッグも同じく全ボードをつないだまま、各ボードで1回ずつ**（IDEのDebugボタンで。0.8.0では3枚を同時にデバッガで動かせることも確認した）。IDEはデバッグ時にポートを渡さないので、
      gdb-bridgeは`LinkServer probes`の`Device`列のチップ名でプローブを選ぶ。種類の違う2枚は区別できるが、同じ種類の2枚は区別できない（エラーで止まるのが正しい動作）。
      チップ名が一致するプローブが無く、`Device`列が空のプローブがちょうど1つなら、それを選ぶ（A156のプローブが空のため、0.8.0から）
+   - **2枚つなぎの`24`と、実機チェック中のUSBの脱落**（0.10.0）: `24`は相手を待つスケッチなので、どちらかが別のスケッチを動かしていた直後は、1回目に相手が答えずFAILすることがある（A156とN947で1回、そのまま流し直してALL OK）。
+     両方に書き込み直すか、近い時刻にリセットしてから見る。実機チェックの間に、N236・C444・N947が1回ずつUSBから消えた（`/dev/cu.usbmodem*`と`LinkServer probes`の両方から消え、書き込みは「Multiple probes」や「ポートが無い」で失敗する）。
+     挿し直せば戻る。原因は調べていない。ボードを1枚ずつ流す作業の前に、`ls /dev/cu.usbmodem*`で5枚が出ているかを見るとよい。5枚をつないだままの書き込みは、`--build-path`をボードごとに分けたarduino-cliで、ボード名を1回出すだけのスケッチを順番に書いても確かめられる（0.10.0では順方向と逆方向の2周）
    - **IDE内蔵デバッガも各プラットフォームで1回**（`gdb-bridge`の起動経路はOSごとに別物——macOS/Linuxは`launch.sh`から`uname -s`で選ぶ別バイナリ＋別の`findLinkServer()`分岐、Windowsは共有exeを直接起動）
    - **パッチリリース（`x.y.Z`）では、実機で流す範囲をバイナリ比較で決める**（2026-10-11、0.9.1の準備でユーザー判断）。
      前のリリースのタグのコアと、リリース候補のコアで、全サンプル×全ボードをビルドして`.bin`を比べる。
