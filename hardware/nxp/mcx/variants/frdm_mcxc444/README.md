@@ -50,11 +50,12 @@ A153のものを元に、SRAMを1つ（`0x1FFFE000`から32KB）にし、Kinetis
 - `release_check`の`01`・`06`（2回。書き込みをまたいだ保持も）・`09`・`11`（D2-D3のジャンパだけ。`Serial1`の節はSKIP）・`12`（D11-D12のジャンパ）・`13`（D8-D9・D2-D3・D4-D5・D6-D7のジャンパ）・`14`（D19-D8・D18-D7のジャンパ）・`24`（FRDM-MCXN947との2枚）がALL OK。
   `01`と`14`の`Wire`のターゲットの節はSKIP（KinetisのI2Cはマスターかスレーブのどちらかで、自分のターゲットを呼べない）。`test_Servo`（D6-D7）がALL PASS。
   `02`（人が見る）は最後まで流れ、`03`（SW2を押す）は立ち下がり・`detachInterrupt()`・LOWの割り込みとも期待どおり
+- `release_check`の`22`（外付けのLM75系のセンサー）と`23`（`Waveshare_TFT_Touch`の`SDBitmapViewer`）は、ユーザーがIDEで流して問題なし（5つのボードとも）
 - `test_avr_pgmspace`（アドレスのそろっていない`pgm_read_*`も）と`test_network_base_classes`がALL PASS
 - `test_fault_report`: 8種類のうち7種類で`error: HardFault at PC ...`がクラッシュした行を指す。
   Cortex-M0+には故障の種類を示すレジスタが無いので、種類は出ない。スタックあふれ（4）は報告されず、ボードがリセットを繰り返す（M0+にはスタックの上限のレジスタが無い）
 
-まだのもの: `07`（書き込み中のリセット）、外部の部品が要る`21`〜`23`。
+まだのもの: `07`（書き込み中のリセット）、`21`（外付けのP3T1755とジャンパ）。
 
 ADCの基準電圧はVALTH（VDDA）にしている。このボードではVREFHの端子がJP6で切り離されていて、VREFHを基準にすると全部の入力が最大値になる（ボードの`board.h`の`BOARD_ADC_USE_ALT_VREF`、SDKのADC16の作例と同じ）。
 

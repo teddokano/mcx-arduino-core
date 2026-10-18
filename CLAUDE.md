@@ -325,6 +325,7 @@ xPack checksums（正しい値）：
   SPI1にSDKの作例（SPI0用）のバスクロックを渡していて、SCKが要求の2倍になっていた（システムクロックにした）
 - **実機で確かめたこと（2026-10-18）**: `examples/Arduino_compatible_API/test_bringup_C444`（配線なし、立ち上げの順を1本で）がALL OK。
   `release_check`の`01`・`06`（2回、書き込みをまたいだ保持も）・`09`・`11`（案A: D2-D3のジャンパだけ、`Serial1`の節はSKIP。2026-10-18にユーザーが決定）・`12`（D11-D12）・`13`（D8-D9・D2-D3・D4-D5・D6-D7。データの組をD0-D1から移し、サーボはD6からD7で測る。2026-10-18にユーザーが決定）、`test_Servo`（D6-D7）、`test_avr_pgmspace`（M0+でアドレスのそろっていない読み出しも）、`test_network_base_classes`がALL OK/ALL PASS。
+  `22`（外付けのLM75系）と`23`（`Waveshare_TFT_Touch`の`SDBitmapViewer`）は、ユーザーが5つのボードともIDEで流して問題なし。
   `test_fault_report`は8種類のうち7種類で`error: HardFault at PC ...`がクラッシュした行を指す（M0+にはCFSRが無いので種類は出ない。割り込みの中は`in an interrupt`）。
   **スタックあふれ（kind 4）は報告されず、リセットを繰り返す**（M0+には`MSPLIM`が無い）。
   書き込みはLinkServer 26.6.137で、フラッシュを正しく判定する
@@ -354,7 +355,7 @@ xPack checksums（正しい値）：
   `Serial`（`USBTX`/`USBRX`が`D1`/`D0`なので、ピン番号の付け替えの前に生の値を取る）、`Wire`/`Wire1`、`SPI`（r01libに無かった`bit_order()`を足し、CSは転送ごとに動かさずスケッチに任せる。MCXのボードと同じ）、`analogRead`（ADC16、16ビット、校正）、
   `analogWrite`/`analogWriteFrequency`（TPM、D5/D6/D9の取り合い）、`tone`（PITのチャネル0）、`EEPROM`（FTFA、16バイト単位、フラッシュの最後の8KB、命令の間は割り込みを止める）、`Servo`。
   `PIN_MAPPING_C444.md`・README・API_COMPATIBILITY・CHANGELOG・LICENSE（`startup_mcxc444.cpp`のFOPTの変更）・`docs/porting_a_new_board.md`
-- **残り**: 実機確認の続き（`02`は流れ、`03`はSW2の3つの割り込みとも期待どおり。`07`（書き込み中のリセットのやり方）、`21`〜`23`、`Servo`の実物、`analogRead()`を既知の電圧で）、スタックあふれの扱い、
+- **残り**: 実機確認の続き（`02`は流れ、`03`はSW2の3つの割り込みとも期待どおり。`07`（書き込み中のリセットのやり方）、`21`、`Servo`の実物、`analogRead()`を既知の電圧で）、スタックあふれの扱い、
   作例の約35本（`#error "This sketch has no settings for this board yet"`と`PWM0`を使うもの。`release_check`では04・07・08・21がまだ。ジャンパの決め方は実機と一緒に）、
   mcxPinStateとmcxRCServoの作例（上流のリポジトリ。pushはユーザーの了承が要る）、CIのボードの表への追加（作例がそろってから）
 
