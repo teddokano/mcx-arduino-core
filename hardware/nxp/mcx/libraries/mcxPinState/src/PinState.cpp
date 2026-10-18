@@ -67,7 +67,10 @@ constexpr const char *ALIAS_NAMES[]	=
 	"RED", "GREEN", "BLUE",
 	"SPI_CS", "SPI_MOSI", "SPI_MISO", "SPI_SCLK",
 	"ARD_CS", "ARD_MOSI", "ARD_MISO", "ARD_SCK",
+#if !defined( FRDM_MCXC444 )
+	// FRDM-MCXC444 has no PWM0-PWM5 pins
 	"PWM0", "PWM1", "PWM2", "PWM3", "PWM4", "PWM5",
+#endif
 };
 
 static_assert(
@@ -173,12 +176,13 @@ int owners_of( uint8_t pin, char *buf, uint8_t buf_size, uint8_t *wanted_mux_out
 // they -- like any plain pinMode() pin -- register generically as
 // "GPIO"; see owners_of()'s own comment). wanted_mux != 0 closes that
 // gap: DigitalInOut's constructor always registers a fresh plain-GPIO
-// pin with wanted_mux == 0 (ALT0, this whole core's universal "plain
-// GPIO" convention), while I2C/I3C's begin() re-muxes its SDA/SCL to a
-// real peripheral ALT and updates the registry to match (see
-// DigitalInOut::pin_mux()'s own history). So requiring both together is
-// what actually distinguishes "this specific peripheral is really
-// live" from "something else happens to be touching the same pin".
+// pin with wanted_mux == kPORT_MuxAsGpio (ALT0 on the MCX chips, ALT1 on
+// FRDM-MCXC444's Kinetis chip, whose ALT0 is analog), while I2C/I3C's
+// begin() re-muxes its SDA/SCL to a real peripheral ALT and updates the
+// registry to match (see DigitalInOut::pin_mux()'s own history). So
+// requiring both together is what actually distinguishes "this specific
+// peripheral is really live" from "something else happens to be touching
+// the same pin".
 bool owned_by( uint8_t pin, const char *expected_name )
 {
 	for ( const Entry &e : registry )
@@ -187,7 +191,7 @@ bool owned_by( uint8_t pin, const char *expected_name )
 			continue;
 
 		for ( uint8_t j = 0; j < e.count; j++ )
-			if ( (e.pins[ j ] == pin) && (0 == strcmp( e.name, expected_name )) && (e.wanted_mux != 0) )
+			if ( (e.pins[ j ] == pin) && (0 == strcmp( e.name, expected_name )) && (e.wanted_mux != (uint8_t)kPORT_MuxAsGpio) )
 				return true;
 	}
 
@@ -232,6 +236,10 @@ const KnownInstance KNOWN_INSTANCES[]	=
 	// FRDM-MCXA156's on-board sensor, and with it its I3C pins, are on
 	// Wire's own D18/D19, and FRDM-MCXN236 has no I3C sensor.
 	{ "Wire1",   "GPIO",   { (uint8_t)arduino_pin_by_number[ MB_SDA ], (uint8_t)arduino_pin_by_number[ MB_SCL ], 0 }, 2 },
+#elif defined( FRDM_MCXC444 )
+	// The on-board accelerometer's bus (I2C0), on pins no header reaches,
+	// so they have no Arduino name and appear in this table only.
+	{ "Wire1",   "GPIO",   { (uint8_t)PTE25, (uint8_t)PTE24, 0 }, 2 },
 #else
 #error "mcxPinState: say which pins this board's Wire1 is on"
 #endif
@@ -242,11 +250,18 @@ const KnownInstance KNOWN_INSTANCES[]	=
 	{ "Wire2",   "GPIO",   { (uint8_t)arduino_pin_by_number[ MB_SDA ], (uint8_t)arduino_pin_by_number[ MB_SCL ], 0 }, 2 },
 #endif
 	{ "SPI",     "SPI",    { (uint8_t)arduino_pin_by_number[ ARD_MOSI ], (uint8_t)arduino_pin_by_number[ ARD_MISO ], (uint8_t)arduino_pin_by_number[ ARD_SCK ] }, 3 },
-#if !defined( FRDM_MCXN236 )
-	// FRDM-MCXN236 has no SPI1: its MikroBus SPI is SPI's own lines.
+#if !defined( FRDM_MCXN236 ) && !defined( FRDM_MCXC444 )
+	// FRDM-MCXN236 and FRDM-MCXC444 have no SPI1: their MikroBus SPI is
+	// SPI's own lines.
 	{ "SPI1",    "SPI",    { (uint8_t)arduino_pin_by_number[ MB_MOSI ], (uint8_t)arduino_pin_by_number[ MB_MISO ], (uint8_t)arduino_pin_by_number[ MB_SCK ] }, 3 },
 #endif
+#if defined( FRDM_MCXC444 )
+	// USBTX/USBRX are D1/D0 on this board, renumbered like any D-pin, so
+	// they go back to raw values here.
+	{ "Serial",  "Serial", { (uint8_t)arduino_pin_by_number[ USBTX ], (uint8_t)arduino_pin_by_number[ USBRX ], 0 }, 2 },
+#else
 	{ "Serial",  "Serial", { (uint8_t)USBTX, (uint8_t)USBRX, 0 }, 2 },
+#endif
 #if defined( FRDM_MCXA153 ) || defined( FRDM_MCXN236 )
 	// On FRDM-MCXN236 the MikroBus UART is these same two pins.
 	{ "Serial1", "Serial", { (uint8_t)arduino_pin_by_number[ D0 ], (uint8_t)arduino_pin_by_number[ D1 ], 0 }, 2 },
@@ -268,6 +283,8 @@ const KnownInstance KNOWN_INSTANCES[]	=
 	// has a Serial2 as well.
 	{ "Serial1", "Serial", { (uint8_t)arduino_pin_by_number[ D0 ], (uint8_t)arduino_pin_by_number[ D1 ], 0 }, 2 },
 	{ "Serial2", "Serial", { (uint8_t)arduino_pin_by_number[ MB_TX ], (uint8_t)arduino_pin_by_number[ MB_RX ], 0 }, 2 },
+#elif defined( FRDM_MCXC444 )
+	// No Serial1: D0/D1 are Serial itself, the USB serial port's UART.
 #else
 #error "mcxPinState: say where this board's Serial1 is"
 #endif

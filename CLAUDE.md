@@ -326,6 +326,8 @@ xPack checksums（正しい値）：
 - **実機で確かめたこと（2026-10-18）**: `examples/Arduino_compatible_API/test_bringup_C444`（配線なし、立ち上げの順を1本で）がALL OK。
   `release_check`の`01`・`06`（2回、書き込みをまたいだ保持も）・`09`・`11`（案A: D2-D3のジャンパだけ、`Serial1`の節はSKIP。2026-10-18にユーザーが決定）・`12`（D11-D12）・`13`（D8-D9・D2-D3・D4-D5・D6-D7。データの組をD0-D1から移し、サーボはD6からD7で測る。2026-10-18にユーザーが決定）、`test_Servo`（D6-D7）、`test_avr_pgmspace`（M0+でアドレスのそろっていない読み出しも）、`test_network_base_classes`がALL OK/ALL PASS。
   `22`（外付けのLM75系）と`23`（`Waveshare_TFT_Touch`の`SDBitmapViewer`）は、ユーザーが5つのボードともIDEで流して問題なし。
+  `04`はmcxPinStateをC444に対応させて、配線なしでCONFLICT・MISMATCHなし（2026-10-18）。ライブラリは`Wire1`=`PTE25`/`PTE24`、`SPI1`・`Serial1`・`PWM0`〜`PWM5`なし、`Serial`のピンは`USBTX`/`USBRX`がD1/D0の別名なので付け替え前の値に戻す、
+  GPIOと周辺機能の区別を「ALT0」から`kPORT_MuxAsGpio`（C444はALT1）にした。コアの`pin_registry_pin_name()`はC444で`PTA1`の形で名前を作る。上流（`~/dev/Arduino/mcxPinState`）は作業ツリーだけで未コミット。
   `07`はCOP（ウォッチドッグ）で1000回リセットしてALL OK（約1分半。普通の書き込みは約0.2ms、詰め直しは約37ms）。
   そのため**COPを止めるのは`SystemInit()`ではなく起動コードの`ResetISR()`にした**（C444だけ`-DDISABLE_WDOG=0`）。スケッチが`mcx_sketch_sets_cop`を定義したときだけ止めずに任せ、スケッチは`SIM_COPC`を自分で1回書くまで、リセット後の既定（LPOで1024ms）のCOPを`SIM_SRVCOP`でリセットし続ける。
   テストのための内部の口で、利用者向けの機能として文書に載せるかは未決。`07`のCOPはMCGIRCLK（8MHzのLIRCを4分周した2MHz、コアは使っていない）で数え、LPTMRで`micros()`と比べて速さを測る。実機でのリセットの時刻は計算と0.25%以内で合った
@@ -360,8 +362,8 @@ xPack checksums（正しい値）：
   `analogWrite`/`analogWriteFrequency`（TPM、D5/D6/D9の取り合い）、`tone`（PITのチャネル0）、`EEPROM`（FTFA、16バイト単位、フラッシュの最後の8KB、命令の間は割り込みを止める）、`Servo`。
   `PIN_MAPPING_C444.md`・README・API_COMPATIBILITY・CHANGELOG・LICENSE（`startup_mcxc444.cpp`のFOPTの変更）・`docs/porting_a_new_board.md`
 - **残り**: 実機確認の続き（`02`は流れ、`03`はSW2の3つの割り込みとも期待どおり。`Servo`の実物、`analogRead()`を既知の電圧で）、スタックあふれの扱い、
-  作例の約35本（`#error "This sketch has no settings for this board yet"`と`PWM0`を使うもの。`release_check`では04・08がまだ。ジャンパの決め方は実機と一緒に）、
-  mcxPinStateとmcxRCServoの作例（上流のリポジトリ。pushはユーザーの了承が要る）、CIのボードの表への追加（作例がそろってから）
+  作例の約35本（`#error "This sketch has no settings for this board yet"`と`PWM0`を使うもの。`release_check`では08がまだ。ジャンパの決め方は実機と一緒に）、
+  mcxRCServoの作例（上流のリポジトリ。pushはユーザーの了承が要る）、mcxPinStateのC444対応の上流へのコミット・push（作業ツリーにはある。ユーザーの了承が要る）、CIのボードの表への追加（作例がそろってから）
 
 ## 動作確認済み
 

@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   `Wire.setWireTimeout` (SCL only). The flash
   option byte keeps `D4` (the reset-time NMI pin, also the `SW3` button) from stopping the board when it is low at
   power-up. See `PIN_MAPPING_C444.md`
+- The bundled `mcxPinState` knows FRDM-MCXC444's pins and instances (`Wire1` on the accelerometer's bus, no `SPI1`
+  or `Serial1`), names its pins the Kinetis way (`PTA1`), and tells GPIO from a peripheral on a chip whose GPIO is
+  ALT1, not ALT0
 - The network base classes `Client`, `Server`, `UDP` and `IPAddress` (`Client.h`, `Server.h`, `Udp.h`,
   `IPAddress.h`), with the same virtual functions as ArduinoCore-API's, so libraries built on them now compile:
   the official `Ethernet` library for W5x00 shields, and libraries that take a `Client&` such as PubSubClient.

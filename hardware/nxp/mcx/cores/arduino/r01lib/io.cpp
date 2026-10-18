@@ -672,7 +672,12 @@ const char *pin_registry_pin_name( uint8_t raw_pin, char *buf, uint8_t buf_size 
 		return buf;
 	}
 
+#if defined( CPU_MCXC444VLH )
+	//	Kinetis names its ports by letter: PTA1, PTE25
+	snprintf( buf, buf_size, "PT%c%lu", 'A' + pins[ raw_pin ].base, pins[ raw_pin ].pin );
+#else
 	snprintf( buf, buf_size, "P%d_%lu", pins[ raw_pin ].base, pins[ raw_pin ].pin );
+#endif
 
 	return buf;
 }

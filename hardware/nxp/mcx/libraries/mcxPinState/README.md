@@ -16,7 +16,8 @@ the fact).
 
 The second has one row per mcx-arduino-core well-known global instance
 (`Wire`, `Wire1`, `Wire2` on FRDM-MCXN947, `SPI`, `SPI1` except on
-FRDM-MCXN236, `Serial`, `Serial1`, `Serial2` on FRDM-MCXA156), showing
+FRDM-MCXN236 and FRDM-MCXC444, `Serial`, `Serial1` except on
+FRDM-MCXC444, `Serial2` on FRDM-MCXA156), showing
 whether it's currently begun, which of its own pins it actually holds,
 and the same CONFLICT flagging as the first table.
 
@@ -144,7 +145,8 @@ skipped -- there's nothing to compare against.
 ## Status
 
 Functional and verified on real hardware (FRDM-MCXA153, FRDM-MCXN947,
-from mcx-arduino-core 0.8.0 FRDM-MCXA156, and from 0.9.0 FRDM-MCXN236) --
+from mcx-arduino-core 0.8.0 FRDM-MCXA156, from 0.9.0 FRDM-MCXN236, and
+from 0.10.0 FRDM-MCXC444) --
 ownership tracking (conflict detection), the MUX expectation cross-check,
 and IBE/open-drain/pull-resistor reporting.
 Development turned up four real bugs in mcx-arduino-core along the way,

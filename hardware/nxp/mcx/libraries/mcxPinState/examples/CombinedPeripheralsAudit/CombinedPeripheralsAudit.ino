@@ -5,10 +5,11 @@
  *  Wire1, analogRead, analogWrite, tone, and on FRDM-MCXA153 also Serial1 +
  *  SPI1 on the MikroBus header; on FRDM-MCXA156, where the on-board sensor
  *  is on Wire and Wire1 is the MikroBus I2C, Wire + Wire1 + Serial1 +
- *  Serial2 + SPI1) but without needing that sketch's external
- *  P3T1755 sensor library -- begin()ing Wire1 alone is enough to make its
- *  pins show up in the ownership table, without actually talking to the
- *  sensor.
+ *  Serial2 + SPI1; on FRDM-MCXC444, where Wire1 is the on-board
+ *  accelerometer's bus, Wire + SPI too) but without needing that sketch's
+ *  external P3T1755 sensor library -- begin()ing Wire1 alone is enough to
+ *  make its pins show up in the ownership table, without actually talking
+ *  to the sensor.
  *
  *  Wiring: none required. This only checks pin ownership/MUX state, not
  *  actual peripheral function -- no loopback jumpers needed.
@@ -22,9 +23,15 @@
 
 PinState pins;
 
+// FRDM-MCXC444 has no PWM0, and its D13 is SPI's SCK
+#if defined(FRDM_MCXC444)
+#define BUZZER_PIN D8
+#define PWM_PIN    D3
+#else
 #define BUZZER_PIN D13
 #define PWM_PIN    PWM0
-#if defined(FRDM_MCXA153) || defined(FRDM_MCXA156) || defined(FRDM_MCXN236)
+#endif
+#if defined(FRDM_MCXA153) || defined(FRDM_MCXA156) || defined(FRDM_MCXN236) || defined(FRDM_MCXC444)
 #define ADC_PIN A0
 #elif defined(FRDM_MCXN947)
 #define ADC_PIN A2
@@ -61,6 +68,14 @@ void setup() {
   // No SPI: this board has no SPI1, and SPI's SCLK is D13, the tone pin
   Wire.begin();
   Serial1.begin(9600);
+#elif defined(FRDM_MCXC444)
+  // Wire (D18/D19) and SPI (D10-D13): no Serial1 (D0/D1 are Serial) and no
+  // SPI1 here. Wire1 is the on-board accelerometer's bus
+  Wire.begin();
+
+  pinMode(D10, OUTPUT);
+  digitalWrite(D10, HIGH);
+  SPI.begin();
 #endif
 
   analogRead(ADC_PIN);
