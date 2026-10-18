@@ -155,23 +155,25 @@ unsigned long micros( void )
 	uint32_t	ms;
 	uint32_t	val;
 	uint32_t	load	= SysTick->LOAD;
+	uint32_t	primask	= __get_PRIMASK();	// called with interrupts off, leave them off
 
 	__disable_irq();
 	ms	= ms_ticks;
 	val	= SysTick->VAL;
 	if ( ( SCB->ICSR & SCB_ICSR_PENDSTSET_Msk ) && val > load / 2 )
 		ms++;
-	__enable_irq();
+	__set_PRIMASK( primask );
 
 	uint32_t	delta_us	= ( load - val ) / cycles_per_us;
 #else
 	uint32_t	ms;
 	uint32_t	base;
+	uint32_t	primask	= __get_PRIMASK();	// called with interrupts off, leave them off
 
 	__disable_irq();
 	ms		= ms_ticks;
 	base	= ms_tick_dwt;
-	__enable_irq();
+	__set_PRIMASK( primask );
 
 	uint32_t	delta_us	= (uint32_t)( DWT->CYCCNT - base ) / cycles_per_us;
 #endif
