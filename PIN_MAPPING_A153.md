@@ -93,5 +93,7 @@ these, verified on real hardware:
 > exclusive with using them on their usual pins, not genuinely independent
 > instances.
 
-See [PIN_MAPPING_N947.md](PIN_MAPPING_N947.md) and
-[PIN_MAPPING_A156.md](PIN_MAPPING_A156.md) for the other boards.
+See [PIN_MAPPING_N947.md](PIN_MAPPING_N947.md),
+[PIN_MAPPING_A156.md](PIN_MAPPING_A156.md),
+[PIN_MAPPING_N236.md](PIN_MAPPING_N236.md) and
+[PIN_MAPPING_C444.md](PIN_MAPPING_C444.md) for the other boards.

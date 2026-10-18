@@ -163,5 +163,7 @@ Plain `digitalWrite`/`digitalRead` GPIO on all of these:
 > `LPUART2`) and `Serial2` can all be used in the same sketch. It is the only
 > board with a `Serial2`; FRDM-MCXN947's MikroBus UART is its `Serial1`.
 
-See [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) and
-[PIN_MAPPING_N947.md](PIN_MAPPING_N947.md) for the other boards.
+See [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md),
+[PIN_MAPPING_N947.md](PIN_MAPPING_N947.md),
+[PIN_MAPPING_N236.md](PIN_MAPPING_N236.md) and
+[PIN_MAPPING_C444.md](PIN_MAPPING_C444.md) for the other boards.

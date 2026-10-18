@@ -417,10 +417,15 @@ void loop() {
 }
 ```
 
+> **FRDM-MCXC444**: that board has no `PWM0`-`PWM5`. PWM is on `D3`, `D5`,
+> `D6`, `D9` and `D10`, as on UNO R3, so use `D3` in place of `PWM0`. `D5`,
+> `D6` and `D9` share one channel: only the last of them given
+> `analogWrite()` is PWM. See [PIN_MAPPING_C444.md](PIN_MAPPING_C444.md).
+
 ### 2.7. Timing: `millis` / `micros`
 
 Standard Arduino timing functions, backed by SysTick (1ms tick) + the DWT
-cycle counter. `millis()` doesn't roll over for about 49 days, just like a
+cycle counter (SysTick's own count on FRDM-MCXC444, which has no DWT). `millis()` doesn't roll over for about 49 days, just like a
 classic Arduino.
 
 ```cpp
@@ -444,7 +449,7 @@ void loop() {
 ### 2.8. Sound: `tone` / `noTone`
 
 `tone()` works on **any** digital pin (via CTIMER0 software-toggling the
-pin), unlike `analogWrite` which is limited to the PWM pins. Only one tone
+pin; the PIT on FRDM-MCXC444), unlike `analogWrite` which is limited to the PWM pins. Only one tone
 can play at a time. Connect a piezo buzzer between `D13` and GND:
 
 ```cpp
@@ -485,6 +490,12 @@ a driver library:
 > FXLS8974CF accelerometer at `0x18` on `Wire1`, which is also the MikroBus
 > I2C. To run the example below as it is, connect a P3T1755 module to the
 > MikroBus `MB_SDA`/`MB_SCL`. See [PIN_MAPPING_N236.md](PIN_MAPPING_N236.md).
+
+> **FRDM-MCXC444**: that board has no P3T1755 either. Its on-board sensor
+> is the same FXLS8974CF accelerometer at `0x18` on `Wire1`, which no
+> header pin reaches. To run the example below, connect a P3T1755 module
+> to `D18`/`D19` and use `Wire` in place of `Wire1`. See
+> [PIN_MAPPING_C444.md](PIN_MAPPING_C444.md).
 
 ```cpp
 #include <Arduino.h>
@@ -552,7 +563,9 @@ if (Wire.getWireTimeoutFlag()) {
 ```
 
 The hardware caps the limit: on FRDM-MCXA153 at ~87ms at 100kHz and ~21.8ms
-at 400kHz. `Wire1` doesn't have the timeout. See
+at 400kHz; on FRDM-MCXC444 at ~87ms at any speed, and there it watches
+SCL only. `Wire1` on FRDM-MCXA153 and FRDM-MCXN947, which runs on I3C,
+doesn't have the timeout. See
 [`examples/Arduino_compatible_API/test_Wire_setWireTimeout`](examples/Arduino_compatible_API/test_Wire_setWireTimeout).
 
 ### 2.10. SPI
@@ -590,6 +603,9 @@ to see any response — see
 `Serial` is bridged over USB. `Serial1` is a second, independent hardware
 UART on pins `D0`(RX)/`D1`(TX), for talking to external serial devices
 without tying up the USB connection:
+
+> **FRDM-MCXC444**: that board has no `Serial1`. As on UNO R3, `Serial`
+> itself is on `D0`/`D1` as well as the USB serial port.
 
 ```cpp
 #include <Arduino.h>
@@ -724,7 +740,10 @@ The controller side is ordinary `Wire` code: `beginTransmission(0x08)` /
 `write()` / `endTransmission()` to send, `requestFrom(0x08, 1)` / `read()`
 to get the reply. Both handlers run from the I2C interrupt, so keep them
 short, and do the printing and the rest from `loop()`. Target mode works on
-`Wire` only, not `Wire1`. For a complete pair to wire up and watch, see
+`Wire`, and on FRDM-MCXA156's and FRDM-MCXN236's `Wire1`; not on FRDM-MCXA153's or
+FRDM-MCXN947's `Wire1`, which runs on I3C. On FRDM-MCXC444 a bus is a
+controller or a target, not both at once, so the controller has to be
+another board. For a complete pair to wire up and watch, see
 [`examples/Arduino_compatible_API/Wire_target_demo`](examples/Arduino_compatible_API/Wire_target_demo)
 and
 [`Wire_controller_demo`](examples/Arduino_compatible_API/Wire_controller_demo).

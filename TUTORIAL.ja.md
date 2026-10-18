@@ -331,9 +331,11 @@ void loop() {
 }
 ```
 
+> **FRDM-MCXC444**: このボードには`PWM0`-`PWM5`がありません。PWMはUNO R3と同じく`D3`・`D5`・`D6`・`D9`・`D10`で使えるので、`PWM0`の代わりに`D3`を使ってください。`D5`・`D6`・`D9`は1つのチャネルを共有していて、最後に`analogWrite()`した1本だけがPWMになります。[PIN_MAPPING_C444.md](PIN_MAPPING_C444.md)を参照。
+
 ### 2.7. 時間計測: `millis` / `micros`
 
-標準的なArduinoのタイミング関数で、SysTick（1msティック）+ DWTサイクルカウンタで実装されています。`millis()`は従来のArduinoと同様、約49日でオーバーフローします。
+標準的なArduinoのタイミング関数で、SysTick（1msティック）+ DWTサイクルカウンタで実装されています（DWTの無いFRDM-MCXC444ではSysTickのカウンタ）。`millis()`は従来のArduinoと同様、約49日でオーバーフローします。
 
 ```cpp
 #include <Arduino.h>
@@ -355,7 +357,7 @@ void loop() {
 
 ### 2.8. 音: `tone` / `noTone`
 
-`tone()`はPWMのピンに限定される`analogWrite`と異なり、**任意の**デジタルピンで使用できます（CTIMER0によるソフトウェアトグル方式）。同時に鳴らせる音は1つだけです。圧電ブザーを`D13`とGND間に接続してください:
+`tone()`はPWMのピンに限定される`analogWrite`と異なり、**任意の**デジタルピンで使用できます（CTIMER0によるソフトウェアトグル方式。FRDM-MCXC444ではPIT）。同時に鳴らせる音は1つだけです。圧電ブザーを`D13`とGND間に接続してください:
 
 ```cpp
 #include <Arduino.h>
@@ -383,6 +385,8 @@ void loop() {
 > **FRDM-MCXA156**: このボードではセンサーが`Wire`（`D18`/`D19`）につながっていて、`Wire1`はMikroBusのI2Cです。以下の`Wire1`を`Wire`に置き換えてください。[PIN_MAPPING_A156.md](PIN_MAPPING_A156.md)を参照。
 
 > **FRDM-MCXN236**: このボードにはP3T1755がありません。オンボードのセンサーは`Wire1`の`0x18`にある加速度センサーFXLS8974CFで、`Wire1`はMikroBusのI2Cでもあります。以下の例をそのまま動かすには、P3T1755のモジュールをMikroBusの`MB_SDA`/`MB_SCL`につないでください。[PIN_MAPPING_N236.md](PIN_MAPPING_N236.md)を参照。
+
+> **FRDM-MCXC444**: このボードにもP3T1755がありません。オンボードのセンサーは同じ加速度センサーFXLS8974CF（`Wire1`の`0x18`）で、`Wire1`はヘッダのピンには出ていません。以下の例を動かすには、P3T1755のモジュールを`D18`/`D19`につなぎ、`Wire1`を`Wire`に置き換えてください。[PIN_MAPPING_C444.md](PIN_MAPPING_C444.md)を参照。
 
 ```cpp
 #include <Arduino.h>
@@ -440,7 +444,7 @@ if (Wire.getWireTimeoutFlag()) {
 }
 ```
 
-上限にはハードウェアの制約があり、FRDM-MCXA153では100kHzで約87ms、400kHzで約21.8msまでです。`Wire1`にはこのタイムアウトはありません。
+上限にはハードウェアの制約があり、FRDM-MCXA153では100kHzで約87ms、400kHzで約21.8msまでです。FRDM-MCXC444ではどの速度でも約87msまでで、見るのはSCLだけです。I3Cで動くFRDM-MCXA153・FRDM-MCXN947の`Wire1`にはこのタイムアウトはありません。
 [`examples/Arduino_compatible_API/test_Wire_setWireTimeout`](examples/Arduino_compatible_API/test_Wire_setWireTimeout)を参照してください。
 
 ### 2.10. SPI
@@ -475,6 +479,8 @@ void loop() {
 ### 2.11. 2つ目のシリアルポート: `Serial1`
 
 `Serial`はUSB経由ですが、`Serial1`は`D0`(RX)/`D1`(TX)ピン上の独立したハードウェアUARTで、USB接続を占有せずに外部シリアルデバイスと通信できます:
+
+> **FRDM-MCXC444**: このボードには`Serial1`がありません。UNO R3と同じく、`Serial`がUSBのシリアルポートと`D0`/`D1`の両方です。
 
 ```cpp
 #include <Arduino.h>
@@ -575,7 +581,7 @@ void loop() {
 }
 ```
 
-コントローラ側は普通の`Wire`のコードです: 送るときは`beginTransmission(0x08)` / `write()` / `endTransmission()`、返事は`requestFrom(0x08, 1)` / `read()`で受け取ります。2つのハンドラはI2Cの割り込みから呼ばれるので短く保ち、表示などの処理は`loop()`で行ってください。ターゲットモードが使えるのは`Wire`だけで、`Wire1`では使えません。配線して動きを見られる完全な組は
+コントローラ側は普通の`Wire`のコードです: 送るときは`beginTransmission(0x08)` / `write()` / `endTransmission()`、返事は`requestFrom(0x08, 1)` / `read()`で受け取ります。2つのハンドラはI2Cの割り込みから呼ばれるので短く保ち、表示などの処理は`loop()`で行ってください。ターゲットモードは`Wire`と、FRDM-MCXA156・FRDM-MCXN236の`Wire1`で使えます。I3Cで動くFRDM-MCXA153・FRDM-MCXN947の`Wire1`では使えません。FRDM-MCXC444では1つのバスがコントローラかターゲットのどちらかにしかなれないので、コントローラは別のボードにしてください。配線して動きを見られる完全な組は
 [`examples/Arduino_compatible_API/Wire_target_demo`](examples/Arduino_compatible_API/Wire_target_demo)と
 [`Wire_controller_demo`](examples/Arduino_compatible_API/Wire_controller_demo)を参照してください。
 

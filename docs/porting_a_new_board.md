@@ -19,7 +19,7 @@ Sibling boards are cheap; a different silicon family is a rewrite.
 |-------|--------------|-----------------|
 | FRDM-MCXA156 | A153's sibling | Same LPADC/FlexPWM/LPI2C/LPSPI/LPUART. Mostly pin tables. Done in 0.8.0 |
 | FRDM-MCXN236 | N947's sibling | Same peripherals, but **no I3C temperature sensor** — an FXLS8974CF accelerometer on a plain LPI2C `Wire1` instead, so the release checks read it rather than a P3T1755. `Serial1` and `Wire1` share one FlexComm, which needed both modes at once. Done in 0.9.0 |
-| FRDM-MCXC444 | Not a sibling | Kinetis: Cortex-M0+, no FPU, ADC16/TPM instead of LPADC/FlexPWM, `fsl_i2c` instead of `fsl_lpi2c`, PIT instead of CTIMER, FTFA flash. `analogRead`/`analogWrite`/`tone`/`EEPROM` each needed a new backend. Done in 0.10.0 (a whole release); its I2C target mode and `setWireTimeout` are still to do |
+| FRDM-MCXC444 | Not a sibling | Kinetis: Cortex-M0+, no FPU, ADC16/TPM instead of LPADC/FlexPWM, `fsl_i2c` instead of `fsl_lpi2c`, PIT instead of CTIMER, FTFA flash. `analogRead`/`analogWrite`/`tone`/`EEPROM` each needed a new backend. Done in 0.10.0 (a whole release). Its I2C needed its own controller transfer (the SDK's has no timeout) and target code, and a bus can't address its own target |
 
 Check this before promising a timeline. A board outside the MCX A/N
 family also finds every place the core assumes a Cortex-M33: the cycle
@@ -317,6 +317,15 @@ So the effective sources are:
 | `Serial1` | LPUART2 @ 12MHz | FlexComm5 @ 12MHz | LPUART2 @ 12MHz | FlexComm2 @ 12MHz (shared with `Wire1`) |
 | `Serial2` | — | — | LPUART1 @ 12MHz | — |
 
+FRDM-MCXC444 is not in these tables: the Kinetis chip has no FlexComm
+and no per-peripheral attach of this kind. Its I2C0, I2C1 and SPI1 run
+from the 48MHz system clock, the PIT from the 24MHz bus clock, and
+`Serial.cpp` and `PwmOut.cpp` pick IRC48M for LPUART0 and the TPMs
+(`CLOCK_SetLpuart0Clock()`, `CLOCK_SetTpmClock()`). The SDK's SPI example
+is for SPI0, which runs from the bus clock, and copying its clock for
+SPI1 made `SCK` twice the requested rate until the reference manual was
+checked.
+
 That asymmetry produced the same bug three times on N947 (default `SPI`,
 then `SPI1`, then suspected on `Wire2`), each time surfacing as
 "requested 24MHz, measured 31kHz". For every peripheral you enable,
@@ -347,7 +356,10 @@ is set up identically to LPI2C2 (`Wire`), which does; the cause was not
 found, so `begin(address)` refuses that bus by its pins. Run
 `test_Wire_target_self` (the board as its own target, no wiring) on
 every LPI2C the new board exposes, and refuse the ones that fail the same
-way.
+way. A Kinetis I2C (FRDM-MCXC444) is a controller or a target, not both
+at once, so it can't be its own target: there `test_Wire_target_self`
+reports SKIP, and target mode is checked with a second board
+(`release_check/24`).
 
 **Pins may come out of reset with their input buffer off.** On
 FRDM-MCXA156 every pin's `PCR.IBE` reads 0 after reset except the ISP
@@ -419,5 +431,7 @@ then hung on the first hardware run.
 
 - [`variants/frdm_mcxn947/README.md`](../hardware/nxp/mcx/variants/frdm_mcxn947/README.md) — the N947 port's own record, including verified behaviour and known quirks
 - [`variants/frdm_mcxa156/README.md`](../hardware/nxp/mcx/variants/frdm_mcxa156/README.md) — the A156 port's record (in Japanese): where its files came from, and what was checked on hardware
+- [`variants/frdm_mcxn236/README.md`](../hardware/nxp/mcx/variants/frdm_mcxn236/README.md) — the N236 port's record (in Japanese)
+- [`variants/frdm_mcxc444/README.md`](../hardware/nxp/mcx/variants/frdm_mcxc444/README.md) — the C444 port's record (in Japanese): the first board outside the MCX A/N family, and its bring-up on hardware
 - [`docs/mcxpinstate_guide.md`](mcxpinstate_guide.md) — the pin-ownership auditor, which exists because of the conflicts described above
-- [`PIN_MAPPING_A153.md`](../PIN_MAPPING_A153.md), [`PIN_MAPPING_N947.md`](../PIN_MAPPING_N947.md), [`PIN_MAPPING_A156.md`](../PIN_MAPPING_A156.md) — the shape the new board's pin table should take; the last also shows how to state a board change the core assumes
+- [`PIN_MAPPING_A153.md`](../PIN_MAPPING_A153.md), [`PIN_MAPPING_N947.md`](../PIN_MAPPING_N947.md), [`PIN_MAPPING_A156.md`](../PIN_MAPPING_A156.md), [`PIN_MAPPING_N236.md`](../PIN_MAPPING_N236.md), [`PIN_MAPPING_C444.md`](../PIN_MAPPING_C444.md) — the shape the new board's pin table should take; A156's and N236's also show how to state a board change the core assumes

@@ -30,7 +30,7 @@ I3C i3c(I3C_SDA, I3C_SCL);
 which board you're on: unlike `D0`-`D19`/`A0`-`A5`/`MB_*`, these two names
 are deliberately excluded from `arduino_io.h`'s pin renumbering, so they
 always mean the same raw r01lib pin value whether or not `<Arduino.h>` has
-been included — one name, one value, every board.
+been included — one name, one value, every board that has I3C.
 
 Constructing an `I3C` this way defaults to native I3C SDR mode
 (`I3C::MODE::I3C_MODE`), the mode this whole guide is about. On FRDM-MCXA153
@@ -51,6 +51,9 @@ reaches only `D18`/`D19`, which `I3C_SDA`/`I3C_SCL` name and `Wire` uses.
 Nothing on the board speaks I3C (the on-board accelerometer is plain I2C,
 on `Wire1`), so this guide needs an I3C device on `D18`/`D19`. It was not
 run on FRDM-MCXN236.
+
+**FRDM-MCXC444**: the chip has no I3C peripheral, so `I3C_SDA`/`I3C_SCL`
+and the `I3C` class don't exist there, and nothing in this guide applies.
 
 **FRDM-MCXN947 only**: the on-board I3C bus's SDA/SCL pins are the same two
 physical pins as `Serial1` on the MikroBus header (`MB_TX`/`MB_RX`) —

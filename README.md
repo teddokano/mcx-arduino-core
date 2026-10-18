@@ -12,8 +12,8 @@ Arduino board support package for NXP FRDM MCX Series boards.
 New here? Start with the [tutorial](TUTORIAL.md) ([日本語版](TUTORIAL.ja.md)).
 See [API_COMPATIBILITY.md](API_COMPATIBILITY.md) for the full Arduino API support status,
 [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) / [PIN_MAPPING_N947.md](PIN_MAPPING_N947.md) /
-[PIN_MAPPING_A156.md](PIN_MAPPING_A156.md) / [PIN_MAPPING_N236.md](PIN_MAPPING_N236.md)
-for each board's pin assignments, [CHANGELOG.md](CHANGELOG.md) for release history, and
+[PIN_MAPPING_A156.md](PIN_MAPPING_A156.md) / [PIN_MAPPING_N236.md](PIN_MAPPING_N236.md) /
+[PIN_MAPPING_C444.md](PIN_MAPPING_C444.md) for each board's pin assignments, [CHANGELOG.md](CHANGELOG.md) for release history, and
 [docs/api/](docs/api/index.html) for generated Doxygen class reference (the r01lib driver
 core and the Arduino-compatible API layer).
 
@@ -25,7 +25,8 @@ functionality `Wire`-shaped APIs can't expose, and
 bundled companion library for exactly that. A second bundled library,
 [mcxRCServo](https://github.com/teddokano/mcxRCServo), drives hobby RC
 servos from the PWM pins (`PWM0`-`PWM5`, and `D3`/`D5`/`D6`/`D9` on
-FRDM-MCXA156 and FRDM-MCXN236). From the same pins, the bundled `Servo`
+FRDM-MCXA156 and FRDM-MCXN236; FRDM-MCXC444 has no `PWM0`-`PWM5`, and
+its examples use `D3`). From the same pins, the bundled `Servo`
 library takes the official Servo library's interface (`#include <Servo.h>`,
 `attach()`, `write()`), so sketches written for it build unchanged.
 
@@ -59,9 +60,9 @@ it, and has its own guide:
 > **FRDM-MCXC444 is laid out like UNO R3**: `Serial` is `D0`/`D1` (the USB
 > serial port too) and there is no `Serial1`, and `analogWrite` works on
 > `D3`, `D5`, `D6`, `D9` and `D10` (there are no `PWM0`-`PWM5` pins; `D5`,
-> `D6` and `D9` share one PWM channel). It is a Cortex-M0+ with no FPU. I2C
-> target mode and `Wire.setWireTimeout` are not done yet for it. New in
-> 0.10.0 and not yet run on hardware. See
+> `D6` and `D9` share one PWM channel). It is a Cortex-M0+ with no FPU. Its
+> I2C buses can't address their own target, and `Wire.setWireTimeout`
+> watches SCL only. New in 0.10.0. See
 > [PIN_MAPPING_C444.md](PIN_MAPPING_C444.md) and
 > [API_COMPATIBILITY.md](API_COMPATIBILITY.md).
 
@@ -94,7 +95,8 @@ After installation, the upload script will automatically detect LinkServer — n
 > **FRDM-MCXA153 and LinkServer 26.9:** LinkServer 26.9.130 reads the FRDM-MCXA153's flash as 32KB, so a sketch
 > larger than that fails to upload ("Attempt to load into missing flash area"). Also install an earlier version
 > (26.6 or before); having both installed is fine. Uploading and debugging then pass over 26.9 by themselves, for every board
-> (FRDM-MCXN947, FRDM-MCXA156 and FRDM-MCXN236 work with 26.9, but all boards have to use the same LinkServer version, or the second one to upload fails).
+> (FRDM-MCXN947, FRDM-MCXA156 and FRDM-MCXN236 work with 26.9, but all boards have to use the same LinkServer version, or the second one to upload fails;
+> FRDM-MCXC444 has been checked with 26.6.137 only).
 >
 > NXP's LinkServer page lists only the newest version. 26.6.137 can be downloaded directly:
 >
@@ -201,13 +203,17 @@ the on-board LEDs/buttons and peripheral pins (`Wire1`, `SPI`, `PWM`, etc.).
 
 GPIO, interrupts, Serial (USB + hardware UART), Wire (I2C and I3C-as-I2C),
 SPI, analogRead/analogWrite, millis/micros, tone/noTone, delay family,
-String, real `Print`/`Stream`/`Printable` base classes, F()/PROGMEM, and
-UNO R3/R4 compatibility macros are all supported. I2C target (slave) mode
+String, real `Print`/`Stream`/`Printable` base classes, F()/PROGMEM and
+`<avr/pgmspace.h>`, the network base classes (`Client`/`Server`/`UDP`/`IPAddress`),
+and UNO R3/R4 compatibility macros are all supported. I2C target (slave) mode
 works on `Wire`, and `Wire.setWireTimeout` on `Wire` and FRDM-MCXN947's `Wire2`
 (neither on `Wire1`, which runs on I3C there and on FRDM-MCXA153; on
-FRDM-MCXA156 and FRDM-MCXN236, `Wire1` is the MikroBus I2C and both work on it),
+FRDM-MCXA156 and FRDM-MCXN236, `Wire1` is the MikroBus I2C and both work on it;
+on FRDM-MCXC444 both work on `Wire`, a bus can't address its own target, and
+the timeout watches SCL only),
 and the bundled `EEPROM` library keeps 1KB in on-chip flash across resets
-and uploads. Third-party libraries that
+and uploads. The bundled `Servo` library takes the official Servo library's
+interface. Third-party libraries that
 inherit `Print` directly or take `Stream&` (e.g. ArduinoJson, LiquidCrystal,
 Adafruit sensor libraries) compile against this core.
 

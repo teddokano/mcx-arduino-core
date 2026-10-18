@@ -104,10 +104,12 @@ check can't assume are on hand, and stay as individual examples instead:
 `test_Wire_P3T1755`, `test_Wire_setClock`,
 `test_Wire_end_find_availForWrite_pullmodes`,
 `onboard_temperature_sensor` (all need the external `P3T1755.h`
-library), `test_analogRead_precision_N947` (needs an external voltage
-source on A2), and the bundled `mcxRCServo` library's own examples
-(`SG90_basic`, `SG90_moves`, `FS90R_rotate` -- each needs a real servo
-and its own supply). CI still compiles all of those (the bundled
+library), `test_analogRead_precision_N947` and
+`test_analogRead_precision_C444` (need an external voltage source),
+the bundled `mcxRCServo` library's own examples (`SG90_basic`,
+`SG90_moves`, `FS90R_rotate` -- each needs a real servo and its own
+supply), and the bundled `Servo` library's `Sweep` and `Knob` (a real
+servo, and for `Knob` a potentiometer on `A2`). CI still compiles all of those (the bundled
 libraries' examples on every push, the rest in the full sweep on `main`,
 tags and manual runs); what it cannot do is watch a shaft turn.
 
@@ -117,6 +119,13 @@ run after it), `test_fault_report` (it crashes the board on purpose, one
 kind of crash per upload), and `Wire_controller_demo`/`Wire_target_demo`
 (plain examples to watch, with no verdict; #24 checks the same two-board
 setup).
+
+Not folded in yet, from 0.10.0, and run on each board on their own
+alongside the release check: `test_Servo` (one jumper, listed in its
+header), and `test_avr_pgmspace`, `test_network_base_classes` and
+`test_micros_noInterrupts` (no wiring). Each prints its own verdict.
+`test_bringup_C444` is FRDM-MCXC444's first-steps sketch for a new
+core; #01-#09 cover the same ground.
 
 What *can* go wrong in `mcxRCServo` without a servo present -- the pulse
 width it asks the core for -- is checked in #13 instead, by jumpering

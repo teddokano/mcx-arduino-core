@@ -7,9 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Highlights
+- New board: FRDM-MCXC444, a Cortex-M0+ laid out like UNO R3 (see [PIN_MAPPING_C444.md](PIN_MAPPING_C444.md))
+- A bundled `Servo` library with the official one's interface, so `#include <Servo.h>` sketches build and run
+- `Client`, `Server`, `UDP`, `IPAddress` and `<avr/pgmspace.h>`, so libraries such as `Ethernet` and PubSubClient build
+- Fixed on every board: `micros()` no longer turns interrupts back on inside `noInterrupts()`
+
 ### Added
-- FRDM-MCXC444 (MCXC444, a Kinetis Cortex-M0+ at 48MHz with no FPU), laid out like UNO R3: `Serial` is both the
-  USB serial port and `D0`/`D1`, with no `Serial1`; `analogWrite` on `D3`, `D5`, `D6`, `D9` and `D10` (TPM; `D5`,
+- FRDM-MCXC444 support: a fifth board, **FRDM-MCXC444 (mcx-arduino-core)** under Tools → Board. 256KB of flash,
+  of which a sketch gets 248KB (the top 8KB hold `EEPROM`), and 32KB of RAM. A sketch can test for it with
+  `ARDUINO_FRDM_MCXC444`. The MCXC444 is a Kinetis Cortex-M0+ at 48MHz with no FPU, and the board is laid out
+  like UNO R3: `Serial` is both the USB serial port and `D0`/`D1`, with no `Serial1`; `analogWrite` on `D3`, `D5`, `D6`, `D9` and `D10` (TPM; `D5`,
   `D6` and `D9` share one channel, so one of them at a time); `analogRead` on `A0`-`A5` (ADC16); `tone` on the PIT;
   `Wire` on `D18`/`D19`, `Wire1` on the on-board accelerometer's bus; `SPI` on `D10`-`D13`; `EEPROM` in the top 8KB
   of flash; the bundled `Servo`; I2C target mode (a bus can't address its own target there) and
@@ -36,12 +44,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   `D3`/`D5`/`D6`/`D9`/`D10`), with the
   pulses from the PWM hardware; on other pins `attach()` stops the sketch with an error message. `#include <Servo.h>` stopped with
   "No such file" before, since the official library has no build for this core. Examples `Sweep` and `Knob`
-- New example sketches `test_network_base_classes` and `test_avr_pgmspace` (no wiring), and `test_Servo` (one jumper)
+- New example sketches `test_network_base_classes`, `test_avr_pgmspace` and `test_micros_noInterrupts` (no wiring),
+  and `test_Servo` (one jumper). For FRDM-MCXC444, `test_bringup_C444` (no wiring: the board's first steps in
+  order) and `test_analogRead_precision_C444` (reads known voltages, and the ADC's internal ones)
+- `examples/release_check` runs on FRDM-MCXC444; the jumpers it takes there are in its README
+- [PIN_MAPPING_C444.md](PIN_MAPPING_C444.md), with pin diagrams. `API_COMPATIBILITY.md`, the READMEs and the
+  tutorials cover the fifth board
+- The tutorials' install steps have screenshots, and their troubleshooting covers a build that fails because the
+  board selector switched to another core's board (every FRDM board's MCU-Link has the same USB ID)
 
 ### Changed
 - `pgm_read_ptr()` gives `void *`, as in avr-libc, instead of `const void *`
 - `pgm_read_word()`, `pgm_read_dword()`, `pgm_read_float()` and `pgm_read_ptr()` read at any address, as on AVR, where
   AVR code reads words from odd offsets of byte tables (on these Cortex-M33 boards they already did; the code is the same)
+
+### Fixed
+- `micros()` turned interrupts back on whenever it was called, even between `noInterrupts()` and `interrupts()`, so
+  a timing loop that read `micros()` with interrupts off was cut into by SysTick and every other interrupt. It now
+  leaves them as it found them. Checked with `test_micros_noInterrupts` on all five boards
 
 ## [0.9.1] - 2026-10-11
 

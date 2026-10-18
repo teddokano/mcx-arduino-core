@@ -55,18 +55,22 @@ works — no extra setup needed.
 runs both paths back to back on the same pin and times them with `micros()`,
 then keeps toggling via the SDK path continuously so the result is also
 visible as a square wave on a scope/logic analyzer. Measured on real
-hardware (FRDM-MCXA156 and FRDM-MCXN236 through `examples/release_check/02`, which has the
+hardware (FRDM-MCXA156, FRDM-MCXN236 and FRDM-MCXC444 through `examples/release_check/02`, which has the
 same measurement folded in):
 
-| | FRDM-MCXA153 (96 MHz) | FRDM-MCXN947 (150 MHz) | FRDM-MCXA156 (96 MHz) | FRDM-MCXN236 (150 MHz) |
-|---|---|---|---|---|
-| `digitalWrite()` | 784.7 ns/toggle (1.274 MHz) | 488.8 ns/toggle (2.045 MHz) | 1.274 MHz | 2.046 MHz |
-| SDK (`GPIO_PortSet`/`Clear`) | 22.9 ns/toggle (43.620 MHz) | 14.67 ns/toggle (68.166 MHz) | 43.619 MHz | 68.166 MHz |
-| Speedup | 34.23x | 33.32x | 34.23x | 33.32x |
+| | FRDM-MCXA153 (96 MHz) | FRDM-MCXN947 (150 MHz) | FRDM-MCXA156 (96 MHz) | FRDM-MCXN236 (150 MHz) | FRDM-MCXC444 (48 MHz) |
+|---|---|---|---|---|---|
+| `digitalWrite()` | 784.7 ns/toggle (1.274 MHz) | 488.8 ns/toggle (2.045 MHz) | 1.274 MHz | 2.046 MHz | 0.302 MHz |
+| SDK (`GPIO_PortSet`/`Clear`) | 22.9 ns/toggle (43.620 MHz) | 14.67 ns/toggle (68.166 MHz) | 43.619 MHz | 68.166 MHz | 7.484 MHz |
+| Speedup | 34.23x | 33.32x | 34.23x | 33.32x | 24.81x |
 
 FRDM-MCXA153's and FRDM-MCXN947's ratio (1.61x / 1.56x) tracks their clock ratio
 (150/96 = 1.5625x) closely for both paths — a sign the comparison is
 measuring real toggle cost, not some clock-independent fixed overhead.
+
+FRDM-MCXC444 is a 48 MHz Cortex-M0+, so both paths are slower in absolute terms
+and the gap is a little smaller (24.81x). The SDK path takes about 6.4 clocks
+per toggle there.
 
 Both timed loops in the example are manually unrolled (10 toggles per loop
 body) before being timed. That matters more than it might look: for

@@ -125,5 +125,7 @@ peripheral instances on the SPI/I2C rows (see below the table):
 > coexist in one sketch. Referencing `Serial1` uses the MikroBus header
 > instead (see above), not D0/D1.
 
-See [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) and
-[PIN_MAPPING_A156.md](PIN_MAPPING_A156.md) for the other boards.
+See [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md),
+[PIN_MAPPING_A156.md](PIN_MAPPING_A156.md),
+[PIN_MAPPING_N236.md](PIN_MAPPING_N236.md) and
+[PIN_MAPPING_C444.md](PIN_MAPPING_C444.md) for the other boards.

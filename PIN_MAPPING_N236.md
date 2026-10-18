@@ -132,5 +132,6 @@ Plain `digitalWrite`/`digitalRead` GPIO on all of these:
 > `D18`, so this board has no `Serial2` and no `SPI1`.
 
 See [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md),
-[PIN_MAPPING_N947.md](PIN_MAPPING_N947.md) and
-[PIN_MAPPING_A156.md](PIN_MAPPING_A156.md) for the other boards.
+[PIN_MAPPING_N947.md](PIN_MAPPING_N947.md),
+[PIN_MAPPING_A156.md](PIN_MAPPING_A156.md) and
+[PIN_MAPPING_C444.md](PIN_MAPPING_C444.md) for the other boards.

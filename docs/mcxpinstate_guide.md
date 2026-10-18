@@ -79,7 +79,8 @@ D19                        P4_1     4    ON   -    -     GPIO         OK
 
 - **Name(s)** — every Arduino-level alias sharing that physical pin,
   comma-joined (D10, `SPI_CS`, and `ARD_CS` are the same pin here).
-- **Pin** — the physical pin name (`P0_27`-style), synthesized directly
+- **Pin** — the physical pin name (`P0_27`-style; `PTA1`-style on
+  FRDM-MCXC444), synthesized directly
   from mcx-arduino-core's own data, not a separate lookup table.
 - **MUX/IBE/ODE/Pull** — the pin's *live* PORT register state, read back
   right now — not what anyone thinks it should be.

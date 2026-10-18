@@ -7,10 +7,9 @@ MCU port pin. The pins were checked against the board's schematic
 (SCH-93440 Rev A) and Zephyr's `MCXC444VLH-pinctrl.h`.
 
 > [!NOTE]
-> **Support for this board is new in 0.10.0 and is still being checked on
-> hardware.** GPIO, `Serial`, `analogRead`, `analogWrite`, `tone`,
-> `Wire`, `Wire1`, `SPI`, `EEPROM` and `Servo` have run on the board, as
-> have the release checks.
+> **Support for this board is new in 0.10.0.** GPIO, `Serial`,
+> `analogRead`, `analogWrite`, `tone`, `Wire`, `Wire1`, `SPI`, `EEPROM` and
+> `Servo` have run on the board, as have the release checks.
 
 This board differs from the other FRDM boards in three ways a sketch may
 notice:
