@@ -199,7 +199,7 @@ See [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) / [PIN_MAPPING_N947.md](PIN_MAPPI
 for the full Arduino-pin-to-MCU-pin table for each supported board, including
 the on-board LEDs/buttons and peripheral pins (`Wire1`, `SPI`, `PWM`, etc.).
 
-For [Fritzing](https://fritzing.org/), a part for the FRDM-MCXA153 is in [fritzing/](fritzing/).
+For [Fritzing](https://fritzing.org/), parts for the five supported boards are in [fritzing/](fritzing/).
 
 ## Supported Arduino APIs
 

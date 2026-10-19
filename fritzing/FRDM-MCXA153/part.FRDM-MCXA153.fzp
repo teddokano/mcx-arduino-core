@@ -11,7 +11,7 @@
     <property name="type">NXP FRDM-MCXA153</property>
     <property name="part number">FRDM-MCXA153</property>
   </properties>
-  <description>NXP FRDM-MCXA153 (Arm Cortex-M33) development board. Arduino-compatible sockets J1-J4 (D0-D13, D18/D19, A0-A5, power), PWM0-PWM5 on the inner column of J3 and the mikroBUS sockets J5/J6. Pin names follow the mcx-arduino-core board package.</description>
+  <description>NXP FRDM-MCXA153 (Cortex-M33) development board. Arduino-compatible sockets J1-J4 (D0-D13, D18/D19, A0-A5, power), PWM0-PWM5 on the inner column of J3 and the mikroBUS sockets J5/J6. Pin names follow the mcx-arduino-core board package.</description>
   <views>
     <iconView><layers image="icon/FRDM-MCXA153_icon.svg"><layer layerId="icon"/></layers></iconView>
     <breadboardView><layers image="breadboard/FRDM-MCXA153_breadboard.svg"><layer layerId="breadboardbreadboard"/></layers></breadboardView>
@@ -19,16 +19,16 @@
     <pcbView><layers image="pcb/FRDM-MCXA153_pcb.svg"><layer layerId="copper1"/><layer layerId="copper0"/><layer layerId="silkscreen"/></layers></pcbView>
   </views>
   <connectors>
-    <connector id="connector0" name="D19/SCL" type="female">
-      <description>D19 / I2C_SCL  (P1_9, Wire SCL)</description>
+    <connector id="connector0" name="D19" type="female">
+      <description>D19  (P1_9)  Wire (I2C) SCL</description>
       <views>
         <breadboardView><p layer="breadboardbreadboard" svgId="connector0pin"/></breadboardView>
         <schematicView><p layer="schematic" svgId="connector0pin" terminalId="connector0terminal"/></schematicView>
         <pcbView><p layer="copper0" svgId="connector0pad"/><p layer="copper1" svgId="connector0pad"/></pcbView>
       </views>
     </connector>
-    <connector id="connector1" name="D18/SDA" type="female">
-      <description>D18 / I2C_SDA  (P1_8, Wire SDA)</description>
+    <connector id="connector1" name="D18" type="female">
+      <description>D18  (P1_8)  Wire (I2C) SDA</description>
       <views>
         <breadboardView><p layer="breadboardbreadboard" svgId="connector1pin"/></breadboardView>
         <schematicView><p layer="schematic" svgId="connector1pin" terminalId="connector1terminal"/></schematicView>
@@ -51,32 +51,32 @@
         <pcbView><p layer="copper0" svgId="connector3pad"/><p layer="copper1" svgId="connector3pad"/></pcbView>
       </views>
     </connector>
-    <connector id="connector4" name="D13/SCK" type="female">
-      <description>D13 / SPI SCLK  (P2_12)</description>
+    <connector id="connector4" name="D13" type="female">
+      <description>D13  (P2_12)  SPI SCLK</description>
       <views>
         <breadboardView><p layer="breadboardbreadboard" svgId="connector4pin"/></breadboardView>
         <schematicView><p layer="schematic" svgId="connector4pin" terminalId="connector4terminal"/></schematicView>
         <pcbView><p layer="copper0" svgId="connector4pad"/><p layer="copper1" svgId="connector4pad"/></pcbView>
       </views>
     </connector>
-    <connector id="connector5" name="D12/MISO" type="female">
-      <description>D12 / SPI MISO  (P2_16)</description>
+    <connector id="connector5" name="D12" type="female">
+      <description>D12  (P2_16)  SPI MISO</description>
       <views>
         <breadboardView><p layer="breadboardbreadboard" svgId="connector5pin"/></breadboardView>
         <schematicView><p layer="schematic" svgId="connector5pin" terminalId="connector5terminal"/></schematicView>
         <pcbView><p layer="copper0" svgId="connector5pad"/><p layer="copper1" svgId="connector5pad"/></pcbView>
       </views>
     </connector>
-    <connector id="connector6" name="D11/MOSI" type="female">
-      <description>D11 / SPI MOSI  (P2_13)</description>
+    <connector id="connector6" name="D11" type="female">
+      <description>D11  (P2_13)  SPI MOSI</description>
       <views>
         <breadboardView><p layer="breadboardbreadboard" svgId="connector6pin"/></breadboardView>
         <schematicView><p layer="schematic" svgId="connector6pin" terminalId="connector6terminal"/></schematicView>
         <pcbView><p layer="copper0" svgId="connector6pad"/><p layer="copper1" svgId="connector6pad"/></pcbView>
       </views>
     </connector>
-    <connector id="connector7" name="D10/CS" type="female">
-      <description>D10 / SPI CS  (P2_6)</description>
+    <connector id="connector7" name="D10" type="female">
+      <description>D10  (P2_6)  SPI CS</description>
       <views>
         <breadboardView><p layer="breadboardbreadboard" svgId="connector7pin"/></breadboardView>
         <schematicView><p layer="schematic" svgId="connector7pin" terminalId="connector7terminal"/></schematicView>
@@ -108,7 +108,7 @@
       </views>
     </connector>
     <connector id="connector11" name="D6" type="female">
-      <description>D6  (P3_13, green LED)</description>
+      <description>D6  (P3_13)  on-board Green LED (GREEN)</description>
       <views>
         <breadboardView><p layer="breadboardbreadboard" svgId="connector11pin"/></breadboardView>
         <schematicView><p layer="schematic" svgId="connector11pin" terminalId="connector11terminal"/></schematicView>
@@ -116,7 +116,7 @@
       </views>
     </connector>
     <connector id="connector12" name="D5" type="female">
-      <description>D5  (P3_12, red LED)</description>
+      <description>D5  (P3_12)  on-board Red LED (RED)</description>
       <views>
         <breadboardView><p layer="breadboardbreadboard" svgId="connector12pin"/></breadboardView>
         <schematicView><p layer="schematic" svgId="connector12pin" terminalId="connector12terminal"/></schematicView>
@@ -132,7 +132,7 @@
       </views>
     </connector>
     <connector id="connector14" name="D3" type="female">
-      <description>D3  (P3_0, blue LED)</description>
+      <description>D3  (P3_0)  on-board Blue LED (BLUE)</description>
       <views>
         <breadboardView><p layer="breadboardbreadboard" svgId="connector14pin"/></breadboardView>
         <schematicView><p layer="schematic" svgId="connector14pin" terminalId="connector14terminal"/></schematicView>
@@ -147,16 +147,16 @@
         <pcbView><p layer="copper0" svgId="connector15pad"/><p layer="copper1" svgId="connector15pad"/></pcbView>
       </views>
     </connector>
-    <connector id="connector16" name="D1/TX" type="female">
-      <description>D1 / Serial1 TX  (P1_5)</description>
+    <connector id="connector16" name="D1" type="female">
+      <description>D1  (P1_5)  Serial1 TX</description>
       <views>
         <breadboardView><p layer="breadboardbreadboard" svgId="connector16pin"/></breadboardView>
         <schematicView><p layer="schematic" svgId="connector16pin" terminalId="connector16terminal"/></schematicView>
         <pcbView><p layer="copper0" svgId="connector16pad"/><p layer="copper1" svgId="connector16pad"/></pcbView>
       </views>
     </connector>
-    <connector id="connector17" name="D0/RX" type="female">
-      <description>D0 / Serial1 RX  (P1_4)</description>
+    <connector id="connector17" name="D0" type="female">
+      <description>D0  (P1_4)  Serial1 RX</description>
       <views>
         <breadboardView><p layer="breadboardbreadboard" svgId="connector17pin"/></breadboardView>
         <schematicView><p layer="schematic" svgId="connector17pin" terminalId="connector17terminal"/></schematicView>
@@ -180,7 +180,7 @@
       </views>
     </connector>
     <connector id="connector20" name="RESET" type="female">
-      <description>RESET (MCU reset, P1_29)</description>
+      <description>RESET (MCU reset)</description>
       <views>
         <breadboardView><p layer="breadboardbreadboard" svgId="connector20pin"/></breadboardView>
         <schematicView><p layer="schematic" svgId="connector20pin" terminalId="connector20terminal"/></schematicView>
@@ -228,7 +228,7 @@
       </views>
     </connector>
     <connector id="connector26" name="A0" type="female">
-      <description>A0  (P1_10, ADC)</description>
+      <description>A0  (P1_10)  analogRead (LPADC), 10bit</description>
       <views>
         <breadboardView><p layer="breadboardbreadboard" svgId="connector26pin"/></breadboardView>
         <schematicView><p layer="schematic" svgId="connector26pin" terminalId="connector26terminal"/></schematicView>
@@ -236,7 +236,7 @@
       </views>
     </connector>
     <connector id="connector27" name="A1" type="female">
-      <description>A1  (P1_12, ADC)</description>
+      <description>A1  (P1_12)  analogRead (LPADC), 10bit</description>
       <views>
         <breadboardView><p layer="breadboardbreadboard" svgId="connector27pin"/></breadboardView>
         <schematicView><p layer="schematic" svgId="connector27pin" terminalId="connector27terminal"/></schematicView>
@@ -244,7 +244,7 @@
       </views>
     </connector>
     <connector id="connector28" name="A2" type="female">
-      <description>A2  (P1_13, ADC)</description>
+      <description>A2  (P1_13)  analogRead (LPADC), 10bit</description>
       <views>
         <breadboardView><p layer="breadboardbreadboard" svgId="connector28pin"/></breadboardView>
         <schematicView><p layer="schematic" svgId="connector28pin" terminalId="connector28terminal"/></schematicView>
@@ -252,7 +252,7 @@
       </views>
     </connector>
     <connector id="connector29" name="A3" type="female">
-      <description>A3  (P2_0, ADC)</description>
+      <description>A3  (P2_0)  analogRead (LPADC), 10bit</description>
       <views>
         <breadboardView><p layer="breadboardbreadboard" svgId="connector29pin"/></breadboardView>
         <schematicView><p layer="schematic" svgId="connector29pin" terminalId="connector29terminal"/></schematicView>
@@ -260,7 +260,7 @@
       </views>
     </connector>
     <connector id="connector30" name="A4" type="female">
-      <description>A4  (P3_31, digital only)</description>
+      <description>A4  (P3_31)  digital I/O only, not ADC-capable</description>
       <views>
         <breadboardView><p layer="breadboardbreadboard" svgId="connector30pin"/></breadboardView>
         <schematicView><p layer="schematic" svgId="connector30pin" terminalId="connector30terminal"/></schematicView>
@@ -268,7 +268,7 @@
       </views>
     </connector>
     <connector id="connector31" name="A5" type="female">
-      <description>A5  (P3_30, digital only)</description>
+      <description>A5  (P3_30)  digital I/O only, not ADC-capable</description>
       <views>
         <breadboardView><p layer="breadboardbreadboard" svgId="connector31pin"/></breadboardView>
         <schematicView><p layer="schematic" svgId="connector31pin" terminalId="connector31terminal"/></schematicView>
@@ -276,7 +276,7 @@
       </views>
     </connector>
     <connector id="connector32" name="PWM0" type="female">
-      <description>PWM0  (P3_11, FlexPWM0)</description>
+      <description>PWM0  analogWrite (FlexPWM0), see [test_PWM_pin_identify](examples/Arduino_compatible_API/test_PWM_pin_identify)</description>
       <views>
         <breadboardView><p layer="breadboardbreadboard" svgId="connector32pin"/></breadboardView>
         <schematicView><p layer="schematic" svgId="connector32pin" terminalId="connector32terminal"/></schematicView>
@@ -284,7 +284,7 @@
       </views>
     </connector>
     <connector id="connector33" name="PWM1" type="female">
-      <description>PWM1  (P3_10, FlexPWM0)</description>
+      <description>PWM1  analogWrite (FlexPWM0), see [test_PWM_pin_identify](examples/Arduino_compatible_API/test_PWM_pin_identify)</description>
       <views>
         <breadboardView><p layer="breadboardbreadboard" svgId="connector33pin"/></breadboardView>
         <schematicView><p layer="schematic" svgId="connector33pin" terminalId="connector33terminal"/></schematicView>
@@ -292,7 +292,7 @@
       </views>
     </connector>
     <connector id="connector34" name="PWM2" type="female">
-      <description>PWM2  (P3_9, FlexPWM0)</description>
+      <description>PWM2  analogWrite (FlexPWM0), see [test_PWM_pin_identify](examples/Arduino_compatible_API/test_PWM_pin_identify)</description>
       <views>
         <breadboardView><p layer="breadboardbreadboard" svgId="connector34pin"/></breadboardView>
         <schematicView><p layer="schematic" svgId="connector34pin" terminalId="connector34terminal"/></schematicView>
@@ -300,7 +300,7 @@
       </views>
     </connector>
     <connector id="connector35" name="PWM3" type="female">
-      <description>PWM3  (P3_8, FlexPWM0)</description>
+      <description>PWM3  analogWrite (FlexPWM0), see [test_PWM_pin_identify](examples/Arduino_compatible_API/test_PWM_pin_identify)</description>
       <views>
         <breadboardView><p layer="breadboardbreadboard" svgId="connector35pin"/></breadboardView>
         <schematicView><p layer="schematic" svgId="connector35pin" terminalId="connector35terminal"/></schematicView>
@@ -308,7 +308,7 @@
       </views>
     </connector>
     <connector id="connector36" name="PWM4" type="female">
-      <description>PWM4  (P3_7, FlexPWM0)</description>
+      <description>PWM4  analogWrite (FlexPWM0), see [test_PWM_pin_identify](examples/Arduino_compatible_API/test_PWM_pin_identify)</description>
       <views>
         <breadboardView><p layer="breadboardbreadboard" svgId="connector36pin"/></breadboardView>
         <schematicView><p layer="schematic" svgId="connector36pin" terminalId="connector36terminal"/></schematicView>
@@ -316,7 +316,7 @@
       </views>
     </connector>
     <connector id="connector37" name="PWM5" type="female">
-      <description>PWM5  (P3_6, FlexPWM0)</description>
+      <description>PWM5  analogWrite (FlexPWM0), see [test_PWM_pin_identify](examples/Arduino_compatible_API/test_PWM_pin_identify)</description>
       <views>
         <breadboardView><p layer="breadboardbreadboard" svgId="connector37pin"/></breadboardView>
         <schematicView><p layer="schematic" svgId="connector37pin" terminalId="connector37terminal"/></schematicView>
@@ -324,7 +324,7 @@
       </views>
     </connector>
     <connector id="connector38" name="MB_AN" type="female">
-      <description>AN  (P3_30, same pin as A5)</description>
+      <description>MB_AN  (P3_30)  same pin as A5</description>
       <views>
         <breadboardView><p layer="breadboardbreadboard" svgId="connector38pin"/></breadboardView>
         <schematicView><p layer="schematic" svgId="connector38pin" terminalId="connector38terminal"/></schematicView>
@@ -332,7 +332,7 @@
       </views>
     </connector>
     <connector id="connector39" name="MB_RST" type="female">
-      <description>RST  (P3_1, same pin as D7)</description>
+      <description>MB_RST  (P3_1)  same pin as D7</description>
       <views>
         <breadboardView><p layer="breadboardbreadboard" svgId="connector39pin"/></breadboardView>
         <schematicView><p layer="schematic" svgId="connector39pin" terminalId="connector39terminal"/></schematicView>
@@ -340,7 +340,7 @@
       </views>
     </connector>
     <connector id="connector40" name="MB_CS" type="female">
-      <description>CS  (P1_3, SPI1 CS)</description>
+      <description>MB_CS  (P1_3)  SPI1 (MikroBus SPI) CS</description>
       <views>
         <breadboardView><p layer="breadboardbreadboard" svgId="connector40pin"/></breadboardView>
         <schematicView><p layer="schematic" svgId="connector40pin" terminalId="connector40terminal"/></schematicView>
@@ -348,7 +348,7 @@
       </views>
     </connector>
     <connector id="connector41" name="MB_SCK" type="female">
-      <description>SCK  (P1_1, SPI1 SCK)</description>
+      <description>MB_SCK  (P1_1)  SPI1 SCK</description>
       <views>
         <breadboardView><p layer="breadboardbreadboard" svgId="connector41pin"/></breadboardView>
         <schematicView><p layer="schematic" svgId="connector41pin" terminalId="connector41terminal"/></schematicView>
@@ -356,7 +356,7 @@
       </views>
     </connector>
     <connector id="connector42" name="MB_MISO" type="female">
-      <description>MISO  (P1_2, SPI1 MISO)</description>
+      <description>MB_MISO  (P1_2)  SPI1 MISO</description>
       <views>
         <breadboardView><p layer="breadboardbreadboard" svgId="connector42pin"/></breadboardView>
         <schematicView><p layer="schematic" svgId="connector42pin" terminalId="connector42terminal"/></schematicView>
@@ -364,7 +364,7 @@
       </views>
     </connector>
     <connector id="connector43" name="MB_MOSI" type="female">
-      <description>MOSI  (P1_0, SPI1 MOSI)</description>
+      <description>MB_MOSI  (P1_0)  SPI1 MOSI</description>
       <views>
         <breadboardView><p layer="breadboardbreadboard" svgId="connector43pin"/></breadboardView>
         <schematicView><p layer="schematic" svgId="connector43pin" terminalId="connector43terminal"/></schematicView>
@@ -388,7 +388,7 @@
       </views>
     </connector>
     <connector id="connector46" name="MB_PWM" type="female">
-      <description>PWM  (P3_12, same pin as D5)</description>
+      <description>MB_PWM  (P3_12)  same pin as D5/RED</description>
       <views>
         <breadboardView><p layer="breadboardbreadboard" svgId="connector46pin"/></breadboardView>
         <schematicView><p layer="schematic" svgId="connector46pin" terminalId="connector46terminal"/></schematicView>
@@ -396,7 +396,7 @@
       </views>
     </connector>
     <connector id="connector47" name="MB_INT" type="female">
-      <description>INT  (P2_5, same pin as D4)</description>
+      <description>MB_INT  (P2_5)  same pin as D4</description>
       <views>
         <breadboardView><p layer="breadboardbreadboard" svgId="connector47pin"/></breadboardView>
         <schematicView><p layer="schematic" svgId="connector47pin" terminalId="connector47terminal"/></schematicView>
@@ -404,7 +404,7 @@
       </views>
     </connector>
     <connector id="connector48" name="MB_RX" type="female">
-      <description>RX  (P3_14, same pin as D9)</description>
+      <description>MB_RX  (P3_14)  same pin as D9</description>
       <views>
         <breadboardView><p layer="breadboardbreadboard" svgId="connector48pin"/></breadboardView>
         <schematicView><p layer="schematic" svgId="connector48pin" terminalId="connector48terminal"/></schematicView>
@@ -412,7 +412,7 @@
       </views>
     </connector>
     <connector id="connector49" name="MB_TX" type="female">
-      <description>TX  (P3_15, same pin as D8)</description>
+      <description>MB_TX  (P3_15)  same pin as D8</description>
       <views>
         <breadboardView><p layer="breadboardbreadboard" svgId="connector49pin"/></breadboardView>
         <schematicView><p layer="schematic" svgId="connector49pin" terminalId="connector49terminal"/></schematicView>
@@ -420,7 +420,7 @@
       </views>
     </connector>
     <connector id="connector50" name="MB_SCL" type="female">
-      <description>SCL  (P3_27, I2C)</description>
+      <description>MB_SCL  (P3_27)  same physical I2C peripheral as Wire — see note below</description>
       <views>
         <breadboardView><p layer="breadboardbreadboard" svgId="connector50pin"/></breadboardView>
         <schematicView><p layer="schematic" svgId="connector50pin" terminalId="connector50terminal"/></schematicView>
@@ -428,7 +428,7 @@
       </views>
     </connector>
     <connector id="connector51" name="MB_SDA" type="female">
-      <description>SDA  (P3_28, I2C)</description>
+      <description>MB_SDA  (P3_28)  same physical I2C peripheral as Wire — see note below</description>
       <views>
         <breadboardView><p layer="breadboardbreadboard" svgId="connector51pin"/></breadboardView>
         <schematicView><p layer="schematic" svgId="connector51pin" terminalId="connector51terminal"/></schematicView>

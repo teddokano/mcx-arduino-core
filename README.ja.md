@@ -180,7 +180,7 @@ MIT License — [LICENSE](LICENSE)を参照
 [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) / [PIN_MAPPING_N947.md](PIN_MAPPING_N947.md) / [PIN_MAPPING_A156.md](PIN_MAPPING_A156.md) / [PIN_MAPPING_N236.md](PIN_MAPPING_N236.md) / [PIN_MAPPING_C444.md](PIN_MAPPING_C444.md)
 を参照してください。
 
-[Fritzing](https://fritzing.org/)用のFRDM-MCXA153のパーツは[fritzing/](fritzing/)にあります。
+[Fritzing](https://fritzing.org/)用の5つの対応ボードのパーツは[fritzing/](fritzing/)にあります。
 
 ## 対応Arduino API
 

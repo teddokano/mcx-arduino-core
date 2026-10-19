@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="53.34mm" height="112.7mm" viewBox="0 0 53.34 112.7" version="1.2" baseProfile="tiny">
+<g id="breadboardbreadboard">
+<rect x="0" y="0" width="53.34" height="112.7" rx="1.5" fill="#1d1d1f" stroke="#000" stroke-width="0.2"/>
+<circle cx="3" cy="3" r="1.3" fill="#c9a227"/><circle cx="3" cy="3" r="0.7" fill="#fff"/>
+<circle cx="50.34" cy="3" r="1.3" fill="#c9a227"/><circle cx="50.34" cy="3" r="0.7" fill="#fff"/>
+<circle cx="3" cy="109.7" r="1.3" fill="#c9a227"/><circle cx="3" cy="109.7" r="0.7" fill="#fff"/>
+<circle cx="50.34" cy="109.7" r="1.3" fill="#c9a227"/><circle cx="50.34" cy="109.7" r="0.7" fill="#fff"/>
+<rect x="16.2" y="-1" width="8.5" height="7.5" fill="#b8b8b8" stroke="#666" stroke-width="0.2"/><rect x="17.73" y="1" width="5.44" height="1.4" rx="0.7" fill="#333"/>
+<rect x="31" y="-1" width="8.5" height="7.5" fill="#b8b8b8" stroke="#666" stroke-width="0.2"/><rect x="32.53" y="1" width="5.44" height="1.4" rx="0.7" fill="#333"/>
+<rect x="22.7" y="55.4" width="11" height="11" fill="#2b2b2b" stroke="#555" stroke-width="0.2"/><circle cx="24.2" cy="56.9" r="0.6" fill="#777"/><text x="28.2" y="61.4" font-size="1.4" font-family="Helvetica,Arial,sans-serif" fill="#ddd" text-anchor="middle">MCX N236</text>
+<rect x="46.75" y="5.65" width="4.5" height="4.5" fill="#ccc" stroke="#555" stroke-width="0.2"/><circle cx="49" cy="7.9" r="1.3" fill="#333"/>
+<text x="49" y="12.1" font-size="1.4" font-family="Helvetica,Arial,sans-serif" fill="#fff" text-anchor="middle">SW1</text>
+<text x="49" y="13.6" font-size="1.1" font-family="Helvetica,Arial,sans-serif" fill="#bbb" text-anchor="middle">RESET</text>
+<rect x="1.35" y="99.25" width="4.5" height="4.5" fill="#ccc" stroke="#555" stroke-width="0.2"/><circle cx="3.6" cy="101.5" r="1.3" fill="#333"/>
+<text x="3.6" y="105.7" font-size="1.4" font-family="Helvetica,Arial,sans-serif" fill="#fff" text-anchor="middle">SW3</text>
+<text x="3.6" y="107.2" font-size="1.1" font-family="Helvetica,Arial,sans-serif" fill="#bbb" text-anchor="middle">ISP</text>
+<rect x="45.75" y="99.25" width="4.5" height="4.5" fill="#ccc" stroke="#555" stroke-width="0.2"/><circle cx="48" cy="101.5" r="1.3" fill="#333"/>
+<text x="48" y="105.7" font-size="1.4" font-family="Helvetica,Arial,sans-serif" fill="#fff" text-anchor="middle">SW2</text>
+<text x="48" y="107.2" font-size="1.1" font-family="Helvetica,Arial,sans-serif" fill="#bbb" text-anchor="middle">WAKEUP</text>
+<rect x="46.86" y="10.7" width="5.34" height="25.66" fill="#111" stroke="#444" stroke-width="0.2"/>
+<rect x="46.86" y="37.6" width="5.34" height="20.58" fill="#111" stroke="#444" stroke-width="0.2"/>
+<rect x="1.14" y="20.2" width="5.34" height="20.58" fill="#111" stroke="#444" stroke-width="0.2"/>
+<rect x="1.14" y="42.7" width="5.34" height="15.5" fill="#111" stroke="#444" stroke-width="0.2"/>
+<rect x="13.9" y="75" width="2.8" height="20.58" fill="#111" stroke="#444" stroke-width="0.2"/>
+<rect x="36.6" y="75" width="2.8" height="20.58" fill="#111" stroke="#444" stroke-width="0.2"/>
+<text x="26.65" y="96.58" font-size="1.6" font-family="Helvetica,Arial,sans-serif" fill="#9be8ae" text-anchor="middle">mikroBUS</text>
+<text x="22" y="22" transform="rotate(90 22 22)" font-size="3.2" font-family="Helvetica,Arial,sans-serif" font-weight="bold" fill="#fff" text-anchor="middle">FRDM-MCXN236</text>
+<text x="27" y="22" transform="rotate(90 27 22)" font-size="2" font-family="Helvetica,Arial,sans-serif" fill="#bbb" text-anchor="middle">NXP</text>
+<text x="49.6" y="12.7" font-size="1.7" font-family="Helvetica,Arial,sans-serif" fill="#fff" text-anchor="end">D19/SCL</text>
+<rect id="connector0pin" x="50" y="11.3" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="49.6" y="15.24" font-size="1.7" font-family="Helvetica,Arial,sans-serif" fill="#fff" text-anchor="end">D18/SDA</text>
+<rect id="connector1pin" x="50" y="13.84" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="49.6" y="17.78" font-size="1.7" font-family="Helvetica,Arial,sans-serif" fill="#fff" text-anchor="end">AREF</text>
+<rect id="connector2pin" x="50" y="16.38" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="49.6" y="20.32" font-size="1.7" font-family="Helvetica,Arial,sans-serif" fill="#fff" text-anchor="end">GND</text>
+<rect id="connector3pin" x="50" y="18.92" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="49.6" y="22.86" font-size="1.7" font-family="Helvetica,Arial,sans-serif" fill="#fff" text-anchor="end">D13/SCK</text>
+<rect id="connector4pin" x="50" y="21.46" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="49.6" y="25.4" font-size="1.7" font-family="Helvetica,Arial,sans-serif" fill="#fff" text-anchor="end">D12/MISO</text>
+<rect id="connector5pin" x="50" y="24" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="49.6" y="27.94" font-size="1.7" font-family="Helvetica,Arial,sans-serif" fill="#fff" text-anchor="end">D11/MOSI</text>
+<rect id="connector6pin" x="50" y="26.54" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="49.6" y="30.48" font-size="1.7" font-family="Helvetica,Arial,sans-serif" fill="#fff" text-anchor="end">D10/CS</text>
+<rect id="connector7pin" x="50" y="29.08" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="49.6" y="33.02" font-size="1.7" font-family="Helvetica,Arial,sans-serif" fill="#fff" text-anchor="end">D9</text>
+<rect id="connector8pin" x="50" y="31.62" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="49.6" y="35.56" font-size="1.7" font-family="Helvetica,Arial,sans-serif" fill="#fff" text-anchor="end">D8</text>
+<rect id="connector9pin" x="50" y="34.16" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="49.6" y="39.6" font-size="1.7" font-family="Helvetica,Arial,sans-serif" fill="#fff" text-anchor="end">D7</text>
+<rect id="connector10pin" x="50" y="38.2" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="49.6" y="42.14" font-size="1.7" font-family="Helvetica,Arial,sans-serif" fill="#fff" text-anchor="end">D6</text>
+<rect id="connector11pin" x="50" y="40.74" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="49.6" y="44.68" font-size="1.7" font-family="Helvetica,Arial,sans-serif" fill="#fff" text-anchor="end">D5</text>
+<rect id="connector12pin" x="50" y="43.28" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="49.6" y="47.22" font-size="1.7" font-family="Helvetica,Arial,sans-serif" fill="#fff" text-anchor="end">D4</text>
+<rect id="connector13pin" x="50" y="45.82" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="49.6" y="49.76" font-size="1.7" font-family="Helvetica,Arial,sans-serif" fill="#fff" text-anchor="end">D3</text>
+<rect id="connector14pin" x="50" y="48.36" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="49.6" y="52.3" font-size="1.7" font-family="Helvetica,Arial,sans-serif" fill="#fff" text-anchor="end">D2</text>
+<rect id="connector15pin" x="50" y="50.9" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="49.6" y="54.84" font-size="1.7" font-family="Helvetica,Arial,sans-serif" fill="#fff" text-anchor="end">D1/TX</text>
+<rect id="connector16pin" x="50" y="53.44" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="49.6" y="57.38" font-size="1.7" font-family="Helvetica,Arial,sans-serif" fill="#fff" text-anchor="end">D0/RX</text>
+<rect id="connector17pin" x="50" y="55.98" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="6.38" y="22.15" font-size="1.4" font-family="Helvetica,Arial,sans-serif" fill="#fff" text-anchor="start">NC</text>
+<rect id="connector18pin" x="1.74" y="20.8" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="6.38" y="24.69" font-size="1.4" font-family="Helvetica,Arial,sans-serif" fill="#fff" text-anchor="start">IOREF</text>
+<rect id="connector19pin" x="1.74" y="23.34" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="6.38" y="27.23" font-size="1.4" font-family="Helvetica,Arial,sans-serif" fill="#fff" text-anchor="start">RESET</text>
+<rect id="connector20pin" x="1.74" y="25.88" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="6.38" y="29.77" font-size="1.4" font-family="Helvetica,Arial,sans-serif" fill="#fff" text-anchor="start">3V3</text>
+<rect id="connector21pin" x="1.74" y="28.42" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="6.38" y="32.31" font-size="1.4" font-family="Helvetica,Arial,sans-serif" fill="#fff" text-anchor="start">5V</text>
+<rect id="connector22pin" x="1.74" y="30.96" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="6.38" y="34.85" font-size="1.4" font-family="Helvetica,Arial,sans-serif" fill="#fff" text-anchor="start">GND</text>
+<rect id="connector23pin" x="1.74" y="33.5" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="6.38" y="37.39" font-size="1.4" font-family="Helvetica,Arial,sans-serif" fill="#fff" text-anchor="start">GND</text>
+<rect id="connector24pin" x="1.74" y="36.04" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="6.38" y="39.93" font-size="1.4" font-family="Helvetica,Arial,sans-serif" fill="#fff" text-anchor="start">VIN</text>
+<rect id="connector25pin" x="1.74" y="38.58" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="3.84" y="44.65" font-size="1.4" font-family="Helvetica,Arial,sans-serif" fill="#fff" text-anchor="start">A0</text>
+<rect id="connector26pin" x="1.74" y="43.3" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="3.84" y="47.19" font-size="1.4" font-family="Helvetica,Arial,sans-serif" fill="#fff" text-anchor="start">A1</text>
+<rect id="connector27pin" x="1.74" y="45.84" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="3.84" y="49.73" font-size="1.4" font-family="Helvetica,Arial,sans-serif" fill="#fff" text-anchor="start">A2</text>
+<rect id="connector28pin" x="1.74" y="48.38" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="3.84" y="52.27" font-size="1.4" font-family="Helvetica,Arial,sans-serif" fill="#fff" text-anchor="start">A3</text>
+<rect id="connector29pin" x="1.74" y="50.92" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="3.84" y="54.81" font-size="1.4" font-family="Helvetica,Arial,sans-serif" fill="#fff" text-anchor="start">A4</text>
+<rect id="connector30pin" x="1.74" y="53.46" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="3.84" y="57.35" font-size="1.4" font-family="Helvetica,Arial,sans-serif" fill="#fff" text-anchor="start">A5</text>
+<rect id="connector31pin" x="1.74" y="56" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="11.5" y="27.08" font-size="1.15" font-family="Helvetica,Arial,sans-serif" fill="#e6a0ff" text-anchor="start">PWM0</text>
+<rect id="connector32pin" x="4.28" y="25.88" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="11.5" y="29.62" font-size="1.15" font-family="Helvetica,Arial,sans-serif" fill="#e6a0ff" text-anchor="start">PWM1</text>
+<rect id="connector33pin" x="4.28" y="28.42" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="11.5" y="32.16" font-size="1.15" font-family="Helvetica,Arial,sans-serif" fill="#e6a0ff" text-anchor="start">PWM2</text>
+<rect id="connector34pin" x="4.28" y="30.96" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="11.5" y="34.7" font-size="1.15" font-family="Helvetica,Arial,sans-serif" fill="#e6a0ff" text-anchor="start">PWM3</text>
+<rect id="connector35pin" x="4.28" y="33.5" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="11.5" y="37.24" font-size="1.15" font-family="Helvetica,Arial,sans-serif" fill="#e6a0ff" text-anchor="start">PWM4</text>
+<rect id="connector36pin" x="4.28" y="36.04" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="11.5" y="39.78" font-size="1.15" font-family="Helvetica,Arial,sans-serif" fill="#e6a0ff" text-anchor="start">PWM5</text>
+<rect id="connector37pin" x="4.28" y="38.58" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="16.5" y="76.9" font-size="1.5" font-family="Helvetica,Arial,sans-serif" fill="#9be8ae" text-anchor="start">AN</text>
+<rect id="connector38pin" x="14.5" y="75.6" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="16.5" y="79.44" font-size="1.5" font-family="Helvetica,Arial,sans-serif" fill="#9be8ae" text-anchor="start">RST</text>
+<rect id="connector39pin" x="14.5" y="78.14" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="16.5" y="81.98" font-size="1.5" font-family="Helvetica,Arial,sans-serif" fill="#9be8ae" text-anchor="start">CS</text>
+<rect id="connector40pin" x="14.5" y="80.68" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="16.5" y="84.52" font-size="1.5" font-family="Helvetica,Arial,sans-serif" fill="#9be8ae" text-anchor="start">SCK</text>
+<rect id="connector41pin" x="14.5" y="83.22" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="16.5" y="87.06" font-size="1.5" font-family="Helvetica,Arial,sans-serif" fill="#9be8ae" text-anchor="start">MISO</text>
+<rect id="connector42pin" x="14.5" y="85.76" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="16.5" y="89.6" font-size="1.5" font-family="Helvetica,Arial,sans-serif" fill="#9be8ae" text-anchor="start">MOSI</text>
+<rect id="connector43pin" x="14.5" y="88.3" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="16.5" y="92.14" font-size="1.5" font-family="Helvetica,Arial,sans-serif" fill="#9be8ae" text-anchor="start">3V3</text>
+<rect id="connector44pin" x="14.5" y="90.84" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="16.5" y="94.68" font-size="1.5" font-family="Helvetica,Arial,sans-serif" fill="#9be8ae" text-anchor="start">GND</text>
+<rect id="connector45pin" x="14.5" y="93.38" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="36.8" y="76.9" font-size="1.5" font-family="Helvetica,Arial,sans-serif" fill="#9be8ae" text-anchor="end">PWM</text>
+<rect id="connector46pin" x="37.2" y="75.6" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="36.8" y="79.44" font-size="1.5" font-family="Helvetica,Arial,sans-serif" fill="#9be8ae" text-anchor="end">INT</text>
+<rect id="connector47pin" x="37.2" y="78.14" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="36.8" y="81.98" font-size="1.5" font-family="Helvetica,Arial,sans-serif" fill="#9be8ae" text-anchor="end">RX</text>
+<rect id="connector48pin" x="37.2" y="80.68" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="36.8" y="84.52" font-size="1.5" font-family="Helvetica,Arial,sans-serif" fill="#9be8ae" text-anchor="end">TX</text>
+<rect id="connector49pin" x="37.2" y="83.22" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="36.8" y="87.06" font-size="1.5" font-family="Helvetica,Arial,sans-serif" fill="#9be8ae" text-anchor="end">SCL</text>
+<rect id="connector50pin" x="37.2" y="85.76" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="36.8" y="89.6" font-size="1.5" font-family="Helvetica,Arial,sans-serif" fill="#9be8ae" text-anchor="end">SDA</text>
+<rect id="connector51pin" x="37.2" y="88.3" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="36.8" y="92.14" font-size="1.5" font-family="Helvetica,Arial,sans-serif" fill="#9be8ae" text-anchor="end">5V</text>
+<rect id="connector52pin" x="37.2" y="90.84" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+<text x="36.8" y="94.68" font-size="1.5" font-family="Helvetica,Arial,sans-serif" fill="#9be8ae" text-anchor="end">GND</text>
+<rect id="connector53pin" x="37.2" y="93.38" width="1.6" height="1.6" fill="#000" stroke="#d4a017" stroke-width="0.25"/>
+</g></svg>
