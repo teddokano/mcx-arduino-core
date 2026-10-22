@@ -199,6 +199,8 @@ See [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) / [PIN_MAPPING_N947.md](PIN_MAPPI
 for the full Arduino-pin-to-MCU-pin table for each supported board, including
 the on-board LEDs/buttons and peripheral pins (`Wire1`, `SPI`, `PWM`, etc.).
 
+For [Fritzing](https://fritzing.org/), parts for the five supported boards are in [fritzing/](fritzing/).
+
 ## Supported Arduino APIs
 
 GPIO, interrupts, Serial (USB + hardware UART), Wire (I2C and I3C-as-I2C),
