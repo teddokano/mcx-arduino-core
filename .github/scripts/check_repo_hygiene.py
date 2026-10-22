@@ -39,6 +39,23 @@ SCAN_ROOTS = [
     "examples",
 ]
 SCAN_EXTS = (".c", ".cpp", ".h", ".hpp", ".ino")
+# Imported unmodified inside a scanned root, for the same reason: lwIP, and
+# the MCUXpresso SDK's lwIP port and ENET/PHY drivers, in MCXEthernet.
+SCAN_EXCLUDES = [
+    "hardware/nxp/mcx/libraries/MCXEthernet/src/" + d
+    for d in ("arch", "compat", "lwip", "lwip_src", "mcx_port", "netif")
+]
+
+
+def scan_sources():
+    """Yield every source file under SCAN_ROOTS, outside SCAN_EXCLUDES."""
+    excludes = {os.path.join(REPO, d) for d in SCAN_EXCLUDES}
+    for root in SCAN_ROOTS:
+        for dirpath, dirnames, filenames in os.walk(os.path.join(REPO, root)):
+            dirnames[:] = [d for d in dirnames if os.path.join(dirpath, d) not in excludes]
+            for name in sorted(filenames):
+                if name.endswith(SCAN_EXTS):
+                    yield os.path.join(dirpath, name)
 
 failures = []
 notes = []
@@ -422,15 +439,9 @@ def scan_comment_terminators(path):
 
 def check_comment_terminators():
     hits = []
-    for root in SCAN_ROOTS:
-        base = os.path.join(REPO, root)
-        for dirpath, _dirnames, filenames in os.walk(base):
-            for name in sorted(filenames):
-                if not name.endswith(SCAN_EXTS):
-                    continue
-                path = os.path.join(dirpath, name)
-                for line_no, line in scan_comment_terminators(path):
-                    hits.append((os.path.relpath(path, REPO), line_no, line.strip()))
+    for path in scan_sources():
+        for line_no, line in scan_comment_terminators(path):
+            hits.append((os.path.relpath(path, REPO), line_no, line.strip()))
     for rel, line_no, line in hits:
         fail("comment-terminator", "%s:%d ends a block comment mid-line: %s" % (rel, line_no, line))
     notes.append("comment-terminator: scanned for early '*/' in block comments")
@@ -482,15 +493,9 @@ def scan_board_fallbacks(path):
 
 def check_board_fallbacks():
     hits = []
-    for root in SCAN_ROOTS:
-        base = os.path.join(REPO, root)
-        for dirpath, _dirnames, filenames in os.walk(base):
-            for name in sorted(filenames):
-                if not name.endswith(SCAN_EXTS):
-                    continue
-                path = os.path.join(dirpath, name)
-                for line_no in scan_board_fallbacks(path):
-                    hits.append((os.path.relpath(path, REPO), line_no))
+    for path in scan_sources():
+        for line_no in scan_board_fallbacks(path):
+            hits.append((os.path.relpath(path, REPO), line_no))
     for rel, line_no in hits:
         fail("board-fallback", "%s:%d tests for a board and falls back to #else; name each board "
              "with #elif and end with #else #error" % (rel, line_no))
