@@ -168,8 +168,19 @@ A4-D18、A5-D19をジャンパでつなぐと、オンボードのP3T1755（`0x4
   確かめ方: 基板を見る、または`D5`を`INPUT_PULLDOWN`にして`HIGH`と読めるか
 - ほかのArduinoのピンとは重ならない（同梱r01libの`io.h`のN947のブロックで、`#define`があるのは`D5`=`P1_21`だけ）
 - MACアドレスを持つEEPROMは無い（ZephyrはMACアドレスを毎回ランダムに作っている）
-- Zephyrのピン設定の名前は`pinmux_enet_qos`。SDKのドライバ名（`fsl_enet_qos`かどうか）はSDKを取ってから確かめる（未確認）
-- 今のコアにENETのドライバもlwIPも無く、`ref/`にN947のSDKのzipも無い。SDK Builderで、lwIPを含めて取る必要がある
+- Zephyrのピン設定の名前は`pinmux_enet_qos`。SDKのドライバは`fsl_enet`（`devices/MCXN947/drivers/`）で、PHYは`components/phy/device/phylan8741/`（2026-10-23に`ref/SDK_2_16_000_FRDM-MCXN947.zip`で確認）。
+  ピンは10本ともALT9。SDKの作例（`driver_examples/enet/txrx_rxpoll`）は、RMIIの基準クロックを外から入れる`kNONE_to_ENETRMII`、`kCLOCK_Enet`、`PRESETCTRL2`のENETのリセット、PHYのアドレス0
+- SDKの作例はMACアドレスを`SILICONID_ConvertToMacAddr()`（`components/silicon_id/`）で作る。NXPのOUI（`54:27:8D`）とチップのIDの3バイト
+- 今のコアにENETのドライバもlwIPも無い。`ref/`のN947のSDKのzipにはlwIPが入っていない。SDK Builderで、lwIPを含めて取り直す（2026-10-23、ユーザーが決定）
+- ユーザーが`ref/SDK_2_16_000_FRDM-MCXN947_network.zip`を置いた（2026-10-23）。lwIPは2.2.1（`middleware/lwip/`、BSD-3）。
+  `devices/MCXN947/drivers/`のうちコアにある21本と`fsl_enet`は、前のzip・コアとバイト単位で一致する。
+  ENETのportは`ethernetif.c`・`enet_ethernetif.c`（`ethernetif_get_enet_base()`だけ）・`enet_ethernetif_lpc.c`（N947の`FSL_FEATURE_SOC_MCX_ENET_COUNT`はこちら）。
+  RTOSなしの作例（`lwip_examples/lwip_dhcp/bm`）はメインのループで`ethernetif_input()`と`sys_check_timeouts()`を回す。
+  portはRTOSなしでもENETの送信完了の割り込みを有効にし、その中でpbufを解放する（`LWIP_ALLOW_MEM_FREE_FROM_OTHER_CONTEXT`）。`sys_arch.c`の`sys_check_core_locking()`は割り込みの中からの呼び出しをassertで止める
+- スパイク（2026-10-23、スクラッチパッド、ビルドだけ）: lwIP・port・`fsl_enet`・`fsl_phylan8741`を仮のライブラリにまとめ、`sys_now()`は`millis()`、`sys_check_core_locking()`は何もしない自前のものにした。
+  ENETの割り込みはNVICで止め、CTIMER2の1msの割り込みで`ETHERNET_DriverIRQHandler()`（送信の回収）・`ethernetif_input()`・`sys_check_timeouts()`を呼ぶ。
+  作例の`lwipopts.h`（`MEM_SIZE`22KB、TCPあり）のままで、DHCPのスケッチはフラッシュ108,768バイト・RAM 72,276バイト。`Serial`だけのスケッチ（48,712・22,264）より約60KB・約50KB多い。
+  portはこのほか`fsl_adapter_gpio.h`（型だけ）と`ethernetif_mmac.h`を読み込む
 
 ### 6-2. 作業の段階
 
