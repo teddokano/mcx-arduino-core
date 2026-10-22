@@ -17,7 +17,7 @@ for the full verification status and per-feature notes this table summarizes.
 | `D2` | `P0_29` | |
 | `D3` | `P1_23` | |
 | `D4` | `P0_30` | |
-| `D5` | `P1_21` | |
+| `D5` | `P1_21` | also wired to the Ethernet PHY's MDIO through R166 (see Ethernet below) |
 | `D6` | `P1_2` | on-board Blue LED (`BLUE`) |
 | `D7` | `P0_31` | |
 | `D8` | `P0_28` | |
@@ -124,6 +124,27 @@ peripheral instances on the SPI/I2C rows (see below the table):
 > FlexComm can only be one peripheral mode at a time, so the two can't
 > coexist in one sketch. Referencing `Serial1` uses the MikroBus header
 > instead (see above), not D0/D1.
+
+## Ethernet
+
+The on-board Ethernet (the chip's ENET and a LAN8741A PHY, RJ45 `J16`) is
+used through the bundled `MCXEthernet` library
+([its README](hardware/nxp/mcx/libraries/MCXEthernet/README.md)). The PHY
+is wired in RMII on these pins, which the library sets up in `begin()`:
+
+| Signal | MCU pin |
+|---|---|
+| `ENET_TXCLK` (50MHz reference from the board's oscillator `Y3`) | `P1_4` |
+| `ENET_TXEN`, `ENET_TXD0`, `ENET_TXD1` | `P1_5`, `P1_6`, `P1_7` |
+| `ENET_RXDV`, `ENET_RXD0`, `ENET_RXD1` | `P1_13`, `P1_14`, `P1_15` |
+| `ENET_MDC` | `P1_20` |
+| `ENET_MDIO` | `P1_21` (`D5`) |
+
+None of these is an Arduino pin except `P1_21`: in the schematic, `D5` and
+the PHY's MDIO are one net through the 0Ω R166, and MDIO is pulled up to the
+PHY's I/O supply by R155 (1.5kΩ). Whether R166 is fitted on the board has not
+been checked yet. If it is, `D5` can't be used while Ethernet is, and carries
+that 1.5kΩ pull-up even when Ethernet isn't used.
 
 See [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md),
 [PIN_MAPPING_A156.md](PIN_MAPPING_A156.md),

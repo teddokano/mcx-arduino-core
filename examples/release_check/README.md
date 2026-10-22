@@ -36,6 +36,7 @@ with one setup each:
 | 22 | `22_wire_lm75b_external_module` | needs an external LM75-family sensor module on D18(SDA)/D19(SCL)/3V3/GND | manual (read the printed temperature) |
 | 23 | `23_waveshare_tft_touch_external_library` | needs the external `Waveshare_TFT_Touch` library + its LCD/SD hardware (see its own README), running its `SDBitmapViewer` example (1.3.1 or later) | manual (judge the rendered image + draw speed) |
 | 24 | `24_wire_target_two_boards` | an FRDM-MCXA153 (or FRDM-MCXA156, FRDM-MCXN236 or FRDM-MCXC444) and an FRDM-MCXN947 wired D18-D18, D19-D19, GND-GND, both running this sketch (reset both together if either already was) | automatic, on each board |
+| 25 | `25_ethernet_pc_N947` | N947 only: the RJ45 (J16) on a network with a DHCP server and a PC on it -- or straight to the PC, with the PC sharing its connection to its wired port (macOS: Internet Sharing), which makes the PC the DHCP server. Python 3 on the PC | automatic, on the PC: `python3 pc_check.py <the address the board prints>` in the sketch's folder prints "ALL OK"/"N FAILED"; the board prints its own checks first ("board side: ALL OK"). The board connecting back to the PC needs the PC's firewall to let the connection in |
 
 `06_eeprom` mirrors
 [`Arduino_compatible_API/test_EEPROM`](../Arduino_compatible_API/test_EEPROM)

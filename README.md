@@ -141,6 +141,7 @@ mcx-arduino-core/
 │   │   └── sdk/               #   NXP MCX SDK driver files common to all supported chips
 │   ├── libraries/            # Bundled libraries
 │   │   ├── EEPROM/            #   AVR-compatible EEPROM, 1KB in on-chip flash (lives here)
+│   │   ├── MCXEthernet/       #   FRDM-MCXN947's on-board Ethernet, with the official Ethernet API (lives here)
 │   │   ├── Servo/             #   The official Servo library's API, on the PWM pins (lives here)
 │   │   ├── mcxPinState/       #   Pin-ownership debugging (see docs/mcxpinstate_guide.md);
 │   │   │                      #   developed in its own repo, synced here at release time
@@ -215,7 +216,10 @@ on FRDM-MCXC444 both work on `Wire`, a bus can't address its own target, and
 the timeout watches SCL only),
 and the bundled `EEPROM` library keeps 1KB in on-chip flash across resets
 and uploads. The bundled `Servo` library takes the official Servo library's
-interface. Third-party libraries that
+interface, and on FRDM-MCXN947 the bundled `MCXEthernet` library drives the
+on-board Ethernet with the official Ethernet library's interface
+(`#include <MCXEthernet.h>` in place of `<Ethernet.h>`; built, not yet run on
+the board). Third-party libraries that
 inherit `Print` directly or take `Stream&` (e.g. ArduinoJson, LiquidCrystal,
 Adafruit sensor libraries) compile against this core.
 

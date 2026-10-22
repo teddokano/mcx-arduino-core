@@ -84,6 +84,31 @@ header.
 
 - NXP MCUXpresso SDK — https://github.com/nxp-mcuxpresso/mcux-sdk (BSD-3-Clause)
 
+The bundled `hardware/nxp/mcx/libraries/MCXEthernet/` has two parts. Its
+own code (`src/MCXEthernet.h`, `src/MCXEthernet.cpp`, `src/Ethernet*.cpp`,
+`src/mcx_eth_internal.h` and `src/lwipopts.h`) is written from scratch to
+the official Ethernet library's interface: class and function names,
+signatures and default values, the `EthernetLinkStatus` and
+`EthernetHardwareStatus` names, and the W5x00 socket status codes that
+`EthernetClient::status()` returns, checked by building that library's
+examples against it. Its way of running lwIP without an RTOS, from a 1 ms
+timer interrupt, follows STM32Ethernet's, whose source was read for it. No
+source code was copied from either.
+
+- Ethernet — https://github.com/arduino-libraries/Ethernet (its README states LGPL 2.1; its source files carry MIT notices)
+- STM32Ethernet — https://github.com/stm32duino/STM32Ethernet (no license file in the repository)
+
+The rest of that library is imported unmodified: lwIP 2.2.1 (`src/lwip/`,
+`src/netif/`, `src/compat/` and `src/lwip_src/`, with lwIP's license in
+`LICENSE.lwIP`), and, from the network package of the NXP MCUXpresso SDK
+2.16.000 for FRDM-MCXN947, the SDK's lwIP port (`src/arch/` and the
+`ethernetif`, `enet_ethernetif` and `enet_configchecks` files in
+`src/mcx_port/`) and the ENET, PHY (LAN8741) and GPIO adapter driver files
+in `src/mcx_port/`. Each file retains its own original copyright header.
+
+- lwIP — https://savannah.nongnu.org/projects/lwip/ (BSD-3-Clause)
+- NXP MCUXpresso SDK — https://github.com/nxp-mcuxpresso/mcux-sdk (BSD-3-Clause)
+
 The example sketch
 `examples/Arduino_incompatible_API/r01lib_I3C_demo/r01lib_I3C_demo.ino`
 is converted from NXP's P3T1755 I3C demo (`P3T1755_FRDM_MCX_demo_DAA`),

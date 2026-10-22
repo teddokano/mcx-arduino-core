@@ -191,6 +191,7 @@ A4-D18、A5-D19をジャンパでつなぐと、オンボードのP3T1755（`0x4
 | C. Arduino向けのクラス | 公式`Ethernet`と同じ使い方: `begin(mac)`（DHCP）、固定IP、`EthernetClient`・`EthernetServer`・`EthernetUDP`、DNS、`linkStatus()`、`maintain()` | 中 |
 | D. 確かめ方と文書 | `release_check`の`2n`（LANケーブルとPC）、ピン配置、API_COMPATIBILITY、LICENSE（lwIPとSDKはBSD-3） | 中 |
 
+- **2026-10-23の時点**: B・Cは`libraries/MCXEthernet/`にでき（`37df4bc`）、公式`Ethernet`の作例13本が`#include`の差し替えだけでビルドできる。Dは文書（LICENSE・ライブラリのREADME・PIN_MAPPING_N947・API_COMPATIBILITY・CHANGELOG・README）と`release_check/25_ethernet_pc_N947`（ボードのスケッチとPC側の`pc_check.py`）を書いた。どれも実機ではまだ動かしていない
 - 全体でボード1枚の追加と同じくらい（1つの版）。Aだけを先に別の版で出すこともできる（追加だけで、今のスケッチを壊さない）。
   **Aは0.10.0で先に出し、B〜Dは0.11.0で入れる**（2026-10-15に決定、版の番号は2026-10-16に変更、§9）
 - B・Cはコアではなく同梱ライブラリ（`libraries/`）にする案。使うスケッチのときだけlwIPがビルドされ、ほかのボード・スケッチのビルド時間とバイナリは変わらない
