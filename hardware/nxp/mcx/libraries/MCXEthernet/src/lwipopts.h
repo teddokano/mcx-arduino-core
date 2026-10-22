@@ -34,7 +34,7 @@ uint32_t	mcx_eth_rand( void );
 #define MEM_ALIGNMENT			4
 #define MEM_SIZE				( 22 * 1024 )
 #define MEMP_NUM_PBUF			15
-#define MEMP_NUM_UDP_PCB		8
+#define MEMP_NUM_UDP_PCB		10	//  MAX_SOCK_NUM for EthernetUDP, + DHCP and DNS
 #define MEMP_NUM_TCP_PCB		10
 #define MEMP_NUM_TCP_PCB_LISTEN	6
 #define MEMP_NUM_TCP_SEG		22

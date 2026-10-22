@@ -74,6 +74,7 @@ int tcp_slot_take( struct tcp_pcb *pcb, TcpState state, uint16_t server_port )
 		tcp_arg( pcb, s );
 		tcp_recv( pcb, on_recv );
 		tcp_err( pcb, on_err );
+		tcp_nagle_disable( pcb );	//  send each write() at once, as a W5x00 does
 		return i;
 	}
 	return -1;
@@ -85,6 +86,11 @@ void tcp_slot_release( int sock )
 
 	if ( s->pcb )
 	{
+		//  take unread data off the window first: lwIP answers a close with data
+		//  the sketch hasn't read with a reset, where a W5x00 closes gracefully
+		if ( s->rx )
+			tcp_recved( s->pcb, s->rx->tot_len );
+
 		tcp_arg( s->pcb, NULL );
 		tcp_recv( s->pcb, NULL );
 		tcp_err( s->pcb, NULL );
@@ -181,7 +187,7 @@ int EthernetClient::availableForWrite()
 
 	Lock	lock;
 	TcpSlot	*s	= &tcp_slots[ _sock ];
-	return ( s->pcb && s->state == TCP_CONNECTED ) ? tcp_sndbuf( s->pcb ) : 0;
+	return ( s->pcb && ( s->state == TCP_CONNECTED || s->state == TCP_PEER_CLOSED ) ) ? tcp_sndbuf( s->pcb ) : 0;
 }
 
 size_t EthernetClient::write( uint8_t b )
@@ -197,8 +203,9 @@ size_t EthernetClient::write( const uint8_t *buf, size_t size )
 		return 0;
 	}
 
-	size_t		sent	= 0;
-	uint32_t	start	= millis();
+	//  as the official library, wait for room as long as the connection is open, with no
+	//  time limit; the peer having sent its FIN (CLOSE_WAIT) still takes data
+	size_t	sent	= 0;
 
 	while ( sent < size )
 	{
@@ -206,7 +213,7 @@ size_t EthernetClient::write( const uint8_t *buf, size_t size )
 		{
 			Lock	lock;
 			TcpSlot	*s	= &tcp_slots[ _sock ];
-			if ( !s->pcb || s->state != TCP_CONNECTED )
+			if ( !s->pcb || ( s->state != TCP_CONNECTED && s->state != TCP_PEER_CLOSED ) )
 				break;
 
 			n	= min( (size_t)tcp_sndbuf( s->pcb ), size - sent );
@@ -217,14 +224,9 @@ size_t EthernetClient::write( const uint8_t *buf, size_t size )
 		}
 
 		if ( n )
-		{
 			sent	+= n;
-			start	= millis();
-		}
-		else if ( millis() - start < _timeout )
-			idle();
 		else
-			break;
+			idle();
 	}
 
 	if ( sent < size )

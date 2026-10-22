@@ -54,12 +54,13 @@ The official library's 13 examples (`WebServer`, `WebClient`, `UdpNtpClient`,
 | | |
 |---|---|
 | `Ethernet.begin()` with no MAC address | Not in the official library. Makes a locally administered address (first byte `0x02`) from the chip's 16-byte unique ID, the same on every start. `begin(mac)` and the fixed-address forms take the address as the official library does |
-| `Ethernet.hardwareStatus()` | `EthernetMCXENET` once `begin()` has found the PHY, `EthernetNoHardware` before or if it didn't. The W5x00 values are there, so sketches that test for them build |
+| `Ethernet.hardwareStatus()` | `EthernetMCXENET` if the PHY answers, `EthernetNoHardware` if not; like `linkStatus()`, it works before `begin()`. The W5x00 values are there, so sketches that test for them build |
 | `Ethernet.maintain()` | lwIP renews and rebinds the DHCP lease by itself, so it always returns `0` (nothing to do) |
 | `Ethernet.hostByName(name, ip)` | Not in the official library: looks a name up with the DNS server, as `EthernetClient::connect(host, port)` does |
 | `Ethernet.init()`, `setRetransmissionTimeout()`, `setRetransmissionCount()`, `begin()`'s `responseTimeout` | Accepted and ignored: there is no chip-select pin, and lwIP times its own retries |
 | `EthernetClient::status()` | The W5x00 socket status codes the official library returns: `0x17` (established), `0x1C` (closed by the peer), `0x15` (connecting) or `0x00` |
 | Sockets | Up to `MAX_SOCK_NUM` (8) TCP connections and, separately, 8 UDP sockets. A UDP socket keeps up to 4 received packets and drops more until `parsePacket()` takes one; a packet to send is up to 1472 bytes |
+| `EthernetClient::stop()` | Closes gracefully (FIN), even with received data left unread, as a W5x00 does, and returns at once; lwIP finishes the close |
 | `mcx_ethernet_tick_max_us()` | Not in the official library: the longest time the 1 ms interrupt below has taken |
 
 ## How it works
@@ -80,6 +81,13 @@ chip's ENET and the board's LAN8741A PHY (RMII; the pins are in
 - Received data is copied out of the driver's receive buffers as it arrives,
   so data a sketch hasn't read yet doesn't stall reception.
 - The interrupt has the lowest priority, as SysTick (`millis()`) does.
+- Each `write()` is sent at once (Nagle's algorithm is off), as a W5x00 sends
+  it.
+
+Call the library from `setup()`, `loop()` and what they call, not from an
+interrupt handler (an `attachInterrupt()` function, say): it stops the sketch
+with `panic()` if called from one, since masking the 1 ms interrupt can't
+stop one that the handler has cut into.
 
 The library uses **CTIMER2**; a sketch using MCXEthernet can't use it too.
 

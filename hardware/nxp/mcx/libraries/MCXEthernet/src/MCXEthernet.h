@@ -38,7 +38,7 @@ enum EthernetLinkStatus
 	LinkOFF
 };
 
-/** Hardware found by begin(). The W5x00 values are kept so that sketches written for the official library build */
+/** The hardware found. The W5x00 values are kept so that sketches written for the official library build */
 enum EthernetHardwareStatus
 {
 	EthernetNoHardware,
@@ -196,7 +196,7 @@ public:
 	IPAddress	remoteIP();
 	uint16_t	remotePort();
 
-	/** @param timeout ms that connect() and stop() wait */
+	/** @param timeout ms that connect() and flush() wait. As in the official library, write() waits for room as long as the connection is open */
 	void	setConnectionTimeout( uint16_t timeout ) { _timeout = timeout; }
 
 	/** @return index of the connection's state, or MAX_SOCK_NUM if none */

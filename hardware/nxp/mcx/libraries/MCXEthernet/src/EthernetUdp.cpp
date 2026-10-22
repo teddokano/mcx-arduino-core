@@ -29,6 +29,8 @@ struct UdpSlot
 	struct pbuf			*cur;		//  the packet parsePacket() returned, what is left of it
 	ip_addr_t			cur_ip;
 	uint16_t			cur_port;
+	bool				joined;		//  beginMulticast() joined `group`
+	ip4_addr_t			group;
 };
 
 static UdpSlot	udp_slots[ MAX_SOCK_NUM ];
@@ -112,6 +114,8 @@ uint8_t EthernetUDP::beginMulticast( IPAddress ip, uint16_t port )
 		stop();
 		return 0;
 	}
+	udp_slots[ _sock ].joined	= true;
+	udp_slots[ _sock ].group	= *ip_2_ip4( &group );
 	return 1;
 }
 
@@ -123,6 +127,8 @@ void EthernetUDP::stop()
 	Lock	lock;
 	UdpSlot	*s	= &udp_slots[ _sock ];
 
+	if ( s->joined )
+		igmp_leavegroup( IP4_ADDR_ANY4, &s->group );
 	udp_remove( s->pcb );
 	for ( int i = 0; i < s->count; i++ )
 		pbuf_free( s->queue[ ( s->head + i ) % RX_QUEUE ] );

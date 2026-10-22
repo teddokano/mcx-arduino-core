@@ -41,6 +41,10 @@ static uint32_t					rand_state		= 0;
 
 Lock::Lock()
 {
+	//  masking CTIMER2 can't stop a CTIMER2 interrupt this one has preempted, in the middle of lwIP
+	if ( __get_IPSR() != 0 )
+		panic( "MCXEthernet: called from an interrupt; call it from setup() or loop()" );
+
 	if ( lock_depth++ == 0 )
 	{
 		NVIC_DisableIRQ( CTIMER2_IRQn );
@@ -368,21 +372,23 @@ int EthernetClass::maintain()
 	return 0;
 }
 
+//  works before begin() too, as the official library's LinkStatus example needs
 EthernetLinkStatus EthernetClass::linkStatus()
 {
-	if ( !hardware_found )
+	if ( !hardware_init() )
 		return Unknown;
 
-	bool	link	= false;
-	Lock	lock;
-	if ( PHY_GetLinkStatus( &phy_handle, &link ) != kStatus_Success )
+	Lock		lock;
+	uint16_t	bsr;
+	mdio_read( PHY_ADDRESS, PHY_BASICSTATUS_REG, &bsr );	//  the link bit latches low: the second read is now
+	if ( mdio_read( PHY_ADDRESS, PHY_BASICSTATUS_REG, &bsr ) != kStatus_Success )
 		return Unknown;
-	return link ? LinkON : LinkOFF;
+	return ( bsr & PHY_BSTATUS_LINKSTATUS_MASK ) ? LinkON : LinkOFF;
 }
 
 EthernetHardwareStatus EthernetClass::hardwareStatus()
 {
-	return hardware_found ? EthernetMCXENET : EthernetNoHardware;
+	return hardware_init() ? EthernetMCXENET : EthernetNoHardware;
 }
 
 void EthernetClass::MACAddress( uint8_t *mac )

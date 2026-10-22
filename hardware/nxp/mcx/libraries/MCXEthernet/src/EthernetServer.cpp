@@ -76,14 +76,19 @@ EthernetClient EthernetServer::accept()
 {
 	Lock	lock;
 
+	//  as the official library: open connections only, each once; reset ones are dropped
 	for ( int i = 0; i < MAX_SOCK_NUM; i++ )
 	{
 		TcpSlot	*s	= &tcp_slots[ i ];
-		if ( s->state != TCP_FREE && s->server_port == _port )
+		if ( s->state == TCP_FREE || s->server_port != _port )
+			continue;
+
+		if ( s->state == TCP_CONNECTED || s->state == TCP_PEER_CLOSED )
 		{
 			s->server_port	= 0;
 			return EthernetClient( i );
 		}
+		tcp_slot_release( i );
 	}
 	return EthernetClient();
 }
