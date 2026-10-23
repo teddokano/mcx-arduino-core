@@ -1,0 +1,28 @@
+# Examples of the libraries in libraries.txt that are expected not to
+# build, one per line: the board (or * for every board), then the
+# example's path under the libraries directory, then why.
+#
+# compile_third_party.sh fails on any other failure, and on an example
+# listed here that now builds.
+
+# BLE: need the ArduinoBLE or Adafruit Bluefruit library, and a BLE radio
+# none of these boards has
+*  Adafruit_NeoPixel/examples/StrandtestArduinoBLE/StrandtestArduinoBLE.ino
+*  Adafruit_NeoPixel/examples/StrandtestArduinoBLECallback/StrandtestArduinoBLECallback.ino
+*  Adafruit_NeoPixel/examples/StrandtestBLE/StrandtestBLE.ino
+*  Adafruit_NeoPixel/examples/StrandtestBLE_nodelay/StrandtestBLE_nodelay.ino
+
+# needs the Adafruit_ADXL343 library, which isn't in libraries.txt
+*  Adafruit_Unified_Sensor/examples/sensortest/sensortest.ino
+
+# ESP8266 only (ESP8266WiFi.h)
+*  PubSubClient/examples/mqtt_esp8266/mqtt_esp8266.ino
+*  PubSubClient/examples/mqtt_large_message/mqtt_large_message.ino
+
+# needs the SRAM library (SRAM.h), which isn't in libraries.txt
+*  PubSubClient/examples/mqtt_stream/mqtt_stream.ino
+
+# use Serial1, which FRDM-MCXC444 doesn't have (Serial is both the USB
+# serial and D0/D1)
+frdm_mcxc444  Adafruit_BusIO/examples/genericdevice_uartregtest/genericdevice_uartregtest.ino
+frdm_mcxc444  Adafruit_BusIO/examples/genericdevice_uarttest/genericdevice_uarttest.ino

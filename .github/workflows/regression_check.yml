@@ -11,6 +11,11 @@ name: Regression check
 #          Runs on push to main, workflow_dispatch, and version tags --
 #          not on every push, since it's the same fast-tier sketches
 #          plus everything else, at several times the cost.
+#          With it, the examples of pinned third-party libraries
+#          (.github/third_party/libraries.txt: ArduinoJson, Ethernet,
+#          PubSubClient, ...), against a list of the ones known not to
+#          build (expected_failures.txt); on FRDM-MCXN947 also the
+#          Ethernet examples on the bundled MCXEthernet.
 #
 # The toolchain to install and its download URL/checksum are read
 # straight out of package_nxp_mcx_index.json (via its toolsDependencies/
@@ -182,3 +187,8 @@ jobs:
       - name: Compile (full tier)
         if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
         run: .github/scripts/compile_examples.sh ${{ matrix.board }} full
+
+      # Runs even if the full tier failed, so one run reports both
+      - name: Compile third-party libraries' examples
+        if: ${{ !cancelled() && (github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) }}
+        run: .github/scripts/compile_third_party.sh ${{ matrix.board }}
