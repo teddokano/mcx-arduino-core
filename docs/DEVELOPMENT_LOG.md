@@ -3236,6 +3236,31 @@ N947が1枚。LANはMacの「インターネット共有」（`bridge100`の`192
 - pingを打つ機能は入れない（2026-10-24、ユーザーが決定）。公式の`Ethernet`には無く、足すと`Ethernet.ping()`のような独自の関数になる。pingに答えるのはlwIPがしている
 - 名前は`MCXEthernet.h`のまま（2026-10-24、ユーザーが決定）。公式の作例が`#include`を替えないとビルドできない件で、名前を`Ethernet`にする案（5ボードとも公式の`Ethernet`を覆う）、さらにW5x00のドライバも同梱する案、`#include`だけ替えた公式の作例を同梱する案と比べた
 
+### 公式`Ethernet`をW5500で（2026-10-24）
+ユーザーがW5500 Lite（WIZnetのW5500のモジュール、3.3V）を手に入れ、A153で試した。ライブラリは公式`Ethernet` 2.0.2（arduino-cliのダウンロードの置き場のzipをスクラッチパッドに展開して`--library`で指定）。DHCPはMacのインターネット共有。
+- 配線: GND・3.3V、`D11`（MOSI）・`D12`（MISO）・`D13`（SCLK）、CSは`D10`（公式の既定、このコアの`PIN_SPI_SS`）、RSTは`D9`、INTはつながない（公式のライブラリは使わない）
+- 自前の確かめ用のスケッチ（RSTを1msLOWにしてから`Ethernet.begin(mac)`）: `hardwareStatus()`が`EthernetW5500`、リンクON、DHCPが4.7秒で`192.168.2.7`。pingは平均0.8ms
+- **`stop()`が約200msかかった**。最初のスケッチ（応答を`println()`7回で返す）では1回の応答が平均1.07秒、100回のうち18回が0.5秒を超え、curlの5秒の上限まで待ったものもあった。順に切り分けた:
+  - ボードで`stop()`の時間を測ると毎回約203ms、ときどき1000ms。公式の`stop()`は`DISCON`のあとソケットがCLOSEDになるのを最大1秒待ち、過ぎるとFINを送らずにソケットを閉じる（そのときMacは5秒待った）
+  - 応答を`write()`1回にすると1000msは消えたが、203msは残った
+  - Macの遅延ACKではない: 本文を受け取った直後にMacから1バイト送って（ACKを乗せて）も0.204秒のまま
+  - `write()`と`stop()`の間に`delay(5)`を入れると、1回0.012秒（50回とも）。200msはW5500の再送タイマーの既定（RTR=2000×100µs）と同じ。送ったデータのACKが返る前に`DISCON`を受けると、W5500がFINを再送の時間まで送らないように見える（パケットは取っていない）
+  - このコアの不具合ではないと見ている（ライブラリの`stop()`はW5500の状態を待つだけで、5msの待ちで消える）。UNO R3など、ほかのボードで同じことが起きるかは確かめていない。API_COMPATIBILITYのEthernetの行に書いた
+- 公式の作例（スクラッチパッドの写しで、固定のアドレスを`192.168.2.x`に、`TelnetClient`の相手をMac（`192.168.2.1`）に、`WebServer`の`analogRead()`のループをA153のADCのある`0`〜`3`にした。RSTを動かすコードは足していない）。シリアルは9600。
+  `BarometricPressureWebServer`（SCP1000が要る）を除く12本が動いた:
+  - `DhcpAddressPrinter`・`LinkStatus`（ONが続く）。RSTの`D9`はリセット後の入力のまま（浮いている）だが、W5500は動いた
+  - `WebClient`: Googleから94195バイト、HTTP 200、0.94KB/s（9600のシリアルの速さ。N947と同じ）。`WebClientRepeating`: 10秒ごと、`www.arduino.cc`の403はサーバー側（N947と同じ）。`UdpNtpClient`: 10秒ごとの時刻がMacのUTCと合う
+  - `UDPSendReceiveString`: 3つ送って3つとも`acknowledged`。`WebServer`: 5回とも200（約20ms。作例は応答のあとシリアルへ書き、`delay(1)`してから`stop()`するので、200msは出なかった）
+  - `ChatServer`・`AdvancedChatServer`・`DhcpChatServer`・`PagerServer`: Macから2本つないで、挨拶と誰にどのメッセージが届くかが作例の説明どおり。`PagerServer`と`DhcpChatServer`はDHCPのアドレス（`.6`）
+  - `TelnetClient`: Macの待ち受けにつながり、Macが送った2行がシリアルに出て、切れると`disconnecting.`
+  - 固定のアドレスの作例でも「Ethernet cable is not connected.」は出なかった（W5500は電源が入った時点から自分でリンクを張る。N947の`MCXEthernet`で3秒待つようにした件の前提どおり）
+- **A156・N236・C444**（同じ日、配線はA153と同じ。A156はR59・R60を付け替えた基板）: 確かめ用のスケッチで、W5500が見つかり、リンクON、DHCPが約4.7秒。`stop()`の約200msと、`delay(5)`で消えることも同じ（0.205〜0.210秒が0.009〜0.013秒に）。
+  公式の作例は、`DhcpAddressPrinter`・`WebClient`（94309〜94367バイト、HTTP 200）・`WebServer`（5回とも200）・`ChatServer`（2本つないで作例の説明どおり）が3ボードとも動いた。
+  `WebServer`は`analogRead()`のループを書き換えずに流した: A156は`A0`〜`A5`の6本とも読め、N236は`A3`が`-1`（青色LEDと共用、決めてある動き）、C444は`A4`・`A5`が`1023`（ボードのR26・R27の4.7kΩのプルアップ）。
+  C444は、つなぎ替えた直後にMacから見えず（シリアルのポートも`LinkServer probes`も空）、ユーザーが挿し直して戻った
+- シリアルを読む前の書き込みの間は、前のスケッチの出力が混ざる（`arduino-cli monitor`を先に始めるため）。作例ごとの結果は、その作例の最初の行から読んだ
+- **zshの`path`をループの変数にして`PATH`を壊した**（この版で2回目）。ループの変数には`path`・`status`などzshの特別な名前を使わない
+
 ### `print(n, HEX)`を大文字に（2026-10-24）
 実機の出力（`PHY ID 0x7 0xc121`、MACの`7c`）で、`Print`が16進を小文字で書いていたのに気づいた。AVRの`Print`は大文字で、`String(n, HEX)`はAVRでも小文字。
 ユーザーがAVRと同じ大文字にすると決めた。`Print.cpp`の`%lx`/`%llx`を`%lX`/`%llX`に、2〜36進の数字の表を大文字にした。`String`と`IPAddress`（IPv6はArduinoCore-APIでも小文字）は変えていない。
