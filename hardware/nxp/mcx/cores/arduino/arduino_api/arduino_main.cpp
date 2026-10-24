@@ -23,8 +23,16 @@ void	serialEvent1( void ) __attribute__((weak));
 void	serialEvent2( void ) __attribute__((weak));
 #endif
 
+namespace {
+void	millis_init( void );
+}
+
 int main( void )
 {
+	//	millis() and micros() count from here, before setup(), as on AVR
+	//	(the core started them at their first call before v0.11.0)
+	millis_init();
+
 	setup();
 
 	while ( true )

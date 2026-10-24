@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - **`print()` and `println()` write hex in upper case**, as AVR's `Print` does: `Serial.print(255, HEX)` prints
   `FF` (it printed `ff`), and so do the digits past 9 in the other bases (`print(35, 36)` is `Z`). `String(255, HEX)`
   stays `ff`, as on AVR
+- **`millis()` and `micros()` count from boot**, as on AVR: the core started them at their first call, so a sketch
+  that called `delay(500)` first read `0` there (`delay()` keeps its own time). Now they start before `setup()`
 - API_COMPATIBILITY.md starts with what stays compatible from 1.0.0 and what doesn't, and a table of the instance
   names (`Wire1`, `Serial1`, `SPI1`, ...) on each board, which stay as they are
 
@@ -35,6 +37,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   page and as JSON) and `WebButtonsRgb_N947` (the buttons and the RGB LED on a page that updates itself). Checked on the board with them and with the new
   `release_check/25_ethernet_pc_N947`, whose PC side (`pc_check.py`) pings the board, echoes UDP and TCP through it
   and has the board connect back
+- `MCXEthernet` takes the seed of lwIP's random numbers from the chip's ELS (its PRNG, seeded from the TRNG), and
+  gives each TCP connection a random initial sequence number: lwIP's first local port and its sequence numbers came
+  out the same at every boot, so a sketch that connected to a server again right after a reset could collide with
+  the connection the server still remembered
 - New example sketch `test_enet_bringup_N947`: the ENET and PHY on their own, with no lwIP (the PHY's ID over MDIO,
   the link, and a DHCP DISCOVER sent as a raw frame once a second and the OFFER), to tell a hardware problem from one in
   `MCXEthernet`

@@ -159,6 +159,66 @@ static bool hardware_init()
 	return hardware_found;
 }
 
+//  ELS (the chip's security block): wait for a command, false on an error or if it never ends
+static bool els_wait()
+{
+	for ( uint32_t i = 0; ELS->ELS_STATUS & S50_ELS_STATUS_ELS_BUSY_MASK; i++ )
+		if ( i > 1000000 )
+			return false;
+
+	if ( ELS->ELS_STATUS & S50_ELS_STATUS_ELS_ERR_MASK )
+	{
+		ELS->ELS_ERR_STATUS_CLR	= S50_ELS_ERR_STATUS_CLR_ERR_CLR_MASK;
+		return false;
+	}
+	return true;
+}
+
+//  A word from the ELS's PRNG, which the ELS seeds from its TRNG, or 0 if the
+//  ELS doesn't come up. The steps are the SDK's ELS_PowerDownWakeupInit()
+//  (els_pkc/src/platforms/mcxn/mcux_els.c): the clocks, the ELS enabled, and
+//  if the PRNG isn't ready yet, a KDELETE of a key slot that holds no key,
+//  which raises the entropy level and seeds the PRNG. A slot with a key in
+//  it is never touched
+static uint32_t els_random()
+{
+	SYSCON->REF_CLK_CTRL_SET	= SYSCON_REF_CLK_CTRL_SET_GDET_REFCLK_EN_SET_MASK | SYSCON_REF_CLK_CTRL_SET_TRNG_REFCLK_EN_SET_MASK;
+	CLOCK_EnableClock( kCLOCK_Css );
+
+	ELS->ELS_CTRL	= S50_ELS_CTRL_ELS_EN_MASK;
+	if ( !els_wait() )
+		return 0;
+
+	if ( !( ELS->ELS_STATUS & S50_ELS_STATUS_PRNG_RDY_MASK ) )
+	{
+		const volatile uint32_t	*ks		= &ELS->ELS_KS0;
+		const uint32_t			slots	= 20;	//  ELS_KS0 to ELS_KS19
+		uint32_t				i;
+
+		for ( i = 0; i < slots; i++ )
+			if ( !( ks[ i ] & S50_ELS_KS0_KS0_KACT_MASK ) )
+				break;
+		if ( i == slots )
+			return 0;
+
+		ELS->ELS_KIDX0		= i;
+		ELS->ELS_CMDCFG0	= 0;
+		ELS->ELS_CTRL		= S50_ELS_CTRL_ELS_CMD( 11 )	//  KDELETE
+							| S50_ELS_CTRL_ELS_START_MASK | S50_ELS_CTRL_ELS_EN_MASK
+							| S50_ELS_CTRL_BYTE_ORDER_MASK;
+		if ( !els_wait() )
+			return 0;
+	}
+
+	uint32_t	r	= ELS->ELS_PRNG_DATOUT;
+	if ( ELS->ELS_ERR_STATUS & S50_ELS_ERR_STATUS_PRNG_ERR_MASK )	//  not enough entropy
+	{
+		ELS->ELS_ERR_STATUS_CLR	= S50_ELS_ERR_STATUS_CLR_ERR_CLR_MASK;
+		return 0;
+	}
+	return r;
+}
+
 //  @return true once the interface is up
 static bool interface_start( const uint8_t *mac )
 {
@@ -179,6 +239,7 @@ static bool interface_start( const uint8_t *mac )
 
 	memcpy( mac_address, mac, 6 );
 	rand_state	^= ( (uint32_t)mac[ 2 ] << 24 | (uint32_t)mac[ 3 ] << 16 | (uint32_t)mac[ 4 ] << 8 | mac[ 5 ] ) ^ micros();
+	rand_state	^= els_random();	//  before lwip_init(), which takes its first TCP and UDP ports from it
 	if ( rand_state == 0 )
 		rand_state	= 0x2545F491;
 

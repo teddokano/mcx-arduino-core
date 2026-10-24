@@ -85,8 +85,13 @@ uint32_t	mcx_eth_rand( void );
 #define LWIP_STATS			0
 #define LWIP_PROVIDE_ERRNO	1
 
-//  random numbers for DNS query IDs and ports, IGMP and DHCP
+//  random numbers for DNS query IDs and ports, IGMP and DHCP, seeded from the chip's ELS (MCXEthernet.cpp)
 #define LWIP_RAND()	mcx_eth_rand()
+
+//  a random initial sequence number for each TCP connection; lwIP's own counts
+//  from the same value at every boot, so a connection made again from the same
+//  port after a reset could look like the old one to the peer
+#define LWIP_HOOK_TCP_ISN( local_ip, local_port, remote_ip, remote_port )	mcx_eth_rand()
 
 //  no debug console in the Arduino core; lwIP's assertions stop the sketch with panic()
 #define LWIP_PLATFORM_DIAG( x ) \

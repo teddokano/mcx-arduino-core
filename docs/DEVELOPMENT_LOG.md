@@ -3264,6 +3264,23 @@ N947が1枚。LANはMacの「インターネット共有」（`bridge100`の`192
 - シリアルを読む前の書き込みの間は、前のスケッチの出力が混ざる（`arduino-cli monitor`を先に始めるため）。作例ごとの結果は、その作例の最初の行から読んだ
 - **zshの`path`をループの変数にして`PATH`を壊した**（この版で2回目）。ループの変数には`path`・`status`などzshの特別な名前を使わない
 
+### lwIPの乱数と`millis()`の始まり（2026-10-25）
+ネットワークまわりでやっておくことを洗い出した中の1つ（「リセットのたびにlwIPの乱数が同じにならないか」）を確かめて、2つ見つけた。
+- **送り元のポートが起動ごとに同じ**: N947で、DHCPのあとMacへ3回つなぎ、`NVIC_SystemReset()`で起動し直すスケッチを24回回すと、Macで見た送り元のポートが24回とも`55640`・`55641`・`55642`。
+  lwIPは最初のTCP・UDPのポートを`tcp_init()`・`udp_init()`で`LWIP_RAND()`から1回だけ決め、初期シーケンス番号は既定の`6510 + tcp_ticks`で、どちらも毎回同じになる。
+  終わりの4回の起動では接続に失敗した（Macに残っていた前の接続とぶつかったと見ている。確かめていない）
+- **`millis()`・`micros()`が最初の呼び出しから数えていた**（全ボード）: 種の`micros()`が0だったので調べると、`delay(500)`のあとの最初の`millis()`も`micros()`も0。
+  コアはSysTickを`millis()`・`micros()`の最初の呼び出しで始めていた（`delay()`はDWTで待つので時計を進めない）。AVRは起動から数える。
+  `main()`で`setup()`の前に`millis_init()`を呼ぶようにした（2026-10-25、ユーザーが決定）。呼び出しの側の「まだなら始める」は残した（`main()`より前のグローバルのコンストラクタから呼ばれても動くように）。
+  N947で`delay(500)`のあとが`millis 500  micros 500181`。`release_check/09`に「`delay(200)`のあとの最初の`millis()`が200以上」を足し、N947でALL OK。`01`もALL OK
+- **ELSのPRNGで種を作った**（案A、2026-10-25、ユーザーが決定）。手順はSDKの`els_pkc/src/platforms/mcxn/mcux_els.c`の`ELS_PowerDownWakeupInit()`と同じで、`els_pkc`は取り込まずレジスタで書いた:
+  GDETとTRNGの参照クロック（`SYSCON->REF_CLK_CTRL_SET`）とELSのクロック（`kCLOCK_Css`）を入れ、`ELS_CTRL`の`ELS_EN`、`ELS_STATUS`の`PRNG_RDY`が立っていなければ、`ELS_KS0`〜`ELS_KS19`で`KACT`の無いスロットを探してKDELETE（コマンド11）、`ELS_PRNG_DATOUT`を読み、`ELS_ERR_STATUS`の`PRNG_ERR`を見る。
+  ELSが立ち上がらないときは0を返し、前と同じ種（MACと`micros()`）になる。SDKのKDELETEの説明では、鍵の無いスロットを消してもエントロピーの水準が上がりPRNGに種が入る。鍵のあるスロットには触らないので、memoの「ROMと共有するか」の心配は当たらない。
+  初期シーケンス番号は`LWIP_HOOK_TCP_ISN`で`mcx_eth_rand()`にした（`lwipopts.h`）
+  - 同じスケッチで21回起動し直して、最初のポートが21回とも違い（`51096`〜`65420`）、接続の失敗は無し。`--warnings all`で警告なし。初期シーケンス番号はパケットを取っていないので見ていない
+  - `release_check/25`はボード側・PC側ともALL OK（lwIPの割り込みの最長は248µs）
+- 洗い出しの中で「lwIPの割り込み（CTIMER2）の優先度は設定されておらず既定のまま」と報告したのは誤りだった。`NVIC_SetPriority( CTIMER2_IRQn, 最低 )`がある（READMEにもそう書いてある）。`grep`の出力を`head -5`で切って、その先を見ずに「無い」とした。無いと言う前に検索の結果を最後まで見る
+
 ### `print(n, HEX)`を大文字に（2026-10-24）
 実機の出力（`PHY ID 0x7 0xc121`、MACの`7c`）で、`Print`が16進を小文字で書いていたのに気づいた。AVRの`Print`は大文字で、`String(n, HEX)`はAVRでも小文字。
 ユーザーがAVRと同じ大文字にすると決めた。`Print.cpp`の`%lx`/`%llx`を`%lX`/`%llX`に、2〜36進の数字の表を大文字にした。`String`と`IPAddress`（IPv6はArduinoCore-APIでも小文字）は変えていない。

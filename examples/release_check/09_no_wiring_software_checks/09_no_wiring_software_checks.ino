@@ -95,11 +95,20 @@ void check(const char *label, bool ok) {
 }
 
 void setup() {
+  // the sketch's first millis() call, after a delay(): before 0.11.0 the core
+  // started the count at that call, so it read 0 here (AVR counts from boot)
+  delay(200);
+  unsigned long first_millis = millis();
+
   Serial.begin(115200);
   while (!Serial)
     ;
 
   Serial.println("=== Release check 09: no-wiring software checks ===");
+
+  // ---- millis() counts from before setup(), as on AVR (0.11.0) ----
+  Serial.println("--- millis from boot ---");
+  check("first millis() after delay(200) is 200 or more", first_millis >= 200);
 
   // ---- math constants / trig (was test_math_constants) ----
   Serial.println("--- math constants ---");

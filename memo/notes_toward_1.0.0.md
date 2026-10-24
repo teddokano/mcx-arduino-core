@@ -272,6 +272,7 @@ A4-D18、A5-D19をジャンパでつなぐと、オンボードのP3T1755（`0x4
 - 見直し（2026-10-23）で直さずに残した点:
   - `EthernetClient`はソケットの番号だけを持つので、1つの接続の写しの片方が`stop()`したあと、その番号を次の接続が使うと、もう片方の写しが別の接続を指す（公式`Ethernet`も同じ）
   - チップのUUIDが読めないと、引数なしの`begin()`のMACアドレスがどのボードでも同じになる（読めるかは実機で確かめる）
+  - ~~lwIPの乱数~~ → **ELSのPRNGで種を作り、TCPの初期シーケンス番号も乱数にした**（2026-10-25、ユーザーが決定（案A））。実機で、種が起動ごとに同じで、送り元のポートが24回とも同じだった（`micros()`が最初の呼び出しから数えるコアの不具合も重なって0だった）。ELSは、PRNGが用意できていなければ鍵の無いスロットを1つKDELETEする（SDKの`mcux_els.c`の`ELS_PowerDownWakeupInit()`と同じ。鍵のあるスロットには触らない）ので、下の「ROMと共有するか」の心配は当たらない。以下は当時の記録
   - lwIPの乱数（DNSの問い合わせのIDなど）は起動時の`micros()`とMACアドレスから作るxorshiftで、起動ごとに似た値になる。N947のハードウェアの乱数発生器を使えるかはRMで確かめる。
     SDKで分かったこと（2026-10-23）: N947にはELS（`S50_Type`、`ELS_BASE`）の中にPRNGがあり、`mcuxClEls_Prng_GetRandomWord()`は`ELS_PRNG_DATOUT`を読むだけ。
     作例（`components/els_pkc/examples/mcuxClEls/mcuxClEls_Rng_Prng_Get_Random_example.c`）は、ELSを有効にし、空の鍵のスロットを消す命令でPRNGに種を入れてから読む。

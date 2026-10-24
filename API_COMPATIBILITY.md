@@ -137,7 +137,7 @@ On FRDM-MCXC444 (see [PIN_MAPPING_C444.md](PIN_MAPPING_C444.md)):
 |-----|--------|-------|
 | `delay` | ✅ | |
 | `delayMicroseconds` | ✅ | |
-| `millis` / `micros` | ✅ | SysTick(1ms) + DWT cycle counter |
+| `millis` / `micros` | ✅ | SysTick(1ms) + DWT cycle counter. They count from before `setup()`, as on AVR (since v0.11.0; before, from their first call) |
 | `tone` / `noTone` | ✅ | CTIMER0, any digital pin, 1 tone at a time |
 
 ## Analog I/O

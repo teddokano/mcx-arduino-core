@@ -110,6 +110,12 @@ chip's ENET and the board's LAN8741A PHY (RMII; the pins are in
   longest run in `release_check/25` was 251µs.
 - Each `write()` is sent at once (Nagle's algorithm is off), as a W5x00 sends
   it.
+- lwIP's random numbers (its first local ports, DNS query IDs, DHCP) are
+  seeded from the chip's ELS, whose PRNG the ELS seeds from its TRNG, and each
+  TCP connection starts at a random sequence number, so the ports differ from
+  one boot to the next. The ELS is brought up as the SDK does it: if its PRNG
+  isn't ready, one key slot that holds no key is deleted, which seeds it;
+  slots holding a key are left alone.
 
 Call the library from `setup()`, `loop()` and what they call, not from an
 interrupt handler (an `attachInterrupt()` function, say): it stops the sketch
