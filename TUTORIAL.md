@@ -562,6 +562,10 @@ if (Wire.getWireTimeoutFlag()) {
 }
 ```
 
+A transfer that timed out returns `5` from `endTransmission()`, and a target
+that doesn't answer `2`, as on AVR (from v0.11.0; `Wire.lastStatus()` has the
+driver's own code).
+
 The hardware caps the limit: on FRDM-MCXA153 at ~87ms at 100kHz and ~21.8ms
 at 400kHz; on FRDM-MCXC444 at ~87ms at any speed, and there it watches
 SCL only. `Wire1` on FRDM-MCXA153 and FRDM-MCXN947, which runs on I3C,

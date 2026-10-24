@@ -3169,3 +3169,94 @@ COPのカウンタは読めないが、最初の書き込みで0から数え始�
 これでv0.10.0のリリース作業が全て完了。
 
 ---
+
+## v0.11.0（`0.11.0-dev` ブランチ、2026-10-18に`main`の`49fccaf`から切った。作業中）
+範囲の候補はN947のEthernet（memoの§6の段階B〜D、§9）。版の番号は`platform.txt`などでまだ上げていない。
+
+### 0.10.0のあとの片付け（2026-10-19〜10-23）
+- 0.10.0の確認で使ったBoards Managerの`packages/nxp`のうち、本番のURLから入れた0.10.0は`~/Library/Arduino15/nxp-0.10.0-release-installed`に名前を変えて残し、ステージングの0.10.0と、0.9.0・0.9.1の本番の分はゴミ箱へ移した（`36961e6`）
+- ローカルIDE連携のsymlinkを`0.10.0-dev`から`0.11.0-dev`に付け替えた（2026-10-23）
+- `main`には、0.10.0のあと別のセッションでFritzingの部品が入り、タグ`0.10.1`とGitHub Releaseが作られていた（インデックスには0.10.1のエントリは無い）。
+  `0.11.0-dev`には最初のコミット（`5bd1778`）しか入っていなかったので、`main`をマージした（`af6db0b`）。A153の部品は`main`が作り直していたので`main`の版を採り、`main`が消した`generate_frdm_mcxa153.py`・`install_to_fritzing.sh`も消した。
+  作業ツリーに残っていた追跡されていない`fritzing/*.fzz`（A153の部品を使ったFritzingのスケッチ4本、0.10.1のあとに作られたもの）は、ユーザーが消した
+- `docs/DEVELOPMENT_LOG.md`にv0.10.0の節を書いた（`431dc4b`）
+
+### N947のEthernet: SDKとスパイク（2026-10-23）
+- `ref/SDK_2_16_000_FRDM-MCXN947.zip`には`fsl_enet`とLAN8741のドライバはあるがlwIPが無い。ユーザーがSDK Builderで`SDK_2_16_000_FRDM-MCXN947_network.zip`を取り直した（lwIP 2.2.1、ENETのport、作例）。コアにあるドライバ21本と`fsl_enet`は、前のzipとバイト単位で一致した
+- portはRTOSなしでもENETの送信完了の割り込みでpbufを解放し、`sys_check_core_locking()`は割り込みの中からの呼び出しをassertで止める。§6-3の「ENETの割り込みを使わず1msのタイマーで回す」に合わせ、ENETの割り込みはNVICで止めて、CTIMER2の1msの割り込みから`ETHERNET_DriverIRQHandler()`・`ethernetif_input()`・`sys_check_timeouts()`を呼ぶ形にした
+- スクラッチパッドで2つのスパイクをビルドした（実機はUSBにつながっていなかったので流していない）: lwIPなしでPHYのIDとDHCP DISCOVERの生のフレーム、lwIPでDHCP。lwIPを入れるとフラッシュが約60KB、RAMが約50KB増える
+- DHCPを試す相手として、家のルーターにブリッジでつなぐ以外に、MacとN947を直結してMacの「インターネット共有」を使う形を確かめた（`tcpdump`かWiresharkでやり取りを見られる）
+
+### 名前とMACアドレスの決定（2026-10-23、`87c481a`）
+ユーザーが決めた（memoの§6-4）。ライブラリのフォルダーとヘッダは`MCXEthernet`。`Ethernet`という名前にすると、arduino-cliは`architectures=mcx`のライブラリを`*`の公式`Ethernet`より優先する（0.10.0の`Servo`で確認）ので、5ボードすべてでW5500の公式`Ethernet`を覆い隠す。
+クラスとグローバルの名前は公式と同じ。MACアドレスは公式と同じ`begin(mac)`と、引数なしの`begin()`（チップのUUIDからローカル管理のアドレス）の両方。
+
+### `MCXEthernet`（2026-10-23、`37df4bc`・`cb50473`・`9f2b0d6`。ビルドだけ）
+- lwIP 2.2.1とSDKのport・ENET・PHYのドライバを`ref/`のzipから無改変で取り込んだ。hygieneの`comment-terminator`がlwIPの`pbuf.h`のマクロに反応したので、取り込んだ6つのフォルダーを走査から外した（`check_repo_hygiene.py`の`SCAN_EXCLUDES`）
+- 自前のコードは公式`Ethernet` 2.0.2と同じ宣言の形。lwIPはCTIMER2の割り込みか、その割り込みだけを止めたスケッチからしか呼ばない（`Lock`。lwIPの`LWIP_ASSERT_CORE_LOCKED()`のフックで確かめ、外れたら`panic()`）。受け取ったデータはドライバの受信バッファからヒープへ写す
+- portは`LWIP_ALLOW_MEM_FREE_FROM_OTHER_CONTEXT`・ICMPv6のチェックサムの設定・`IP_REASS_MAX_PBUFS`を`#error`で求めた。作例の`lwipopts.h`の値に合わせた
+- 公式`Ethernet` 2.0.2の作例13本が、`#include <Ethernet.h>`を`#include <MCXEthernet.h>`に替えるだけでN947でビルドできた（スクラッチパッドに`ARDUINO_DIRECTORIES_USER`で入れた）。`--warnings all`では、取り込んだSDKのportに符号の比較の警告が4件出る（扱いは未決）
+- 段階D: LICENSE（自前のコードは公式のインターフェースに合わせて書き、1msの割り込みで回す形は`STM32Ethernet`を読んで決めた。取り込んだものはBSD-3）、ライブラリのREADME、PIN_MAPPING_N947（RMIIのピンと、`D5`がR166を通してMDIOと同じ線になること。R166が実装されているかは未確認）、API_COMPATIBILITY、CHANGELOG、README。
+  `release_check/25_ethernet_pc_N947`は、ボードがDHCPと自分の確認をしたあと、PCの`pc_check.py`（標準ライブラリだけ）にping・UDPとTCPのエコー・ボードからPCへの接続・`delay()`中の応答・1msの割り込みの最大の時間を確かめさせる
+- 見直し（`9f2b0d6`）で、公式`Ethernet`のソースと比べて9件を直した。重いのは、`stop()`が読み残しのある接続をRSTで切っていたこと（lwIPは`tcp_recved()`していないデータがあると閉じるときにRSTを送る。W5x00はFIN）、
+  `write()`が1秒進まないとあきらめ、相手のFINのあと（CLOSE_WAIT）は書けなかったこと（公式は接続が開いている間は待ち続け、CLOSE_WAITでも書ける）、Nagleで小さい書き込みが遅れたこと、DHCPとDNSのpcbでUDPの8本目が開けなかったこと、
+  `linkStatus()`と`hardwareStatus()`が`begin()`の前に使えなかったこと（公式の`LinkStatus`の作例は`begin()`を呼ばない）、割り込みの中から呼ぶとlwIPを壊すおそれがあったこと。直さずに残した点はmemoの§6-4
+- `test_enet_bringup_N947`: スクラッチパッドのlwIPなしのスパイクを、`MCXEthernet`の取り込んだドライバを使う作例にした（セッションが終わるとスクラッチパッドは消えるため）。関数名がSDKの`fsl_phy.h`の型名（`mdioWrite`/`mdioRead`）とぶつかってビルドできなかったので、`mdio_write`/`mdio_read`に直した
+- ライブラリの作例（2026-10-24、ビルドだけ）: `DhcpAddress_N947`（DHCPで得た値とリンクの変化）・`WebServerLed_N947`（緑のLEDを点けたり消したりするページ）・`UdpEcho_N947`（8888番のエコー）・`HttpGet_N947`（DNSで`example.com`を引いてページを取る）。どれも引数なしの`begin()`を使う。公式の作例はコピーしていない
+
+### `MCXEthernet`を実機で（2026-10-24）
+N947が1枚。LANはMacの「インターネット共有」（`bridge100`の`192.168.2.1`、USBのEthernetアダプタ`en10`）で、ユーザーは「DHCPルータ」と呼んでいた。
+- `release_check/25`: ボード側（PHY・リンク・DHCPは約3秒・MAC・DNSで`example.com`）、PC側（`pc_check.py`: ping、UDPのエコー1〜1472バイトと50個続けて、TCPのエコー10・1460・65536バイト、同時に4本、続けて20本、ボードからPCへ8192バイト、`delay()`中のpingと接続）ともALL OK。1msの割り込みの最長は251µs
+- 作例: `DhcpAddress_N947`（`192.168.2.5`）、`WebServerLed_N947`（curlで5回、7〜25msで返り、`/on`・`/off`で緑のLEDが変わる）、`UdpEcho_N947`（6通りの大きさと200個、取りこぼしなし）、`HttpGet_N947`（`example.com`からHTTP 200）
+- チップのUUIDからのMACは`02:49:20:7c:08:54`（同じボードで毎回同じ）
+- ケーブルの抜き差し（`DhcpAddress_N947`、Macから1秒ごとにping）: 10秒抜いたときも1分抜いたときも、`link down`・`link up`が出て、挿してから1秒ほどでpingが戻った。アドレスは変わらず、戻ったあとのpingは1ms前後。
+  抜いている間に送ったpingの一部（約65秒前のもの）が、挿したときにまとめて返ってきた。Mac側で止まっていたものと見ている（調べていない）
+- R166は実装されている。Ethernetを使わないスケッチで、`D5`を`LOW`に駆動してから`INPUT_PULLDOWN`にしてもHIGHのまま（R155の1.5kΩ）。比べた`D6`はLOWに落ちた
+- `test_enet_bringup_N947`だけOFFERの項目がFAILした。DISCOVERを1回送って5秒待つ形だった。送信の記述子はエラーなしで終わっていて（`tdes3`=`0x30000000`）、写しで1秒ごとに送り直すと、2回目のあとにOFFERが来た。Macの`bootpd`が最初のDISCOVERに答えていないと見ている。1秒ごとに送り直し、10秒待つ形に直した（2回でOFFER、ALL OK）
+- 写しが受け取ったフレームには、こちらのDISCOVERと同じ大きさで、送り元がMacのアダプタ（`a8:4a:63:0e:89:80`）のDHCPのフレームも毎回あった（ブリッジが返したものと見ている。調べていない）
+- 公式`Ethernet` 2.0.2の作例を実機で（2026-10-24）: arduino-cliのダウンロードの置き場（`~/Library/Arduino15/staging/libraries/Ethernet-2.0.2.zip`）にあった公式のzipをスクラッチパッドに展開し、作例の写しの`#include`を替え、固定のアドレスを`192.168.2.x`にした。シリアルは公式の作例どおり9600。
+  `BarometricPressureWebServer`（SCP1000のセンサーが要る）を除く12本が動いた: `DhcpAddressPrinter`・`LinkStatus`・`WebClient`（Googleから94580バイト、HTTP 200、0.95KB/sは9600のシリアルの速さ）・`WebClientRepeating`（10秒ごと。`www.arduino.cc`が403を返すのはサーバー側）・`UdpNtpClient`（時刻が合う）・`UDPSendReceiveString`・`WebServer`・`ChatServer`・`AdvancedChatServer`・`DhcpChatServer`・`PagerServer`・`TelnetClient`（相手をMacにした）。
+  チャットの4本は、PCから2本つないで、挨拶と、誰にどのメッセージが届くかが作例の説明どおりだった。
+  - **固定のアドレスの`begin(mac, ip, ...)`のすぐあとは`linkStatus()`が`LinkOFF`**で、作例が「Ethernet cable is not connected.」と出す（`WebServer`・`ChatServer`・`AdvancedChatServer`・`TelnetClient`。通信はそのあと普通にできる）。`begin()`がPHYのオートネゴシエーション（約1.7秒）を待たずに返るため。W5x00は電源が入った時点から自分でリンクを張るので、`begin()`のあとにはふつう上がっている
+  - **`WebServer`は、ページを作るところの`analogRead(0)`〜`analogRead(5)`で止まる**（N947の`A0`・`A1`にはADCが無く、`panic()`。決めてある動き）。写しで`A2`〜`A5`を読むようにして、5回とも返った。ライブラリのREADMEに、ループを`2`から始めるよう書いた（ユーザーが決定）
+  - 固定のアドレスの`begin()`は、リンクが上がるまで最大3秒待つようにした（ユーザーが決定）。lwIPはリンクを1.5秒ごとにしか見ないので、待つ間はポートの`ethernetif_probe_link()`を10msごとに呼び、PHYが上がったらすぐlwIPにも知らせる（PHYだけを待つと、戻った直後の`connect()`が経路なしで失敗しうる）。
+    実機で、`begin()`が1694msで戻り、直後の`linkStatus()`が`ON`、直後のMacへの`connect()`が3msで通った。`ChatServer`・`TelnetClient`から「Ethernet cable is not connected.」が消えた
+- 作例を2本足した（2026-10-24、ユーザーの依頼）: `WebTemperature_N947`（オンボードのP3T1755を`Wire1`でレジスタから読み、2秒ごとに読み直すページと`/json`。外部のライブラリを使わないのは、CIがライブラリの作例をスタブだけでビルドするため）と、`WebButtonsRgb_N947`（`SW2`・`SW3`と、RGBのLEDの8色。ページのスクリプトが`/state`を1秒に4回聞く）。
+  実機で、`WebTemperature_N947`は約23.8℃をページとJSONで返し、`WebButtonsRgb_N947`は`/state`を続けて200回聞いて0.6秒・失敗なし、4分間の約2200回もエラーなし。ブラウザでボタンを押すとページに出て、LEDの色が合うことをユーザーが確かめた
+- 作例の6本と`test_enet_bringup_N947`の7本とも、ユーザーがArduino IDEから書き込んで動くことを確かめた（2026-10-24）
+- pingを打つ機能は入れない（2026-10-24、ユーザーが決定）。公式の`Ethernet`には無く、足すと`Ethernet.ping()`のような独自の関数になる。pingに答えるのはlwIPがしている
+- 名前は`MCXEthernet.h`のまま（2026-10-24、ユーザーが決定）。公式の作例が`#include`を替えないとビルドできない件で、名前を`Ethernet`にする案（5ボードとも公式の`Ethernet`を覆う）、さらにW5x00のドライバも同梱する案、`#include`だけ替えた公式の作例を同梱する案と比べた
+
+### `print(n, HEX)`を大文字に（2026-10-24）
+実機の出力（`PHY ID 0x7 0xc121`、MACの`7c`）で、`Print`が16進を小文字で書いていたのに気づいた。AVRの`Print`は大文字で、`String(n, HEX)`はAVRでも小文字。
+ユーザーがAVRと同じ大文字にすると決めた。`Print.cpp`の`%lx`/`%llx`を`%lX`/`%llX`に、2〜36進の数字の表を大文字にした。`String`と`IPAddress`（IPv6はArduinoCore-APIでも小文字）は変えていない。
+`release_check/09`に「Print in HEX」の節（`FF`・`DEADBEEF`・`-1L`の`FFFFFFFF`・64ビット・36進の`Z`・`String(255, HEX)`は`ff`のまま）を足し、N947でALL OK。小文字の出力を比べている作例は無かった（`itoa`・`String`のものだけ）。
+ArduinoCore-APIと比べて、ほかに2つ違いが残っている（直していない）: 10進以外の負の数をAVRは2の補数のまま書く（このコアは2・8・16進以外で`-`と絶対値）、`print(n, 0)`をAVRは1バイトとして`write()`する（このコアは10進）
+
+### 回帰スイープを並列に（2026-10-24）
+ユーザーの依頼で、ローカルのスイープを並列にした。入口は`.github/scripts/compile_all_boards.sh`（CIはボードごとに別の機械で流すので使わない）。
+- 最初の形: ボードごとに`ARDUINO_BUILD_CACHE_PATH`を分けて5ボードを同時に流し、`compile_examples.sh`はスケッチごとに`--build-path`を作って消した。fullは5ボードとも逐次と同じく全部OK（A153 99・A156 100・N236 99・C444 101・N947 112）だったが、2077秒と1960秒かかり、逐次の約23分より遅かった。負荷は90前後（CPUは10個）
+- **遅かったのは`--build-path`のせいだった**: `--build-path`を渡すと、arduino-cliはコアをキャッシュに置かず、スケッチごとにコアを丸ごとビルドし直す（`hello_world`を2回ビルドして、2回とも59ファイル・6秒。渡さなければ2回目は1秒）。third_partyの逐次が約1時間かかっていたのも同じ理由。
+  いまは`compile_examples.sh`・`compile_third_party.sh`とも、走らせるごとに自分の作業フォルダーにビルドキャッシュを作り（`ARDUINO_BUILD_CACHE_PATH`、設定されていればそれを使う）、スケッチごとに`sketches/`だけを消す。2本目からは`Using precompiled core`になる（variantの`src/`の19ファイルはコアのキャッシュに入らず、毎回コンパイルされる）。
+  作業フォルダーの名前は`.noindex`で終わり、Spotlightに索引を作らせない（最初の形のとき、ビルドを止めたあともSpotlightのプロセスが負荷12ほどを使っていた。`.noindex`がどれだけ効いたかは分けて測っていない）。
+  `third_party`はライブラリを1回だけ入れ（`compile_third_party.sh --install-only`）、各ボードは`compile_third_party.sh <board> --no-install`で同じものを使う
+- 測り直した（負荷が4を切ってから）: fast×5ボードは並列236秒・逐次475秒。fullは並列633秒（C444 379秒〜N947 633秒）。third_partyは並列665秒（ライブラリを入れる時間は除く）。どれも結果は前と同じ（fullは99・112・100・99・101本、third_partyは5ボードとも「All as expected」）。負荷は平均20〜23で、Spotlightは平均数%
+- **ボードをまたぐキュー**（`compile_all_boards.sh <fast|full> --queue N`、ユーザーの案）: ボードごとの並列では、早く終わったボードの分のCPUが最後に空く。全ボードの（ボード, スケッチ）を1本ずつ交互に並べた1つの一覧を、N個のworkerが`mkdir`で取り合って流す（macOSにflockが無いため）。
+  キャッシュはボードごとの置き場から、空いているものを`mkdir`のロックで取る。一覧は`compile_examples.sh <board> <mode> --list`で、1本のビルドは`compile_examples.sh <board> one <dir>`で行うので、選び方は1か所のまま（引数が2つのとき＝CIの動きは変えていない）。
+  fullは10本ずつで499秒、8本ずつで512秒（結果は同じ）。最後まで、topのCPUの空きは0%（10本ずつの回の平均はuser 73%・sys 25%・idle 2%、負荷は平均57）。
+  失敗の報告は、存在しないボード名を混ぜて確かめた（`FAIL: <board>  <path>`が並び、exit 1）
+
+### 1.0で固定することの決定（2026-10-23、作業中）
+memoの§2の材料をまとめ、ユーザーが3つともおすすめどおりに決めた（`CLAUDE.md`の「1.0で固定することの決定」）。
+インスタンス名は付け替えず、ボードごとの表をAPI_COMPATIBILITYの冒頭に置いた。`endTransmission()`はAVRの0〜5を返すようにし、元のSDKのコードは`Wire.lastStatus()`で読めるようにした。
+LPI2CはアドレスとデータのNAKを同じコードで返すので、どちらも`2`。C444はr01libの自前の転送が分けて返すので`2`と`3`。今の値を見ていた作例7本を直した。公開APIの範囲はAPI_COMPATIBILITYの冒頭の「What stays compatible」に書いた
+
+### サードパーティのライブラリをCIでビルドする（2026-10-23、作業中。memoの§9の⑨）
+`.github/scripts/compile_third_party.sh`と`.github/third_party/`（版を固定したライブラリの一覧と、通らないと分かっている作例の一覧）。fullの段と同じとき（`main`・タグ・手動実行）に流す。
+ライブラリは0.7.0と0.10.0で手で確かめた9つと、`SD`（ArduinoJsonの`JsonConfigFile`と`release_check/23`が使う）。N947では公式`Ethernet`の作例を`MCXEthernet`でもビルドする。
+通らない作例はBLE（4本）、`Adafruit_ADXL343`が要る1本、ESP8266専用の2本、`SRAM.h`が要る1本と、C444だけ`Serial1`を使う`Adafruit_BusIO`の2本。
+ローカルで5ボードとも「All as expected」（A153・A156・N236・C444は74本、N947は公式`Ethernet`の作例を足して87本）。同じ日に全作例の回帰ビルド（111本×5ボード）も通した（`test_enet_bringup_N947`は関数名がSDKの`fsl_phy.h`の型名`mdioWrite`/`mdioRead`とぶつかっていたので`mdio_write`/`mdio_read`に直した）。OneWireはこのコアを知らずに`digitalWrite()`などで動く「フォールバック」になる（memoの§3）
+
+### この版で踏んだこと
+- **コミットのハッシュを出力を見ずに書いた**: `37df4bc`を`b6f4d68`と報告し、pushのときに気づいて訂正した。報告するハッシュはコマンドの出力から取る
+- **ビルドが裏で回っている間に、そのビルドが使うコアを編集した**: ⑨のローカルのスイープの最中に`arduino_i2c.h`へ`lastStatus()`を足し、変数を足すまでの間にビルドが重なって、N947の`Adafruit_BusIO`の`spi_registers`が1本だけ落ちた。スイープの間はコアと作例を編集しない

@@ -5,8 +5,11 @@ The on-board Ethernet of **FRDM-MCXN947**, with the official
 The other boards have no Ethernet; on them the library stops the build with an
 error.
 
-> **Status**: builds, and the official library's 13 examples build with it
-> (below). It has not been run on the board yet.
+> **Status**: checked on the board with the examples below and the
+> package's `release_check/25_ethernet_pc_N947` (DHCP, DNS, ping, TCP and UDP
+> both ways, served while the sketch is in `delay()`), with a Mac's Internet
+> Sharing as the DHCP server. The official library's 13 examples build with it
+> (below); they haven't been run.
 
 ## Using it
 
@@ -47,13 +50,36 @@ void loop()
 ```
 
 The official library's 13 examples (`WebServer`, `WebClient`, `UdpNtpClient`,
-`ChatServer`, ...) build with only that `#include` changed.
+`ChatServer`, ...) build with only that `#include` changed, and 12 of them
+have been run on the board (not `BarometricPressureWebServer`, which needs an
+SCP1000 sensor). Change the fixed addresses in them to ones on your network,
+and open the Serial Monitor at 9600, as they use.
+
+`WebServer` stops with `error: AnalogIn: unsupported analog pin` when a page
+is asked for: it reads `analogRead(0)` to `analogRead(5)`, and FRDM-MCXN947's
+`A0` and `A1` have no ADC. Start its loop at `2`
+(`for (int analogChannel = 2; ...`).
+
+The library's own examples are short and use `begin()` with no MAC address:
+
+| Example | What it does |
+|---|---|
+| `DhcpAddress_N947` | Gets an address with DHCP and prints the MAC address, the address, the mask, the gateway and the DNS server; then prints the link going down and up |
+| `WebServerLed_N947` | A web page that shows how long the board has been up and turns the green LED on and off |
+| `UdpEcho_N947` | Sends every UDP packet on port 8888 back to its sender (`nc -u <address> 8888` on a PC) |
+| `HttpGet_N947` | Looks up `example.com` with DNS and fetches its page (needs an Internet connection) |
+| `WebTemperature_N947` | The on-board temperature sensor (P3T1755 on `Wire1`) as a page that reloads itself, and as JSON at `/json` |
+| `WebButtonsRgb_N947` | A page that shows `SW2` and `SW3` as they are pressed and sets the RGB LED's color, with a script in the page asking the board for `/state` 4 times a second |
+
+For a DHCP server without a router, connect the board straight to a Mac and
+turn on "Internet Sharing" to its Ethernet port.
 
 ## How it differs from the official library
 
 | | |
 |---|---|
 | `Ethernet.begin()` with no MAC address | Not in the official library. Makes a locally administered address (first byte `0x02`) from the chip's 16-byte unique ID, the same on every start. `begin(mac)` and the fixed-address forms take the address as the official library does |
+| `Ethernet.begin(mac, ip, ...)` with a fixed address | Waits up to 3 s for the link (the PHY's auto-negotiation takes about 1.7 s), as a W5x00 has its link up from power-up: the official examples test `linkStatus()` just after `begin()` and print "Ethernet cable is not connected." if it is off. Without a cable it returns after the 3 s |
 | `Ethernet.hardwareStatus()` | `EthernetMCXENET` if the PHY answers, `EthernetNoHardware` if not; like `linkStatus()`, it works before `begin()`. The W5x00 values are there, so sketches that test for them build |
 | `Ethernet.maintain()` | lwIP renews and rebinds the DHCP lease by itself, so it always returns `0` (nothing to do) |
 | `Ethernet.hostByName(name, ip)` | Not in the official library: looks a name up with the DNS server, as `EthernetClient::connect(host, port)` does |
@@ -80,7 +106,8 @@ chip's ENET and the board's LAN8741A PHY (RMII; the pins are in
   call reaches it any other way.
 - Received data is copied out of the driver's receive buffers as it arrives,
   so data a sketch hasn't read yet doesn't stall reception.
-- The interrupt has the lowest priority, as SysTick (`millis()`) does.
+- The interrupt has the lowest priority, as SysTick (`millis()`) does. Its
+  longest run in `release_check/25` was 251µs.
 - Each `write()` is sent at once (Nagle's algorithm is off), as a W5x00 sends
   it.
 
@@ -90,6 +117,11 @@ with `panic()` if called from one, since masking the 1 ms interrupt can't
 stop one that the handler has cut into.
 
 The library uses **CTIMER2**; a sketch using MCXEthernet can't use it too.
+
+If it doesn't work, `examples/Arduino_compatible_API/test_enet_bringup_N947`
+in this package's repository checks the hardware on its own, with the same
+ENET and PHY drivers and no lwIP: the PHY's ID over MDIO, the link, and a
+DHCP DISCOVER and its OFFER as raw frames.
 
 A sketch with DHCP, a TCP server, a TCP client and UDP takes about 115KB of
 flash and 74KB of RAM (the board has 2MB and 384KB).

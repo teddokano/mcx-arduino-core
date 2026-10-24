@@ -11,7 +11,14 @@
 - **現在のリリース**: **v0.10.0**（2026-10-18。5つ目のボード**FRDM-MCXC444**、同梱の`Servo`ライブラリ、ネットワーク基底クラス（`Client`/`Server`/`UDP`/`IPAddress`）と`<avr/pgmspace.h>`、全ボードで`noInterrupts()`の中の`micros()`が割り込みを入れていたのを直した修正）。macOS・Windows・Linuxの3プラットフォームで、ステージング（`staging-0.10.0`）と本番の`main`のURLの両方から、インストール〜ビルド〜アップロード〜IDE内蔵デバッガまで検証済み。
   リリースzipはSHA-256 `e2f8b9bf19cbf4ec90cceb02ba655ca5482d1c75821a9093ee4443b59a71e8e3`、11621108 bytes。タグ`0.10.0`は`9cfcf96`、`main`は`49fccaf`（0.10.0のエントリを入れたコミット）。
   その前はv0.9.1（2026-10-11、パッチリリース。`analogRead(0)`〜`analogRead(5)`を`A0`〜`A5`として扱う修正、関数内の`static`オブジェクトのリンクエラー（`__cxa_guard_acquire`）の修正（`platform.txt`に`-fno-threadsafe-statics`。AVRのコアと同じ）、`r01lib_I3C_demo`の追加）と、v0.9.0（2026-10-09。FRDM-MCXN236の追加と、FRDM-MCXA156のD3/D5/D6/D9での`analogWrite`）
-- **開発中**: **v0.11.0**（`0.11.0-dev`ブランチ、2026-10-18に`main`の`49fccaf`から切った）。範囲の候補はN947のEthernet（ENET・lwIP）。同梱ライブラリは`MCXEthernet.h`でクラスの名前は公式`Ethernet`と同じ、MACアドレスは`begin(mac)`と引数なしの`begin()`（チップのIDから）の両方（2026-10-23、ユーザーが決定。memoの§6-4）。1.0までの版の割り振りは[memo/notes_toward_1.0.0.md](memo/notes_toward_1.0.0.md)の§9。ローカルIDE連携のsymlink名（`~/Library/Arduino15/packages/nxp/hardware/mcx/0.11.0-dev`）は、開発環境を戻すときに付け替える。A4/A5の`setPins`（Pendingタスク10）を入れる版は未定
+- **開発中**: **v0.11.0**（`0.11.0-dev`ブランチ、2026-10-18に`main`の`49fccaf`から切った）。範囲の候補はN947のEthernet（ENET・lwIP）。同梱ライブラリは`MCXEthernet.h`でクラスの名前は公式`Ethernet`と同じ、MACアドレスは`begin(mac)`と引数なしの`begin()`（チップのIDから）の両方（2026-10-23、ユーザーが決定。memoの§6-4。2026-10-24に、公式の作例が`#include`を替えないとビルドできない件で見直し、このままにした）。
+  **2026-10-23の時点（ビルドだけ）**: `libraries/MCXEthernet/`（lwIP 2.2.1とSDKのENETのport・ドライバを`ref/SDK_2_16_000_FRDM-MCXN947_network.zip`から無改変で取り込み、自前のコードはlwIPをCTIMER2の1msの割り込みで回す）ができ、公式`Ethernet` 2.0.2の作例13本が`#include`の差し替えだけでビルドできる。
+  文書（LICENSE・ライブラリのREADME・PIN_MAPPING_N947・API_COMPATIBILITY・CHANGELOG・README）と`release_check/25_ethernet_pc_N947`（PC側は`pc_check.py`）も書いた。
+  **実機で確かめた（2026-10-24、N947が1枚、DHCPはMacの「インターネット共有」）**: `release_check/25`がボード側・PC側ともALL OK（1msの割り込みの最長は251µs）。作例4本も動いた（`HttpGet_N947`はMacの共有を通して`example.com`まで）。
+  チップのUUIDからのMACは`02:49:20:7c:08:54`。ケーブルを抜き差ししても（10秒・1分）、挿してから1秒ほどでpingが戻る。**残っている実機の確認: 長時間の動作**（MacのインターネットのDHCPはリース1時間なので、約2時間。lwIPの延長が30分ごとに通るか、接続を繰り返してメモリが漏れないか。ボードを触らない時間にやる、2026-10-24にユーザーが決定）。**R166は実装されている**（`D5`は`INPUT_PULLDOWN`でもHIGH）。
+  `test_enet_bringup_N947`（lwIPなしで、MDIOでPHYのID、リンク、DHCP DISCOVERの生のフレームとOFFER。`MCXEthernet`が動かないときに、ドライバとPHYまでを切り分ける）は、DISCOVERを1回しか送らず、Macが最初のDISCOVERに答えなかったのでFAILした。1秒ごとに送り直す形に直してALL OK。
+  見直しで残した点と、lwIPの乱数にELSのPRNGを使う案はmemoの§6-4。
+  `--warnings all`で取り込んだSDKのportに出る符号の比較の警告4件は、ファイルに手を入れずに残す。ライブラリに自前の短い作例を入れる（フォルダー名は`_N947`で終わる形。公式の作例はコピーしない）（どちらも2026-10-23、ユーザーが決定）。作例は`DhcpAddress_N947`・`WebServerLed_N947`・`UdpEcho_N947`・`HttpGet_N947`・`WebTemperature_N947`・`WebButtonsRgb_N947`の6本（2026-10-24、どれも実機で確認。`test_enet_bringup_N947`を含む7本とも、ユーザーがIDEからも確かめた）。pingを打つ機能（公式の`Ethernet`に無い）は入れない（2026-10-24、ユーザーが決定。pingに答えるのはlwIPがしている）。1.0までの版の割り振りは[memo/notes_toward_1.0.0.md](memo/notes_toward_1.0.0.md)の§9。ローカルIDE連携のsymlink名（`~/Library/Arduino15/packages/nxp/hardware/mcx/0.11.0-dev`）は、開発環境を戻すときに付け替える。A4/A5の`setPins`（Pendingタスク10）を入れる版は未定
 - **v0.10.0の経緯**（`0.10.0-dev`ブランチ、2026-10-15に`0.9.2-dev`として開始し、2026-10-16に名前を変えた）。範囲は、ネットワーク基底クラス（`Client`/`Server`/`UDP`/`IPAddress`、Pendingタスク8）、
   `Servo.h`の互換ライブラリ、`<avr/pgmspace.h>`、**FRDM-MCXC444**（2026-10-16、ユーザーが決定）。
   **A4/A5のI²C（`setPins`、Pendingタスク10）は0.10.0には入れなかった**（2026-10-18、ユーザーが決定。入れる版は未定）。
@@ -21,6 +28,10 @@
   **`micros()`が呼ばれるたびに割り込みを入れていた**（`__disable_irq()`/`__enable_irq()`で囲んでいたので、`noInterrupts()`の中でも）のを、PRIMASKを戻す形に直した（2026-10-18、全ボード）。
   `test_micros_noInterrupts`（配線なし）が直す前のC444で2項目FAIL（3msの間に`millis()`が0から4へ進んだ）、直したあと5つのボードでALL OK
   **リリース前の実機チェック（2026-10-18、macOS）**: 全サンプルの回帰コンパイルは5ボードともexit 0。`release_check`は5ボードで、`01`・`04`・`06`（2回）・`07`・`08`・`09`、`11`〜`14`（A156は`15`も）、`24`（4組、いずれもN947が相手）、`03`・`02`・`21`が問題なし。`test_Servo`・`test_avr_pgmspace`・`test_network_base_classes`・`test_micros_noInterrupts`も5ボードでALL PASS。`22`・`23`は2026-10-18の確認（5ボードとも）を使い、今回は流していない。5枚をつないだままの書き込みはarduino-cliとIDE（macOS）の両方で各ボードに入り、IDE内蔵デバッガ（macOS）も問題なし。流し直したのは2件で、A156の`15`（`Wire1`のジャンパを直して流し直し、ALL OK）とA156-N947の`24`（1回目は相手が答えずFAIL、そのままもう一度流してALL OK。原因は調べていない）。`21`のA153は、D1-D0のジャンパを直して`Serial1`のWARNINGが消えた。確認の間にN236・C444・N947が1回ずつUSBから消え、挿し直して戻った（原因は調べていない）。Windows・Linuxの書き込みとデバッグは、ステージング（`staging-0.10.0`）と本番の`main`のURLの両方で、ユーザーが確認して問題なし。
+- **1.0で固定することの決定（2026-10-23、ユーザーが決定。材料はmemoの§2）**:
+  インスタンス名（`Wire1`・`Serial1`・`SPI1`など）は**付け替えない**。ボードごとに意味が違うことはAPI_COMPATIBILITYの冒頭の表に書いた（別名は要望があれば1.xで足す）。
+  `endTransmission()`の戻り値は**AVRの0〜5にした**（0.11.0。LPI2CはアドレスとデータのNAKを分けないので両方`2`、C444は分ける）。元のSDKのコードは標準に無い`Wire.lastStatus()`で読める。作例の`CODE_NAK`などは`2`・`5`にした。
+  **公開APIの範囲**はAPI_COMPATIBILITYの冒頭の「What stays compatible」に書いた（含めるもの: 載っている関数と動き、ピン名、ボードのマクロ、インスタンス名、同梱ライブラリのAPI、載っている独自の追加。含めないもの: r01libやSDKを直接使うこと、ピン名の数値、`lastStatus()`の値、mcxPinStateの表、内部・テスト用の口）
 - **ADCの無いピンへの`analogRead()`（A153の`analogRead(A5)`など）をビルド時に検出する案は入れない**（2026-10-11、ユーザー判断）。
   `__builtin_constant_p`と`__attribute__((error))`で、定数のピンならビルドエラーにできることは試作で確かめた（常に`-O2`なので確実に効く）。
   入れない理由は副作用で、実行されないコード（実行時の変数でボードを分ける分岐など）でもビルドが止まり、AVRなどでビルドできるコードがこのコアではビルドできなくなる。
@@ -30,7 +41,7 @@
   A156の前提と決定は下の「FRDM-MCXA156の前提と決定事項（0.8.0）」節、N236の分は「FRDM-MCXN236の前提と決定事項（0.9.0）」節
 - **リリースごとの変更点**: [CHANGELOG.md](CHANGELOG.md)
 - **各リリースで何をやり、どこで詰まったかの詳細**: [docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md)
-  （v0.1.5〜v0.10.0の全作業記録。自動では読み込まれないので、経緯が必要なときだけ開く）
+  （v0.1.5〜v0.10.0の全作業記録と、作業中のv0.11.0。自動では読み込まれないので、経緯が必要なときだけ開く）
 
 ---
 
@@ -92,7 +103,8 @@
   **インスタンス単位の設定はドライバ側が持っていることがある**——`Serial.cpp`の`s_pinMap[]`が
   `kFRO12M_to_FLEXCOMM5`/`kFRO12M_to_LPUART2`を持ち、コンストラクタの`_setup_clock()`で適用される。
   `mcu.cpp`をgrepして「無い」を示すのは、探す場所が違えば何も示さない
-- **エラーコードは最後の1バイトまで突き合わせる**。`MAKE_STATUS(group,code) = group*100+code`が
+- **エラーコードは最後の1バイトまで突き合わせる**（0.10.0まで。0.11.0から`endTransmission()`はAVRの0〜5を返し、
+  切り詰める前のSDKのコードは`Wire.lastStatus()`で読める）。`MAKE_STATUS(group,code) = group*100+code`が
   `uint8_t`に切り詰められるので、`220`=`kStatus_I3C_Busy`(7900)、`222`=`kStatus_I3C_Nak`(7902)、
   `134`=`kStatus_LPI2C_Nak`(902)。**「NAKですらなくバスがビジー」と分かれば、コードより先に配線を疑える**
   （実際にジャンパの挿しっぱなしによる短絡だった）
@@ -107,10 +119,12 @@
 ### 検証するとき
 - **コンパイルが通ったことを動作の証拠にしない**。ソース配布方式へ移行したとき、
   114サンプル×2ボードが通ったあと実機初回でハングした（`LPSPI0`のクロック未供給）
-- **回帰スイープは逐次で実行する**。`xargs -P 4`は**偽の失敗を出す**——
+- **回帰スイープを並列にするときは、プロセスごとにビルドキャッシュを分け、`--build-path`は使わない**。`xargs -P 4`は**偽の失敗を出した**——
   4プロセスが同じ`core.a`ビルドキャッシュを作り合って競合し、
   `hello_world`すら落ちるうえ**実行のたびに失敗する顔ぶれが変わる**。
-  CIの`compile_examples.sh`が逐次なのは正しい
+  一方で`--build-path`を渡すと、arduino-cliはスケッチごとにコアをビルドし直す（2026-10-24に、並列のfullが逐次より遅かった原因）。
+  `compile_examples.sh`・`compile_third_party.sh`は、走らせるごとに自分のキャッシュ（`.noindex`のフォルダー）を作り、スケッチごとに`sketches/`だけを消す。
+  ローカルでは`.github/scripts/compile_all_boards.sh full --queue 10`が速い（全ボードのビルドを1つの一覧にして10本ずつ流す。fullで約8分。ボードごとの並列は約10.5分、third_partyは約11分）
 - **arduino-cliのビルドキャッシュはスケッチのパスごとに1つで、ボードは区別されない**（0.7.0で2回踏んだ）。
   A153向けにビルドした直後に`arduino-cli upload -b ...:frdm_mcxn947`すると、**A153のバイナリがN947に書き込まれる**
   （エラーにならず、シリアル出力が無いか、`Wire ACK Fault`が出るだけ）。
@@ -465,6 +479,9 @@ xPack checksums（正しい値）：
 
 ## GitHub Actions
 - **`regression_check.yml`**: push・PRごとに全サンプルのコンパイル（fast/fullの2段）とhygieneチェック（`.github/scripts/check_repo_hygiene.py`、タグでは`--release`）
+- **サードパーティのライブラリの作例のビルド**（2026-10-23、memoの§9の⑨）: fullの段と同じとき（`main`・タグ・手動実行）に、`.github/scripts/compile_third_party.sh`が`.github/third_party/libraries.txt`のライブラリ（版を固定、依存も並べて`--no-deps`で入れる）の作例を全ボードでビルドする。
+  通らないと分かっている作例は`expected_failures.txt`にボードごとに書き、それ以外の失敗と、書いてあるのに通るようになった作例の両方でCIを落とす。N947では公式`Ethernet`の作例を`#include <MCXEthernet.h>`に替えて`MCXEthernet`でもビルドする。
+  ローカルでは`TP_USER_DIR=<ディレクトリ>`でライブラリを入れる場所を指定して流せる（スケッチごとにキャッシュの`sketches/`を消すので、ディスクは食わない。5ボードを並列にするのは`compile_all_boards.sh third_party`）。ライブラリの版を上げるときは手で一覧を直す
 - **`update_package_index.yml`**: GCCのsizeをHEADリクエストで取得、プラットフォームZIPのchecksum/sizeをダウンロードして計算・更新
 - **既知の制限**: タグpush（`push: tags: '[0-9]+.[0-9]+.[0-9]+'`）で起動した場合、`actions/checkout`がdetached HEADでチェックアウトするため最後の`git push`が失敗する（過去のv0.1.6〜v0.2.0全リリースで再現）。実際のchecksum確定は、リリース後に`gh workflow run update_package_index.yml --ref main`（または Actions UI の "Run workflow"）で`main`ブランチに対し手動実行する必要がある。**リリース時は「タグpush→(失敗を確認)→mainに対してworkflow_dispatchを手動実行」の2段階が必須の手順**
 
@@ -553,7 +570,8 @@ v0.4.0の`main`マージ直前、ユーザーから「今回のリリース準�
 7. **GPIO治具は作らない**（2026-10-02、ユーザー判断）。0.7.0で保留にしていたが、0.8.0の検討で
    「リリース作業の自動化が大きく進んでいて、治具による改善は手間の削減にそれほど効かない」として見送った。
    組み合わせを設計した`.github/scripts/check_jig_pairing.py`は残っている
-8. **ネットワーク基底クラス（`Client`/`Server`/`UDP`/`IPAddress`）は0.10.0で入れる**（2026-09-26、ユーザー判断で0.7.0は見送り。2026-10-15に0.9.2と決め、2026-10-16に0.10.0へ）。
+8. ~~ネットワーク基底クラスの実際の通信~~ **0.11.0のN947のEthernetで確かめた**（2026-10-24、`release_check/25`）。以下はそれまでの記録。
+   **ネットワーク基底クラス（`Client`/`Server`/`UDP`/`IPAddress`）は0.10.0で入れる**（2026-09-26、ユーザー判断で0.7.0は見送り。2026-10-15に0.9.2と決め、2026-10-16に0.10.0へ）。
    無いため`Ethernet`ライブラリが`Client.h`で止まる（ArduinoJsonのEthernet系サンプル3本もこれで失敗）。
    **0.10.0-dev（旧0.9.2-dev）で4つのクラスを書いた**（`cores/arduino/arduino_api/`の`Client.h`・`Server.h`・`Udp.h`・`IPAddress.{h,cpp}`）。AVRと同じく`Arduino.h`からは読み込まない。
    `IPAddress`はArduinoCore-APIと同じくIPv4とIPv6を持つ。`test_network_base_classes`がA153・N947の実機でALL PASS、ライブラリの作例は4ボードでビルドが通る。残りは下の「実際に通信できるまで」

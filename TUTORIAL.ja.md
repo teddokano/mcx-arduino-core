@@ -444,6 +444,8 @@ if (Wire.getWireTimeoutFlag()) {
 }
 ```
 
+タイムアウトした転送の`endTransmission()`は`5`を、応答しない相手には`2`を返します（AVRと同じ。v0.11.0から。ドライバの元のコードは`Wire.lastStatus()`で読めます）。
+
 上限にはハードウェアの制約があり、FRDM-MCXA153では100kHzで約87ms、400kHzで約21.8msまでです。FRDM-MCXC444ではどの速度でも約87msまでで、見るのはSCLだけです。I3Cで動くFRDM-MCXA153・FRDM-MCXN947の`Wire1`にはこのタイムアウトはありません。
 [`examples/Arduino_compatible_API/test_Wire_setWireTimeout`](examples/Arduino_compatible_API/test_Wire_setWireTimeout)を参照してください。
 

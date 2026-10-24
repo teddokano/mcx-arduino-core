@@ -142,9 +142,9 @@ is wired in RMII on these pins, which the library sets up in `begin()`:
 
 None of these is an Arduino pin except `P1_21`: in the schematic, `D5` and
 the PHY's MDIO are one net through the 0Ω R166, and MDIO is pulled up to the
-PHY's I/O supply by R155 (1.5kΩ). Whether R166 is fitted on the board has not
-been checked yet. If it is, `D5` can't be used while Ethernet is, and carries
-that 1.5kΩ pull-up even when Ethernet isn't used.
+PHY's I/O supply by R155 (1.5kΩ). R166 is fitted (on the board checked, `D5`
+reads HIGH with `INPUT_PULLDOWN`, held up by R155), so `D5` can't be used while
+Ethernet is, and carries that 1.5kΩ pull-up even when Ethernet isn't used.
 
 See [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md),
 [PIN_MAPPING_A156.md](PIN_MAPPING_A156.md),

@@ -7,7 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- **`Wire.endTransmission()` returns AVR's codes**: `0` success, `2` the address not acknowledged, `3` a data byte
+  not acknowledged, `4` another error, `5` timeout. It returned the driver's status code cut to 8 bits before
+  (`134` for a NAK on the LPI2C, `138` for a timeout), so a sketch that compared against those numbers needs `2`
+  and `5` now. The LPI2C can't tell a data byte's NAK from the address's and returns `2` for both;
+  FRDM-MCXC444's Kinetis I2C tells them apart. The driver's code is still there, in full, from `Wire.lastStatus()`
+- **`print()` and `println()` write hex in upper case**, as AVR's `Print` does: `Serial.print(255, HEX)` prints
+  `FF` (it printed `ff`), and so do the digits past 9 in the other bases (`print(35, 36)` is `Z`). `String(255, HEX)`
+  stays `ff`, as on AVR
+- API_COMPATIBILITY.md starts with what stays compatible from 1.0.0 and what doesn't, and a table of the instance
+  names (`Wire1`, `Serial1`, `SPI1`, ...) on each board, which stay as they are
+
 ### Added
+- `Wire.lastStatus()` (not in the official API): the driver's status code from the last `endTransmission()` or
+  `requestFrom()`
 - `MCXEthernet`, a bundled library for FRDM-MCXN947's on-board Ethernet (the chip's ENET and a LAN8741A PHY),
   with the official Ethernet library's interface: `Ethernet`, `EthernetClient`, `EthernetServer` and
   `EthernetUDP` keep their names, so a sketch moves over by changing `#include <Ethernet.h>` to
@@ -16,7 +30,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   timer interrupt (CTIMER2), so connections are served while the sketch is busy, as by a W5x00. `Ethernet.begin()`
   with no MAC address makes a locally administered one from the chip's unique ID. On the other boards the library
   stops the build with an error. See [its README](hardware/nxp/mcx/libraries/MCXEthernet/README.md) and the
-  Ethernet section of [PIN_MAPPING_N947.md](PIN_MAPPING_N947.md). Not yet run on the board
+  Ethernet section of [PIN_MAPPING_N947.md](PIN_MAPPING_N947.md). Its own examples are `DhcpAddress_N947`,
+  `WebServerLed_N947`, `UdpEcho_N947`, `HttpGet_N947`, `WebTemperature_N947` (the on-board temperature sensor as a
+  page and as JSON) and `WebButtonsRgb_N947` (the buttons and the RGB LED on a page that updates itself). Checked on the board with them and with the new
+  `release_check/25_ethernet_pc_N947`, whose PC side (`pc_check.py`) pings the board, echoes UDP and TCP through it
+  and has the board connect back
+- New example sketch `test_enet_bringup_N947`: the ENET and PHY on their own, with no lwIP (the PHY's ID over MDIO,
+  the link, and a DHCP DISCOVER sent as a raw frame once a second and the OFFER), to tell a hardware problem from one in
+  `MCXEthernet`
+- CI builds the examples of ten third-party libraries, pinned to a version, on every board: ArduinoJson,
+  LiquidCrystal, DHT sensor library, Adafruit NeoPixel, OneWire, Adafruit BusIO, Adafruit Unified Sensor, Ethernet,
+  PubSubClient and SD (`.github/third_party/`). The ones known not to build are listed with the reason, and the
+  check fails on any other failure and on a listed one that starts to build. On FRDM-MCXN947 it also builds the
+  Ethernet examples on `MCXEthernet`
 
 ## [0.10.0] - 2026-10-18
 

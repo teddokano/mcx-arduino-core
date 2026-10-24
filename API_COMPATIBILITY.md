@@ -6,6 +6,48 @@ FRDM-MCXC444). The boards share the
 same API surface except where a row below notes a difference. See the main
 [README](README.md) for board setup, pin mapping, and general usage.
 
+## What stays compatible
+
+From 1.0.0 this core follows [Semantic Versioning](https://semver.org/): a
+1.x release doesn't break a sketch that uses only what this list covers.
+Anything else can change in any release.
+
+Covered:
+- The Arduino functions and classes in this file, with the behavior it
+  describes, limits included
+- The pin names: `D0`-`D19`, `A0`-`A5`, `PWM0`-`PWM5`, the MikroBus names
+  (`MB_*`), and the on-board LEDs' and buttons' names (`RED`, `GREEN`,
+  `BLUE`, `SW2`, `SW3`), on the pins each board's PIN_MAPPING file gives
+- The board macros: `ARDUINO_FRDM_*` and `FRDM_*`
+- The instance names and what each is on, per board (below)
+- The bundled libraries' interfaces: `EEPROM`, `Servo` and `MCXEthernet`
+- This core's additions to the Arduino API that this file lists, such as
+  `analogWriteFrequency()` and `Wire.lastStatus()`
+
+Not covered:
+- Using the bundled r01lib, or the MCUXpresso SDK, directly (the
+  [advanced guides](docs/)): they follow the chips, not a promise
+- The numbers behind the pin names: use the names
+- The values `Wire.lastStatus()` returns, which are the SDK's
+- `mcxPinState`'s printed tables, which are for people to read
+- Anything a source file marks as internal or for testing
+
+### Instance names by board
+
+The same name can be on a different bus on another board, chosen for what
+each board has. They stay as they are from 1.0.0.
+
+| Name | FRDM-MCXA153 | FRDM-MCXN947 | FRDM-MCXA156 | FRDM-MCXN236 | FRDM-MCXC444 |
+|---|---|---|---|---|---|
+| `Wire` | `D18`/`D19` | `D18`/`D19` | `D18`/`D19`, with the on-board P3T1755 | `D18`/`D19` | `D18`/`D19` |
+| `Wire1` | I3C, the on-board P3T1755 | I3C, the on-board P3T1755 (on `MB_RX`/`MB_TX`) | the MikroBus I2C | the on-board accelerometer and the MikroBus I2C | the on-board accelerometer (no header pin) |
+| `Wire2` | — | the MikroBus I2C | — | — | — |
+| `Serial1` | `D0`/`D1` | the MikroBus UART | `D0`/`D1` | `D0`/`D1` | — (`Serial` is on `D0`/`D1`) |
+| `Serial2` | — | — | the MikroBus UART | — | — |
+| `SPI1` | the MikroBus SPI | the MikroBus SPI | the MikroBus SPI | — | — |
+
+`Serial` is the USB serial port and `SPI` is on `D10`-`D13` on every board.
+
 ## FRDM-MCXC444
 
 New in 0.10.0. It is a Kinetis chip, a
@@ -68,12 +110,13 @@ On FRDM-MCXC444 (see [PIN_MAPPING_C444.md](PIN_MAPPING_C444.md)):
 | API | Status | Notes |
 |-----|--------|-------|
 | `Wire.begin` / `beginTransmission` / `endTransmission` | ✅ | `begin()` joins as the controller at 100kHz; `setClock()` changes the speed, as on every official core. Before v0.7.0 this core's `begin()` took the SCL frequency as its argument, which clashed with the standard `begin(address)`: a sketch written for a target, calling `Wire.begin(0x10)`, built cleanly and ran as a 16Hz controller. Now `begin(address)` means what it means elsewhere (see target mode below), and a value over 127 is still taken as a frequency for sketches written the old way. That form is deprecated: use `begin()` then `setClock()`. On every LPI2C bus (`Wire`; FRDM-MCXN947's `Wire2`; FRDM-MCXA156's and FRDM-MCXN236's `Wire1`), `begin()` also turns on the pins' internal pull-ups, as AVR's and UNO R4's do (FRDM-MCXC444's `Wire` too; not on FRDM-MCXA153's or FRDM-MCXN947's `Wire1`, which runs on I3C) |
+| `Wire.endTransmission()`'s return value, `Wire.lastStatus()` | ✅ | AVR's codes from v0.11.0: `0` success, `2` the address not acknowledged, `3` a data byte not acknowledged, `4` another error (bus busy, arbitration lost, ...), `5` timeout (`setWireTimeout()`). The LPI2C (`Wire` on every board but FRDM-MCXC444, `Wire2` on FRDM-MCXN947, `Wire1` on FRDM-MCXA156 and FRDM-MCXN236) doesn't tell a data byte's NAK from the address's, so it returns `2` for both; FRDM-MCXC444's Kinetis I2C tells them apart. `Wire.lastStatus()` (not in the official API) gives the driver's own status code from the last `endTransmission()` or `requestFrom()`, an MCUXpresso SDK `status_t`. Before v0.11.0 `endTransmission()` returned that code cut to 8 bits (`134` for an LPI2C NAK, for example) |
 | `Wire.write` / `read` / `requestFrom` / `available` | ✅ | `write()` returns 1 per byte, and 0 once the 128-byte buffer (`WIRE_BUFFER_SIZE`) is full, setting the write error, as on AVR. Before v0.7.0 it returned the total queued so far and wrote past the end of the buffer. `requestFrom()` of more than 128 bytes is cut down to 128, as AVR cuts down to its 32; before, it overran the buffer too |
 | `Wire` as a `Stream` (`peek`, `flush`, `print`, `readBytes`, passing `Wire` as a `Stream&`) | ✅ | Added in v0.7.0. `TwoWire` derives from `Stream`, as in the official cores. `print()` goes into the transaction being built; the `Stream` helpers read what the last `requestFrom()` got. Outgoing and incoming bytes have separate buffers. Before v0.7.0 they shared one, so starting a transaction before reading everything `requestFrom()` got made `available()` and `read()` go wrong. `flush()` does nothing, as on AVR: every transfer is over when `endTransmission()`/`requestFrom()` returns |
 | `Wire.requestFrom(address, quantity, iaddress, isize, sendStop)` | ✅ | Added in v0.7.0. AVR's five-argument form: writes the register address (`isize` bytes, at most 3, most significant first), then reads after a repeated start. Unlike AVR, it returns 0 without reading when the target doesn't acknowledge the register address |
 | `Wire.setClock` | ✅ | |
 | `Wire.end` | ✅ | Added in v0.2.1 — releases the I2C/I3C peripheral. Turns the internal pull-ups off again, as AVR's does |
-| `Wire.setWireTimeout` / `clearWireTimeoutFlag` / `getWireTimeoutFlag` | ✅ `Wire`, `Wire2` (N947), `Wire1` (A156, N236, C444) / ❌ `Wire1` (A153, N947) | Added in v0.7.0, with `WIRE_HAS_TIMEOUT`. Same signature and defaults as AVR, and disabled until called. What is timed is how long SCL or SDA stays low in one stretch (the LPI2C's hardware pin-low timeout), not the whole transaction. The hardware caps the limit, and on FRDM-MCXA153 and FRDM-MCXA156 the cap shrinks with bus speed: ~87ms at 100kHz but ~21.8ms at 400kHz, so even the 25ms default is clamped there. FRDM-MCXN947 and FRDM-MCXN236 are ~87ms at every speed. On a timeout `endTransmission()` returns `138` (the SDK's `kStatus_LPI2C_PinLowTimeout`, truncated to `uint8_t`) rather than AVR's `5`; this core's other codes aren't AVR's either. A line that is already low when a transfer starts makes it fail at once as busy (`132`) instead, with the flag left clear. The bus recovers once the line is released, with or without `reset_with_timeout`. Not implemented on FRDM-MCXA153's and FRDM-MCXN947's `Wire1`, which runs on I3C, so it has no effect there. FRDM-MCXC444's Kinetis I2C (0.10.0) times SCL only, with its SMBus SCL low timeout: the cap is ~87ms at every speed, a timeout returns `80` (`kStatus_I2C_Timeout`), and SCL already held low when a transfer starts times out the same way; SDA held low makes the bus busy, and the transfer fails at once with `76`. Hardware-verified on every board, FRDM-MCXN947's `Wire2` and FRDM-MCXA156's and FRDM-MCXN236's `Wire1` included, as is the cap at 400kHz (and 1MHz on FRDM-MCXA153 and FRDM-MCXN947). FRDM-MCXC444's `Wire1` reaches no header pin, so only its `Wire` is |
+| `Wire.setWireTimeout` / `clearWireTimeoutFlag` / `getWireTimeoutFlag` | ✅ `Wire`, `Wire2` (N947), `Wire1` (A156, N236, C444) / ❌ `Wire1` (A153, N947) | Added in v0.7.0, with `WIRE_HAS_TIMEOUT`. Same signature and defaults as AVR, and disabled until called. What is timed is how long SCL or SDA stays low in one stretch (the LPI2C's hardware pin-low timeout), not the whole transaction. The hardware caps the limit, and on FRDM-MCXA153 and FRDM-MCXA156 the cap shrinks with bus speed: ~87ms at 100kHz but ~21.8ms at 400kHz, so even the 25ms default is clamped there. FRDM-MCXN947 and FRDM-MCXN236 are ~87ms at every speed. On a timeout `endTransmission()` returns AVR's `5`. A line that is already low when a transfer starts makes it fail at once as busy (`4`) instead, with the flag left clear. The bus recovers once the line is released, with or without `reset_with_timeout`. Not implemented on FRDM-MCXA153's and FRDM-MCXN947's `Wire1`, which runs on I3C, so it has no effect there. FRDM-MCXC444's Kinetis I2C (0.10.0) times SCL only, with its SMBus SCL low timeout: the cap is ~87ms at every speed, a timeout returns `5`, and SCL already held low when a transfer starts times out the same way; SDA held low makes the bus busy, and the transfer fails at once with `4`. Hardware-verified on every board, FRDM-MCXN947's `Wire2` and FRDM-MCXA156's and FRDM-MCXN236's `Wire1` included, as is the cap at 400kHz (and 1MHz on FRDM-MCXA153 and FRDM-MCXN947). FRDM-MCXC444's `Wire1` reaches no header pin, so only its `Wire` is |
 | I2C target (slave) mode (`Wire.begin(address)`, `onReceive`, `onRequest`) | ✅ `Wire`, `Wire1` (A156, N236, C444) / ❌ `Wire1` (A153, N947), `Wire2` | Added in v0.7.0, as on AVR: `onReceive(n)` runs when a controller's write ends (STOP or repeated start), with the bytes readable by `available()`/`read()`, and `onRequest()` runs when a controller reads, with `write()` queuing the reply. The board stays a controller too and can address its own target. A controller reading past the reply gets 0xFF; a write past 128 bytes is NAKed from there. Both handlers run from the LPI2C interrupt, as on AVR: keep them short, and keep `Serial` output in them small. `begin()` with no address goes back to controller only. Not on FRDM-MCXA153's and FRDM-MCXN947's `Wire1` (I3C) or on FRDM-MCXN947's `Wire2` (LPI2C3 doesn't respond as a target, though it works as a controller; cause not found): `begin(address)` there stops the sketch with a message saying so. FRDM-MCXA156's `Wire1` is LPI2C3 too, and does respond; FRDM-MCXN236's `Wire1` is LPI2C2 and responds as well. On FRDM-MCXC444 (0.10.0) both buses are Kinetis I2Cs, which are a controller or a target, never both at once: the board stays a controller too, but can't address its own target. Hardware-verified on every board, a board against its own target (both `Wire` and `Wire1` on FRDM-MCXA156 and FRDM-MCXN236), FRDM-MCXA156's `Wire` and `Wire1` against each other, and FRDM-MCXN947 against FRDM-MCXA153, FRDM-MCXA156, FRDM-MCXN236 and FRDM-MCXC444 (its `Wire`; its `Wire1` reaches no header pin) |
 | `Wire1` | ✅ | On FRDM-MCXA153 and FRDM-MCXN947: I3C in I2C mode, on the on-board P3T1755 temperature sensor's bus (different physical pins per board -- see the board's pin mapping). On FRDM-MCXA156: a plain LPI2C (`LPI2C3`) on the MikroBus `MB_SDA`/`MB_SCL`. That board's P3T1755 is on `Wire` (`D18`/`D19`, at `0x48`), so a sketch reading the sensor through `Wire1` on the other boards needs `Wire` there. On FRDM-MCXN236: a plain LPI2C (`LPI2C2`) on the MikroBus `MB_SDA`/`MB_SCL`, with the on-board FXLS8974CF accelerometer on it at `0x18`. That board has no temperature sensor; a P3T1755 module on the MikroBus I2C is read through `Wire1` as on FRDM-MCXA153 and FRDM-MCXN947 |
 
@@ -131,20 +174,40 @@ On FRDM-MCXC444 (see [PIN_MAPPING_C444.md](PIN_MAPPING_C444.md)):
 
 | API | Status | Notes |
 |-----|--------|-------|
-| `Ethernet` / `EthernetClient` / `EthernetServer` / `EthernetUDP` | ⚠️ N947 / ❌ the other boards | Added in v0.11.0, as the bundled library `MCXEthernet`, for the on-board Ethernet (ENET and a LAN8741A PHY): `#include <MCXEthernet.h>` in place of `<Ethernet.h>`. Original implementation with the official Ethernet library's interface (not a port of it), on lwIP 2.2.1; the official library's 13 examples build with only that `#include` changed. The header has its own name so that the official library (W5x00 shields) stays usable on every board, so the two can't be in one sketch. lwIP runs in a 1 ms CTIMER2 interrupt, so connections are served while the sketch is busy, as by a W5x00. `begin()` with no MAC address makes one from the chip's ID; `maintain()` returns 0, as lwIP renews the lease itself; `hardwareStatus()` gives `EthernetMCXENET`. On the other boards the library stops the build. **Built, not yet run on the board.** See [its README](hardware/nxp/mcx/libraries/MCXEthernet/README.md) for the differences in full, and [PIN_MAPPING_N947.md](PIN_MAPPING_N947.md) for the pins (`D5` may share the PHY's MDIO line) |
+| `Ethernet` / `EthernetClient` / `EthernetServer` / `EthernetUDP` | ⚠️ N947 / ❌ the other boards | Added in v0.11.0, as the bundled library `MCXEthernet`, for the on-board Ethernet (ENET and a LAN8741A PHY): `#include <MCXEthernet.h>` in place of `<Ethernet.h>`. Original implementation with the official Ethernet library's interface (not a port of it), on lwIP 2.2.1; the official library's 13 examples build with only that `#include` changed. The header has its own name so that the official library (W5x00 shields) stays usable on every board, so the two can't be in one sketch. lwIP runs in a 1 ms CTIMER2 interrupt, so connections are served while the sketch is busy, as by a W5x00. `begin()` with no MAC address makes one from the chip's ID; `maintain()` returns 0, as lwIP renews the lease itself; `hardwareStatus()` gives `EthernetMCXENET`. On the other boards the library stops the build. Checked on the board with `release_check/25_ethernet_pc_N947` (a PC on the same network runs its `pc_check.py`) and the library's examples. See [its README](hardware/nxp/mcx/libraries/MCXEthernet/README.md) for the differences in full, and [PIN_MAPPING_N947.md](PIN_MAPPING_N947.md) for the pins (`D5` is also the PHY's MDIO line) |
 
 ## String, Print & Stream
 
 | API | Status | Notes |
 |-----|--------|-------|
 | `String` class | ✅ | Original implementation (not a WString port); concatenation (including `long long`/`unsigned long long`, and `F("...")`), `substring`/`indexOf`/`replace`, `toInt`/`toFloat`, `getBytes`/`toCharArray`, free `operator+` for all numeric types and `F("...")`, etc. `reserve()` is a no-op (always allocates exact-fit). `String(double, decimalPlaces)` rounds, as on other cores (it truncated before v0.7.0), and prints large values in full. Unlike ArduinoCore-avr/-API, `String(5.0, 0)` is `"5"`, not `" 5"`: they pad to `decimalPlaces + 2` characters |
-| `Print` / `Stream` abstract base classes | ✅ | Added in v0.2.1. Original implementation (not a port of ArduinoCore-avr/API's LGPL 2.1 `Print`/`Stream`), matching the real class hierarchy: any class can inherit `Print` directly (no hardware/pins required) and get every `print()`/`println()` overload for free by implementing just `write(uint8_t)`; `Stream` adds `available()`/`read()`/`peek()` plus the polled `find`/`parseInt`/`readBytes`/etc. helpers. `SerialClass` (`Serial`/`Serial1`) derives from both, and since v0.7.0 so does `TwoWire` (`Wire`). `print()`/`println()` return `size_t` (bytes written), matching real Arduino. Since v0.7.0 `Print` also has a virtual `flush()` that does nothing unless overridden, and `Stream` has the `uint8_t*` forms of `readBytes()`/`readBytesUntil()`, as in ArduinoCore-API |
+| `Print` / `Stream` abstract base classes | ✅ | Added in v0.2.1. Original implementation (not a port of ArduinoCore-avr/API's LGPL 2.1 `Print`/`Stream`), matching the real class hierarchy: any class can inherit `Print` directly (no hardware/pins required) and get every `print()`/`println()` overload for free by implementing just `write(uint8_t)`; `Stream` adds `available()`/`read()`/`peek()` plus the polled `find`/`parseInt`/`readBytes`/etc. helpers. `SerialClass` (`Serial`/`Serial1`) derives from both, and since v0.7.0 so does `TwoWire` (`Wire`). `print()`/`println()` return `size_t` (bytes written), matching real Arduino. Since v0.7.0 `Print` also has a virtual `flush()` that does nothing unless overridden, and `Stream` has the `uint8_t*` forms of `readBytes()`/`readBytesUntil()`, as in ArduinoCore-API. Since v0.11.0 `print(n, HEX)` writes upper case (`FF`), as AVR's does, as do the digits past 9 in other bases; it wrote lower case before. `String(n, HEX)` stays lower case, as AVR's does |
 | `Printable` interface | ✅ | `Print::print`/`println` accept any class implementing `size_t printTo(Print&) const`. Now that `print()`/`println()` return real `size_t` byte counts, the common third-party idiom `size_t n = 0; n += p.print(x); ...; return n;` inside `printTo()` works as written (this previously required a workaround before the `Print`/`Stream` refactor) |
 | `Print::setWriteError` / `getWriteError` / `clearWriteError` | ✅ | Matches ArduinoCore-API's placement/signatures (`setWriteError` is `protected`, for a derived class to call internally; `getWriteError`/`clearWriteError` are `public`). Needed by third-party libraries that derive from `Print` and track write failures this way (e.g. the official `SD` library's `SdFile`/`File`) — fixes [#3](https://github.com/teddokano/mcx-arduino-core/issues/3) |
 | `PROGMEM` / `pgm_read_byte`/`_word`/`_dword`/`_float`/`_ptr` / `PSTR` | ✅ | No-ops — flash and RAM share one address space on this Cortex-M target, unlike AVR's Harvard split. Declared for sketch/library compatibility only |
 | `<avr/pgmspace.h>`: `pgm_read_*_near`/`_far`, `pgm_read_qword`, `pgm_get_far_address`, `PGM_VOID_P`, the `prog_char` family, and the `_P`/`_PF` functions (`strcpy_P`, `memcpy_P`, `strlen_P`, `sprintf_P`, ...) | ✅ | Added in v0.10.0, as macros, as in avr-libc (so a library's `#ifndef pgm_read_byte_near` sees them). Each is the plain read or the ordinary function, since flash is ordinary memory here. `Arduino.h` includes `<avr/pgmspace.h>`, as AVR's does; as on AVR, a sketch using the `printf_P` family includes `<stdio.h>` itself. The multi-byte reads work at any address, as on AVR, where code reads words from odd offsets of byte tables. `pgm_read_ptr()` now gives `void *`, as in avr-libc (before v0.10.0 it gave `const void *`). Needed by libraries such as PubSubClient. Checked by `examples/Arduino_compatible_API/test_avr_pgmspace` |
 | `F("...")` / `__FlashStringHelper` | ✅ | Works with `Serial.print`/`println` and `String` (construct/concat) |
 | `Client` / `Server` / `UDP` / `IPAddress` (`Client.h`, `Server.h`, `Udp.h`, `IPAddress.h`) | ✅ | Added in v0.10.0. Original implementation of ArduinoCore-API's network base classes (not a port of its LGPL 2.1 source), with the same virtual functions, so libraries built on them compile: the official `Ethernet` library (W5x00 shields) and libraries that take a `Client&` (PubSubClient, ArduinoJson's Ethernet examples). As on AVR, `Arduino.h` doesn't include them; a sketch or library includes the header it uses. `IPAddress` holds IPv4 or IPv6 (`type()`), as in ArduinoCore-API. `toString()` gives the same text as `print()`: for IPv6 that is the RFC 5952 short form (`fe80::1`), where ArduinoCore-API's `toString()` writes all 8 groups. `fromString()` leaves the address unchanged when the text isn't an address. The names are also available as `arduino::IPAddress` and so on, for code written for ArduinoCore-API cores. Checked by `examples/Arduino_compatible_API/test_network_base_classes` (no wiring), which derives in-memory classes from them. From v0.11.0 the bundled `MCXEthernet` builds on them for FRDM-MCXN947's on-board Ethernet (see [Ethernet](#ethernet-frdm-mcxn947)) |
+
+## Third-party libraries
+
+The regression check (from v0.11.0) builds the examples of these libraries,
+at a pinned version (`.github/third_party/libraries.txt`), on every board.
+Building is what is checked; running them on a board is noted where it was
+done.
+
+| Library | Builds | Notes |
+|---|---|---|
+| ArduinoJson 7.4.3 | ✅ | |
+| LiquidCrystal 1.0.7 | ✅ | |
+| DHT sensor library 1.4.7 | ✅ | Times the sensor's pulses with `digitalRead()` (its AVR-only register path is left out), and `microsecondsToClockCycles()` from this core. Not run on a board |
+| Adafruit NeoPixel 1.15.5 | ✅ (except the BLE examples) | **Builds but sends nothing**: `show()` picks its signal code by chip, and has none for this core, so it does nothing, with no error or warning. The BLE examples also need a BLE library and radio |
+| OneWire 2.3.8 | ✅ | Runs in its "fallback mode" (it warns so when built): it doesn't know this core, so it moves the pin with `pinMode()`, `digitalWrite()` and `digitalRead()` instead of the GPIO registers. Whether that keeps 1-Wire's microsecond timing has not been checked on a board |
+| Adafruit BusIO 1.17.4 | ✅ | Moves its pins through this core's `portOutputRegister()` / `portInputRegister()` (its "fast pin I/O" for Arm chips) |
+| Adafruit Unified Sensor 1.1.15 | ✅ (except `sensortest`) | `sensortest` needs the Adafruit_ADXL343 library |
+| Ethernet 2.0.2 | ✅ | The official library, for W5x00 shields; not run on a board. Its chip select is `D10` by default (this core's `PIN_SPI_SS`), as on UNO R3, moved with `digitalWrite()`. Its examples also build for FRDM-MCXN947's on-board Ethernet on `MCXEthernet` (see [Ethernet](#ethernet-frdm-mcxn947)) |
+| PubSubClient 2.8 | ✅ (except 3 examples) | Two examples are for the ESP8266, and `mqtt_stream` needs the SRAM library |
+| SD 1.3.0 | ✅ | The examples of `Waveshare_TFT_Touch` (`release_check/23`) run it on every board |
 
 ## Compatibility Macros
 

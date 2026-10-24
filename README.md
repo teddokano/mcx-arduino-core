@@ -218,8 +218,7 @@ and the bundled `EEPROM` library keeps 1KB in on-chip flash across resets
 and uploads. The bundled `Servo` library takes the official Servo library's
 interface, and on FRDM-MCXN947 the bundled `MCXEthernet` library drives the
 on-board Ethernet with the official Ethernet library's interface
-(`#include <MCXEthernet.h>` in place of `<Ethernet.h>`; built, not yet run on
-the board). Third-party libraries that
+(`#include <MCXEthernet.h>` in place of `<Ethernet.h>`). Third-party libraries that
 inherit `Print` directly or take `Stream&` (e.g. ArduinoJson, LiquidCrystal,
 Adafruit sensor libraries) compile against this core.
 
