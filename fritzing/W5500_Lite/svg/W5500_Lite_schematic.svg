@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1.4000in" height="0.9000in" viewBox="0 0 35.560 22.860">
+<g id="schematic">
+<rect x="7.620" y="2.540" width="20.320" height="17.780" fill="#ffffff" stroke="#000000" stroke-width="0.25"/>
+<text x="17.780" y="1.940" font-family="Droid Sans, sans-serif" font-size="1.8" text-anchor="middle">W5500 Lite</text>
+<line id="connector9pin" x1="0.000" y1="5.080" x2="7.620" y2="5.080" stroke="#000000" stroke-width="0.25"/>
+<rect id="connector9terminal" x="-0.050" y="5.030" width="0.1" height="0.1" fill="none" stroke="none"/>
+<text x="8.420" y="5.680" font-family="Droid Sans, sans-serif" font-size="1.6" text-anchor="start">VIN</text>
+<line id="connector10pin" x1="0.000" y1="7.620" x2="7.620" y2="7.620" stroke="#000000" stroke-width="0.25"/>
+<rect id="connector10terminal" x="-0.050" y="7.570" width="0.1" height="0.1" fill="none" stroke="none"/>
+<text x="8.420" y="8.220" font-family="Droid Sans, sans-serif" font-size="1.6" text-anchor="start">VIN</text>
+<line id="connector4pin" x1="0.000" y1="10.160" x2="7.620" y2="10.160" stroke="#000000" stroke-width="0.25"/>
+<rect id="connector4terminal" x="-0.050" y="10.110" width="0.1" height="0.1" fill="none" stroke="none"/>
+<text x="8.420" y="10.760" font-family="Droid Sans, sans-serif" font-size="1.6" text-anchor="start">GND</text>
+<line id="connector5pin" x1="0.000" y1="12.700" x2="7.620" y2="12.700" stroke="#000000" stroke-width="0.25"/>
+<rect id="connector5terminal" x="-0.050" y="12.650" width="0.1" height="0.1" fill="none" stroke="none"/>
+<text x="8.420" y="13.300" font-family="Droid Sans, sans-serif" font-size="1.6" text-anchor="start">GND</text>
+<line id="connector11pin" x1="0.000" y1="15.240" x2="7.620" y2="15.240" stroke="#000000" stroke-width="0.25"/>
+<rect id="connector11terminal" x="-0.050" y="15.190" width="0.1" height="0.1" fill="none" stroke="none"/>
+<text x="8.420" y="15.840" font-family="Droid Sans, sans-serif" font-size="1.6" text-anchor="start">GND</text>
+<line id="connector8pin" x1="0.000" y1="17.780" x2="7.620" y2="17.780" stroke="#000000" stroke-width="0.25"/>
+<rect id="connector8terminal" x="-0.050" y="17.730" width="0.1" height="0.1" fill="none" stroke="none"/>
+<text x="8.420" y="18.380" font-family="Droid Sans, sans-serif" font-size="1.6" text-anchor="start">NC</text>
+<line id="connector3pin" x1="27.940" y1="5.080" x2="35.560" y2="5.080" stroke="#000000" stroke-width="0.25"/>
+<rect id="connector3terminal" x="35.510" y="5.030" width="0.1" height="0.1" fill="none" stroke="none"/>
+<text x="27.140" y="5.680" font-family="Droid Sans, sans-serif" font-size="1.6" text-anchor="end">MOSI</text>
+<line id="connector6pin" x1="27.940" y1="7.620" x2="35.560" y2="7.620" stroke="#000000" stroke-width="0.25"/>
+<rect id="connector6terminal" x="35.510" y="7.570" width="0.1" height="0.1" fill="none" stroke="none"/>
+<text x="27.140" y="8.220" font-family="Droid Sans, sans-serif" font-size="1.6" text-anchor="end">MISO</text>
+<line id="connector2pin" x1="27.940" y1="10.160" x2="35.560" y2="10.160" stroke="#000000" stroke-width="0.25"/>
+<rect id="connector2terminal" x="35.510" y="10.110" width="0.1" height="0.1" fill="none" stroke="none"/>
+<text x="27.140" y="10.760" font-family="Droid Sans, sans-serif" font-size="1.6" text-anchor="end">SCLK</text>
+<line id="connector1pin" x1="27.940" y1="12.700" x2="35.560" y2="12.700" stroke="#000000" stroke-width="0.25"/>
+<rect id="connector1terminal" x="35.510" y="12.650" width="0.1" height="0.1" fill="none" stroke="none"/>
+<text x="27.140" y="13.300" font-family="Droid Sans, sans-serif" font-size="1.6" text-anchor="end">CS</text>
+<line id="connector7pin" x1="27.940" y1="15.240" x2="35.560" y2="15.240" stroke="#000000" stroke-width="0.25"/>
+<rect id="connector7terminal" x="35.510" y="15.190" width="0.1" height="0.1" fill="none" stroke="none"/>
+<text x="27.140" y="15.840" font-family="Droid Sans, sans-serif" font-size="1.6" text-anchor="end">RST</text>
+<line id="connector0pin" x1="27.940" y1="17.780" x2="35.560" y2="17.780" stroke="#000000" stroke-width="0.25"/>
+<rect id="connector0terminal" x="35.510" y="17.730" width="0.1" height="0.1" fill="none" stroke="none"/>
+<text x="27.140" y="18.380" font-family="Droid Sans, sans-serif" font-size="1.6" text-anchor="end">INT</text>
+</g>
+</svg>
