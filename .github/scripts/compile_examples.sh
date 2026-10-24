@@ -22,6 +22,10 @@
 # other board -- that's expected and not a failure; see
 # examples/release_check/README.md.
 #
+# The sketches listed in .github/third_party/repo_sketches.txt need a
+# third-party library and are left out here; compile_third_party.sh builds
+# them.
+#
 # Each run has a build cache of its own (ARDUINO_BUILD_CACHE_PATH, in a
 # temporary directory unless set), so that several boards can run at once
 # (compile_all_boards.sh): runs sharing one build the same core.a over each
@@ -40,6 +44,7 @@ FQBN="nxp:mcx:${BOARD}"
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 source "${REPO_ROOT}/.github/scripts/run_builds.sh"
 STUB_LIB="${REPO_ROOT}/.github/ci-stubs/P3T1755"
+REPO_SKETCHES="${REPO_ROOT}/.github/third_party/repo_sketches.txt"
 # a name ending in .noindex keeps Spotlight from indexing the build files
 WORK="$(mktemp -d)" && mv "$WORK" "${WORK}.noindex" && WORK="${WORK}.noindex"
 export ARDUINO_BUILD_CACHE_PATH="${ARDUINO_BUILD_CACHE_PATH:-${WORK}/cache}"
@@ -83,6 +88,10 @@ BUILDS="${WORK}/builds.list"
 while IFS= read -r sketch; do
   dir="$(dirname "$sketch")"
   name="$(basename "$dir")"
+
+  if grep -v '^#' "$REPO_SKETCHES" | grep -qxF "${dir#"$REPO_ROOT"/}"; then
+    continue
+  fi
 
   suffix="${name##*_}"
   if [[ "$suffix" =~ ^[ACN][0-9]{3}$ ]] && \

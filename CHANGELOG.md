@@ -58,6 +58,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - The official Ethernet library run on a board: on FRDM-MCXA153 with a WIZnet W5500 module, 12 of its 13 examples
   work, and on FRDM-MCXA156, FRDM-MCXN236, FRDM-MCXC444 and FRDM-MCXN947 the four of them tried (see the Ethernet row of [API_COMPATIBILITY.md](API_COMPATIBILITY.md) for what was changed in them, and for
   `stop()` taking about 200 ms straight after a write)
+- New release check `26_ethernet_w5500_external_module`, optional: any board with a W5500 module under the official
+  Ethernet library, checked from the PC with #25's `pc_check.py`. The module's RST is on D8 on every board. CI builds
+  it with the third-party libraries (`.github/third_party/repo_sketches.txt` lists this repository's sketches that
+  need them)
 
 ## [0.10.0] - 2026-10-18
 

@@ -21,6 +21,8 @@
 # failure, and on a listed example that now builds, so that the list stays
 # true. On frdm_mcxn947 the Ethernet library's examples are also built
 # against the bundled MCXEthernet, with only their #include changed.
+# This repository's sketches listed in .github/third_party/repo_sketches.txt
+# (which need these libraries) are built too.
 #
 # The libraries go into a directory of their own (ARDUINO_DIRECTORIES_USER),
 # not the sketchbook. Set TP_USER_DIR to reuse one between runs.
@@ -37,6 +39,7 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 source "${REPO_ROOT}/.github/scripts/run_builds.sh"
 LIB_LIST="${REPO_ROOT}/.github/third_party/libraries.txt"
 EXPECTED="${REPO_ROOT}/.github/third_party/expected_failures.txt"
+REPO_SKETCHES="${REPO_ROOT}/.github/third_party/repo_sketches.txt"
 # a name ending in .noindex keeps Spotlight from indexing the build files
 WORK="$(mktemp -d)" && mv "$WORK" "${WORK}.noindex" && WORK="${WORK}.noindex"
 export ARDUINO_DIRECTORIES_USER="${TP_USER_DIR:-${WORK}/user}"
@@ -98,6 +101,9 @@ if [[ -d "${WORK}/mcxethernet" ]]; then
     printf '%s\t%s\n' "MCXEthernet:$(basename "$d")" "$d"
   done >> "$BUILDS"
 fi
+grep -v -e '^#' -e '^$' "$REPO_SKETCHES" | while IFS= read -r rel; do
+  printf '%s\t%s\n' "repo:${rel}" "${REPO_ROOT}/${rel}"
+done >> "$BUILDS"
 total="$(wc -l < "$BUILDS" | tr -d ' ')"
 
 run_builds "$BUILDS" "$FAILED" "$WORK" compile

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-"""Release check 25, the PC side: run against FRDM-MCXN947 running
-25_ethernet_pc_N947.ino, on the same network.
+"""Release checks 25 and 26, the PC side: run against FRDM-MCXN947 running
+25_ethernet_pc_N947.ino, or any board running
+26_ethernet_w5500_external_module.ino with a W5500 module, on the same
+network.
 
     python3 pc_check.py <the board's address>
 
@@ -77,7 +79,7 @@ def main():
         print(__doc__)
         sys.exit(2)
     host = sys.argv[1]
-    print("=== release_check 25: Ethernet with a PC, board at %s ===" % host)
+    print("=== release_check 25/26: Ethernet with a PC, board at %s ===" % host)
 
     # ---- ICMP ----
     ok, text = ping(host, 5)
@@ -183,13 +185,16 @@ def main():
     check("TCP connection accepted while the sketch is in delay()", ack == b"OK" and connected and during)
     time.sleep(max(0, 4.5 - (time.time() - t0)))
 
-    # ---- the 1 ms interrupt ----
+    # ---- the 1 ms interrupt (MCXEthernet's lwIP; #26 replies "-") ----
     stats = udp_request(u, host, b"STATS")
-    try:
-        tick = int(stats)
-        check("longest 1 ms lwIP interrupt under 1000 us", tick < 1000, "%d us" % tick)
-    except (TypeError, ValueError):
-        check("longest 1 ms lwIP interrupt under 1000 us", False, "no answer to STATS")
+    if stats == b"-":
+        print("longest 1 ms lwIP interrupt under 1000 us: SKIP  (no lwIP on this board's side)")
+    else:
+        try:
+            tick = int(stats)
+            check("longest 1 ms lwIP interrupt under 1000 us", tick < 1000, "%d us" % tick)
+        except (TypeError, ValueError):
+            check("longest 1 ms lwIP interrupt under 1000 us", False, "no answer to STATS")
     u.close()
 
     print("ALL OK" if fail_count == 0 else "%d FAILED" % fail_count)

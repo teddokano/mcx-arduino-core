@@ -37,6 +37,16 @@ with one setup each:
 | 23 | `23_waveshare_tft_touch_external_library` | needs the external `Waveshare_TFT_Touch` library + its LCD/SD hardware (see its own README), running its `SDBitmapViewer` example (1.3.1 or later) | manual (judge the rendered image + draw speed) |
 | 24 | `24_wire_target_two_boards` | an FRDM-MCXA153 (or FRDM-MCXA156, FRDM-MCXN236 or FRDM-MCXC444) and an FRDM-MCXN947 wired D18-D18, D19-D19, GND-GND, both running this sketch (reset both together if either already was) | automatic, on each board |
 | 25 | `25_ethernet_pc_N947` | N947 only: the RJ45 (J16) on a network with a DHCP server and a PC on it -- or straight to the PC, with the PC sharing its connection to its wired port (macOS: Internet Sharing), which makes the PC the DHCP server. Python 3 on the PC | automatic, on the PC: `python3 pc_check.py <the address the board prints>` in the sketch's folder prints "ALL OK"/"N FAILED"; the board prints its own checks first ("board side: ALL OK"). The board connecting back to the PC needs the PC's firewall to let the connection in |
+| 26 | `26_ethernet_w5500_external_module` | **optional** (see below): any board, with the official `Ethernet` library (2.0.2) and a WIZnet W5500 Lite module: 3.3V, GND, D11 (MOSI), D12 (MISO), D13 (SCLK), D10 (CS), D8 (RST), INT left unconnected (FRDM-MCXA156: with R59/R60 moved to 2-3, for SPI on D10-D13). The module's RJ45 on a network as for #25 | automatic, on the PC as for #25, with #25's script: `python3 ../25_ethernet_pc_N947/pc_check.py <the address the board prints>` in this sketch's folder. Its check of MCXEthernet's 1 ms interrupt prints SKIP here |
+
+`26_ethernet_w5500_external_module` is optional: a release check can
+leave it out, since a W5500 module is not a common setup. It checks the
+core under the official `Ethernet` library -- `SPI`, and the network base
+classes (`Client`, `Server`, `UDP`, `IPAddress`) -- on every board, where
+#25 checks the bundled `MCXEthernet` on FRDM-MCXN947. The sketch resets
+the module from RST first. CI builds it with the third-party libraries
+(on `main`, tags and manual runs; `.github/third_party/repo_sketches.txt`),
+not on every push.
 
 `06_eeprom` mirrors
 [`Arduino_compatible_API/test_EEPROM`](../Arduino_compatible_API/test_EEPROM)
