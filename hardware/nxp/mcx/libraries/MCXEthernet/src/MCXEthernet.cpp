@@ -136,6 +136,7 @@ static void enet_pins()
 }
 
 static constexpr uint8_t	PHY_ADDRESS	= 0;
+static constexpr uint32_t	LINK_WAIT_MS	= 3000;	//  begin() with a fixed address
 
 //  @return true if the PHY answers on MDIO
 static bool hardware_init()
@@ -356,15 +357,33 @@ void EthernetClass::begin( uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress 
 	if ( !interface_start( mac ) )
 		return;
 
-	Lock		lock;
-	ip_addr_t	a	= to_lwip( ip );
-	ip_addr_t	m	= to_lwip( subnet );
-	ip_addr_t	g	= to_lwip( gateway );
-	ip_addr_t	d	= to_lwip( dns );
+	{
+		Lock		lock;
+		ip_addr_t	a	= to_lwip( ip );
+		ip_addr_t	m	= to_lwip( subnet );
+		ip_addr_t	g	= to_lwip( gateway );
+		ip_addr_t	d	= to_lwip( dns );
 
-	dhcp_stop( &enet_netif );
-	netif_set_addr( &enet_netif, ip_2_ip4( &a ), ip_2_ip4( &m ), ip_2_ip4( &g ) );
-	dns_setserver( 0, &d );
+		dhcp_stop( &enet_netif );
+		netif_set_addr( &enet_netif, ip_2_ip4( &a ), ip_2_ip4( &m ), ip_2_ip4( &g ) );
+		dns_setserver( 0, &d );
+	}
+
+	//  Waits up to LINK_WAIT_MS for the PHY's auto-negotiation (~1.7 s), as a
+	//  W5x00 has its link up from power-up: sketches test linkStatus() right
+	//  after this. Asking the PHY here tells lwIP at once, not at its next
+	//  1.5 s poll, so a connect() just after doesn't find no route
+	uint32_t	start	= millis();
+	while ( millis() - start < LINK_WAIT_MS )
+	{
+		{
+			Lock	lock;
+			ethernetif_probe_link( &enet_netif );
+			if ( netif_is_link_up( &enet_netif ) )
+				return;
+		}
+		delay( 10 );
+	}
 }
 
 int EthernetClass::maintain()
