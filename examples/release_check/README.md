@@ -48,6 +48,11 @@ the module from RST first. CI builds it with the third-party libraries
 (on `main`, tags and manual runs; `.github/third_party/repo_sketches.txt`),
 not on every push.
 
+The wiring on FRDM-MCXA153 (the same pins on every board; drawn with the
+part in [`fritzing/W5500_Lite`](../../fritzing/W5500_Lite)):
+
+<img src="../../img/W5500-lite_FRDM-MCXA153.png" alt="A W5500 Lite module on a breadboard wired to FRDM-MCXA153: 3V3, GND, D11 MOSI, D12 MISO, D13 SCK, D10 CS, D8 RST, INT left unconnected" width="500">
+
 `06_eeprom` mirrors
 [`Arduino_compatible_API/test_EEPROM`](../Arduino_compatible_API/test_EEPROM)
 exactly in the same way, and `07_eeprom_reset` mirrors

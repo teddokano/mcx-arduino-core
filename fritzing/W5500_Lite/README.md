@@ -25,6 +25,15 @@ The order matches the silkscreen on the module's top side (`MI RST NC V V`
 along the lower row). The last pin of the upper row is the W5500's interrupt
 output, `INT` (one published pinout shows it cut off, as `NT`).
 
+## Wiring example
+
+The module on FRDM-MCXA153, as `release_check/26` uses it on every board:
+3.3V and GND, `D11` (MOSI), `D12` (MISO), `D13` (SCLK), `D10` (CS), `D8` (RST),
+and `INT` left unconnected. The module sits turned round on the breadboard, its
+jack to the left.
+
+<img src="../../img/W5500-lite_FRDM-MCXA153.png" alt="A W5500 Lite module on a breadboard wired to FRDM-MCXA153: 3V3, GND, D11 MOSI, D12 MISO, D13 SCK, D10 CS, D8 RST, INT left unconnected" width="500">
+
 ## Outline: estimated, not measured
 
 No dimensions were at hand. The outline is scaled from a photo of the top using
