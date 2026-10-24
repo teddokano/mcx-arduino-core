@@ -83,6 +83,7 @@ namespace {
 volatile uint32_t	ms_ticks		= 0;
 volatile uint32_t	ms_tick_dwt		= 0;
 uint32_t			cycles_per_us	= 1;
+uint32_t			cycles_per_ms	= 1000;
 bool				millis_ready	= false;
 
 void millis_init( void )
@@ -90,6 +91,7 @@ void millis_init( void )
 	uint32_t	core_hz	= CLOCK_GetCoreSysClkFreq();
 
 	cycles_per_us	= core_hz / 1000000u;
+	cycles_per_ms	= core_hz / 1000u;
 
 #if !defined( __ARM_ARCH_6M__ )	// Cortex-M0+ has no cycle counter: micros() reads SysTick there
 	CoreDebug->DEMCR	|= CoreDebug_DEMCR_TRCENA_Msk;
@@ -98,12 +100,14 @@ void millis_init( void )
 	// DWT->CYCCNT has been free-running since boot (wait()/delay() enabled
 	// it). Snapshot "now" as the baseline so micros() doesn't report the
 	// raw since-boot cycle count before the first SysTick tick has fired.
+	// Taken just before SysTick starts, so each tick comes a few cycles
+	// after a whole number of milliseconds from it (SysTick_Handler())
 	ms_tick_dwt		= DWT->CYCCNT;
 #endif
 
 	millis_ready	= true;
 
-	SysTick_Config( core_hz / 1000u );
+	SysTick_Config( cycles_per_ms );
 }
 
 }	// namespace
@@ -134,9 +138,19 @@ void delayMicroseconds( unsigned int us )
 
 extern "C" void SysTick_Handler( void )
 {
-	ms_ticks	= ms_ticks + 1;
 #if !defined( __ARM_ARCH_6M__ )
-	ms_tick_dwt	= DWT->CYCCNT;
+	// The whole milliseconds since the last tick, by the cycle counter. This
+	// handler can run late (SysTick has the lowest priority, and waits behind
+	// MCXEthernet's tick, for one), and the time it runs mustn't become the
+	// start of the millisecond, or micros() reads short until the next tick.
+	// Ticks missed while interrupts were off for over 1 ms come back, and a
+	// tick that comes in while this one counts it adds 0 when it runs
+	uint32_t	n	= ( DWT->CYCCNT - ms_tick_dwt ) / cycles_per_ms;
+
+	ms_ticks	= ms_ticks + n;
+	ms_tick_dwt	= ms_tick_dwt + n * cycles_per_ms;
+#else
+	ms_ticks	= ms_ticks + 1;
 #endif
 #if defined( CPU_MCXC444VLH )
 	pwm_tpm_service( ms_ticks * 1000u );	// micros() at this tick

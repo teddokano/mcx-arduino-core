@@ -110,6 +110,32 @@ void setup() {
   Serial.println("--- millis from boot ---");
   check("first millis() after delay(200) is 200 or more", first_millis >= 200);
 
+  // ---- micros() stays right when SysTick runs late (0.11.0) ----
+  // Interrupts off for 700 us hold back a tick that falls in that time; the
+  // core took the time the late tick ran as the start of the millisecond, so
+  // micros() read up to 700 us short until the next tick
+  Serial.println("--- micros with a late tick ---");
+  {
+    unsigned long d_min = 0xFFFFFFFF, d_max = 0;
+    for (int i = 0; i < 20; i++) {
+      unsigned long t0 = micros();
+      noInterrupts();
+      delayMicroseconds(700);
+      interrupts();
+      delayMicroseconds(300);
+      unsigned long d = micros() - t0;
+      if (d < d_min) d_min = d;
+      if (d > d_max) d_max = d;
+      delayMicroseconds(137);  // a different phase against the tick each time
+    }
+    Serial.print("  1000 us measured as ");
+    Serial.print(d_min);
+    Serial.print("-");
+    Serial.print(d_max);
+    Serial.println(" us");
+    check("micros() across 20 late ticks within 1000-1050 us", d_min >= 1000 && d_max <= 1050);
+  }
+
   // ---- math constants / trig (was test_math_constants) ----
   Serial.println("--- math constants ---");
   check("PI", fabs(PI - 3.14159265) < 0.00001);

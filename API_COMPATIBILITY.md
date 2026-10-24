@@ -137,7 +137,7 @@ On FRDM-MCXC444 (see [PIN_MAPPING_C444.md](PIN_MAPPING_C444.md)):
 |-----|--------|-------|
 | `delay` | ✅ | |
 | `delayMicroseconds` | ✅ | |
-| `millis` / `micros` | ✅ | SysTick(1ms) + DWT cycle counter. They count from before `setup()`, as on AVR (since v0.11.0; before, from their first call) |
+| `millis` / `micros` | ✅ | SysTick(1ms) + DWT cycle counter. They count from before `setup()`, as on AVR (since v0.11.0; before, from their first call). On the Cortex-M33 boards the tick counts whole milliseconds from the cycle counter, so a tick held back (by interrupts off, or by `MCXEthernet`'s tick, which shares its lowest priority) doesn't shift `micros()`, and ticks missed while interrupts were off for over 1 ms come back (since v0.11.0) |
 | `tone` / `noTone` | ✅ | CTIMER0, any digital pin, 1 tone at a time |
 
 ## Analog I/O

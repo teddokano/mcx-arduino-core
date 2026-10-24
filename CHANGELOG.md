@@ -18,6 +18,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   stays `ff`, as on AVR
 - **`millis()` and `micros()` count from boot**, as on AVR: the core started them at their first call, so a sketch
   that called `delay(500)` first read `0` there (`delay()` keeps its own time). Now they start before `setup()`
+- **`micros()` stays right when the 1 ms tick runs late** (FRDM-MCXA153, FRDM-MCXN947, FRDM-MCXA156, FRDM-MCXN236):
+  the tick took the time it ran as the start of the millisecond, so after a late one `micros()` read short (or went
+  back) by however late it was, until the next tick. The tick waits behind `MCXEthernet`'s, which shares its lowest
+  priority, and behind code with interrupts off: with the Ethernet busy, a 1 kHz signal timed with `micros()` read
+  873-1087 us. It now counts whole milliseconds from the cycle counter, which also brings back ticks missed while
+  interrupts were off for over 1 ms
 - API_COMPATIBILITY.md starts with what stays compatible from 1.0.0 and what doesn't, and a table of the instance
   names (`Wire1`, `Serial1`, `SPI1`, ...) on each board, which stay as they are
 
