@@ -13,7 +13,8 @@
 #
 # Each run has a build cache of its own, as in compile_examples.sh: the core
 # is built once and kept, and each sketch's build directory is removed after
-# it (80 sketches' would take ~20GB).
+# it (80 sketches' would take ~20GB). SWEEP_JOBS=N builds N at a time, as
+# in compile_examples.sh.
 #
 # An example listed in .github/third_party/expected_failures.txt for the
 # board (or for "*") is expected not to build; the check fails on any other
@@ -33,6 +34,7 @@ if [[ "$BOARD" == "--install-only" && -z "${TP_USER_DIR:-}" ]]; then
 fi
 FQBN="nxp:mcx:${BOARD}"
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+source "${REPO_ROOT}/.github/scripts/run_builds.sh"
 LIB_LIST="${REPO_ROOT}/.github/third_party/libraries.txt"
 EXPECTED="${REPO_ROOT}/.github/third_party/expected_failures.txt"
 # a name ending in .noindex keeps Spotlight from indexing the build files
@@ -78,31 +80,27 @@ fi
 
 FAILED="${WORK}/failed"
 : > "$FAILED"
-total=0
 
-compile() {  # <label> <sketch dir>
-  local label="$1" dir="$2"
-  total=$((total + 1))
-  echo "::group::${label}"
-  if arduino-cli compile --fqbn "$FQBN" "$dir" < /dev/null; then
-    echo "OK"
-  else
-    echo "$label" >> "$FAILED"
-    echo "FAIL: $label"
-  fi
+compile() {  # <sketch dir>
+  arduino-cli compile --fqbn "$FQBN" "$1" < /dev/null
+  local status=$?
   rm -rf "${ARDUINO_BUILD_CACHE_PATH}/sketches"
-  echo "::endgroup::"
+  return $status
 }
 
+# the builds, as "<label><TAB><sketch dir>"
+BUILDS="${WORK}/builds.list"
 while IFS= read -r rel; do
-  compile "$rel" "${LIBS}/$(dirname "$rel")"
-done < "$SKETCHES"
-
+  printf '%s\t%s\n' "$rel" "${LIBS}/$(dirname "$rel")"
+done < "$SKETCHES" > "$BUILDS"
 if [[ -d "${WORK}/mcxethernet" ]]; then
   for d in "${WORK}"/mcxethernet/*/; do
-    compile "MCXEthernet:$(basename "$d")" "$d"
-  done
+    printf '%s\t%s\n' "MCXEthernet:$(basename "$d")" "$d"
+  done >> "$BUILDS"
 fi
+total="$(wc -l < "$BUILDS" | tr -d ' ')"
+
+run_builds "$BUILDS" "$FAILED" "$WORK" compile
 
 sort -u "$FAILED" -o "$FAILED"
 unexpected="$(comm -23 "$FAILED" "$EXPECTED_HERE")"

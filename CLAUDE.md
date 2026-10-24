@@ -124,7 +124,8 @@
   `hello_world`すら落ちるうえ**実行のたびに失敗する顔ぶれが変わる**。
   一方で`--build-path`を渡すと、arduino-cliはスケッチごとにコアをビルドし直す（2026-10-24に、並列のfullが逐次より遅かった原因）。
   `compile_examples.sh`・`compile_third_party.sh`は、走らせるごとに自分のキャッシュ（`.noindex`のフォルダー）を作り、スケッチごとに`sketches/`だけを消す。
-  ローカルでは`.github/scripts/compile_all_boards.sh full --queue 10`が速い（全ボードのビルドを1つの一覧にして10本ずつ流す。fullで約8分。ボードごとの並列は約10.5分、third_partyは約11分）
+  ローカルでは`.github/scripts/compile_all_boards.sh full --queue 10`が速い（全ボードのビルドを1つの一覧にして10本ずつ流す。fullで約8分。ボードごとの並列は約10.5分、third_partyは約11分）。
+  1つのボードの中も`SWEEP_JOBS=N`で並列にできる（`.github/scripts/run_builds.sh`。workerごとにキャッシュを分け、最初の1本で作ったコアのキャッシュを複製する。CIは`nproc`）
 - **arduino-cliのビルドキャッシュはスケッチのパスごとに1つで、ボードは区別されない**（0.7.0で2回踏んだ）。
   A153向けにビルドした直後に`arduino-cli upload -b ...:frdm_mcxn947`すると、**A153のバイナリがN947に書き込まれる**
   （エラーにならず、シリアル出力が無いか、`Wire ACK Fault`が出るだけ）。
@@ -478,8 +479,11 @@ xPack checksums（正しい値）：
   退避先の名前に版の番号は入れていない（0.9.1までは手で`nxp-0.9.1-dev-env`などに移していた）
 
 ## GitHub Actions
-- **`regression_check.yml`**: push・PRごとに全サンプルのコンパイル（fast/fullの2段）とhygieneチェック（`.github/scripts/check_repo_hygiene.py`、タグでは`--release`）
-- **サードパーティのライブラリの作例のビルド**（2026-10-23、memoの§9の⑨）: fullの段と同じとき（`main`・タグ・手動実行）に、`.github/scripts/compile_third_party.sh`が`.github/third_party/libraries.txt`のライブラリ（版を固定、依存も並べて`--no-deps`で入れる）の作例を全ボードでビルドする。
+- **`regression_check.yml`**: push・PRごとに全サンプルのコンパイル（fast/fullの2段）とhygieneチェック（`.github/scripts/check_repo_hygiene.py`、タグでは`--release`）。
+  matrixはボード×`suite`（`examples`と、fullのときだけ`third_party`）。ジョブの中は`SWEEP_JOBS=$(nproc)`で並列にビルドする。
+  **arduino-cliのビルドキャッシュは実行をまたいで持たない**（checkoutでソースが`core.a`より新しくなり、毎回コアを作り直すので、復元したキャッシュは使われていなかった。2026-10-24に手順を消した）。
+  2026-10-24の測定で、pushのfastが2分47秒（前は4分50秒）、workflow_dispatchのfull＋third_partyが8分13秒（前は25分32秒）、判定は前後で同じ
+- **サードパーティのライブラリの作例のビルド**（2026-10-23、memoの§9の⑨）: fullの段と同じとき（`main`・タグ・手動実行）に別のジョブで、`.github/scripts/compile_third_party.sh`が`.github/third_party/libraries.txt`のライブラリ（版を固定、依存も並べて`--no-deps`で入れる）の作例を全ボードでビルドする。
   通らないと分かっている作例は`expected_failures.txt`にボードごとに書き、それ以外の失敗と、書いてあるのに通るようになった作例の両方でCIを落とす。N947では公式`Ethernet`の作例を`#include <MCXEthernet.h>`に替えて`MCXEthernet`でもビルドする。
   ローカルでは`TP_USER_DIR=<ディレクトリ>`でライブラリを入れる場所を指定して流せる（スケッチごとにキャッシュの`sketches/`を消すので、ディスクは食わない。5ボードを並列にするのは`compile_all_boards.sh third_party`）。ライブラリの版を上げるときは手で一覧を直す
 - **`update_package_index.yml`**: GCCのsizeをHEADリクエストで取得、プラットフォームZIPのchecksum/sizeをダウンロードして計算・更新

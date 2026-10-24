@@ -28,6 +28,9 @@
 # other and fail at random. The core is built once and kept in that cache;
 # each sketch's build directory in it is removed after the sketch. (Not
 # --build-path: with it, arduino-cli builds the core again for every sketch.)
+#
+# SWEEP_JOBS=N builds N sketches at a time (run_builds.sh), with the same
+# output and result as one at a time; CI sets it to the runner's CPUs.
 set -uo pipefail
 
 BOARD="$1"
@@ -35,6 +38,7 @@ MODE="$2"
 OPTION="${3:-}"
 FQBN="nxp:mcx:${BOARD}"
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+source "${REPO_ROOT}/.github/scripts/run_builds.sh"
 STUB_LIB="${REPO_ROOT}/.github/ci-stubs/P3T1755"
 # a name ending in .noindex keeps Spotlight from indexing the build files
 WORK="$(mktemp -d)" && mv "$WORK" "${WORK}.noindex" && WORK="${WORK}.noindex"
@@ -74,23 +78,8 @@ else
   exit 2
 fi
 
-if [[ "$OPTION" == "--list" ]]; then
-  while IFS= read -r sketch; do
-    dir="$(dirname "$sketch")"
-    name="$(basename "$dir")"
-    suffix="${name##*_}"
-    if [[ "$suffix" =~ ^[ACN][0-9]{3}$ ]] && \
-       [[ "$BOARD" != *"$(echo "$suffix" | tr '[:upper:]' '[:lower:]')" ]]; then
-      continue
-    fi
-    echo "$dir"
-  done < "$SKETCH_LIST"
-  rm -rf "$WORK"
-  exit 0
-fi
-
-echo "Board: $BOARD  Mode: $MODE  Sketches found: $(wc -l < "$SKETCH_LIST" | tr -d ' ')"
-
+# the builds, as "<label><TAB><sketch dir>", without the other boards' sketches
+BUILDS="${WORK}/builds.list"
 while IFS= read -r sketch; do
   dir="$(dirname "$sketch")"
   name="$(basename "$dir")"
@@ -101,19 +90,23 @@ while IFS= read -r sketch; do
     continue
   fi
 
-  echo "::group::${sketch#"$REPO_ROOT"/}"
-  if compile_one "$dir"; then
-    echo "OK"
-  else
-    echo "FAIL: ${sketch#"$REPO_ROOT"/}" | tee -a "$FAILLOG"
-  fi
-  echo "::endgroup::"
-done < "$SKETCH_LIST"
+  printf '%s\t%s\n' "${sketch#"$REPO_ROOT"/}" "$dir"
+done < "$SKETCH_LIST" > "$BUILDS"
+
+if [[ "$OPTION" == "--list" ]]; then
+  cut -f2 "$BUILDS"
+  rm -rf "$WORK"
+  exit 0
+fi
+
+echo "Board: $BOARD  Mode: $MODE  Sketches found: $(wc -l < "$SKETCH_LIST" | tr -d ' ')"
+
+run_builds "$BUILDS" "$FAILLOG" "$WORK" compile_one
 
 if [[ -s "$FAILLOG" ]]; then
   echo ""
   echo "=== FAILED SKETCHES ($BOARD, $MODE) ==="
-  cat "$FAILLOG"
+  sed 's/^/FAIL: /' "$FAILLOG"
   rm -rf "$WORK"
   exit 1
 fi

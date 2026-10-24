@@ -11,11 +11,12 @@ name: Regression check
 #          Runs on push to main, workflow_dispatch, and version tags --
 #          not on every push, since it's the same fast-tier sketches
 #          plus everything else, at several times the cost.
-#          With it, the examples of pinned third-party libraries
-#          (.github/third_party/libraries.txt: ArduinoJson, Ethernet,
-#          PubSubClient, ...), against a list of the ones known not to
-#          build (expected_failures.txt); on FRDM-MCXN947 also the
-#          Ethernet examples on the bundled MCXEthernet.
+#          With it, in jobs of their own beside it, the examples of
+#          pinned third-party libraries (.github/third_party/
+#          libraries.txt: ArduinoJson, Ethernet, PubSubClient, ...),
+#          against a list of the ones known not to build
+#          (expected_failures.txt); on FRDM-MCXN947 also the Ethernet
+#          examples on the bundled MCXEthernet.
 #
 # The toolchain to install and its download URL/checksum are read
 # straight out of package_nxp_mcx_index.json (via its toolsDependencies/
@@ -30,13 +31,14 @@ name: Regression check
 # no toolchain, so it finishes in seconds and reports independently of
 # the compile matrix.
 #
-# Caching (the single biggest lever found while measuring this locally):
-# arduino-cli's own build cache persists core.a across sketches within a
-# run for free -- what actually matters for CI is carrying that *across*
-# separate workflow runs, since each run starts on a fresh runner. The
-# cache key is a hash of cores/arduino, variants, platform.txt and
-# boards.txt, so a run that only touches examples/ or docs reuses a
-# previous run's core.a build outright.
+# Speed: each job builds as many sketches at a time as the runner has
+# CPUs (SWEEP_JOBS, see run_builds.sh), each worker with a build cache of
+# its own, cloned from the first build's so the core is built once per
+# job. There is no cache of arduino-cli's build cache across runs:
+# arduino-cli rebuilds core.a whenever the core's sources are newer than
+# it, and a fresh checkout always makes them newer, so the restored cache
+# was never used -- and it had grown to ~1.6GB, ~45s to restore. Only the
+# toolchain download is cached.
 
 on:
   push:
@@ -95,6 +97,10 @@ jobs:
       fail-fast: false
       matrix:
         board: [frdm_mcxa153, frdm_mcxn947, frdm_mcxa156, frdm_mcxn236, frdm_mcxc444]
+        # examples: this repo's sketches (the fast or the full tier);
+        # third_party: the libraries' examples, only where the full tier
+        # runs, on runners of their own so they run beside it
+        suite: ${{ fromJSON((github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) && '["examples", "third_party"]' || '["examples"]') }}
     runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
     steps:
       - name: Checkout
@@ -172,23 +178,14 @@ jobs:
           mkdir -p "$HOME/.arduino15/packages/nxp/hardware/mcx"
           cp -r hardware/nxp/mcx "$HOME/.arduino15/packages/nxp/hardware/mcx/${PLATFORM_VERSION}"
 
-      - name: Cache arduino-cli build cache
-        uses: actions/cache@v6
-        with:
-          path: ~/.cache/arduino
-          key: build-cache-${{ matrix.board }}-${{ hashFiles('hardware/nxp/mcx/cores/**', 'hardware/nxp/mcx/variants/**', 'hardware/nxp/mcx/platform.txt', 'hardware/nxp/mcx/boards.txt') }}
-          restore-keys: |
-            build-cache-${{ matrix.board }}-
-
       - name: Compile (fast tier)
-        if: github.event_name != 'workflow_dispatch' && github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/tags/')
-        run: .github/scripts/compile_examples.sh ${{ matrix.board }} fast
+        if: matrix.suite == 'examples' && github.event_name != 'workflow_dispatch' && github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/tags/')
+        run: SWEEP_JOBS=$(nproc) .github/scripts/compile_examples.sh ${{ matrix.board }} fast
 
       - name: Compile (full tier)
-        if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
-        run: .github/scripts/compile_examples.sh ${{ matrix.board }} full
+        if: matrix.suite == 'examples' && (github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))
+        run: SWEEP_JOBS=$(nproc) .github/scripts/compile_examples.sh ${{ matrix.board }} full
 
-      # Runs even if the full tier failed, so one run reports both
       - name: Compile third-party libraries' examples
-        if: ${{ !cancelled() && (github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) }}
-        run: .github/scripts/compile_third_party.sh ${{ matrix.board }}
+        if: matrix.suite == 'third_party'
+        run: SWEEP_JOBS=$(nproc) .github/scripts/compile_third_party.sh ${{ matrix.board }}
