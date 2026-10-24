@@ -3272,7 +3272,7 @@ N947が1枚。LANはMacの「インターネット共有」（`bridge100`の`192
 - **`millis()`・`micros()`が最初の呼び出しから数えていた**（全ボード）: 種の`micros()`が0だったので調べると、`delay(500)`のあとの最初の`millis()`も`micros()`も0。
   コアはSysTickを`millis()`・`micros()`の最初の呼び出しで始めていた（`delay()`はDWTで待つので時計を進めない）。AVRは起動から数える。
   `main()`で`setup()`の前に`millis_init()`を呼ぶようにした（2026-10-25、ユーザーが決定）。呼び出しの側の「まだなら始める」は残した（`main()`より前のグローバルのコンストラクタから呼ばれても動くように）。
-  N947で`delay(500)`のあとが`millis 500  micros 500181`。`release_check/09`に「`delay(200)`のあとの最初の`millis()`が200以上」を足し、N947でALL OK。`01`もALL OK
+  N947で`delay(500)`のあとが`millis 500  micros 500181`。`release_check/09`に「`delay(200)`のあとの最初の`millis()`が200以上」を足した。`09`と`01`が5ボードともALL OK（N947のあと、A153・A156・N236・C444を1枚ずつ）
 - **ELSのPRNGで種を作った**（案A、2026-10-25、ユーザーが決定）。手順はSDKの`els_pkc/src/platforms/mcxn/mcux_els.c`の`ELS_PowerDownWakeupInit()`と同じで、`els_pkc`は取り込まずレジスタで書いた:
   GDETとTRNGの参照クロック（`SYSCON->REF_CLK_CTRL_SET`）とELSのクロック（`kCLOCK_Css`）を入れ、`ELS_CTRL`の`ELS_EN`、`ELS_STATUS`の`PRNG_RDY`が立っていなければ、`ELS_KS0`〜`ELS_KS19`で`KACT`の無いスロットを探してKDELETE（コマンド11）、`ELS_PRNG_DATOUT`を読み、`ELS_ERR_STATUS`の`PRNG_ERR`を見る。
   ELSが立ち上がらないときは0を返し、前と同じ種（MACと`micros()`）になる。SDKのKDELETEの説明では、鍵の無いスロットを消してもエントロピーの水準が上がりPRNGに種が入る。鍵のあるスロットには触らないので、memoの「ROMと共有するか」の心配は当たらない。
