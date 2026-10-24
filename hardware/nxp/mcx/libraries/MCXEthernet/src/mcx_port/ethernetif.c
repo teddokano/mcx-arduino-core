@@ -568,7 +568,7 @@ err_enum_t ethernetif_wait_linkup_array(struct netif **netif_array, int netif_ar
     const uint32_t force_wrap   = now >= (UINT32_MAX / 2) ? (UINT32_MAX / 2) : 0U;
     const uint32_t timeout_time = (now + force_wrap) + timeout_ms;
 
-    LWIP_ASSERT("Timeout too long.", timeout_ms <= (UINT32_MAX / 2));
+    LWIP_ASSERT("Timeout too long.", (unsigned long)timeout_ms <= (UINT32_MAX / 2));
 
     while (true)
     {
@@ -666,7 +666,7 @@ err_enum_t ethernetif_wait_ipv4_valid(struct netif *netif_, long timeout_ms)
     const uint32_t force_wrap   = now >= (UINT32_MAX / 2) ? (UINT32_MAX / 2) : 0U;
     const uint32_t timeout_time = (now + force_wrap) + timeout_ms;
 
-    LWIP_ASSERT("Timeout too long.", timeout_ms <= (UINT32_MAX / 2));
+    LWIP_ASSERT("Timeout too long.", (unsigned long)timeout_ms <= (UINT32_MAX / 2));
 
     do
     {

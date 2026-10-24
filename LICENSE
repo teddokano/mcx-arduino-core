@@ -105,6 +105,10 @@ The rest of that library is imported unmodified: lwIP 2.2.1 (`src/lwip/`,
 `ethernetif`, `enet_ethernetif` and `enet_configchecks` files in
 `src/mcx_port/`) and the ENET, PHY (LAN8741) and GPIO adapter driver files
 in `src/mcx_port/`. Each file retains its own original copyright header.
+The one change is a cast added in four comparisons of signed and unsigned
+integers in the SDK's lwIP port (`enet_ethernetif.c`, `enet_ethernetif_lpc.c`
+and two in `ethernetif.c`), so that the library builds without warnings with
+the IDE's compiler warnings set to "All"; the code does the same as before.
 
 - lwIP — https://savannah.nongnu.org/projects/lwip/ (BSD-3-Clause)
 - NXP MCUXpresso SDK — https://github.com/nxp-mcuxpresso/mcux-sdk (BSD-3-Clause)

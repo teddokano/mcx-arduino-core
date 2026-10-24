@@ -611,7 +611,7 @@ static struct pbuf *ethernetif_rx_frame_to_pbufs(struct ethernetif *ethernetif, 
     int idx;
     int i;
 
-    for (i = 0; ((i < MAX_BUFFERS_PER_FRAME) && (len < rxFrame->totLen)); i++)
+    for (i = 0; ((i < (int)MAX_BUFFERS_PER_FRAME) && (len < rxFrame->totLen)); i++)
     {
         buffer       = rxFrame->rxBuffArray[i].buffer;
         bufferLength = rxFrame->rxBuffArray[i].length;
