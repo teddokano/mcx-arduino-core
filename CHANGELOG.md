@@ -44,7 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   check fails on any other failure and on a listed one that starts to build. On FRDM-MCXN947 it also builds the
   Ethernet examples on `MCXEthernet`
 - The official Ethernet library run on a board: on FRDM-MCXA153 with a WIZnet W5500 module, 12 of its 13 examples
-  work, and on FRDM-MCXA156, FRDM-MCXN236 and FRDM-MCXC444 the four of them tried (see the Ethernet row of [API_COMPATIBILITY.md](API_COMPATIBILITY.md) for what was changed in them, and for
+  work, and on FRDM-MCXA156, FRDM-MCXN236, FRDM-MCXC444 and FRDM-MCXN947 the four of them tried (see the Ethernet row of [API_COMPATIBILITY.md](API_COMPATIBILITY.md) for what was changed in them, and for
   `stop()` taking about 200 ms straight after a write)
 
 ## [0.10.0] - 2026-10-18
