@@ -35,6 +35,7 @@ runnable sketch. See [API_COMPATIBILITY.md](API_COMPATIBILITY.md) for the full A
   - [2.13. UNO R3/R4 compatibility](#213-uno-r3r4-compatibility)
   - [2.14. Keeping data across resets: `EEPROM`](#214-keeping-data-across-resets-eeprom)
   - [2.15. Two boards on one I2C bus: target mode](#215-two-boards-on-one-i2c-bus-target-mode)
+  - [2.16. Ethernet](#216-ethernet)
 - [Where to go next](#where-to-go-next)
 
 ## 1. Installation
@@ -751,6 +752,109 @@ another board. For a complete pair to wire up and watch, see
 [`examples/Arduino_compatible_API/Wire_target_demo`](examples/Arduino_compatible_API/Wire_target_demo)
 and
 [`Wire_controller_demo`](examples/Arduino_compatible_API/Wire_controller_demo).
+
+### 2.16. Ethernet
+
+Any of the boards can join a wired network through a WIZnet W5500 module and
+the official `Ethernet` library: install **Ethernet** (2.0.2) from the IDE's
+Library Manager. Wire the module as below (the same pins on every
+board; INT stays unconnected):
+
+| W5500 module | Board |
+|---|---|
+| 3.3V / GND | `3V3` / `GND` |
+| MOSI / MISO / SCLK | `D11` / `D12` / `D13` |
+| CS | `D10` |
+| RST | `D8` |
+
+<img src="img/W5500-lite_FRDM-MCXA153.png" alt="A W5500 Lite module on a breadboard wired to FRDM-MCXA153" width="500">
+
+Plug the module into a network with a DHCP server (a home router does), or
+straight into a PC that shares its connection to its wired port (macOS:
+Internet Sharing). This sketch takes an address and serves a small page:
+
+```cpp
+#include <Arduino.h>
+#include <SPI.h>
+#include <Ethernet.h>
+
+byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
+EthernetServer server(80);
+
+void setup() {
+  Serial.begin(115200);
+  while (!Serial)
+    ;
+
+  pinMode(D8, OUTPUT);  // the module's RST: a reset to start from
+  digitalWrite(D8, LOW);
+  delay(1);
+  digitalWrite(D8, HIGH);
+  delay(50);
+
+  Ethernet.init(D10);  // the module's CS (D10 is also the default)
+  if (Ethernet.begin(mac) == 0) {
+    Serial.println("no address from DHCP: check the cable");
+    while (true)
+      ;
+  }
+  server.begin();
+  Serial.print("open http://");
+  Serial.println(Ethernet.localIP());
+}
+
+void loop() {
+  EthernetClient client = server.accept();
+  if (!client)
+    return;
+
+  // read the browser's request up to the blank line that ends it
+  bool lineIsBlank = true;
+  while (client.connected()) {
+    if (!client.available())
+      continue;
+    char c = client.read();
+    if (c == '\n' && lineIsBlank)
+      break;
+    if (c == '\n')
+      lineIsBlank = true;
+    else if (c != '\r')
+      lineIsBlank = false;
+  }
+
+  client.println("HTTP/1.1 200 OK");
+  client.println("Content-Type: text/plain");
+  client.println("Connection: close");
+  client.println();
+  client.print("A2 reads ");
+  client.println(analogRead(A2));
+  client.print("up for ");
+  client.print(millis() / 1000);
+  client.println(" s");
+
+  delay(5);  // let the reply go out first (see below)
+  client.stop();
+}
+```
+
+Open the printed address in a browser on the same network. Every board on
+one network needs a MAC address of its own: change the last byte for a
+second one. The W5500 runs TCP/IP itself, so it answers pings and takes
+connections while the sketch is busy elsewhere. The official library's own
+examples (**File → Examples → Ethernet**) work as they are: their chip
+select is `D10` by default, as on UNO R3. `stop()` waits for the W5500 to
+close the connection, which straight after a write took about 200ms on this
+core; the `delay(5)` before it lets the reply go out first and skips that
+wait.
+
+> **FRDM-MCXN947**: that board has Ethernet of its own, on its RJ45
+> connector (J16), with the bundled `MCXEthernet` library. It has the same
+> classes, so the sketch above works with a few changes: include
+> `<MCXEthernet.h>` in place of `<SPI.h>` and `<Ethernet.h>`, call
+> `Ethernet.begin()` with no MAC address (it makes one from the chip's ID),
+> and leave out the RST pulse, `Ethernet.init()` and the `delay(5)`. Its own
+> examples are under **File → Examples → MCXEthernet**; see
+> [its README](hardware/nxp/mcx/libraries/MCXEthernet/README.md).
 
 ## Where to go next
 

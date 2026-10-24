@@ -32,6 +32,7 @@ English version → [TUTORIAL.md](TUTORIAL.md)
   - [2.13. UNO R3/R4互換性](#213-uno-r3r4互換性)
   - [2.14. リセットしても消えないデータ: `EEPROM`](#214-リセットしても消えないデータ-eeprom)
   - [2.15. 2枚のボードを1本のI2Cバスで: ターゲットモード](#215-2枚のボードを1本のi2cバスで-ターゲットモード)
+  - [2.16. Ethernet](#216-ethernet)
 - [次に見るべきもの](#次に見るべきもの)
 
 ## 1. インストール
@@ -586,6 +587,89 @@ void loop() {
 コントローラ側は普通の`Wire`のコードです: 送るときは`beginTransmission(0x08)` / `write()` / `endTransmission()`、返事は`requestFrom(0x08, 1)` / `read()`で受け取ります。2つのハンドラはI2Cの割り込みから呼ばれるので短く保ち、表示などの処理は`loop()`で行ってください。ターゲットモードは`Wire`と、FRDM-MCXA156・FRDM-MCXN236の`Wire1`で使えます。I3Cで動くFRDM-MCXA153・FRDM-MCXN947の`Wire1`では使えません。FRDM-MCXC444では1つのバスがコントローラかターゲットのどちらかにしかなれないので、コントローラは別のボードにしてください。配線して動きを見られる完全な組は
 [`examples/Arduino_compatible_API/Wire_target_demo`](examples/Arduino_compatible_API/Wire_target_demo)と
 [`Wire_controller_demo`](examples/Arduino_compatible_API/Wire_controller_demo)を参照してください。
+
+### 2.16. Ethernet
+
+どのボードでも、WIZnetのW5500のモジュールと公式の`Ethernet`ライブラリで有線のネットワークにつなげます。IDEのライブラリマネージャーから**Ethernet**（2.0.2）を入れてください。モジュールは次のように配線します（どのボードも同じピン。INTはつなぎません）:
+
+| W5500のモジュール | ボード |
+|---|---|
+| 3.3V / GND | `3V3` / `GND` |
+| MOSI / MISO / SCLK | `D11` / `D12` / `D13` |
+| CS | `D10` |
+| RST | `D8` |
+
+<img src="img/W5500-lite_FRDM-MCXA153.png" alt="FRDM-MCXA153に配線したブレッドボード上のW5500 Liteのモジュール" width="500">
+
+モジュールはDHCPサーバーのあるネットワーク（家庭のルーターなど）か、有線のポートへ接続を共有したPC（macOSでは「インターネット共有」）に直接つなぎます。次のスケッチはアドレスをもらって、小さなページを返します:
+
+```cpp
+#include <Arduino.h>
+#include <SPI.h>
+#include <Ethernet.h>
+
+byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
+EthernetServer server(80);
+
+void setup() {
+  Serial.begin(115200);
+  while (!Serial)
+    ;
+
+  pinMode(D8, OUTPUT);  // the module's RST: a reset to start from
+  digitalWrite(D8, LOW);
+  delay(1);
+  digitalWrite(D8, HIGH);
+  delay(50);
+
+  Ethernet.init(D10);  // the module's CS (D10 is also the default)
+  if (Ethernet.begin(mac) == 0) {
+    Serial.println("no address from DHCP: check the cable");
+    while (true)
+      ;
+  }
+  server.begin();
+  Serial.print("open http://");
+  Serial.println(Ethernet.localIP());
+}
+
+void loop() {
+  EthernetClient client = server.accept();
+  if (!client)
+    return;
+
+  // read the browser's request up to the blank line that ends it
+  bool lineIsBlank = true;
+  while (client.connected()) {
+    if (!client.available())
+      continue;
+    char c = client.read();
+    if (c == '\n' && lineIsBlank)
+      break;
+    if (c == '\n')
+      lineIsBlank = true;
+    else if (c != '\r')
+      lineIsBlank = false;
+  }
+
+  client.println("HTTP/1.1 200 OK");
+  client.println("Content-Type: text/plain");
+  client.println("Connection: close");
+  client.println();
+  client.print("A2 reads ");
+  client.println(analogRead(A2));
+  client.print("up for ");
+  client.print(millis() / 1000);
+  client.println(" s");
+
+  delay(5);  // let the reply go out first (see below)
+  client.stop();
+}
+```
+
+表示されたアドレスを、同じネットワークのPCのブラウザで開いてください。1つのネットワークにつなぐボードは、それぞれ別のMACアドレスにする必要があります（2枚目は最後のバイトを変えます）。W5500はTCP/IPを自分で処理するので、スケッチがほかのことをしている間もpingに答え、接続を受け付けます。公式ライブラリの作例（**ファイル → スケッチ例 → Ethernet**）もそのまま動きます（CSはUNO R3と同じく既定で`D10`です）。`stop()`はW5500が接続を閉じるのを待ちます。このコアでは、書き込みの直後に呼ぶと約200msかかりました。その前の`delay(5)`で返事を先に送り出しておくと、この待ちがなくなります。
+
+> **FRDM-MCXN947**: このボードはRJ45のコネクタ（J16）に自前のEthernetを持っていて、同梱の`MCXEthernet`ライブラリで使えます。クラスは同じなので、上のスケッチは少し変えれば動きます。`<SPI.h>`と`<Ethernet.h>`の代わりに`<MCXEthernet.h>`を読み込み、`Ethernet.begin()`をMACアドレスなしで呼び（チップのIDから作ります）、RSTのパルス、`Ethernet.init()`、`delay(5)`を外します。作例は**ファイル → スケッチ例 → MCXEthernet**にあります。[ライブラリのREADME](hardware/nxp/mcx/libraries/MCXEthernet/README.md)も参照してください。
 
 ## 次に見るべきもの
 

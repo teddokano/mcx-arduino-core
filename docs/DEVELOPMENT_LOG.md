@@ -3299,6 +3299,10 @@ N947が1枚。LANはMacの「インターネット共有」（`bridge100`の`192
 - **RSTは5ボードとも`D8`にした**（ユーザーの提案）。2026-10-24はN947だけ`D8`、ほかは`D9`だった。`D8`はどのボードでもほかの機能と共用していない（A153ではMikroBusの`MB_TX`と同じピン）
 - CI: pushごとのビルド（`compile_examples.sh`）には公式`Ethernet`が無いので、`.github/third_party/repo_sketches.txt`に載せたスケッチはそこから外し、`compile_third_party.sh`（`main`・タグ・手動実行）が5ボードともビルドする（ユーザーが決定）。そこでの失敗は想定外としてCIを落とす
 - 5ボードとも、ボード側・PC側ともALL OK（W5500 Lite、Macの「インターネット共有」）。DHCPは4.7秒、pingの平均は0.74〜1.3ms。`delay()`の間のpingと接続の受け付けはW5500が自分でする。`pc_check.py`を変えたあとの`25`（N947）もALL OK（lwIPの割り込みの最長は249µs）
+- 配線例の画像（`img/W5500-lite_FRDM-MCXA153.png`、ユーザーがFritzingで描いた）を`release_check`のREADMEと`fritzing/W5500_Lite/README.md`に載せた
+- ネットワークの残りの4番目: TUTORIAL（英日）に「2.16. Ethernet」を足した。W5500と公式`Ethernet`で小さなWebサーバー（`A2`の値と起動からの秒数。`A2`はどのボードにもADCがある）と、N947の`MCXEthernet`で変える所。
+  載せたスケッチと、`MCXEthernet`に変えたものの両方を、N947で書き込んで`curl`で3回ずつ200を確かめた（W5500は約11ms、`MCXEthernet`は約5ms）。
+  下書きに「公式の作例は`Ethernet.init(D10)`を足せば動く」と書いたが、CSの既定は`D10`（このコアの`PIN_SPI_SS`）で、作例はそのまま動く（API_COMPATIBILITYに書いてあった）。直してから載せた
 
 ### `print(n, HEX)`を大文字に（2026-10-24）
 実機の出力（`PHY ID 0x7 0xc121`、MACの`7c`）で、`Print`が16進を小文字で書いていたのに気づいた。AVRの`Print`は大文字で、`String(n, HEX)`はAVRでも小文字。

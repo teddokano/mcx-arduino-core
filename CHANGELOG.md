@@ -62,6 +62,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   Ethernet library, checked from the PC with #25's `pc_check.py`. The module's RST is on D8 on every board. CI builds
   it with the third-party libraries (`.github/third_party/repo_sketches.txt` lists this repository's sketches that
   need them)
+- TUTORIAL.md and TUTORIAL.ja.md have an Ethernet section (2.16): a W5500 module with the official library on any
+  board, with its wiring and a small web server, and the changes for FRDM-MCXN947's on-board Ethernet
 
 ## [0.10.0] - 2026-10-18
 
