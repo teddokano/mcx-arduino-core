@@ -75,9 +75,11 @@
   対策の案: OneWireに`ARDUINO_ARCH_MCX`の分岐を足す（上流への提案。このリポジトリではできない）。
   このコアの`portOutputRegister()`は`PDOR`を返し、そこからの`PSOR`(+1)・`PCOR`(+2)・`PDIR`(+4)・`PDDR`(+5)の並び（32ビット単位）はMCXの4チップ（`PDOR`が0x40）とC444（0x0）で同じなので、
   SAMD21の分岐と同じ形（`PIN_TO_BASEREG`に`portOutputRegister(digitalPinToPort(pin))`、`PIN_TO_BITMASK`に`digitalPinToBitMask(pin)`）で5ボードとも書ける。`util/OneWire_direct_regtype.h`にも同じ分岐が要る
+  → **DS18B20での実機の確認は、いまはしない**（2026-10-25、ユーザーが決定）。1-Wireの互換性が必要になったときにやる
 - **Adafruit NeoPixelはビルドが通るが何も送らない**（2026-10-23に調べた。1.15.5）: `show()`はARMのチップごとに`#if`/`#elif`で信号を出すコードを選び、その並びは`#else`の無いまま`#endif // ARM`で終わる。
   このコアはどれにも当たらないので、`show()`は何もしない（エラーも警告も出ない）。API_COMPATIBILITYの「Third-party libraries」に書いた。
   直すには、NeoPixelの上流に分岐を足してもらう。Renesas（UNO R4）の分岐はDWTのサイクルカウンタでタイミングを取っていて、MCXの4ボード（Cortex-M33）なら同じ形が使えそう。C444（M0+）にはDWTのカウンタが無いので別の形が要る（調べていない）
+  → **実機の確認は、いまはしない**（2026-10-25、ユーザーが決定。OneWireと同じく、必要になったときにやる）
 - **サードパーティライブラリの回帰**: 定番ライブラリ（Adafruit系など）をCIのコンパイル対象に入れ、「互換」の根拠にする。→ 2026-10-23にCIへ入れた（`.github/third_party/`。0.7.0と0.10.0で手で確かめた9つ、§9の⑨）
 
 ## 4. ボード追加の扱い
