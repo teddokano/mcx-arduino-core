@@ -124,7 +124,7 @@ void crossSuite(TwoWire &ctrl, const char *ctrlName, TwoWire &targ, const char *
   ctrl.write(9);
   r = ctrl.endTransmission();
   delay(1);
-  check("another address is NAKed, onReceive not called", r == 134 && rxCalls == 0);
+  check("another address is NAKed, onReceive not called", r == 2 && rxCalls == 0);
 
   targ.end();
   targ.begin();  // plain controller again, for the next suite

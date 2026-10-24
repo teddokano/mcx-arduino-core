@@ -91,7 +91,7 @@ TwoWire::TwoWire( int sda_pin, int scl_pin )
 	: _sda( sda_pin ), _scl( scl_pin ), i2c( nullptr ),
 	  tx_size( 0 ), rx_data( rx_buf ), rx_index( 0 ), rx_size( 0 ),
 	  target( nullptr ), user_onReceive( nullptr ), user_onRequest( nullptr ),
-	  timeout_us( 0 ), reset_on_timeout( false ), timed_out( false ){}
+	  timeout_us( 0 ), reset_on_timeout( false ), timed_out( false ), last_status( 0 ){}
 
 bool TwoWire::on_i3c_pins( void ) const
 {
@@ -665,12 +665,37 @@ size_t TwoWire::write( const uint8_t *data, size_t length )
 	return	n;
 }
 
+//	The driver's status as AVR's endTransmission() codes: 0 success, 2 address
+//	NAK, 3 data NAK, 4 other, 5 timeout
+static uint8_t avr_code( status_t r )
+{
+	switch ( r )
+	{
+		case kStatus_Success:					return 0;
+#if !defined( CPU_MCXC444VLH )
+		case kStatus_LPI2C_Nak:					return 2;	// address or data: the LPI2C doesn't say which
+		case kStatus_LPI2C_PinLowTimeout:
+		case kStatus_LPI2C_Timeout:				return 5;
+#else
+		case kStatus_I2C_Addr_Nak:				return 2;
+		case kStatus_I2C_Nak:					return 3;
+		case kStatus_I2C_Timeout:				return 5;
+#endif
+#ifdef I3C_SUPPORTED
+		case kStatus_I3C_Nak:					return 2;	// the I3C reports an address's NAK only
+		case kStatus_I3C_Timeout:				return 5;
+#endif
+		default:								return 4;
+	}
+}
+
 uint8_t TwoWire::endTransmission( bool stop )
 {
 	status_t	r	= i2c->write( targ_addr, tx_buf, tx_size, stop );
 
+	last_status	= r;
 	check_timeout( r );
-	return	r;
+	return	avr_code( r );
 }
 
 uint8_t	TwoWire::requestFrom( const uint8_t address, const size_t length, bool stop )
@@ -683,6 +708,7 @@ uint8_t	TwoWire::requestFrom( const uint8_t address, const size_t length, bool s
 
 	status_t	r	= i2c->read( address, rx_buf, n, stop );
 
+	last_status	= r;
 	check_timeout( r );
 	if ( r )
 		return	0;

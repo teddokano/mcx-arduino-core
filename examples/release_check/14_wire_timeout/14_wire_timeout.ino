@@ -37,15 +37,9 @@ struct Result {
 const uint8_t TARGET = 0x50;
 const uint8_t SELF = 0x42;  // Wire's own target address, for the target-mode checks
 
-// endTransmission() returns this core's status code truncated to uint8_t
-#if defined(FRDM_MCXC444)
-// The Kinetis I2C: a target that doesn't answer NAKs the address
-const uint8_t CODE_NAK = 81;       // kStatus_I2C_Addr_Nak (1105)
-const uint8_t CODE_TIMEOUT = 80;   // kStatus_I2C_Timeout (1104)
-#else
-const uint8_t CODE_NAK = 134;      // kStatus_LPI2C_Nak (902)
-const uint8_t CODE_TIMEOUT = 138;  // kStatus_LPI2C_PinLowTimeout (906)
-#endif
+// endTransmission() returns AVR's codes: a target that doesn't answer NAKs the address
+const uint8_t CODE_NAK = 2;
+const uint8_t CODE_TIMEOUT = 5;
 
 // The bus under test and its two hold pins
 TwoWire *bus;

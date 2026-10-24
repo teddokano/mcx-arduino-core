@@ -546,7 +546,7 @@ void setup() {
           n == 6 && strcmp(tgtOrder, "RQ") == 0 && b[0] == 0x11 && b[1] == 0x22 && b[2] == 0xA4 && b[3] == 0xA5 && b[4] == 0xFF && b[5] == 0xFF);
 
     Wire.beginTransmission(ADDR + 1);
-    check("another address is NAKed", Wire.endTransmission() == 134);
+    check("another address is NAKed", Wire.endTransmission() == 2);
 
     Wire.end();
   }

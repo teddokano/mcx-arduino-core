@@ -198,7 +198,7 @@ void suite(TwoWire &w, const char *name, uint8_t addr, LPI2C_Type *base) {
   w.write(9);
   r = w.endTransmission();
   settle();
-  check("another address is NAKed, onReceive not called", r == 134 && rxCalls == 0);
+  check("another address is NAKed, onReceive not called", r == 2 && rxCalls == 0);
 
   resetLog();
   w.beginTransmission(addr);
@@ -211,12 +211,12 @@ void suite(TwoWire &w, const char *name, uint8_t addr, LPI2C_Type *base) {
   w.write(1);
   r = w.endTransmission();
   settle();
-  if (r != 134) {
+  if (r != 2) {
     Serial.print("  (endTransmission returned ");
     Serial.print(r);
     Serial.println(")");
   }
-  check("begin() with no address: no longer a target", r == 134);
+  check("begin() with no address: no longer a target", r == 2);
 
   w.end();
   w.begin(addr);

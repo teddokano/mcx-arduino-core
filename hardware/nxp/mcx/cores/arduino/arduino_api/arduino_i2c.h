@@ -165,9 +165,21 @@ public:
 
 	/** Send the buffered write transaction started by beginTransmission().
 	 * @param stop generate a STOP condition (true, default) or a repeated start (false)
-	 * @return 0 on success, non-zero status code on failure
+	 * @return as AVR's: 0 success, 2 the address was not acknowledged, 3 a data
+	 *  byte was not acknowledged, 4 another error (bus busy, arbitration lost,
+	 *  ...), 5 timeout (setWireTimeout()). The LPI2C (Wire on every board but
+	 *  FRDM-MCXC444, and the other LPI2C buses) can't tell a data byte's NAK
+	 *  from the address's, so it gives 2 for both. lastStatus() has the
+	 *  driver's own status code
 	 */
 	uint8_t	endTransmission( bool stop = true );
+
+	/** Not in the official API: the driver's status code from the last
+	 *  endTransmission() or requestFrom() (an MCUXpresso SDK status_t, 0 on
+	 *  success), for telling apart what endTransmission()'s 4 covers.
+	 *  endTransmission() returned this, cut to 8 bits, before v0.11.0
+	 */
+	int32_t	lastStatus( void ) const { return last_status; }
 
 	/** Read a block of data from a target address into an internal buffer,
 	 *  to be consumed with available()/read().
@@ -264,6 +276,7 @@ private:
 	uint32_t	timeout_us;
 	bool		reset_on_timeout;
 	bool		timed_out;
+	int32_t		last_status;
 };
 
 /** Global TwoWire instance on this board's general-purpose I2C pins (I2C_SDA/I2C_SCL). */

@@ -42,12 +42,8 @@ const bool GOES_FIRST = true;
 #error "This sketch has no settings for this board yet"
 #endif
 
-// An address nobody has: endTransmission()'s NAK code, truncated to uint8_t
-#if defined(FRDM_MCXC444)
-const uint8_t CODE_NAK = 81;   // kStatus_I2C_Addr_Nak (1105), the Kinetis I2C
-#else
-const uint8_t CODE_NAK = 134;  // kStatus_LPI2C_Nak (902)
-#endif
+// An address nobody has: endTransmission() returns AVR's 2 (address not acknowledged)
+const uint8_t CODE_NAK = 2;
 
 const uint8_t YOUR_TURN = 0x10;
 
