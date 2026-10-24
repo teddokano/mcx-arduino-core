@@ -5,3 +5,4 @@
 # and compile_third_party.sh builds them, for every board, against the
 # libraries it installs. A failure fails the check: none is expected.
 examples/release_check/26_ethernet_w5500_external_module
+examples/Arduino_compatible_API/test_ethernet_throughput

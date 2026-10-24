@@ -2,8 +2,10 @@
  *  lwIP options for MCXEthernet
  *
  *  lwIP runs with NO_SYS=1 in one context only: the 1 ms CTIMER2 interrupt, or
- *  the sketch with that interrupt masked (MCXEthernet.cpp). The sizes start
- *  from the MCUXpresso SDK's lwip_dhcp_bm example for FRDM-MCXN947.
+ *  the sketch with that interrupt masked (MCXEthernet.cpp). The sizes started
+ *  from the MCUXpresso SDK's lwip_dhcp_bm example for FRDM-MCXN947; the heap,
+ *  the TCP window and send buffer and the ENET rings were then set from what
+ *  examples/Arduino_compatible_API/test_ethernet_throughput measured.
  */
 
 #ifndef MCX_ETHERNET_LWIPOPTS_H
@@ -32,17 +34,27 @@ uint32_t	mcx_eth_rand( void );
 
 //  memory
 #define MEM_ALIGNMENT			4
-#define MEM_SIZE				( 22 * 1024 )
+//  the heap holds received data the sketch hasn't read (up to TCP_WND per
+//  connection: 8 connections took 47KB), UDP packets waiting, and data written
+//  but not yet acknowledged (up to TCP_SND_BUF)
+#define MEM_SIZE				( 64 * 1024 )
 #define MEMP_NUM_PBUF			15
 #define MEMP_NUM_UDP_PCB		10	//  MAX_SOCK_NUM for EthernetUDP, + DHCP and DNS
 #define MEMP_NUM_TCP_PCB		10
 #define MEMP_NUM_TCP_PCB_LISTEN	6
-#define MEMP_NUM_TCP_SEG		22
+#define MEMP_NUM_TCP_SEG		( TCP_SND_QUEUELEN + 4 )
 #define MEMP_NUM_REASSDATA		2
 #define IP_REASS_MAX_PBUFS		4	//  below the port's spare receive buffers (enet_configchecks.h)
 #define MEMP_NUM_SYS_TIMEOUT	( LWIP_NUM_SYS_TIMEOUT_INTERNAL + 2 )	//  + the port's link polling
 #define PBUF_POOL_SIZE			5
 #define LWIP_DISABLE_PBUF_POOL_SIZE_SANITY_CHECKS	1
+
+//  the ENET rings, for the SDK's port (enet_ethernetif_lpc.c): a frame that
+//  finds every transmit descriptor busy waits for one inside the 1 ms
+//  interrupt, so there are about as many as a full send queue (TCP_SND_QUEUELEN);
+//  8 receive descriptors take what a 4 * TCP_MSS window brings in 1 ms
+#define ENET_RXBD_NUM			8
+#define ENET_TXBD_NUM			32
 
 //  protocols
 #define LWIP_ARP		1
@@ -59,9 +71,11 @@ uint32_t	mcx_eth_rand( void );
 #define TCP_TTL				255
 #define TCP_QUEUE_OOSEQ		0
 #define TCP_MSS				( 1500 - 40 )
-#define TCP_SND_BUF			( 6 * TCP_MSS )
+//  lwIP opens the window and handles ACKs once a millisecond, so these bound
+//  the rate: 35-47 Mbit/s in and about 70 Mbit/s out on a 100 Mbit/s link
+#define TCP_SND_BUF			( 12 * TCP_MSS )
 #define TCP_SND_QUEUELEN	( ( 3 * TCP_SND_BUF ) / TCP_MSS )
-#define TCP_WND				( 2 * TCP_MSS )
+#define TCP_WND				( 4 * TCP_MSS )
 #define TCP_LISTEN_BACKLOG	1
 
 //  the ENET inserts and checks IP, UDP, TCP and ICMP checksums

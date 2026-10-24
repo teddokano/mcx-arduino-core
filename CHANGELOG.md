@@ -58,10 +58,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - The official Ethernet library run on a board: on FRDM-MCXA153 with a WIZnet W5500 module, 12 of its 13 examples
   work, and on FRDM-MCXA156, FRDM-MCXN236, FRDM-MCXC444 and FRDM-MCXN947 the four of them tried (see the Ethernet row of [API_COMPATIBILITY.md](API_COMPATIBILITY.md) for what was changed in them, and for
   `stop()` taking about 200 ms straight after a write)
+- PubSubClient (MQTT) run on a board: its four Ethernet examples work on FRDM-MCXN947 with a mosquitto broker,
+  on `MCXEthernet` and on the official Ethernet library with a W5500 module (see its row in
+  [API_COMPATIBILITY.md](API_COMPATIBILITY.md))
 - New release check `26_ethernet_w5500_external_module`, optional: any board with a W5500 module under the official
   Ethernet library, checked from the PC with #25's `pc_check.py`. The module's RST is on D8 on every board. CI builds
   it with the third-party libraries (`.github/third_party/repo_sketches.txt` lists this repository's sketches that
   need them)
+- `MCXEthernet`'s buffers are sized from measurements on the board: lwIP's heap holds a full receive window for
+  each of the 8 connections (it ran short with more than 7 before, which slowed them), and the TCP window, send
+  buffer and ENET rings give 35-47 Mbit/s from a PC and about 70 Mbit/s to one on a 100 Mbit/s link (23 and 41
+  before). A UDP socket keeps up to 16 received packets (4 before), so a burst of 1000 full-size packets arrives
+  whole. A sketch using it takes about 133KB of RAM (about 79KB before) of the board's 384KB
+- `MCXEthernet`'s `EthernetUDP::beginPacket()` returns `0` for the address 0.0.0.0, port 0 or an IPv6 address, as
+  the official library does for the first two (it went on to build a packet with nowhere to go)
+- The documents say what the network support leaves out: TLS (HTTPS, MQTT over TLS), IPv6, Wi-Fi and sending a
+  ping (the Ethernet rows of [API_COMPATIBILITY.md](API_COMPATIBILITY.md), `MCXEthernet`'s README, the tutorial)
+- New example sketch `test_ethernet_throughput`, with a PC script (`pc_throughput.py`): TCP and UDP rates both
+  ways, on FRDM-MCXN947's `MCXEthernet` or, on any board, the official Ethernet library with a W5500 module
 - TUTORIAL.md and TUTORIAL.ja.md have an Ethernet section (2.16): a W5500 module with the official library on any
   board, with its wiring and a small web server, and the changes for FRDM-MCXN947's on-board Ethernet
 

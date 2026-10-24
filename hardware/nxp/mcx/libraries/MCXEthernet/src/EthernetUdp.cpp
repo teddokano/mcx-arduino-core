@@ -14,7 +14,7 @@ extern "C" {
 
 using namespace mcx_eth;
 
-static constexpr int	RX_QUEUE		= 4;	//  packets that wait per socket; more are dropped
+static constexpr int	RX_QUEUE		= 16;	//  packets that wait per socket (over a millisecond of full-size ones at 100 Mbit/s); more are dropped
 static constexpr size_t	TX_MAX			= 1472;	//  a UDP payload in one Ethernet frame
 
 struct UdpSlot
@@ -153,7 +153,8 @@ int EthernetUDP::beginPacket( const char *host, uint16_t port )
 
 int EthernetUDP::beginPacket( IPAddress ip, uint16_t port )
 {
-	if ( _sock < 0 )
+	//  as the official library: no packet to 0.0.0.0 or port 0 (an IPv6 address reads as 0.0.0.0 here)
+	if ( _sock < 0 || (uint32_t)ip == 0 || port == 0 )
 		return 0;
 
 	Lock	lock;

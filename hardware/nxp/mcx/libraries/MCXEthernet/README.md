@@ -85,9 +85,19 @@ turn on "Internet Sharing" to its Ethernet port.
 | `Ethernet.hostByName(name, ip)` | Not in the official library: looks a name up with the DNS server, as `EthernetClient::connect(host, port)` does |
 | `Ethernet.init()`, `setRetransmissionTimeout()`, `setRetransmissionCount()`, `begin()`'s `responseTimeout` | Accepted and ignored: there is no chip-select pin, and lwIP times its own retries |
 | `EthernetClient::status()` | The W5x00 socket status codes the official library returns: `0x17` (established), `0x1C` (closed by the peer), `0x15` (connecting) or `0x00` |
-| Sockets | Up to `MAX_SOCK_NUM` (8) TCP connections and, separately, 8 UDP sockets. A UDP socket keeps up to 4 received packets and drops more until `parsePacket()` takes one; a packet to send is up to 1472 bytes |
+| Sockets | Up to `MAX_SOCK_NUM` (8) TCP connections and, separately, 8 UDP sockets. A UDP socket keeps up to 16 received packets and drops more until `parsePacket()` takes one; a packet to send is up to 1472 bytes |
 | `EthernetClient::stop()` | Closes gracefully (FIN), even with received data left unread, as a W5x00 does, and returns at once; lwIP finishes the close |
 | `mcx_ethernet_tick_max_us()` | Not in the official library: the longest time the 1 ms interrupt below has taken |
+
+## Not supported
+
+- **TLS** (HTTPS, MQTT over TLS): lwIP is built without its TLS layer
+  (`altcp_tls` and mbedTLS are not included).
+- **IPv6**: lwIP is built for IPv4 only. `IPAddress` can hold an IPv6
+  address, but `EthernetClient::connect()` and `EthernetUDP::beginPacket()`
+  return `0` for one.
+- **Sending a ping**: the official library has no call for it either. lwIP
+  answers pings.
 
 ## How it works
 
@@ -110,6 +120,12 @@ chip's ENET and the board's LAN8741A PHY (RMII; the pins are in
   longest run in `release_check/25` was 251µs.
 - Each `write()` is sent at once (Nagle's algorithm is off), as a W5x00 sends
   it.
+- Running lwIP once a millisecond bounds the rate: with its 4-segment window
+  and 12-segment send buffer, `examples/Arduino_compatible_API/test_ethernet_throughput`
+  measured 35-47 Mbit/s from a PC to the board and about 70 Mbit/s from the
+  board (1460- or 512-byte `write()`s; 64-byte ones about 10 Mbit/s) on a
+  100 Mbit/s link, and a burst of 1000 full-size UDP packets arrived whole.
+  lwIP's heap (64KB) holds a full window for each of the 8 connections.
 - lwIP's random numbers (its first local ports, DNS query IDs, DHCP) are
   seeded from the chip's ELS, whose PRNG the ELS seeds from its TRNG, and each
   TCP connection starts at a random sequence number, so the ports differ from
@@ -129,8 +145,9 @@ in this package's repository checks the hardware on its own, with the same
 ENET and PHY drivers and no lwIP: the PHY's ID over MDIO, the link, and a
 DHCP DISCOVER and its OFFER as raw frames.
 
-A sketch with DHCP, a TCP server, a TCP client and UDP takes about 115KB of
-flash and 74KB of RAM (the board has 2MB and 384KB).
+A sketch with DHCP, a TCP server, a TCP client and UDP takes about 130KB of
+flash and 133KB of RAM (the board has 2MB and 384KB); most of the RAM is
+lwIP's heap and the ENET's buffers.
 
 ## Files
 

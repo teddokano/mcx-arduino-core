@@ -108,6 +108,14 @@ void setup() {
   check("server listening", (bool)server);
   check("UDP socket open", udp.begin(UDP_PORT) == 1);
 
+  // as the official library: no packet to 0.0.0.0 or port 0, and no IPv6 (lwIP runs IPv4 only)
+  IPAddress v6(0x20, 0x01, 0x0d, 0xb8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1);
+  check("beginPacket() to 0.0.0.0, port 0 or an IPv6 address refused",
+        udp.beginPacket(IPAddress(0, 0, 0, 0), UDP_PORT) == 0 && udp.beginPacket(Ethernet.gatewayIP(), 0) == 0
+          && udp.beginPacket(v6, UDP_PORT) == 0);
+  EthernetClient c6;
+  check("connect() to an IPv6 address refused", c6.connect(v6, 80) == 0);
+
   if (failCount == 0)
     Serial.println("board side: ALL OK");
   else {

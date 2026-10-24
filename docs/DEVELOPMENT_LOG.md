@@ -3304,6 +3304,74 @@ N947が1枚。LANはMacの「インターネット共有」（`bridge100`の`192
   載せたスケッチと、`MCXEthernet`に変えたものの両方を、N947で書き込んで`curl`で3回ずつ200を確かめた（W5500は約11ms、`MCXEthernet`は約5ms）。
   下書きに「公式の作例は`Ethernet.init(D10)`を足せば動く」と書いたが、CSの既定は`D10`（このコアの`PIN_SPI_SS`）で、作例はそのまま動く（API_COMPATIBILITYに書いてあった）。直してから載せた
 
+### 通信速度の測定（2026-10-25）
+
+ネットワークの残りの作業（通信速度、MQTTなど、lwIPのメモリ、未対応のものの文書）の1番目。
+- `examples/Arduino_compatible_API/test_ethernet_throughput`（スケッチとPC側の`pc_throughput.py`）: N947は`MCXEthernet`、ほかのボードは公式`Ethernet`とW5500（`USE_W5500`を1にするとN947でもW5500）。
+  TCPはPC→ボード（5002）とボード→PC（5003、1回の`write()`の大きさを1460・512・64バイト）、UDPはボード→PC（1472バイト×1000）とPC→ボード（PCの最高速、1msに1個、2msに1個）。合否は無い。
+  公式`Ethernet`が要るので、`.github/third_party/repo_sketches.txt`に載せた。A153は`sscanf()`・`snprintf()`でフラッシュに入らなかった（6388バイト超過）ので、`strtoul()`と`String`にした（67%）
+- N947で測った値（lwIPのメモリの調整の前。Macの「インターネット共有」、100Mbit/s、1MBを3回の中央値）:
+
+| | `MCXEthernet` | W5500（公式`Ethernet` 2.0.2） |
+|---|---|---|
+| TCP、PC→ボード | 23.3 Mbit/s | 7.4 Mbit/s |
+| TCP、ボード→PC、1460バイトの`write()` | 40.5 Mbit/s | 4.3 Mbit/s |
+| TCP、ボード→PC、512バイトの`write()` | 41.7 Mbit/s | 5.1 Mbit/s |
+| TCP、ボード→PC、64バイトの`write()` | 5.5 Mbit/s | 2.7 Mbit/s |
+| UDP、ボード→PC、1472バイト×1000 | 1000個届いた、85 Mbit/s | 1000個届いた、5.5 Mbit/s |
+| UDP、PC→ボード、PCの最高速 | 494個 | 505個 |
+| UDP、PC→ボード、1msに1個・2msに1個 | 1000個 | 1000個 |
+| lwIPの1msの割り込みの最長 | 241µs | - |
+
+- `MCXEthernet`のPC→ボードの23.3 Mbit/sは、受信ウィンドウ（`TCP_WND`＝2×MSS＝2920バイト）を1msに1回（lwIPを回す間隔）空ける速さとちょうど同じ。
+  UDPを詰めて送ると半分ほど落ちるのは、受信の記述子が5個（`enet_ethernetif_lpc.c`の`ENET_RXBD_NUM`）で、1msの間にそれを超えて届いた分が落ちるためと見ていた。
+  **この見立ては違っていた**: lwIPの統計で見ると、記述子を8個にしたあともドライバで落ちた数（`link.drop`）は0で、落ちていたのは`EthernetUDP`の受信の待ち行列（ソケットごとに4個）だった（下の「lwIPのメモリの調整」）
+- 64バイトの`write()`が遅いのは、Nagleを切っていて（W5x00に合わせた）1回の`write()`が1つのセグメントになるため
+
+### MQTT（PubSubClient）を実機で（2026-10-25）
+
+ネットワークの残りの2番目。ブローカーはmosquitto 2.1.2（Homebrew、ユーザーの了承を得て入れた。`brew services`で常駐させず、確認の間だけスクラッチパッドの設定で前面に動かした）、PubSubClient 2.8.0はスクラッチパッドに入れた。
+- PubSubClientのEthernetの作例4本（`mqtt_basic`・`mqtt_auth`・`mqtt_publish_in_callback`・`mqtt_reconnect_nonblocking`）を、アドレスだけこのネットワーク（Macの「インターネット共有」、192.168.2.0/24）に替えて、N947のW5500（公式`Ethernet` 2.0.2）と`MCXEthernet`（`#include`を替えただけ）の両方で流した。残りの3本はESP8266用（2本）と、外部の`SRAM.h`が要る`mqtt_stream`
+- どちらも4本とも動いた: `mqtt_basic`はMacへ`hello world`、Macからの3件が届き、キープアライブ（15秒）が続く。`mqtt_auth`はパスワード付きのブローカーにつながる。
+  `mqtt_publish_in_callback`は1・10・100・200・240バイトが往復し、300バイトは戻らない（PubSubClientのバッファの既定が256バイトで、超えたものは捨てる作り）。
+  `mqtt_reconnect_nonblocking`はブローカーを15秒止めて立ち上げ直すと、3〜5秒でつなぎ直して`outTopic`へ送った
+- **W5500で`mqtt_auth`が3回のうち1回しかつながらなかった**。表示を足した写しで見ると、つながらない回は送り元のポートが49153で、1回目の`connect()`が約1秒で失敗し（`state()`が`-2`）、2回目の49154で通った。
+  公式`Ethernet`は送り元のポートを49152から順に使い、`micros()`で混ぜるのはDHCPの`begin()`のときだけ（`socket.cpp`の`socketPortRand()`）。固定アドレスの`begin(mac, ip)`では起動ごとに49153から始まり、前の起動の接続をブローカーがまだ持っていると、同じポートからの接続が通らない。
+  `mqtt_auth`は`setup()`で1回しか試さない。ライブラリと作例の性質で、このコアの不具合ではない（AVRでも同じはず。試してはいない）。`MCXEthernet`は乱数のポートから始まるので起きず、`mqtt_auth`を3回続けて書き込んで3回ともつながった。API_COMPATIBILITYのPubSubClientの行に書いた
+
+### lwIPのメモリの調整（2026-10-25）
+
+ネットワークの残りの3番目。メモの§6-4の「大きさは実機で使用量を見て決める」。
+- ライブラリの写しをスクラッチパッドに置き（`--library`で指定すると同梱のものより優先される）、lwIPの統計（`MEM_STATS`・`MEMP_STATS`など）を入れ、統計を返す命令を足した`test_ethernet_throughput`の写しで測った。
+  負荷は`pc_throughput.py`と、**8本の接続から同時に1MBずつ送り、ボードは1本ずつしか読まない**形（読まれないデータが接続ごとに受信の窓いっぱいまでヒープにたまる）
+- 前の設定（ヒープ22KB、受信の窓2×MSS、送信のバッファ6×MSS）: 普通の測定でヒープの最大は約10KB。7本の同時接続で20,996バイト（7×2,920とほぼ同じ）、**8本でヒープが足りず確保の失敗が684回**。それでも8本とも最後まで届いた（7本は2.5秒、8本は3.5秒）。メモの見込みどおり、止まらずに遅くなる
+- 比べた形（RAMはスケッチ全体）:
+
+| 形 | RAM | PC→ボード | ボード→PC | UDPを詰めて送る | 8本の同時接続 |
+|---|---|---|---|---|---|
+| 前の設定 | 79KB | 23 Mbit/s | 41 Mbit/s | 1000個のうち493個 | 確保の失敗684回、3.5秒 |
+| ヒープ32KB | 89KB | 23 | 41 | 495個 | 失敗0、2.8秒 |
+| ヒープ56KB、受信の窓4×MSS、受信の記述子8 | 123KB | 35〜44 | 41 | 493個（`link.drop`は0） | 失敗0、1.7秒 |
+| 上に、UDPの待ち行列16 | 124KB | 37 | 41〜44 | 1000個 | 失敗0、1.9秒 |
+| ヒープ104KB、受信の窓8×MSS、受信の記述子12、待ち行列16 | 186KB | 57 | 40〜43 | 1000個 | 失敗0、1.0秒 |
+| ヒープ64KB、受信の窓4×MSS、送信のバッファ12×MSS、受信の記述子8、待ち行列16 | 133KB | 47 | 69〜75 | 1000個 | 失敗0、1.6秒 |
+
+- **送信のバッファを12×MSSにすると、lwIPの1msの割り込みの最長が793µsに伸びた**（それまでは241〜249µs）。測定を1つずつ流して割り込みの最長を読むと、512バイトの`write()`のときが787µs。
+  SDKのportは、送信の記述子（`ENET_TXBD_NUM`、5個）が全部ふさがっていると、空くまで`ENET_SendFrame()`を回し続ける（`NO_SYS`ではイベントを待たない）。ACKを受けた1回の割り込みで30個ほどの短いフレームを送ろうとし、5個を超えた分は線の上を流れ終わるのを割り込みの中で待っていた。
+  **送信の記述子を32個にすると、どの測定でも280µs以下**（512バイトの`write()`は175µs）に戻り、速さは変わらなかった。送信はpbufをそのまま渡すので、増えるRAMは約1KB
+- **最後の形（ヒープ64KB、受信の窓4×MSS、送信のバッファ12×MSS、ENETの受信の記述子8・送信の記述子32、UDPの待ち行列16）にした**（ユーザーが決定。RAMは約79KBから約133KB）。
+  `ENET_RXBD_NUM`・`ENET_TXBD_NUM`はSDKのportの中で`#ifndef`なので、`lwipopts.h`で決めた（SDKのファイルには手を入れていない）。`MEMP_NUM_TCP_SEG`は`TCP_SND_QUEUELEN + 4`にした（lwIPは`TCP_SND_QUEUELEN`以上を求める）。待ち行列の数は`EthernetUdp.cpp`の`RX_QUEUE`
+- 直したライブラリで: `release_check/25`がボード側・PC側ともALL OK（割り込みの最長200µs）。`pc_throughput.py`はPC→ボード35〜47 Mbit/s（回によって35前後か47前後に分かれる。理由は調べていない）、ボード→PC 69〜72 Mbit/s（64バイトの`write()`は約10）、UDPを詰めて送っても1000個、割り込みの最長278µs。8本の同時接続は1.7秒。
+  `compile_examples.sh frdm_mcxn947 full`がexit 0、公式`Ethernet`の作例13本（`#include`を替え、`EthernetUdp.h`の行を消す。CIと同じ）もビルドできた。DHCP・TCPのサーバーとクライアント・UDPのスケッチ（`25`）はフラッシュ約129KB、RAM約133KB
+
+### 対応していないものを文書に（2026-10-25）
+
+ネットワークの残りの4番目。
+- TLS（HTTPS、TLSの上のMQTT）・IPv6・Wi-Fi・pingを打つことを、API_COMPATIBILITYのEthernetの節（行を4つ）、`MCXEthernet`のREADME（「Not supported」の節）、TUTORIAL（英日、2.16の終わり）、README（英日、1文）に書いた。
+  TLSは、lwIPをTLSの層（`altcp_tls`、mbedTLS）なしで作っていて、W5x00にも無い。`Client`を包むTLSのライブラリは試していない。Wi-Fiはどのボードにも無線が無い。外付けのWi-Fiのモジュールは試していない
+- **IPv6のアドレスを渡したときの動きをコードで確かめて、1つ直した**: `EthernetClient::connect()`は整数にして0のアドレスで0を返すので、IPv6（整数にすると0）も断る。一方`EthernetUDP::beginPacket()`は宛先を確かめず、0.0.0.0（IPv6も）やポート0でも1を返していた。
+  公式のライブラリは0.0.0.0とポート0で0を返す（`socket.cpp`の`socketStartUDP()`）ので、同じ形にした。`release_check/25`のボード側に、0.0.0.0・ポート0・IPv6への`beginPacket()`と、IPv6への`connect()`が断られる項目を足し、ボード側・PC側ともALL OK（割り込みの最長189µs）
+
 ### `print(n, HEX)`を大文字に（2026-10-24）
 実機の出力（`PHY ID 0x7 0xc121`、MACの`7c`）で、`Print`が16進を小文字で書いていたのに気づいた。AVRの`Print`は大文字で、`String(n, HEX)`はAVRでも小文字。
 ユーザーがAVRと同じ大文字にすると決めた。`Print.cpp`の`%lx`/`%llx`を`%lX`/`%llX`に、2〜36進の数字の表を大文字にした。`String`と`IPAddress`（IPv6はArduinoCore-APIでも小文字）は変えていない。
