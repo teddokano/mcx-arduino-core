@@ -41,10 +41,12 @@ namespace {
  *  %b for binary, and nothing at all for bases other than 8/10/16), so
  *  BIN -- and any other non-DEC/HEX/OCT base a sketch might pass, matching
  *  real Arduino's support for any radix 2-36 -- has to be hand-converted.
+ *  Digits past 9 are upper case, in HEX too, as AVR's Print writes them
+ *  (String(n, HEX) stays lower case, as AVR's does).
  */
 void _utoa_radix( unsigned long long value, int base, char *buf, size_t bufsize )
 {
-	static const char	digits[]	= "0123456789abcdefghijklmnopqrstuvwxyz";
+	static const char	digits[]	= "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 	if ( base < 2 || base > 36 )
 		base	= 10;
@@ -85,7 +87,7 @@ size_t Print::_print_num( long n, int base )
 	if ( base == DEC )
 		snprintf( buf, sizeof(buf), "%ld", n );
 	else if ( base == HEX )
-		snprintf( buf, sizeof(buf), "%lx", (unsigned long)n );
+		snprintf( buf, sizeof(buf), "%lX", (unsigned long)n );
 	else if ( base == OCT )
 		snprintf( buf, sizeof(buf), "%lo", (unsigned long)n );
 	else if ( n < 0 )
@@ -105,7 +107,7 @@ size_t Print::_print_unum( unsigned long n, int base )
 	if ( base == DEC )
 		snprintf( buf, sizeof(buf), "%lu", n );
 	else if ( base == HEX )
-		snprintf( buf, sizeof(buf), "%lx", n );
+		snprintf( buf, sizeof(buf), "%lX", n );
 	else if ( base == OCT )
 		snprintf( buf, sizeof(buf), "%lo", n );
 	else
@@ -119,7 +121,7 @@ size_t Print::_print_num64( long long n, int base )
 	if ( base == DEC )
 		snprintf( buf, sizeof(buf), "%lld", n );
 	else if ( base == HEX )
-		snprintf( buf, sizeof(buf), "%llx", (unsigned long long)n );
+		snprintf( buf, sizeof(buf), "%llX", (unsigned long long)n );
 	else if ( base == OCT )
 		snprintf( buf, sizeof(buf), "%llo", (unsigned long long)n );
 	else if ( n < 0 )
@@ -139,7 +141,7 @@ size_t Print::_print_unum64( unsigned long long n, int base )
 	if ( base == DEC )
 		snprintf( buf, sizeof(buf), "%llu", n );
 	else if ( base == HEX )
-		snprintf( buf, sizeof(buf), "%llx", n );
+		snprintf( buf, sizeof(buf), "%llX", n );
 	else if ( base == OCT )
 		snprintf( buf, sizeof(buf), "%llo", n );
 	else

@@ -35,6 +35,24 @@ public:
   bool fail = false;
 };
 
+// Keeps what is printed to it, for the Print-in-HEX section
+class TextPrint : public Print {
+public:
+  size_t write(uint8_t c) override {
+    if (len < sizeof(text) - 1) {
+      text[len++] = c;
+      text[len] = '\0';
+    }
+    return 1;
+  }
+  const char *take() {
+    len = 0;
+    return text;
+  }
+  char text[32] = "";
+  size_t len = 0;
+};
+
 // For the AVR-era helpers section: globals a sketch may name as on AVR
 // (building at all is the check), and an overload on BitOrder, which
 // Adafruit BusIO has and which a plain-integer BitOrder made ambiguous.
@@ -179,6 +197,23 @@ void setup() {
     // bytes where truncating gave "9.99", and "2" is 1 where it gave "1."
     check("print(9.9999) rounds up to \"10.00\"", flaky.print(9.9999) == 5);
     check("print(1.999, 0) is \"2\", no decimal point", flaky.print(1.999, 0) == 1);
+  }
+
+  // ---- Print in HEX and other bases: upper case, as AVR (0.11.0) ----
+  Serial.println("--- Print in HEX ---");
+  {
+    TextPrint t;
+    t.print(255, HEX);
+    check("print(255, HEX) is \"FF\"", strcmp(t.take(), "FF") == 0);
+    t.print(0xDEADBEEFUL, HEX);
+    check("print(0xDEADBEEF, HEX) is \"DEADBEEF\"", strcmp(t.take(), "DEADBEEF") == 0);
+    t.print(-1L, HEX);
+    check("print(-1L, HEX) is \"FFFFFFFF\"", strcmp(t.take(), "FFFFFFFF") == 0);
+    t.print(0xABCDEF012345ULL, HEX);
+    check("print(0xABCDEF012345ULL, HEX) is \"ABCDEF012345\"", strcmp(t.take(), "ABCDEF012345") == 0);
+    t.print(35, 36);
+    check("print(35, 36) is \"Z\"", strcmp(t.take(), "Z") == 0);
+    check("String(255, HEX) stays \"ff\"", String(255, HEX) == "ff");
   }
 
   // ---- String (was test_String) ----
