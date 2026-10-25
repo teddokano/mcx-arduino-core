@@ -13,8 +13,8 @@ English version → [README.md](README.md)
 Arduino API対応状況の一覧は[API_COMPATIBILITY.md](API_COMPATIBILITY.md)、
 各ボードのピン配置は[PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) / [PIN_MAPPING_N947.md](PIN_MAPPING_N947.md) / [PIN_MAPPING_A156.md](PIN_MAPPING_A156.md) / [PIN_MAPPING_N236.md](PIN_MAPPING_N236.md) / [PIN_MAPPING_C444.md](PIN_MAPPING_C444.md)、
 バージョン間の変更点は[CHANGELOG.md](CHANGELOG.md)、
-生成済みDoxygenクラスリファレンス（r01libドライバコアとArduino互換APIレイヤー）は
-[docs/api/](docs/api/index.html)を参照してください（これらは英語のみです）。
+生成済みDoxygenクラスリファレンス（r01libドライバコア、Arduino互換APIレイヤー、同梱の`EEPROM`・`Servo`・`MCXEthernet`ライブラリ）は
+[APIリファレンス](https://teddokano.github.io/mcx-arduino-core/api/)（[docs/api/](docs/api/index.html)にも同じもの）を参照してください（これらは英語のみです）。
 
 標準Arduino APIの先にある上級者向けガイドもあります（いずれも英語のみ）:
 [MCUXpresso SDKを直接呼び出す](docs/advanced_sdk_tuning.md)（GPIO速度チューニング）、

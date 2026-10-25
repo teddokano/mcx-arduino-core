@@ -14,8 +14,9 @@ See [API_COMPATIBILITY.md](API_COMPATIBILITY.md) for the full Arduino API suppor
 [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) / [PIN_MAPPING_N947.md](PIN_MAPPING_N947.md) /
 [PIN_MAPPING_A156.md](PIN_MAPPING_A156.md) / [PIN_MAPPING_N236.md](PIN_MAPPING_N236.md) /
 [PIN_MAPPING_C444.md](PIN_MAPPING_C444.md) for each board's pin assignments, [CHANGELOG.md](CHANGELOG.md) for release history, and
-[docs/api/](docs/api/index.html) for generated Doxygen class reference (the r01lib driver
-core and the Arduino-compatible API layer).
+the [API reference](https://teddokano.github.io/mcx-arduino-core/api/) for the generated Doxygen class
+reference (the r01lib driver core, the Arduino-compatible API layer and the bundled `EEPROM`, `Servo` and
+`MCXEthernet` libraries; also in [docs/api/](docs/api/index.html)).
 
 Past the standard Arduino API, a few advanced guides go deeper:
 [calling the MCUXpresso SDK directly](docs/advanced_sdk_tuning.md) for

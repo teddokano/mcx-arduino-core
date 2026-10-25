@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Highlights
+- Ethernet on every board: FRDM-MCXN947's on-board Ethernet with the bundled `MCXEthernet` library, and the official
+  Ethernet library with a W5500 module on any of the five boards; both have the official interface, so its sketches
+  move over unchanged or with one `#include`
+- `Wire.endTransmission()` returns AVR's `0`-`5`, and `print()` writes hex in upper case, as AVR does
+- Fixed: `millis()` and `micros()` count from boot (every board), and `micros()` no longer reads short after a late
+  1 ms tick (the four MCX boards)
+
 ### Changed
 - **`Wire.endTransmission()` returns AVR's codes**: `0` success, `2` the address not acknowledged, `3` a data byte
   not acknowledged, `4` another error, `5` timeout. It returned the driver's status code cut to 8 bits before
@@ -20,14 +28,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   but `DEC`, a negative number is its two's complement (`print(-1, 3)` is `102002022201221111210`; it was `-1` in
   the bases other than 2, 8 and 16, which already matched), and `print(65, 0)` writes the one byte `A` (it wrote
   `65`), as the `BYTE` of Arduino before 1.0 did
-- **`millis()` and `micros()` count from boot**, as on AVR: the core started them at their first call, so a sketch
-  that called `delay(500)` first read `0` there (`delay()` keeps its own time). Now they start before `setup()`
-- **`micros()` stays right when the 1 ms tick runs late** (FRDM-MCXA153, FRDM-MCXN947, FRDM-MCXA156, FRDM-MCXN236):
-  the tick took the time it ran as the start of the millisecond, so after a late one `micros()` read short (or went
-  back) by however late it was, until the next tick. The tick waits behind `MCXEthernet`'s, which shares its lowest
-  priority, and behind code with interrupts off: with the Ethernet busy, a 1 kHz signal timed with `micros()` read
-  873-1087 us. It now counts whole milliseconds from the cycle counter, which also brings back ticks missed while
-  interrupts were off for over 1 ms
 - API_COMPATIBILITY.md starts with what stays compatible from 1.0.0 and what doesn't, and a table of the instance
   names (`Wire1`, `Serial1`, `SPI1`, ...) on each board, which stay as they are
 
@@ -40,7 +40,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   `#include <MCXEthernet.h>`; the official library's 13 examples build that way. The header has its own name so
   that the official library, for W5x00 shields, stays usable on every board. TCP/IP is lwIP 2.2.1, run in a 1 ms
   timer interrupt (CTIMER2), so connections are served while the sketch is busy, as by a W5x00. `Ethernet.begin()`
-  with no MAC address makes a locally administered one from the chip's unique ID. On the other boards the library
+  with no MAC address makes a locally administered one from the chip's unique ID, and `begin()` with a fixed address
+  waits up to 3 s for the link, as a W5x00 does, so a `connect()` straight after it works. On the other boards the library
   stops the build with an error. See [its README](hardware/nxp/mcx/libraries/MCXEthernet/README.md) and the
   Ethernet section of [PIN_MAPPING_N947.md](PIN_MAPPING_N947.md). Its own examples are `DhcpAddress_N947`,
   `WebServerLed_N947`, `UdpEcho_N947`, `HttpGet_N947`, `WebTemperature_N947` (the on-board temperature sensor as a
@@ -60,7 +61,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   check fails on any other failure and on a listed one that starts to build. On FRDM-MCXN947 it also builds the
   Ethernet examples on `MCXEthernet`
 - The official Ethernet library run on a board: on FRDM-MCXA153 with a WIZnet W5500 module, 12 of its 13 examples
-  work, and on FRDM-MCXA156, FRDM-MCXN236, FRDM-MCXC444 and FRDM-MCXN947 the four of them tried (see the Ethernet row of [API_COMPATIBILITY.md](API_COMPATIBILITY.md) for what was changed in them, and for
+  work, and on FRDM-MCXA156, FRDM-MCXN236, FRDM-MCXC444 and FRDM-MCXN947 the four of them tried (see the Ethernet 2.0.2 row
+  of [API_COMPATIBILITY.md](API_COMPATIBILITY.md)'s third-party libraries for what was changed in them, and for
   `stop()` taking about 200 ms straight after a write)
 - PubSubClient (MQTT) run on a board: its four Ethernet examples work on FRDM-MCXN947 with a mosquitto broker,
   on `MCXEthernet` and on the official Ethernet library with a W5500 module (see its row in
@@ -77,11 +79,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `MCXEthernet`'s `EthernetUDP::beginPacket()` returns `0` for the address 0.0.0.0, port 0 or an IPv6 address, as
   the official library does for the first two (it went on to build a packet with nowhere to go)
 - The documents say what the network support leaves out: TLS (HTTPS, MQTT over TLS), IPv6, Wi-Fi and sending a
-  ping (the Ethernet rows of [API_COMPATIBILITY.md](API_COMPATIBILITY.md), `MCXEthernet`'s README, the tutorial)
+  ping (the notes in the [Ethernet section of API_COMPATIBILITY.md](API_COMPATIBILITY.md#ethernet), `MCXEthernet`'s
+  README, the tutorial). That section now shows both ways of using Ethernet as supported, with these as notes
 - New example sketch `test_ethernet_throughput`, with a PC script (`pc_throughput.py`): TCP and UDP rates both
   ways, on FRDM-MCXN947's `MCXEthernet` or, on any board, the official Ethernet library with a W5500 module
 - TUTORIAL.md and TUTORIAL.ja.md have an Ethernet section (2.16): a W5500 module with the official library on any
   board, with its wiring and a small web server, and the changes for FRDM-MCXN947's on-board Ethernet
+- A Fritzing part for the W5500 Lite module (`fritzing/W5500_Lite/`), for the wiring pictures of the Ethernet section
+  and `release_check/26`
+- The API reference (`docs/api/`) also covers the bundled `EEPROM`, `Servo` and `MCXEthernet` libraries, and is
+  published from `main` on GitHub Pages: <https://teddokano.github.io/mcx-arduino-core/api/>
+- The regression check builds in parallel: about 3 minutes for a push (5 before) and 8 for the full and third-party
+  run (26 before), with the same results. Locally, `.github/scripts/compile_all_boards.sh` builds the five boards
+  from one queue
+
+### Fixed
+- **`millis()` and `micros()` count from boot**, as on AVR: the core started them at their first call, so a sketch
+  that called `delay(500)` first read `0` there (`delay()` keeps its own time). Now they start before `setup()`.
+  Checked by `release_check/09` on all five boards
+- **`micros()` stays right when the 1 ms tick runs late** (FRDM-MCXA153, FRDM-MCXN947, FRDM-MCXA156, FRDM-MCXN236):
+  the tick took the time it ran as the start of the millisecond, so after a late one `micros()` read short (or went
+  back) by however late it was, until the next tick. The tick waits behind `MCXEthernet`'s, which shares its lowest
+  priority, and behind code with interrupts off: with the Ethernet busy, a 1 kHz signal timed with `micros()` read
+  873-1087 us. It now counts whole milliseconds from the cycle counter, which also brings back ticks missed while
+  interrupts were off for over 1 ms
+
+## [0.10.1] - 2026-10-20
+
+Fritzing parts only: the board package is unchanged, so Boards Manager still offers 0.10.0, and this release has no
+package zip.
+
+### Added
+- Fritzing parts for the five boards: FRDM-MCXA153, FRDM-MCXA156, FRDM-MCXN236, FRDM-MCXN947 and FRDM-MCXC444, one
+  `.fzpz` each, with breadboard, schematic and PCB views. They have the Arduino sockets (D0-D13, D18/D19, A0-A5,
+  power), `PWM0`-`PWM5` (not on FRDM-MCXC444) and the mikroBUS sockets, with the pin names and MCU pins from the
+  PIN_MAPPING documents. Drag a `.fzpz` onto Fritzing to use it (tested with Fritzing 1.0.1 on macOS); see
+  [fritzing/README.md](fritzing/README.md). The sockets and buttons were placed from photos of the boards (to about
+  1 mm), so the parts are for wiring a breadboard, not for designing a shield PCB
 
 ## [0.10.0] - 2026-10-18
 
