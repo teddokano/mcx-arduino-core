@@ -156,7 +156,8 @@ lwIP's heap and the ENET's buffers.
 
 | | |
 |---|---|
-| `src/MCXEthernet.h`, `src/MCXEthernet.cpp`, `src/Ethernet*.cpp`, `src/mcx_eth_internal.h`, `src/lwipopts.h` | This library's own code, written from scratch to the official library's interface (MIT, as the rest of this package) |
+| `src/MCXEthernet.h`, `src/MCXEthernet.cpp`, `src/Ethernet*.cpp`, `src/mcx_eth_internal.h` | This library's own code, written from scratch to the official library's interface (MIT, as the rest of this package) |
+| `src/lwipopts.h` | lwIP's settings for this library. It started from the MCUXpresso SDK's `lwip_dhcp` example for FRDM-MCXN947, and part of its option settings are taken from that example (BSD-3-Clause, with NXP's copyright notice in the file); the rest is this library's (MIT) |
 | `src/lwip/`, `src/netif/`, `src/compat/` (headers), `src/lwip_src/` (sources) | lwIP 2.2.1, unmodified, as in the MCUXpresso SDK. Its license is in `LICENSE.lwIP` (BSD-3-Clause) |
 | `src/arch/`, `src/mcx_port/` | From the network package of the NXP MCUXpresso SDK 2.16.000 for FRDM-MCXN947, unmodified except for a cast in four comparisons of signed and unsigned integers (in `enet_ethernetif.c`, `enet_ethernetif_lpc.c` and `ethernetif.c`, so that nothing warns with the compiler warnings set to "All"): the SDK's lwIP port (`arch/`, `ethernetif*`, `enet_ethernetif*.c`, `enet_configchecks.h`) and its ENET, LAN8741 PHY and GPIO adapter drivers (BSD-3-Clause, each with its own copyright header) |
 

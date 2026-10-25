@@ -85,15 +85,21 @@ header.
 - NXP MCUXpresso SDK — https://github.com/nxp-mcuxpresso/mcux-sdk (BSD-3-Clause)
 
 The bundled `hardware/nxp/mcx/libraries/MCXEthernet/` has two parts. Its
-own code (`src/MCXEthernet.h`, `src/MCXEthernet.cpp`, `src/Ethernet*.cpp`,
-`src/mcx_eth_internal.h` and `src/lwipopts.h`) is written from scratch to
+own code (`src/MCXEthernet.h`, `src/MCXEthernet.cpp`, `src/Ethernet*.cpp`
+and `src/mcx_eth_internal.h`) is written from scratch to
 the official Ethernet library's interface: class and function names,
 signatures and default values, the `EthernetLinkStatus` and
 `EthernetHardwareStatus` names, and the W5x00 socket status codes that
 `EthernetClient::status()` returns, checked by building that library's
 examples against it. Its way of running lwIP without an RTOS, from a 1 ms
 timer interrupt, follows STM32Ethernet's, whose source was read for it. No
-source code was copied from either.
+source code was copied from either. The steps that seed lwIP's random numbers
+from the chip's ELS follow the NXP MCUXpresso SDK's `ELS_PowerDownWakeupInit()`
+(`els_pkc`), read for it and written from the register definitions, not
+copied. `src/lwipopts.h`, lwIP's settings for the library, started from the
+SDK's `lwip_dhcp` example for FRDM-MCXN947, and part of its option settings
+are taken from that example's `lwipopts.h`; the file keeps NXP's copyright
+notice for them.
 
 - Ethernet — https://github.com/arduino-libraries/Ethernet (its README states LGPL 2.1; its source files carry MIT notices)
 - STM32Ethernet — https://github.com/stm32duino/STM32Ethernet (no license file in the repository)

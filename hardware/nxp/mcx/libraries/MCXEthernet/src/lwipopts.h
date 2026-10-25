@@ -2,10 +2,19 @@
  *  lwIP options for MCXEthernet
  *
  *  lwIP runs with NO_SYS=1 in one context only: the 1 ms CTIMER2 interrupt, or
- *  the sketch with that interrupt masked (MCXEthernet.cpp). The sizes started
- *  from the MCUXpresso SDK's lwip_dhcp_bm example for FRDM-MCXN947; the heap,
- *  the TCP window and send buffer and the ENET rings were then set from what
+ *  the sketch with that interrupt masked (MCXEthernet.cpp). The options and
+ *  sizes started from the MCUXpresso SDK's lwip_dhcp example for FRDM-MCXN947
+ *  (boards/frdmmcxn947/lwip_examples/lwip_dhcp/bm/cm33_core0/lwipopts.h), and
+ *  part of its option settings are taken from it; the heap, the TCP window and
+ *  send buffer and the ENET rings were then set from what
  *  examples/Arduino_compatible_API/test_ethernet_throughput measured.
+ *
+ *  The option settings taken from the SDK's example:
+ *  Copyright (c) 2013-2016, Freescale Semiconductor, Inc.
+ *  Copyright 2016-2018, 2022-2023 NXP
+ *  All rights reserved.
+ *
+ *  SPDX-License-Identifier: BSD-3-Clause
  */
 
 #ifndef MCX_ETHERNET_LWIPOPTS_H
