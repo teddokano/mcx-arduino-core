@@ -37,8 +37,10 @@ name: Regression check
 # job. There is no cache of arduino-cli's build cache across runs:
 # arduino-cli rebuilds core.a whenever the core's sources are newer than
 # it, and a fresh checkout always makes them newer, so the restored cache
-# was never used -- and it had grown to ~1.6GB, ~45s to restore. Only the
-# toolchain download is cached.
+# was never used -- and it had grown to ~1.6GB, ~45s to restore. What is
+# carried between runs is the toolchain download and ccache's cache: ccache
+# sits in front of the compiler (see "Put ccache in front of the
+# compiler"), so the variant sources every sketch builds are compiled once.
 
 on:
   push:
@@ -177,6 +179,60 @@ jobs:
           PLATFORM_VERSION=$(grep '^version=' hardware/nxp/mcx/platform.txt | cut -d= -f2)
           mkdir -p "$HOME/.arduino15/packages/nxp/hardware/mcx"
           cp -r hardware/nxp/mcx "$HOME/.arduino15/packages/nxp/hardware/mcx/${PLATFORM_VERSION}"
+          echo "PLATFORM_DIR=$HOME/.arduino15/packages/nxp/hardware/mcx/${PLATFORM_VERSION}" >> "$GITHUB_ENV"
+
+      # From ccache's own release rather than apt: Ubuntu 24.04's 4.9.1
+      # refuses most of this platform's compile commands ("bad compiler
+      # arguments") and caches nothing. Pinned, checked against the
+      # release asset's SHA-256 as GitHub lists it.
+      - name: Install ccache
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CCACHE_TAG: v4.14.1
+          CCACHE_SHA256: ad63d19f5d09ea13f749651653a561c98a59994e673504a4266617b8754218f7
+        run: |
+          V="${CCACHE_TAG#v}"
+          TARBALL="ccache-${V}-linux-x86_64-glibc.tar.xz"
+          cd /tmp
+          gh release download "$CCACHE_TAG" -R ccache/ccache -p "$TARBALL"
+          echo "${CCACHE_SHA256}  ${TARBALL}" | sha256sum -c -
+          tar -xJf "$TARBALL" --strip-components=1 -C "$HOME/.local/bin" "ccache-${V}-linux-x86_64-glibc/ccache"
+          "$HOME/.local/bin/ccache" --version | head -1
+
+      # A new entry every run (the key has the run id); a run starts from the
+      # latest one of its board and suite, or else of its board
+      - name: Restore ccache
+        uses: actions/cache/restore@v6
+        with:
+          path: ~/.cache/ccache-mcx
+          key: ccache-${{ matrix.board }}-${{ matrix.suite }}-${{ github.run_id }}
+          restore-keys: |
+            ccache-${{ matrix.board }}-${{ matrix.suite }}-
+            ccache-${{ matrix.board }}-
+
+      # Through a platform.local.txt in the installed copy only: compiler.path
+      # points at a directory of the toolchain's programs in which gcc, g++
+      # and c++ go through ccache. The flags stay the ones platform.txt
+      # gives, and ccache returns an object only for the same compiler,
+      # flags and source, so the .bin files are the same as without it
+      # (checked byte for byte on every FRDM-MCXN947 full-tier sketch).
+      # Every sketch builds the variant's sources again (on FRDM-MCXN947,
+      # ~3/4 of a sketch's CPU time); with ccache they are compiled once.
+      - name: Put ccache in front of the compiler
+        run: |
+          REAL="$HOME/.arduino15/packages/nxp/tools/arm-none-eabi-gcc/${{ steps.toolchain.outputs.version }}/bin"
+          WRAP="$RUNNER_TEMP/ccache-bin"
+          mkdir -p "$WRAP"
+          for f in "$REAL"/*; do ln -s "$f" "$WRAP/$(basename "$f")"; done
+          for t in arm-none-eabi-gcc arm-none-eabi-g++ arm-none-eabi-c++; do
+            rm "$WRAP/$t"
+            printf '#!/bin/sh\nexec ccache "%s/%s" "$@"\n' "$REAL" "$t" > "$WRAP/$t"
+            chmod +x "$WRAP/$t"
+          done
+          echo "compiler.path=$WRAP/" > "$PLATFORM_DIR/platform.local.txt"
+          echo "CCACHE_DIR=$HOME/.cache/ccache-mcx" >> "$GITHUB_ENV"
+          echo "CCACHE_MAXSIZE=500M" >> "$GITHUB_ENV"
+          CCACHE_DIR="$HOME/.cache/ccache-mcx" ccache -z
 
       - name: Compile (fast tier)
         if: matrix.suite == 'examples' && github.event_name != 'workflow_dispatch' && github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/tags/')
@@ -189,3 +245,14 @@ jobs:
       - name: Compile third-party libraries' examples
         if: matrix.suite == 'third_party'
         run: SWEEP_JOBS=$(nproc) .github/scripts/compile_third_party.sh ${{ matrix.board }}
+
+      - name: ccache statistics
+        if: ${{ !cancelled() }}
+        run: ccache -s -v
+
+      - name: Save ccache
+        if: ${{ !cancelled() }}
+        uses: actions/cache/save@v6
+        with:
+          path: ~/.cache/ccache-mcx
+          key: ccache-${{ matrix.board }}-${{ matrix.suite }}-${{ github.run_id }}

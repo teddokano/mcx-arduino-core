@@ -482,7 +482,9 @@ xPack checksums（正しい値）：
 - **`regression_check.yml`**: push・PRごとに全サンプルのコンパイル（fast/fullの2段）とhygieneチェック（`.github/scripts/check_repo_hygiene.py`、タグでは`--release`）。
   matrixはボード×`suite`（`examples`と、fullのときだけ`third_party`）。ジョブの中は`SWEEP_JOBS=$(nproc)`で並列にビルドする。
   **arduino-cliのビルドキャッシュは実行をまたいで持たない**（checkoutでソースが`core.a`より新しくなり、毎回コアを作り直すので、復元したキャッシュは使われていなかった。2026-10-24に手順を消した）。
-  2026-10-24の測定で、pushのfastが2分47秒（前は4分50秒）、workflow_dispatchのfull＋third_partyが8分13秒（前は25分32秒）、判定は前後で同じ
+  **ccacheをコンパイラの前に置く**（2026-10-25）: インストールしたコアのコピーにだけ`platform.local.txt`を置き、`compiler.path`をgcc・g++・c++だけccacheに通すフォルダーに向ける（スクリプト・`platform.txt`・フラグは変えない）。
+  ccacheは公式リリースのv4.14.1をSHA-256で確かめて入れる（**Ubuntuのaptの4.9.1はこのプラットフォームのコンパイルをほとんど断り、効かない**）。中身はactions/cacheで持ち越す。`.bin`はccacheなしとバイト単位で同じ（N947のfullの全114個で確認）なので、ccacheを使わないローカルのスイープと結果は変わらない。
+  測定は、pushのfastが4分50秒→2分47秒（2026-10-24）→1分46秒（2026-10-25、ccache）、workflow_dispatchのfull＋third_partyが25分32秒→8分13秒（2026-10-24）→3分56秒（2026-10-25、ccache）で、判定はどれも前後で同じ
 - **サードパーティのライブラリの作例のビルド**（2026-10-23、memoの§9の⑨）: fullの段と同じとき（`main`・タグ・手動実行）に別のジョブで、`.github/scripts/compile_third_party.sh`が`.github/third_party/libraries.txt`のライブラリ（版を固定、依存も並べて`--no-deps`で入れる）の作例を全ボードでビルドする。
   通らないと分かっている作例は`expected_failures.txt`にボードごとに書き、それ以外の失敗と、書いてあるのに通るようになった作例の両方でCIを落とす。N947では公式`Ethernet`の作例を`#include <MCXEthernet.h>`に替えて`MCXEthernet`でもビルドする。
   ローカルでは`TP_USER_DIR=<ディレクトリ>`でライブラリを入れる場所を指定して流せる（スケッチごとにキャッシュの`sketches/`を消すので、ディスクは食わない。5ボードを並列にするのは`compile_all_boards.sh third_party`）。ライブラリの版を上げるときは手で一覧を直す
