@@ -272,7 +272,7 @@ void setup() {
   check("255 BIN == 11111111", String(255, BIN) == "11111111");
   check("5 BIN == 101", String(5, BIN) == "101");
   check("0 BIN == 0", String(0, BIN) == "0");
-  check("-5 BIN == -101", String(-5, BIN) == "-101");
+  check("-5 BIN is its 32-bit two's complement, as ArduinoCore-API", String(-5, BIN) == "11111111111111111111111111111011");
 
 #if !defined(NO_SERIAL1)
   {

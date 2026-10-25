@@ -27,7 +27,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - **`print()` and `println()` write a negative number in the other bases, and base `0`, as AVR does**: in any base
   but `DEC`, a negative number is its two's complement (`print(-1, 3)` is `102002022201221111210`; it was `-1` in
   the bases other than 2, 8 and 16, which already matched), and `print(65, 0)` writes the one byte `A` (it wrote
-  `65`), as the `BYTE` of Arduino before 1.0 did
+  `65`), as the `BYTE` of Arduino before 1.0 did. `String(n, base)` does the same for a negative number, as
+  ArduinoCore-API's does: `String(-5, BIN)` is the 32 bits `11111111111111111111111111111011` (it was `-101`; 8 and
+  16 already matched)
 - API_COMPATIBILITY.md starts with what stays compatible from 1.0.0 and what doesn't, and a table of the instance
   names (`Wire1`, `Serial1`, `SPI1`, ...) on each board, which stay as they are
 

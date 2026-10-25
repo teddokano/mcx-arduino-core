@@ -260,6 +260,9 @@ void setup() {
     check("print(65, 0) writes one byte, 'A'", t.print(65, 0) == 1 && strcmp(t.take(), "A") == 0);
     check("print(0x141UL, 0) writes the low byte, 'A'", t.print(0x141UL, 0) == 1 && strcmp(t.take(), "A") == 0);
     check("String(255, HEX) stays \"ff\"", String(255, HEX) == "ff");
+    check("String(-1, 3) is 4294967295 in base 3, as ArduinoCore-API", String(-1, 3) == "102002022201221111210");
+    check("String(-1LL, 36) is 2^64-1 in base 36", String(-1LL, 36) == "3w5e11264sgsf");
+    check("String(-5) stays \"-5\"", String(-5) == "-5");
   }
 
   // ---- String (was test_String) ----

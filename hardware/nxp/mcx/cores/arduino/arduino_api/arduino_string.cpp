@@ -149,20 +149,14 @@ String::String( unsigned int value, unsigned char base )
 String::String( long value, unsigned char base )
 {
 	_init();
-	char	buf[ 34 ];
-	if ( base == 16 )
-		snprintf( buf, sizeof(buf), "%lx", value );
-	else if ( base == 8 )
-		snprintf( buf, sizeof(buf), "%lo", value );
-	else if ( base == 10 )
-		snprintf( buf, sizeof(buf), "%ld", value );
-	else if ( value < 0 )
+	if ( base != 10 )
 	{
-		buf[ 0 ]	= '-';
-		_utoa_radix( (unsigned long long)( -(long long)value ), base, buf + 1, sizeof(buf) - 1 );
+		*this	= String( (unsigned long)value, base );	// as ArduinoCore-API's ltoa(): a negative number in any other base is its two's complement
+		return;
 	}
-	else
-		_utoa_radix( (unsigned long long)value, base, buf, sizeof(buf) );
+
+	char	buf[ 34 ];
+	snprintf( buf, sizeof(buf), "%ld", value );
 	_alloc_copy( buf, (unsigned int)strlen( buf ) );
 }
 
@@ -184,20 +178,14 @@ String::String( unsigned long value, unsigned char base )
 String::String( long long value, unsigned char base )
 {
 	_init();
-	char	buf[ 66 ];
-	if ( base == 16 )
-		snprintf( buf, sizeof(buf), "%llx", value );
-	else if ( base == 8 )
-		snprintf( buf, sizeof(buf), "%llo", value );
-	else if ( base == 10 )
-		snprintf( buf, sizeof(buf), "%lld", value );
-	else if ( value < 0 )
+	if ( base != 10 )
 	{
-		buf[ 0 ]	= '-';
-		_utoa_radix( (unsigned long long)( -value ), base, buf + 1, sizeof(buf) - 1 );
+		*this	= String( (unsigned long long)value, base );
+		return;
 	}
-	else
-		_utoa_radix( (unsigned long long)value, base, buf, sizeof(buf) );
+
+	char	buf[ 66 ];
+	snprintf( buf, sizeof(buf), "%lld", value );
 	_alloc_copy( buf, (unsigned int)strlen( buf ) );
 }
 
