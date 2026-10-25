@@ -23,7 +23,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.10.0</span>
+   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.11.0</span>
    </div>
    <div id="projectbrief">Arduino board support package for NXP FRDM MCX Series boards</div>
   </td>
@@ -109,8 +109,9 @@ Inheritance diagram for Client:</div>
  <div class="center">
   <img src="class_client.png" usemap="#Client_map" alt=""/>
   <map id="Client_map" name="Client_map">
-<area href="class_stream.html" alt="Stream" shape="rect" coords="0,56,51,80"/>
-<area href="class_print.html" alt="Print" shape="rect" coords="0,0,51,24"/>
+<area href="class_stream.html" alt="Stream" shape="rect" coords="0,56,91,80"/>
+<area href="class_print.html" alt="Print" shape="rect" coords="0,0,91,24"/>
+<area href="class_ethernet_client.html" alt="EthernetClient" shape="rect" coords="0,168,91,192"/>
   </map>
 </div></div>
 <table class="memberdecls">
@@ -223,6 +224,8 @@ Additional Inherited Members</h2></td></tr>
 
 <p>Implements <a class="el" href="class_stream.html#a581d4e5d65d14b52406f65be388bae96">Stream</a>.</p>
 
+<p>Implemented in <a class="el" href="class_ethernet_client.html#aca0f978fbcc3d13a0e3702478c24cd95">EthernetClient</a>.</p>
+
 </div>
 </div>
 <a id="aa859ed2dc24df300b020d5a71af51356" name="aa859ed2dc24df300b020d5a71af51356"></a>
@@ -259,6 +262,8 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>1 on success, 0 or negative on failure </dd></dl>
+
+<p>Implemented in <a class="el" href="class_ethernet_client.html#a53eb240cab31d0f205ed979a00ccfb22">EthernetClient</a>.</p>
 
 </div>
 </div>
@@ -297,6 +302,8 @@ Additional Inherited Members</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>1 on success, 0 or negative on failure </dd></dl>
 
+<p>Implemented in <a class="el" href="class_ethernet_client.html#a5f58cc3a0076eb7fb6d3be3c696f072d">EthernetClient</a>.</p>
+
 </div>
 </div>
 <a id="a00710fc15c5e011149350674a99346f2" name="a00710fc15c5e011149350674a99346f2"></a>
@@ -322,6 +329,8 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 <dl class="section return"><dt>Returns</dt><dd>nonzero while connected, or while received data is still waiting to be read </dd></dl>
+
+<p>Implemented in <a class="el" href="class_ethernet_client.html#a2a109bd4d9d4365d2bae82c7f53ec08a">EthernetClient</a>.</p>
 
 </div>
 </div>
@@ -351,6 +360,8 @@ Additional Inherited Members</h2></td></tr>
 
 <p>Reimplemented from <a class="el" href="class_print.html#a26dfe3ee0d55233c117464b91b9b9cdc">Print</a>.</p>
 
+<p>Implemented in <a class="el" href="class_ethernet_client.html#a944fded92eaaa46e070da61666eda855">EthernetClient</a>.</p>
+
 </div>
 </div>
 <a id="a88150a010c776d23f14790ca66877135" name="a88150a010c776d23f14790ca66877135"></a>
@@ -376,6 +387,8 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 <dl class="section return"><dt>Returns</dt><dd>true if this object stands for a connection (e.g. one a server handed out) </dd></dl>
+
+<p>Implemented in <a class="el" href="class_ethernet_client.html#a20e72ec7d3d560759dc63715a23c6180">EthernetClient</a>.</p>
 
 </div>
 </div>
@@ -404,6 +417,8 @@ Additional Inherited Members</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>next received byte without consuming it, or -1 if none </dd></dl>
 
 <p>Implements <a class="el" href="class_stream.html#ae32bb452cfa163b14bde00ce292737f5">Stream</a>.</p>
+
+<p>Implemented in <a class="el" href="class_ethernet_client.html#aff7f67c668b105ea5525325515c8effd">EthernetClient</a>.</p>
 
 </div>
 </div>
@@ -461,6 +476,8 @@ Additional Inherited Members</h2></td></tr>
 
 <p>Implements <a class="el" href="class_stream.html#a58207b97e74e5500a85f1ac88199636f">Stream</a>.</p>
 
+<p>Implemented in <a class="el" href="class_ethernet_client.html#a411607d20390dd9fd4c1302f042c13b6">EthernetClient</a>.</p>
+
 </div>
 </div>
 <a id="a11a2d1b2145412f6d606817d1f3b09b7" name="a11a2d1b2145412f6d606817d1f3b09b7"></a>
@@ -498,6 +515,8 @@ Additional Inherited Members</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>number of bytes read, or -1 if none </dd></dl>
 
+<p>Implemented in <a class="el" href="class_ethernet_client.html#a942c2ac864ec849208311c52339ce7e1">EthernetClient</a>.</p>
+
 </div>
 </div>
 <a id="a02682acc1f4b55e1e8e3e69d09e85fde" name="a02682acc1f4b55e1e8e3e69d09e85fde"></a>
@@ -523,6 +542,8 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 <p>Close the connection </p>
+
+<p>Implemented in <a class="el" href="class_ethernet_client.html#a71833b6bfef26d9a6972b83a7a32e5e9">EthernetClient</a>.</p>
 
 </div>
 </div>
@@ -563,6 +584,8 @@ Additional Inherited Members</h2></td></tr>
 
 <p>Reimplemented from <a class="el" href="class_print.html#ad98d820df11e2697be1e4b1ea30b4a23">Print</a>.</p>
 
+<p>Implemented in <a class="el" href="class_ethernet_client.html#ac7bbb9f7f4b0661cb8785ccfe560d060">EthernetClient</a>.</p>
+
 </div>
 </div>
 <a id="a1f7ebd29d8e7967d786482af32629e98" name="a1f7ebd29d8e7967d786482af32629e98"></a>
@@ -596,6 +619,8 @@ Additional Inherited Members</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>1 if it was accepted, 0 if not </dd></dl>
 
 <p>Implements <a class="el" href="class_print.html#ab9195b97274029f693aaddce6c7a0021">Print</a>.</p>
+
+<p>Implemented in <a class="el" href="class_ethernet_client.html#af3a0e369c92efe5c11aa732c97342767">EthernetClient</a>.</p>
 
 </div>
 </div>

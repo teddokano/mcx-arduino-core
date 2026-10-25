@@ -23,7 +23,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.10.0</span>
+   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.11.0</span>
    </div>
    <div id="projectbrief">Arduino board support package for NXP FRDM MCX Series boards</div>
   </td>
@@ -241,7 +241,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Not part of the Arduino API: for the libraries bundled with this core (Servo), which set a PWM pin's pulse width in microseconds instead of through <a class="el" href="#a68551ebddbaf0d0ebfdb22a2a0be9d71">analogWrite()</a>'s duty scaling. Gives the <a class="el" href="class_pwm_out.html" title="Mbed-compatible PWM output class.">PwmOut</a> that <a class="el" href="#a68551ebddbaf0d0ebfdb22a2a0be9d71">analogWrite()</a> uses for the pin, made on first use, and takes the pin back from <a class="el" href="arduino__io_8cpp.html#a2bf1cdfe3caa1e897b3511044b7b9bac">pinMode()</a> as <a class="el" href="#a68551ebddbaf0d0ebfdb22a2a0be9d71">analogWrite()</a> does. Its period is shared with the other pin of its FlexPWM submodule, as with <a class="el" href="#a43691e56dde3aceefab3866ded458ded">analogWriteFrequency()</a>. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Not part of the Arduino API: for the libraries bundled with this core (<a class="el" href="class_servo.html">Servo</a>), which set a PWM pin's pulse width in microseconds instead of through <a class="el" href="#a68551ebddbaf0d0ebfdb22a2a0be9d71">analogWrite()</a>'s duty scaling. Gives the <a class="el" href="class_pwm_out.html" title="Mbed-compatible PWM output class.">PwmOut</a> that <a class="el" href="#a68551ebddbaf0d0ebfdb22a2a0be9d71">analogWrite()</a> uses for the pin, made on first use, and takes the pin back from <a class="el" href="arduino__io_8cpp.html#a2bf1cdfe3caa1e897b3511044b7b9bac">pinMode()</a> as <a class="el" href="#a68551ebddbaf0d0ebfdb22a2a0be9d71">analogWrite()</a> does. Its period is shared with the other pin of its FlexPWM submodule, as with <a class="el" href="#a43691e56dde3aceefab3866ded458ded">analogWriteFrequency()</a>. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">pin_num</td><td>PWM pin (PWM0..PWM5, and D3/D5/D6/D9 on FRDM-MCXA156 and FRDM-MCXN236) </td></tr>
   </table>

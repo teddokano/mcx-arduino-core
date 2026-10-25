@@ -1,7 +1,19 @@
 var searchData=
 [
-  ['unit_5fbase_0',['unit_base',['../class_i2_c.html#a6c44b9051a72a4a0c339256f336a2cd9',1,'I2C::unit_base'],['../class_s_p_i.html#ab7d5a6739e756c916e7c0d92e0d2a346',1,'SPI::unit_base']]],
-  ['user_5fonreceive_1',['user_onReceive',['../class_two_wire.html#aae9b975022217c24dc3a8f9c664ed8b8',1,'TwoWire']]],
-  ['user_5fonrequest_2',['user_onRequest',['../class_two_wire.html#ad8dc2074c63f0b4269ab4cc13b36f9e5',1,'TwoWire']]],
-  ['utick_5ftype_3',['utick_type',['../class_ticker.html#a887d2a6eef5b3f51fae8fbc448a01b1f',1,'Ticker']]]
+  ['s_5finstances_0',['s_instances',['../_serial_8cpp.html#a03fcc48823cc69f5794110c963ac48cb',1,'Serial.cpp']]],
+  ['s_5fpinmap_1',['s_pinMap',['../_serial_8cpp.html#a65e9a84da57df25f2782cbfa9b058bc3',1,'Serial.cpp']]],
+  ['scl_2',['SCL',['../arduino__io_8h.html#ac2b20f63465c34f17de0d95466ea2b87',1,'arduino_io.h']]],
+  ['sda_3',['SDA',['../arduino__io_8h.html#a8441463c7aeef3b18ec7ff00b3fb294f',1,'arduino_io.h']]],
+  ['serial_4',['Serial',['../arduino__serial_8cpp.html#a77efacf49a871c24decbe5c8d698bde3',1,'Serial:&#160;arduino_serial.cpp'],['../arduino__serial_8h.html#a251d681e5147a98f46d6091c3c83c42c',1,'Serial:&#160;arduino_serial.h']]],
+  ['serial1_5',['Serial1',['../arduino__serial_8cpp.html#aca406714a7f9d6cba2dbf536d77cf8c1',1,'Serial1:&#160;arduino_serial.cpp'],['../arduino__serial_8h.html#af0eefced216418b2f95bbe1354e19a03',1,'Serial1:&#160;arduino_serial.h']]],
+  ['serial1_5frx_5fpin_6',['SERIAL1_RX_PIN',['../arduino__serial_8cpp.html#a8f9eb866793a2fd942cd06bd0616d12c',1,'arduino_serial.cpp']]],
+  ['serial1_5ftx_5fpin_7',['SERIAL1_TX_PIN',['../arduino__serial_8cpp.html#ab69a28690864e54c0d6f07b03ef3c336',1,'arduino_serial.cpp']]],
+  ['servo_5fcount_8',['servo_count',['../_servo_8cpp.html#abc00ea18975c0223e091c61ea7aeba9f',1,'Servo.cpp']]],
+  ['sink_9',['sink',['../struct_wire_target.html#a521964387ce215e4e5299de33a235215',1,'WireTarget']]],
+  ['size_10',['SIZE',['../_e_e_p_r_o_m_8cpp.html#ab64d172f43f10016ba36571d30151743',1,'EEPROM.cpp']]],
+  ['spi_11',['SPI',['../arduino__spi_8cpp.html#a56953eb3affc2a9f56e1680bbc537bf7',1,'SPI:&#160;arduino_spi.cpp'],['../arduino__spi_8h.html#a56953eb3affc2a9f56e1680bbc537bf7',1,'SPI:&#160;arduino_spi.cpp']]],
+  ['spi_12',['spi',['../class_s_p_i_class.html#aebe480d6a13eaedf3ecebcb073eb7eba',1,'SPIClass']]],
+  ['spi1_13',['SPI1',['../arduino__spi_8cpp.html#a43acbc5715901cf39e8f7119cf245c7d',1,'SPI1:&#160;arduino_spi.cpp'],['../arduino__spi_8h.html#ad377f27ce014280acba537e2a2246353',1,'SPI1:&#160;arduino_spi.h']]],
+  ['ss_14',['SS',['../arduino__spi_8h.html#a34f6b1382e139778659e7be8367aef0b',1,'arduino_spi.h']]],
+  ['stacked_15',['stacked',['../mcu_8cpp.html#a826b79e2cba896c7d0b3d8e599bd7b12',1,'mcu.cpp']]]
 ];

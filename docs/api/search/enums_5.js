@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['iptype_0',['IPType',['../_i_p_address_8h.html#aadb1cfb5fcd8adc562a07248be433d45',1,'IPType:&#160;IPAddress.h'],['../namespacearduino.html#aadb1cfb5fcd8adc562a07248be433d45',1,'arduino::IPType']]],
-  ['irqtype_1',['IrqType',['../class_serial.html#a05f90a53ae071948269d4c5cf8e87e93',1,'Serial']]]
+  ['freq_0',['FREQ',['../class_i2_c.html#aa009bd9217f2fe39b32a96aa68125edd',1,'I2C::FREQ'],['../class_i3_c.html#ac4c6baa4f489f1a470b86ad579fb0107',1,'I3C::FREQ']]]
 ];

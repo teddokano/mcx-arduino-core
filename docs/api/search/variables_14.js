@@ -1,7 +1,10 @@
 var searchData=
 [
-  ['wanted_5fmux_0',['wanted_mux',['../pin__registry_8cpp.html#a0a14bed576768026b0e4ad03f2a964bc',1,'pin_registry.cpp']]],
-  ['wire_1',['Wire',['../arduino__i2c_8cpp.html#a4b6c43f6a3d77d6f440687cbd57f4472',1,'Wire:&#160;arduino_i2c.cpp'],['../arduino__i2c_8h.html#a35bd3de386d23ba02c35f820303db472',1,'Wire:&#160;arduino_i2c.h']]],
-  ['wire1_2',['Wire1',['../arduino__i2c_8cpp.html#a6e168e769868f6e6b791500e5ec0f64e',1,'Wire1:&#160;arduino_i2c.cpp'],['../arduino__i2c_8h.html#a7e022c5f80cca7f1e29fc670b9bc40a5',1,'Wire1:&#160;arduino_i2c.h']]],
-  ['wire2_3',['Wire2',['../arduino__i2c_8h.html#ab87dc181f7f7bce147c7e034b441ce26',1,'arduino_i2c.h']]]
+  ['udp_5fslots_0',['udp_slots',['../_ethernet_udp_8cpp.html#aa34f01032835ca8083793cef32a4d219',1,'EthernetUdp.cpp']]],
+  ['unit_1',['UNIT',['../_e_e_p_r_o_m_8cpp.html#afa3a143695e7a0b74dfe664fd3bcf2bd',1,'EEPROM.cpp']]],
+  ['unit_5fbase_2',['unit_base',['../class_i2_c.html#a6c44b9051a72a4a0c339256f336a2cd9',1,'I2C::unit_base'],['../class_s_p_i.html#ab7d5a6739e756c916e7c0d92e0d2a346',1,'SPI::unit_base']]],
+  ['used_3',['used',['../struct_udp_slot.html#ac4180f2455f07c0d96fd9881b3419f59',1,'UdpSlot']]],
+  ['user_5fonreceive_4',['user_onReceive',['../class_two_wire.html#aae9b975022217c24dc3a8f9c664ed8b8',1,'TwoWire']]],
+  ['user_5fonrequest_5',['user_onRequest',['../class_two_wire.html#ad8dc2074c63f0b4269ab4cc13b36f9e5',1,'TwoWire']]],
+  ['utick_5ftype_6',['utick_type',['../class_ticker.html#a887d2a6eef5b3f51fae8fbc448a01b1f',1,'Ticker']]]
 ];

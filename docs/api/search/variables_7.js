@@ -12,5 +12,6 @@ var searchData=
   ['gpio_5fn_9',['gpio_n',['../class_digital_in_out.html#a9bdab338c9f749340114fb97aa4e4c0b',1,'DigitalInOut']]],
   ['gpio_5fpin_10',['gpio_pin',['../class_digital_in_out.html#a44740bc823e3945773f1423ec63803fa',1,'DigitalInOut']]],
   ['gpio_5fptr_11',['gpio_ptr',['../_interrupt_in_8cpp.html#a4e4e0b4b93017e4fed3ce6a8d6c9f492',1,'InterruptIn.cpp']]],
-  ['gpio_5ftype_12',['gpio_type',['../io_8cpp.html#a6cc2c704233b052dd6bb1df6298a4e4b',1,'io.cpp']]]
+  ['gpio_5ftype_12',['gpio_type',['../io_8cpp.html#a6cc2c704233b052dd6bb1df6298a4e4b',1,'io.cpp']]],
+  ['group_13',['group',['../struct_udp_slot.html#ad6c60bc68616f337c8fe4c04bbbdfe6b',1,'UdpSlot']]]
 ];

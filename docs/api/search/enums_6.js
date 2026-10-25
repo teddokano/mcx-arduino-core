@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['misc_0',['MISC',['../class_i3_c.html#a2fe3725df0ba7782c7b1d9059c75ff17',1,'I3C']]],
-  ['mode_1',['MODE',['../class_i3_c.html#a90bae46fc3e240503e1384f4a2a324a8',1,'I3C']]]
+  ['iptype_0',['IPType',['../_i_p_address_8h.html#aadb1cfb5fcd8adc562a07248be433d45',1,'IPType:&#160;IPAddress.h'],['../namespacearduino.html#aadb1cfb5fcd8adc562a07248be433d45',1,'arduino::IPType']]],
+  ['irqtype_1',['IrqType',['../class_serial.html#a05f90a53ae071948269d4c5cf8e87e93',1,'Serial']]]
 ];

@@ -23,7 +23,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.10.0</span>
+   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.11.0</span>
    </div>
    <div id="projectbrief">Arduino board support package for NXP FRDM MCX Series boards</div>
   </td>
@@ -109,8 +109,9 @@ Inheritance diagram for UDP:</div>
  <div class="center">
   <img src="class_u_d_p.png" usemap="#UDP_map" alt=""/>
   <map id="UDP_map" name="UDP_map">
-<area href="class_stream.html" alt="Stream" shape="rect" coords="0,56,51,80"/>
-<area href="class_print.html" alt="Print" shape="rect" coords="0,0,51,24"/>
+<area href="class_stream.html" alt="Stream" shape="rect" coords="0,56,84,80"/>
+<area href="class_print.html" alt="Print" shape="rect" coords="0,0,84,24"/>
+<area href="class_ethernet_u_d_p.html" alt="EthernetUDP" shape="rect" coords="0,168,84,192"/>
   </map>
 </div></div>
 <table class="memberdecls">
@@ -228,6 +229,8 @@ Additional Inherited Members</h2></td></tr>
 
 <p>Implements <a class="el" href="class_stream.html#a581d4e5d65d14b52406f65be388bae96">Stream</a>.</p>
 
+<p>Implemented in <a class="el" href="class_ethernet_u_d_p.html#a647171f7cc969d75295f93db76b7749f">EthernetUDP</a>.</p>
+
 </div>
 </div>
 <a id="a9fed6363c56412bffbfdee32ebeb9651" name="a9fed6363c56412bffbfdee32ebeb9651"></a>
@@ -259,6 +262,8 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>1 on success, 0 if no socket is free </dd></dl>
+
+<p>Implemented in <a class="el" href="class_ethernet_u_d_p.html#a6527de06dcb899ebca3e1e55426aeb0e">EthernetUDP</a>.</p>
 
 </div>
 </div>
@@ -296,6 +301,8 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>1 on success, 0 on failure </dd></dl>
+
+<p>Reimplemented in <a class="el" href="class_ethernet_u_d_p.html#a0f42fea00ff901696f86be79e6052408">EthernetUDP</a>.</p>
 
 <p class="definition">Definition at line <a class="el" href="_udp_8h_source.html#l00028">28</a> of file <a class="el" href="_udp_8h_source.html">Udp.h</a>.</p>
 
@@ -336,6 +343,8 @@ Additional Inherited Members</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>1 on success, 0 on failure </dd></dl>
 
+<p>Implemented in <a class="el" href="class_ethernet_u_d_p.html#ae3207957390f88821936c1859fc5ae8a">EthernetUDP</a>.</p>
+
 </div>
 </div>
 <a id="a41344aa0d287135b6dfa9b180e2e446b" name="a41344aa0d287135b6dfa9b180e2e446b"></a>
@@ -373,6 +382,8 @@ Additional Inherited Members</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>1 on success, 0 on failure </dd></dl>
 
+<p>Implemented in <a class="el" href="class_ethernet_u_d_p.html#a557348eb0d568c44370e810ba5e62c4c">EthernetUDP</a>.</p>
+
 </div>
 </div>
 <a id="ab3d794999eab13727b155da81f55858f" name="ab3d794999eab13727b155da81f55858f"></a>
@@ -398,6 +409,8 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 <p>Send the packet built since <a class="el" href="#a41344aa0d287135b6dfa9b180e2e446b">beginPacket()</a>. </p><dl class="section return"><dt>Returns</dt><dd>1 on success, 0 on failure </dd></dl>
+
+<p>Implemented in <a class="el" href="class_ethernet_u_d_p.html#a2fc7308501300cb1aba69ca83c878ff0">EthernetUDP</a>.</p>
 
 </div>
 </div>
@@ -427,6 +440,8 @@ Additional Inherited Members</h2></td></tr>
 
 <p>Reimplemented from <a class="el" href="class_print.html#a26dfe3ee0d55233c117464b91b9b9cdc">Print</a>.</p>
 
+<p>Implemented in <a class="el" href="class_ethernet_u_d_p.html#a710d5b200b769cbb9a8ea3e3e1293010">EthernetUDP</a>.</p>
+
 </div>
 </div>
 <a id="adab1e167381c58afcec04f40fb1c57e2" name="adab1e167381c58afcec04f40fb1c57e2"></a>
@@ -452,6 +467,8 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 <p>Move to the next received packet, dropping what is left of the current one. </p><dl class="section return"><dt>Returns</dt><dd>size of the packet, or 0 if none has arrived </dd></dl>
+
+<p>Implemented in <a class="el" href="class_ethernet_u_d_p.html#af30ed53e15b60bf7670bbe5f5fa0de52">EthernetUDP</a>.</p>
 
 </div>
 </div>
@@ -480,6 +497,8 @@ Additional Inherited Members</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>next byte of the current packet without consuming it, or -1 if none is left </dd></dl>
 
 <p>Implements <a class="el" href="class_stream.html#ae32bb452cfa163b14bde00ce292737f5">Stream</a>.</p>
+
+<p>Implemented in <a class="el" href="class_ethernet_u_d_p.html#a930932541439079e511b9ff5cbdc71fc">EthernetUDP</a>.</p>
 
 </div>
 </div>
@@ -537,6 +556,8 @@ Additional Inherited Members</h2></td></tr>
 
 <p>Implements <a class="el" href="class_stream.html#a58207b97e74e5500a85f1ac88199636f">Stream</a>.</p>
 
+<p>Implemented in <a class="el" href="class_ethernet_u_d_p.html#a8073cc627371a6b11af9441afaad6396">EthernetUDP</a>.</p>
+
 </div>
 </div>
 <a id="ae7d3956d53a15921e601d027658d04bd" name="ae7d3956d53a15921e601d027658d04bd"></a>
@@ -573,6 +594,8 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>number of bytes read, or -1 if none </dd></dl>
+
+<p>Implemented in <a class="el" href="class_ethernet_u_d_p.html#a238602783067551ad88c7c39f811f747">EthernetUDP</a>.</p>
 
 </div>
 </div>
@@ -611,6 +634,8 @@ Additional Inherited Members</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>number of bytes read, or -1 if none </dd></dl>
 
+<p>Implemented in <a class="el" href="class_ethernet_u_d_p.html#a34e99635313f55abf2a3dbbbf5f20577">EthernetUDP</a>.</p>
+
 </div>
 </div>
 <a id="a91e07b1dd9fc75f7919838442579cd14" name="a91e07b1dd9fc75f7919838442579cd14"></a>
@@ -636,6 +661,8 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 <dl class="section return"><dt>Returns</dt><dd>address the current packet came from </dd></dl>
+
+<p>Implemented in <a class="el" href="class_ethernet_u_d_p.html#aa35f6d711277a97a6954f224515c5c06">EthernetUDP</a>.</p>
 
 </div>
 </div>
@@ -663,6 +690,8 @@ Additional Inherited Members</h2></td></tr>
 </div><div class="memdoc">
 <dl class="section return"><dt>Returns</dt><dd>port the current packet came from </dd></dl>
 
+<p>Implemented in <a class="el" href="class_ethernet_u_d_p.html#a4c854facb28227b9e3d719efcdb694cd">EthernetUDP</a>.</p>
+
 </div>
 </div>
 <a id="a0e4696e1b2e485970c0aca6216a1a4ac" name="a0e4696e1b2e485970c0aca6216a1a4ac"></a>
@@ -688,6 +717,8 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 <p>Close the socket </p>
+
+<p>Implemented in <a class="el" href="class_ethernet_u_d_p.html#a379d05586418f59404a8faf627ede89e">EthernetUDP</a>.</p>
 
 </div>
 </div>
@@ -728,6 +759,8 @@ Additional Inherited Members</h2></td></tr>
 
 <p>Reimplemented from <a class="el" href="class_print.html#ad98d820df11e2697be1e4b1ea30b4a23">Print</a>.</p>
 
+<p>Implemented in <a class="el" href="class_ethernet_u_d_p.html#af1b8c541397fcb816d7e40dd0b2dc50b">EthernetUDP</a>.</p>
+
 </div>
 </div>
 <a id="a9f475c478fecbf79c3729ca534f90842" name="a9f475c478fecbf79c3729ca534f90842"></a>
@@ -761,6 +794,8 @@ Additional Inherited Members</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>1 if it fit, 0 if not </dd></dl>
 
 <p>Implements <a class="el" href="class_print.html#ab9195b97274029f693aaddce6c7a0021">Print</a>.</p>
+
+<p>Implemented in <a class="el" href="class_ethernet_u_d_p.html#a1792bbc4670647d709ed065c9feff5ff">EthernetUDP</a>.</p>
 
 </div>
 </div>

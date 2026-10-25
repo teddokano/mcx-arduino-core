@@ -1,10 +1,9 @@
 var searchData=
 [
-  ['manual_5fcs_5fcontrol_0',['manual_cs_control',['../class_s_p_i.html#adc4075526ca6eb3ceb2f721defab48e9',1,'SPI']]],
-  ['master_5fclk_5ffreq_1',['master_clk_freq',['../class_s_p_i.html#a1db76776302a20b94f8a867825b440c3',1,'SPI']]],
-  ['master_5fpcs_5f4_5fxfer_2',['master_pcs_4_xfer',['../class_s_p_i.html#a710870266e70e6f258dd15b172c0d9b6',1,'SPI']]],
-  ['mastercallback_3',['masterCallback',['../class_i3_c.html#a614ed7652b804f10efe60c4cfc1a167f',1,'I3C']]],
-  ['masterconfig_4',['masterConfig',['../class_i2_c.html#ad3ac8e63765dd4cb1c31f2673fec0ab3',1,'I2C::masterConfig'],['../class_i3_c.html#ad7223ba2ecb5a0bf86e59cb754ba982a',1,'I3C::masterConfig'],['../class_s_p_i.html#a8c66f4b0497cf5edce3e6f4882f529b6',1,'SPI::masterConfig']]],
-  ['msg_5',['msg',['../mcu_8cpp.html#abd9542aa0655c819034a3e6831db5fc0',1,'mcu.cpp']]],
-  ['mux_6',['mux',['../struct_pin_pcr_info.html#a2aa65809ff660b613c3aa66361274150',1,'PinPcrInfo']]]
+  ['last_5fstatus_0',['last_status',['../class_i2_c.html#a2f20a9d723af29875ec25ea943fcc49c',1,'I2C::last_status'],['../class_s_p_i.html#ad2f260501cc43fb5063f31882b57d8dd',1,'SPI::last_status'],['../class_two_wire.html#afc4f13dfbb2593eb9d5085ed68d3d154',1,'TwoWire::last_status']]],
+  ['link_5fwait_5fms_1',['LINK_WAIT_MS',['../namespacemcx__eth.html#a9ff340a5efbbc2b8d8620b764dbb9bff',1,'mcx_eth']]],
+  ['lock_5fdepth_2',['lock_depth',['../namespacemcx__eth.html#ac7e17be54ee5d623505850e8169aa6be',1,'mcx_eth']]],
+  ['log_5foff_3',['LOG_OFF',['../_e_e_p_r_o_m_8cpp.html#afa86e3d5c2190e7a98a41b20d9b0c63d',1,'EEPROM.cpp']]],
+  ['lookup_4',['lookup',['../namespacemcx__eth.html#ae436a9a56c2e94584a5a95ed7c2916c1',1,'mcx_eth']]],
+  ['low_5',['LOW',['../arduino__io_8h.html#a7d13ec9e69e059440678c128f1a29708',1,'arduino_io.h']]]
 ];

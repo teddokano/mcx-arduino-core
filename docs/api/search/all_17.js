@@ -1,4 +1,25 @@
 var searchData=
 [
-  ['xfer_0',['xfer',['../class_i3_c.html#a7081b70e0c4702e5193b64fdbd144ce2',1,'I3C']]]
+  ['udp_0',['UDP',['../classarduino_1_1_u_d_p.html',1,'arduino::UDP'],['../class_u_d_p.html',1,'UDP'],['../class_i_p_address.html#a480cf93423716d22666c9c3f17177736',1,'IPAddress::UDP()'],['../classarduino_1_1_i_p_address.html#a480cf93423716d22666c9c3f17177736',1,'arduino::IPAddress::UDP()']]],
+  ['udp_2eh_1',['Udp.h',['../_udp_8h.html',1,'']]],
+  ['udp_5fslots_2',['udp_slots',['../_ethernet_udp_8cpp.html#aa34f01032835ca8083793cef32a4d219',1,'EthernetUdp.cpp']]],
+  ['udp_5ftx_5fpacket_5fmax_5fsize_3',['UDP_TX_PACKET_MAX_SIZE',['../_m_c_x_ethernet_8h.html#a0fdcd947d94b667b5ae13b9dc6966979',1,'MCXEthernet.h']]],
+  ['udpslot_4',['UdpSlot',['../struct_udp_slot.html',1,'']]],
+  ['uint_5ffarptr_5ft_5',['uint_farptr_t',['../pgmspace_8h.html#a72b6692e3f3123903c1a0d9a960c59b1',1,'pgmspace.h']]],
+  ['ultoa_6',['ultoa',['../_arduino_8h.html#a904a901b9eca04913948044d698348ee',1,'ultoa(unsigned long value, char *str, int base):&#160;arduino_stdlib.cpp'],['../arduino__stdlib_8cpp.html#a904a901b9eca04913948044d698348ee',1,'ultoa(unsigned long value, char *str, int base):&#160;arduino_stdlib.cpp']]],
+  ['unit_7',['UNIT',['../_e_e_p_r_o_m_8cpp.html#afa3a143695e7a0b74dfe664fd3bcf2bd',1,'EEPROM.cpp']]],
+  ['unit_5fbase_8',['unit_base',['../class_i2_c.html#a6c44b9051a72a4a0c339256f336a2cd9',1,'I2C::unit_base'],['../class_s_p_i.html#ab7d5a6739e756c916e7c0d92e0d2a346',1,'SPI::unit_base']]],
+  ['unknown_9',['Unknown',['../_m_c_x_ethernet_8h.html#ab44fc8966e09098f4134fdc0310dbf97a4e81c184ac3ad48a389cd4454c4a05bb',1,'MCXEthernet.h']]],
+  ['update_10',['update',['../class_e_e_ref.html#a46f33e3ae1068e6c48a888896f3e09a9',1,'EERef::update()'],['../class_e_e_p_r_o_m_class.html#a237272492b2e0b4a61dc1e03599a192a',1,'EEPROMClass::update()']]],
+  ['update_5firq_5fenables_11',['update_irq_enables',['../class_serial.html#ad483361fab79ce00a0c630a5336ab51c',1,'Serial']]],
+  ['usage_12',['usage',['../_analog_in_8h.html#autotoc_md0',1,'Example usage'],['../_pwm_out_8h.html#autotoc_md2',1,'Example usage'],['../_serial_8h.html#autotoc_md5',1,'Example usage']]],
+  ['usbrx_13',['USBRX',['../io_8h.html#ab06380c6a34a2e7a06f1cfdc78fa1e84',1,'io.h']]],
+  ['usbtx_14',['USBTX',['../io_8h.html#a779c7510c10ce9a85f5e8eaa21aad41f',1,'io.h']]],
+  ['used_15',['used',['../struct_udp_slot.html#ac4180f2455f07c0d96fd9881b3419f59',1,'UdpSlot']]],
+  ['user_5fonreceive_16',['user_onReceive',['../class_two_wire.html#aae9b975022217c24dc3a8f9c664ed8b8',1,'TwoWire']]],
+  ['user_5fonrequest_17',['user_onRequest',['../class_two_wire.html#ad8dc2074c63f0b4269ab4cc13b36f9e5',1,'TwoWire']]],
+  ['usinginterrupt_18',['usingInterrupt',['../class_s_p_i_class.html#a1f21d6f84d89334bf1a897ec116860b4',1,'SPIClass']]],
+  ['utick_5fcallback_5ft_19',['utick_callback_t',['../_interrupt_in_8cpp.html#aa3d22a18e554732d4d10adb16231100a',1,'InterruptIn.cpp']]],
+  ['utick_5ftype_20',['utick_type',['../class_ticker.html#a887d2a6eef5b3f51fae8fbc448a01b1f',1,'Ticker']]],
+  ['utoa_21',['utoa',['../_arduino_8h.html#a8a43094a12dd8ee8fea0227692c60475',1,'Arduino.h']]]
 ];
