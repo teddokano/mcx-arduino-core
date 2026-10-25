@@ -3396,6 +3396,12 @@ memoの§2の材料をまとめ、ユーザーが3つともおすすめどおり
 インスタンス名は付け替えず、ボードごとの表をAPI_COMPATIBILITYの冒頭に置いた。`endTransmission()`はAVRの0〜5を返すようにし、元のSDKのコードは`Wire.lastStatus()`で読めるようにした。
 LPI2CはアドレスとデータのNAKを同じコードで返すので、どちらも`2`。C444はr01libの自前の転送が分けて返すので`2`と`3`。今の値を見ていた作例7本を直した。公開APIの範囲はAPI_COMPATIBILITYの冒頭の「What stays compatible」に書いた
 
+**実機で確かめた（2026-10-25、5ボード）**: 直したのは`release_check`の`01`・`14`・`15`・`24`の4本で、ビルドだけだった値を実機で流した。
+- `01`: 5ボードともALL OK
+- `14`: 5ボードともALL PASS（N947 77項目、A153 42、A156 76、N236 75、C444 35。C444はターゲット自分自身の項目がSKIP＝Kinetisの制限どおり）。C444とA156の途中のFAILはどちらもジャンパで、hold-lowの項目が`code=2`（普通のNAK）を返したのはD19-D8・D18-D7が効いていなかったため
+- `15`: A156でALL OK。最初の10 FAILは`MB_SDA`-`D18`と`MB_SCL`-`D19`の挿し違い（scanのスケッチで`D18`↔`MB_SCL`、`D19`↔`MB_SDA`と読めた）
+- `24`: N947との4組（A153・A156・N236・C444）とも、両方のボードがALL OK
+
 ### サードパーティのライブラリをCIでビルドする（2026-10-23、作業中。memoの§9の⑨）
 `.github/scripts/compile_third_party.sh`と`.github/third_party/`（版を固定したライブラリの一覧と、通らないと分かっている作例の一覧）。fullの段と同じとき（`main`・タグ・手動実行）に流す。
 ライブラリは0.7.0と0.10.0で手で確かめた9つと、`SD`（ArduinoJsonの`JsonConfigFile`と`release_check/23`が使う）。N947では公式`Ethernet`の作例を`MCXEthernet`でもビルドする。
