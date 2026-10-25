@@ -1027,7 +1027,14 @@ WARN_LOGFILE           =
 # Note: If this tag is empty the current directory is searched.
 
 INPUT                  = hardware/nxp/mcx/cores/arduino/r01lib \
-                         hardware/nxp/mcx/cores/arduino/arduino_api
+                         hardware/nxp/mcx/cores/arduino/arduino_api \
+                         hardware/nxp/mcx/libraries/EEPROM/src \
+                         hardware/nxp/mcx/libraries/Servo/src \
+                         hardware/nxp/mcx/libraries/MCXEthernet/src/MCXEthernet.h \
+                         hardware/nxp/mcx/libraries/MCXEthernet/src/MCXEthernet.cpp \
+                         hardware/nxp/mcx/libraries/MCXEthernet/src/EthernetClient.cpp \
+                         hardware/nxp/mcx/libraries/MCXEthernet/src/EthernetServer.cpp \
+                         hardware/nxp/mcx/libraries/MCXEthernet/src/EthernetUdp.cpp
 
 # This tag can be used to specify the character encoding of the source files
 # that Doxygen parses. Internally Doxygen uses the UTF-8 encoding. Doxygen uses
