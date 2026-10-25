@@ -7,7 +7,9 @@ by a compiler error hours after the fact. None of them need hardware or a
 toolchain, so they run on every push.
 
 Run with --release to additionally apply the checks that only make sense
-once a version is being released (see check_changelog_heading).
+once a version is being released (see check_changelog_heading), and with
+--package-index for the one that only update_package_index.yml needs (see
+check_package_index_entry).
 """
 
 import argparse
@@ -161,6 +163,11 @@ def check_package_index_entry():
     update_package_index.yml only rewrites the checksum/size of an entry
     that already exists; it never creates one. Forgetting the placeholder
     made that workflow fail confusingly twice (v0.4.0, v0.4.1).
+
+    Only with --package-index, which that workflow passes, and not part of
+    --release: from 0.8.0 the entry goes on the staging-<version> branch
+    first and reaches main only after the install has been checked on all
+    three OSes, so on main and on the tag it is legitimately missing.
     """
     version = platform_version()[0]
     data = json.loads(read(PACKAGE_INDEX))
@@ -605,6 +612,12 @@ def main():
         action="store_true",
         help="also run the checks that only apply to a version being released",
     )
+    parser.add_argument(
+        "--package-index",
+        action="store_true",
+        help="also check that package_nxp_mcx_index.json has an entry for this "
+        "version (update_package_index.yml, which only rewrites an existing one)",
+    )
     args = parser.parse_args()
 
     check_version_fields()
@@ -616,9 +629,10 @@ def main():
 
     if args.release:
         check_changelog_heading()
-        check_package_index_entry()
         check_doxygen_freshness()
         check_mcxpinstate_verified_against()
+    if args.package_index:
+        check_package_index_entry()
 
     for note in notes:
         print("ok: %s" % note)

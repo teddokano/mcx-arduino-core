@@ -80,12 +80,14 @@ jobs:
 
       # --release adds the checks that only mean anything once a version
       # is actually being released: the CHANGELOG heading has to name it,
-      # package_nxp_mcx_index.json has to already carry an entry for it
-      # (update_package_index.yml only rewrites an existing entry, it
-      # never creates one), and docs/api/ has to have been regenerated
-      # since the sources Doxygen reads last changed. On a dev branch all
-      # three are legitimately unmet, so asking for them there would fail
-      # every push.
+      # docs/api/ has to have been regenerated since the sources Doxygen
+      # reads last changed, and mcxPinState has to have been checked
+      # against it. On a dev branch they are legitimately unmet, so asking
+      # for them there would fail every push. That package_nxp_mcx_index.json
+      # carries an entry for the version is checked by
+      # update_package_index.yml (--package-index), not here: the entry
+      # reaches main only after the staging-<version> branch's install has
+      # been checked, after main and the tag were pushed.
       - name: Repo hygiene checks
         run: |
           if [ "${{ github.ref }}" = "refs/heads/main" ] || [ "${{ startsWith(github.ref, 'refs/tags/') }}" = "true" ]; then

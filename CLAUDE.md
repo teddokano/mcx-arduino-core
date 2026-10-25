@@ -157,7 +157,7 @@
 - **`update_package_index.yml`は既存エントリのchecksum/sizeを書き換えるだけで、新規エントリを作らない**（2回踏んだ）。
   実行前に`package_nxp_mcx_index.json`へ対象バージョンのプレースホルダーエントリを追加しておくこと。
   なお**既存エントリを上書きせず配列に追加する**（過去バージョンも選べるようにするため）。
-  現在は`--release`時の`package-index-entry`チェックが検出する
+  現在は`update_package_index.yml`の最初の段（hygieneの`--package-index`）が検出する（2026-10-25に`--release`から移した）
 - **バージョンを上げると`mcxPinState`の`#warning`が再発火する**（設計どおり）。
   `arduino_io.h`が前回の照合時点から変わっていないことを
   `git log <前回コミット>..HEAD -- .../arduino_io.h`が空であることで確認してから、
@@ -500,7 +500,7 @@ xPack checksums（正しい値）：
 4. 全OSで問題なければ、いつも通り`main`に対して`update_package_index.yml`を手動実行してchecksum確定
 
 **`package_nxp_mcx_index.json`のエントリを入れる時期**（0.8.0・0.9.0とも）: タグとリリースzipを作ったあと、本物のchecksum・sizeで`staging-<version>`だけに入れ、3OSの確認が済んでから`main`をそのコミットまでfast-forwardする。
-`main`には仮の値のエントリを入れない（Boards Managerに未確認の版が出るため）。そのため、タグのコミットを`main`にpushした回とタグの回帰チェックは、hygieneの`package-index-entry`で失敗する（コンパイルが通っていれば想定どおり）
+`main`には仮の値のエントリを入れない（Boards Managerに未確認の版が出るため）。0.10.0までは、そのためにタグのコミットを`main`にpushした回とタグの回帰チェックが、hygieneの`package-index-entry`で失敗していた。2026-10-25に、このチェックを回帰チェックの`--release`から外し、`update_package_index.yml`だけが流す`--package-index`に移した（ユーザーが決定）。`main`とタグの回帰チェックは、ほかが通れば緑になる
 
 **リリースzipを同じ名前で作り直したら、確かめる前に各OSのダウンロードのキャッシュから消す**（2026-10-25、ユーザーが決定）: Boards Managerは`staging/packages/`（macOSは`~/Library/Arduino15/staging/packages/`、Windowsは`%LOCALAPPDATA%\Arduino15\staging\packages\`、Linuxは`~/.arduino15/staging/packages/`）に同じ名前のファイルがあると、ダウンロードし直さずにそれを使う。0.4.0では作り直す前のzipでインストールされ、直したはずの不具合が各OSで再現した。作り直したときは`mcx-arduino-core-<version>.zip`を3つのOSとも消してから確かめる（`packages/nxp`の退避や索引の`package_nxp_mcx_index.json`の削除だけでは足りない）。checksumが合わないときも、このキャッシュに壊れたファイルが残っていないかを先に見る（issue #6）
 
