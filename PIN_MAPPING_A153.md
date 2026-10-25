@@ -53,7 +53,7 @@ Other named pins/peripherals:
 |---|---|---|
 | `USBTX` / `USBRX` | `P0_3` / `P0_2` | `Serial` (USB-bridged UART) |
 | `I3C_SDA` / `I3C_SCL` | `P0_16` / `P0_17` | `Wire1` (I3C, I2C mode) — on-board P3T1755 temperature sensor |
-| `SW2` / `SW3` | `P3_29` / `P1_7` | on-board push buttons |
+| `SW2` / `SW3` | `P3_29` / `P1_7` | on-board push buttons (they sit the other way round from the other FRDM boards: go by the marking on the board) |
 
 > **Note on `Wire1`**: `I3C_SDA`/`I3C_SCL` are wired to the MCU's I3C peripheral, not a
 > second I2C controller. `Wire1` drives that peripheral in I2C-compatibility mode, so it

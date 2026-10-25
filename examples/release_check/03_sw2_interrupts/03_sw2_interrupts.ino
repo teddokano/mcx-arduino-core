@@ -8,6 +8,9 @@
  *  Each phase has a generous timeout (it moves on rather than hanging
  *  forever if SW2 never gets pressed) -- but this is fundamentally an
  *  interactive sketch, so have your finger on SW2 before starting.
+ *
+ *  On FRDM-MCXA153, SW2 and SW3 sit the other way round from the other
+ *  boards: press the button marked SW2 on the board.
  */
 
 #include <Arduino.h>
