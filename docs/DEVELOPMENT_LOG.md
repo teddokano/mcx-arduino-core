@@ -3376,7 +3376,8 @@ N947が1枚。LANはMacの「インターネット共有」（`bridge100`の`192
 実機の出力（`PHY ID 0x7 0xc121`、MACの`7c`）で、`Print`が16進を小文字で書いていたのに気づいた。AVRの`Print`は大文字で、`String(n, HEX)`はAVRでも小文字。
 ユーザーがAVRと同じ大文字にすると決めた。`Print.cpp`の`%lx`/`%llx`を`%lX`/`%llX`に、2〜36進の数字の表を大文字にした。`String`と`IPAddress`（IPv6はArduinoCore-APIでも小文字）は変えていない。
 `release_check/09`に「Print in HEX」の節（`FF`・`DEADBEEF`・`-1L`の`FFFFFFFF`・64ビット・36進の`Z`・`String(255, HEX)`は`ff`のまま）を足し、N947でALL OK。小文字の出力を比べている作例は無かった（`itoa`・`String`のものだけ）。
-ArduinoCore-APIと比べて、ほかに2つ違いが残っている（直していない）: 10進以外の負の数をAVRは2の補数のまま書く（このコアは2・8・16進以外で`-`と絶対値）、`print(n, 0)`をAVRは1バイトとして`write()`する（このコアは10進）
+ArduinoCore-APIと比べて、ほかに2つ違いが残っていた: 10進以外の負の数をAVRは2の補数のまま書く（このコアは2・8・16進以外で`-`と絶対値）、`print(n, 0)`をAVRは1バイトとして`write()`する（このコアは10進）。
+2026-10-25に、ユーザーが2つともAVRに合わせると決めた（1.0で動きを固めたあとに変えると破壊的変更になるので）。`_print_num()`・`_print_num64()`は10進以外を符号なしの関数に渡し、4つの関数とも基数`0`で`write()`する。`release_check/09`に6項目を足し、5ボードでALL OK
 
 ### 回帰スイープを並列に（2026-10-24）
 ユーザーの依頼で、ローカルのスイープを並列にした。入口は`.github/scripts/compile_all_boards.sh`（CIはボードごとに別の機械で流すので使わない）。

@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - **`print()` and `println()` write hex in upper case**, as AVR's `Print` does: `Serial.print(255, HEX)` prints
   `FF` (it printed `ff`), and so do the digits past 9 in the other bases (`print(35, 36)` is `Z`). `String(255, HEX)`
   stays `ff`, as on AVR
+- **`print()` and `println()` write a negative number in the other bases, and base `0`, as AVR does**: in any base
+  but `DEC`, a negative number is its two's complement (`print(-1, 3)` is `102002022201221111210`; it was `-1` in
+  the bases other than 2, 8 and 16, which already matched), and `print(65, 0)` writes the one byte `A` (it wrote
+  `65`), as the `BYTE` of Arduino before 1.0 did
 - **`millis()` and `micros()` count from boot**, as on AVR: the core started them at their first call, so a sketch
   that called `delay(500)` first read `0` there (`delay()` keeps its own time). Now they start before `setup()`
 - **`micros()` stays right when the 1 ms tick runs late** (FRDM-MCXA153, FRDM-MCXN947, FRDM-MCXA156, FRDM-MCXN236):

@@ -42,7 +42,9 @@ namespace {
  *  BIN -- and any other non-DEC/HEX/OCT base a sketch might pass, matching
  *  real Arduino's support for any radix 2-36 -- has to be hand-converted.
  *  Digits past 9 are upper case, in HEX too, as AVR's Print writes them
- *  (String(n, HEX) stays lower case, as AVR's does).
+ *  (String(n, HEX) stays lower case, as AVR's does). Also as AVR's: a
+ *  negative number in a base other than DEC is written as its two's
+ *  complement, and base 0 writes the number as one byte.
  */
 void _utoa_radix( unsigned long long value, int base, char *buf, size_t bufsize )
 {
@@ -83,26 +85,21 @@ size_t Print::print( char c )
 
 size_t Print::_print_num( long n, int base )
 {
+	if ( base == 0 )
+		return	write( (uint8_t)n );
+	if ( base != DEC )
+		return	_print_unum( (unsigned long)n, base );	// as AVR: a negative number in any other base is its two's complement
+
 	char	buf[ 34 ];
-	if ( base == DEC )
-		snprintf( buf, sizeof(buf), "%ld", n );
-	else if ( base == HEX )
-		snprintf( buf, sizeof(buf), "%lX", (unsigned long)n );
-	else if ( base == OCT )
-		snprintf( buf, sizeof(buf), "%lo", (unsigned long)n );
-	else if ( n < 0 )
-	{
-		size_t	bytes	= write( '-' );
-		_utoa_radix( (unsigned long long)( -(long long)n ), base, buf, sizeof(buf) );
-		return	bytes + print( buf );
-	}
-	else
-		_utoa_radix( (unsigned long long)n, base, buf, sizeof(buf) );
+	snprintf( buf, sizeof(buf), "%ld", n );
 	return	print( buf );
 }
 
 size_t Print::_print_unum( unsigned long n, int base )
 {
+	if ( base == 0 )
+		return	write( (uint8_t)n );
+
 	char	buf[ 34 ];
 	if ( base == DEC )
 		snprintf( buf, sizeof(buf), "%lu", n );
@@ -117,26 +114,21 @@ size_t Print::_print_unum( unsigned long n, int base )
 
 size_t Print::_print_num64( long long n, int base )
 {
+	if ( base == 0 )
+		return	write( (uint8_t)n );
+	if ( base != DEC )
+		return	_print_unum64( (unsigned long long)n, base );
+
 	char	buf[ 66 ];
-	if ( base == DEC )
-		snprintf( buf, sizeof(buf), "%lld", n );
-	else if ( base == HEX )
-		snprintf( buf, sizeof(buf), "%llX", (unsigned long long)n );
-	else if ( base == OCT )
-		snprintf( buf, sizeof(buf), "%llo", (unsigned long long)n );
-	else if ( n < 0 )
-	{
-		size_t	bytes	= write( '-' );
-		_utoa_radix( (unsigned long long)( -n ), base, buf, sizeof(buf) );
-		return	bytes + print( buf );
-	}
-	else
-		_utoa_radix( (unsigned long long)n, base, buf, sizeof(buf) );
+	snprintf( buf, sizeof(buf), "%lld", n );
 	return	print( buf );
 }
 
 size_t Print::_print_unum64( unsigned long long n, int base )
 {
+	if ( base == 0 )
+		return	write( (uint8_t)n );
+
 	char	buf[ 66 ];
 	if ( base == DEC )
 		snprintf( buf, sizeof(buf), "%llu", n );

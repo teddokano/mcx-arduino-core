@@ -49,7 +49,7 @@ public:
     len = 0;
     return text;
   }
-  char text[32] = "";
+  char text[40] = "";
   size_t len = 0;
 };
 
@@ -234,7 +234,7 @@ void setup() {
     check("print(1.999, 0) is \"2\", no decimal point", flaky.print(1.999, 0) == 1);
   }
 
-  // ---- Print in HEX and other bases: upper case, as AVR (0.11.0) ----
+  // ---- Print in HEX and other bases: upper case, two's complement and base 0, as AVR (0.11.0) ----
   Serial.println("--- Print in HEX ---");
   {
     TextPrint t;
@@ -248,6 +248,17 @@ void setup() {
     check("print(0xABCDEF012345ULL, HEX) is \"ABCDEF012345\"", strcmp(t.take(), "ABCDEF012345") == 0);
     t.print(35, 36);
     check("print(35, 36) is \"Z\"", strcmp(t.take(), "Z") == 0);
+    // a negative number in another base is its two's complement, and base 0 writes one byte, as AVR
+    t.print(-1, 3);
+    check("print(-1, 3) is 4294967295 in base 3", strcmp(t.take(), "102002022201221111210") == 0);
+    t.print(-2, BIN);
+    check("print(-2, BIN) is 31 ones and a 0", strcmp(t.take(), "11111111111111111111111111111110") == 0);
+    t.print(-1LL, 36);
+    check("print(-1LL, 36) is 2^64-1 in base 36", strcmp(t.take(), "3W5E11264SGSF") == 0);
+    t.print(-5, DEC);
+    check("print(-5, DEC) stays \"-5\"", strcmp(t.take(), "-5") == 0);
+    check("print(65, 0) writes one byte, 'A'", t.print(65, 0) == 1 && strcmp(t.take(), "A") == 0);
+    check("print(0x141UL, 0) writes the low byte, 'A'", t.print(0x141UL, 0) == 1 && strcmp(t.take(), "A") == 0);
     check("String(255, HEX) stays \"ff\"", String(255, HEX) == "ff");
   }
 

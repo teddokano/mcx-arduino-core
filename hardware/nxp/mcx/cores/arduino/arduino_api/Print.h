@@ -86,17 +86,17 @@ public:
 	size_t	print( const __FlashStringHelper *pstr );
 	/** @param p any Printable-derived object; calls p.printTo(*this) */
 	size_t	print( const Printable &p );
-	/** @param n value to format @param base DEC/HEX/OCT/BIN or any radix 2..36 */
+	/** @param n value to format @param base DEC/HEX/OCT/BIN or any radix 2..36 (0 writes n as one byte) */
 	size_t	print( int n, int base = DEC );
-	/** @param n value to format @param base DEC/HEX/OCT/BIN or any radix 2..36 */
+	/** @param n value to format @param base DEC/HEX/OCT/BIN or any radix 2..36 (0 writes n as one byte) */
 	size_t	print( unsigned int n, int base = DEC );
-	/** @param n value to format @param base DEC/HEX/OCT/BIN or any radix 2..36 */
+	/** @param n value to format @param base DEC/HEX/OCT/BIN or any radix 2..36 (0 writes n as one byte) */
 	size_t	print( long n, int base = DEC );
-	/** @param n value to format @param base DEC/HEX/OCT/BIN or any radix 2..36 */
+	/** @param n value to format @param base DEC/HEX/OCT/BIN or any radix 2..36 (0 writes n as one byte) */
 	size_t	print( unsigned long n, int base = DEC );
-	/** @param n value to format @param base DEC/HEX/OCT/BIN or any radix 2..36 */
+	/** @param n value to format @param base DEC/HEX/OCT/BIN or any radix 2..36 (0 writes n as one byte) */
 	size_t	print( long long n, int base = DEC );
-	/** @param n value to format @param base DEC/HEX/OCT/BIN or any radix 2..36 */
+	/** @param n value to format @param base DEC/HEX/OCT/BIN or any radix 2..36 (0 writes n as one byte) */
 	size_t	print( unsigned long long n, int base = DEC );
 	/** @param n value to format @param digits digits after the decimal point */
 	size_t	print( double n, int digits = 2 );
