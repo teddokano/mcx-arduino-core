@@ -848,7 +848,7 @@ core; the `delay(5)` before it lets the reply go out first and skips that
 wait.
 
 HTTPS and other TLS, IPv6 and Wi-Fi aren't available on this core (see the
-Ethernet rows of [API_COMPATIBILITY.md](API_COMPATIBILITY.md)).
+notes in the [Ethernet section of API_COMPATIBILITY.md](API_COMPATIBILITY.md#ethernet)).
 
 > **FRDM-MCXN947**: that board has Ethernet of its own, on its RJ45
 > connector (J16), with the bundled `MCXEthernet` library. It has the same

@@ -669,7 +669,7 @@ void loop() {
 
 表示されたアドレスを、同じネットワークのPCのブラウザで開いてください。1つのネットワークにつなぐボードは、それぞれ別のMACアドレスにする必要があります（2枚目は最後のバイトを変えます）。W5500はTCP/IPを自分で処理するので、スケッチがほかのことをしている間もpingに答え、接続を受け付けます。公式ライブラリの作例（**ファイル → スケッチ例 → Ethernet**）もそのまま動きます（CSはUNO R3と同じく既定で`D10`です）。`stop()`はW5500が接続を閉じるのを待ちます。このコアでは、書き込みの直後に呼ぶと約200msかかりました。その前の`delay(5)`で返事を先に送り出しておくと、この待ちがなくなります。
 
-HTTPSなどのTLS、IPv6、Wi-Fiは、このコアでは使えません（[API_COMPATIBILITY.md](API_COMPATIBILITY.md)のEthernetの行）。
+HTTPSなどのTLS、IPv6、Wi-Fiは、このコアでは使えません（[API_COMPATIBILITY.md](API_COMPATIBILITY.md#ethernet)のEthernetの節の注記）。
 
 > **FRDM-MCXN947**: このボードはRJ45のコネクタ（J16）に自前のEthernetを持っていて、同梱の`MCXEthernet`ライブラリで使えます。クラスは同じなので、上のスケッチは少し変えれば動きます。`<SPI.h>`と`<Ethernet.h>`の代わりに`<MCXEthernet.h>`を読み込み、`Ethernet.begin()`をMACアドレスなしで呼び（チップのIDから作ります）、RSTのパルス、`Ethernet.init()`、`delay(5)`を外します。作例は**ファイル → スケッチ例 → MCXEthernet**にあります。[ライブラリのREADME](hardware/nxp/mcx/libraries/MCXEthernet/README.md)も参照してください。
 
