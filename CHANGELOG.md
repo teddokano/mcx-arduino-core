@@ -37,7 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `MCXEthernet`, a bundled library for FRDM-MCXN947's on-board Ethernet (the chip's ENET and a LAN8741A PHY),
   with the official Ethernet library's interface: `Ethernet`, `EthernetClient`, `EthernetServer` and
   `EthernetUDP` keep their names, so a sketch moves over by changing `#include <Ethernet.h>` to
-  `#include <MCXEthernet.h>`; the official library's 13 examples build that way. The header has its own name so
+  `#include <MCXEthernet.h>`; the official library's 13 examples build that way, and 12 of them were run on the board. The header has its own name so
   that the official library, for W5x00 shields, stays usable on every board. TCP/IP is lwIP 2.2.1, run in a 1 ms
   timer interrupt (CTIMER2), so connections are served while the sketch is busy, as by a W5x00. `Ethernet.begin()`
   with no MAC address makes a locally administered one from the chip's unique ID, and `begin()` with a fixed address

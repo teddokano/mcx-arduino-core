@@ -767,6 +767,9 @@ board; INT stays unconnected):
 | CS | `D10` |
 | RST | `D8` |
 
+On FRDM-MCXA156, `SPI` reaches `D10`/`D11` only with R59/R60 moved to 2-3
+(see [PIN_MAPPING_A156.md](PIN_MAPPING_A156.md)).
+
 <img src="img/W5500-lite_FRDM-MCXA153.png" alt="A W5500 Lite module on a breadboard wired to FRDM-MCXA153" width="500">
 
 Plug the module into a network with a DHCP server (a home router does), or

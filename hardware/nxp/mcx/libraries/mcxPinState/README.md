@@ -177,7 +177,8 @@ all fixed and confirmed on hardware there:
 Physical-name and Arduino-alias display, the full named-pin table (every
 named pin, claimed or not, with same-pin aliases grouped into one row),
 and the "Peripheral instance state" table are all confirmed on real
-hardware on both boards. Two more issues turned up building those, both
+hardware on FRDM-MCXA153 and FRDM-MCXN947, and on each board added since
+(mcx-arduino-core's `release_check/04` prints them on all five). Two more issues turned up building those, both
 entirely within this library (no mcx-arduino-core changes involved) and
 fixed:
 

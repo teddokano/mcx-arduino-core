@@ -143,6 +143,12 @@ header), and `test_avr_pgmspace`, `test_network_base_classes` and
 `test_bringup_C444` is FRDM-MCXC444's first-steps sketch for a new
 core; #01-#09 cover the same ground.
 
+Also on their own, from 0.11.0: `test_enet_bringup_N947` (FRDM-MCXN947 and a
+LAN cable: the ENET and the PHY without lwIP, for telling a hardware problem
+from one in `MCXEthernet`; it prints its own verdict), and
+`test_ethernet_throughput` with its `pc_throughput.py` (TCP and UDP rates with
+a PC; a measurement, with no verdict). #25 and #26 cover the Ethernet itself.
+
 What *can* go wrong in `mcxRCServo` without a servo present -- the pulse
 width it asks the core for -- is checked in #13 instead, by jumpering
 the PWM pin back to an input and measuring it with `pulseIn()`. That

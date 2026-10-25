@@ -599,6 +599,8 @@ void loop() {
 | CS | `D10` |
 | RST | `D8` |
 
+FRDM-MCXA156では、R59・R60を2-3側へ付け替えたときだけ、`SPI`が`D10`・`D11`に出ます（[PIN_MAPPING_A156.md](PIN_MAPPING_A156.md)を参照）。
+
 <img src="img/W5500-lite_FRDM-MCXA153.png" alt="FRDM-MCXA153に配線したブレッドボード上のW5500 Liteのモジュール" width="500">
 
 モジュールはDHCPサーバーのあるネットワーク（家庭のルーターなど）か、有線のポートへ接続を共有したPC（macOSでは「インターネット共有」）に直接つなぎます。次のスケッチはアドレスをもらって、小さなページを返します:
@@ -616,13 +618,13 @@ void setup() {
   while (!Serial)
     ;
 
-  pinMode(D8, OUTPUT);  // the module's RST: a reset to start from
+  pinMode(D8, OUTPUT);  // モジュールのRST: リセットしてから始める
   digitalWrite(D8, LOW);
   delay(1);
   digitalWrite(D8, HIGH);
   delay(50);
 
-  Ethernet.init(D10);  // the module's CS (D10 is also the default)
+  Ethernet.init(D10);  // モジュールのCS（D10は既定の値でもある）
   if (Ethernet.begin(mac) == 0) {
     Serial.println("no address from DHCP: check the cable");
     while (true)
@@ -638,7 +640,7 @@ void loop() {
   if (!client)
     return;
 
-  // read the browser's request up to the blank line that ends it
+  // ブラウザーの要求を、終わりを示す空行まで読む
   bool lineIsBlank = true;
   while (client.connected()) {
     if (!client.available())
@@ -662,7 +664,7 @@ void loop() {
   client.print(millis() / 1000);
   client.println(" s");
 
-  delay(5);  // let the reply go out first (see below)
+  delay(5);  // 先に返事を送り出す（下を参照）
   client.stop();
 }
 ```

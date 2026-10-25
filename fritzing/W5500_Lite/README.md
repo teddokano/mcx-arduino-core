@@ -2,8 +2,8 @@
 
 A part for [Fritzing](https://fritzing.org/), for drawing the wiring of a small
 WIZnet W5500 Ethernet module (the "W5500 Lite": an RJ45 jack and two rows of six
-2.54 mm pins) to a board, as in the Ethernet row of
-[API_COMPATIBILITY.md](../../API_COMPATIBILITY.md).
+2.54 mm pins) to a board, as in the W5500 row of the
+[Ethernet section of API_COMPATIBILITY.md](../../API_COMPATIBILITY.md#ethernet).
 
 To use it, open `W5500_Lite.fzpz` with Fritzing's **File > Import...**; it lands in
 the parts bin's **MINE** section.

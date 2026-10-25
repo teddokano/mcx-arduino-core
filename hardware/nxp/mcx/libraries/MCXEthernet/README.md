@@ -3,13 +3,15 @@
 The on-board Ethernet of **FRDM-MCXN947**, with the official
 [Ethernet](https://github.com/arduino-libraries/Ethernet) library's interface.
 The other boards have no Ethernet; on them the library stops the build with an
-error.
+error. On any of the five boards, the official library itself works with a
+WIZnet W5500 module (see the Ethernet section of the package's
+API_COMPATIBILITY.md).
 
 > **Status**: checked on the board with the examples below and the
 > package's `release_check/25_ethernet_pc_N947` (DHCP, DNS, ping, TCP and UDP
 > both ways, served while the sketch is in `delay()`), with a Mac's Internet
-> Sharing as the DHCP server. The official library's 13 examples build with it
-> (below); they haven't been run.
+> Sharing as the DHCP server. The official library's 13 examples build with it,
+> and 12 of them have been run on the board (below).
 
 ## Using it
 
@@ -117,7 +119,8 @@ chip's ENET and the board's LAN8741A PHY (RMII; the pins are in
 - Received data is copied out of the driver's receive buffers as it arrives,
   so data a sketch hasn't read yet doesn't stall reception.
 - The interrupt has the lowest priority, as SysTick (`millis()`) does. Its
-  longest run in `release_check/25` was 251µs.
+  longest run in `release_check/25` was about 200µs, and about 280µs while
+  `test_ethernet_throughput` ran.
 - Each `write()` is sent at once (Nagle's algorithm is off), as a W5x00 sends
   it.
 - Running lwIP once a millisecond bounds the rate: with its 4-segment window

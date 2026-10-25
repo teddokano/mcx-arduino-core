@@ -95,8 +95,9 @@ notice:
 >   a controller or a target, never both at once, so a sketch can't
 >   address its own target.
 > - **`Wire.setWireTimeout()` times SCL only** (up to ~87ms at any speed).
->   A timeout returns `80`; SDA held low makes the bus busy, and a transfer
->   fails at once with `76`.
+>   A timeout returns `5`; SDA held low makes the bus busy, and a transfer
+>   fails at once with `4` (`Wire.lastStatus()` gives the driver's codes,
+>   `80` and `76`).
 
 > **7-bit serial formats** (`SERIAL_7N1` and the like) are not available:
 > this chip's LPUART has no 7-bit mode, and `Serial.begin()` stops the

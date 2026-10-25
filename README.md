@@ -217,8 +217,9 @@ on FRDM-MCXC444 both work on `Wire`, a bus can't address its own target, and
 the timeout watches SCL only),
 and the bundled `EEPROM` library keeps 1KB in on-chip flash across resets
 and uploads. The bundled `Servo` library takes the official Servo library's
-interface, and on FRDM-MCXN947 the bundled `MCXEthernet` library drives the
-on-board Ethernet with the official Ethernet library's interface
+interface. Ethernet works on every board with the official Ethernet library
+and a WIZnet W5500 module, and on FRDM-MCXN947 the bundled `MCXEthernet`
+library also drives the on-board Ethernet with the same interface
 (`#include <MCXEthernet.h>` in place of `<Ethernet.h>`; TLS, IPv6 and Wi-Fi
 are not supported). Third-party libraries that
 inherit `Print` directly or take `Stream&` (e.g. ArduinoJson, LiquidCrystal,

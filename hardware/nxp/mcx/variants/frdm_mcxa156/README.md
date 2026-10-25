@@ -79,7 +79,7 @@ FRDM-MCXA153のvariantとの違い:
 | `SPI1`（`MB_MOSI`-`MB_MISO`） | `test_SPI1_MikroBus`が全項目OK |
 | `release_check/12`（D11-D12、`MB_MOSI`-`MB_MISO`） | ALL OK（`SPI`の分割転送・旧API、`SPI1`を含む） |
 | `release_check/13`（D0-D1、D2-D3、D4-D5、D6-D7、`PWM0`（J3の5番）-D8） | ALL OK（`shiftOut`・`shiftIn`、`tone`を`pulseIn`で496us、`mcxRCServo`の16ビット分解能のパルスが499/1448/2399us） |
-| `release_check/21`（上の配線＋`MB_TX`-`MB_RX`） | 約57秒・285周でWARNINGなし。`Serial1`・`Serial2`のループバックは欠落なし、`SPI1`の折り返しは毎回一致、`Wire1`（何もつないでいないMikroBus）は毎回NAK（`134`）で止まらない |
+| `release_check/21`（上の配線＋`MB_TX`-`MB_RX`） | 約57秒・285周でWARNINGなし。`Serial1`・`Serial2`のループバックは欠落なし、`SPI1`の折り返しは毎回一致、`Wire1`（何もつないでいないMikroBus）は毎回NAK（`134`。0.10.0までの値）で止まらない |
 | `release_check/14`（D19-D8、D18-D7、`MB_SCL`-`MB_PWM`、`MB_SDA`-`MB_INT`） | ALL PASS（`Wire`・`Wire1`とも。上限は100kHzで約88ms、400kHzで約22ms） |
 | `Wire`と`Wire1`をつないだ形（`MB_SDA`-D18、`MB_SCL`-D19） | `release_check/15`（当時の名前は`test_Wire_Wire1_jumpered_A156`）がALL OK（`Wire1`からP3T1755が`Wire`と同じ値で読める、400kHzでも読める、`Wire`↔`Wire1`のターゲットモードが両方向で動く、D18・D19をLOWに押さえると`Wire1`は8usで失敗を返し、離すと戻る） |
 | `release_check/04` | CONFLICT・MISMATCHなし（`Wire`・`Wire1`・`Serial1`・`Serial2`・`SPI1`・`PwmOut`・`AnalogIn`を同時に） |
