@@ -1030,6 +1030,8 @@ INPUT                  = hardware/nxp/mcx/cores/arduino/r01lib \
                          hardware/nxp/mcx/cores/arduino/arduino_api \
                          hardware/nxp/mcx/libraries/EEPROM/src \
                          hardware/nxp/mcx/libraries/Servo/src \
+                         hardware/nxp/mcx/libraries/MsTimer2/src \
+                         hardware/nxp/mcx/libraries/TimerOne/src \
                          hardware/nxp/mcx/libraries/MCXEthernet/src/MCXEthernet.h \
                          hardware/nxp/mcx/libraries/MCXEthernet/src/MCXEthernet.cpp \
                          hardware/nxp/mcx/libraries/MCXEthernet/src/EthernetClient.cpp \

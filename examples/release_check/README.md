@@ -101,7 +101,10 @@ after the demo, and passed after a replug.
 and, since 0.9.1, function-local statics made at run time).
 They were part of `01` until 0.9.0, when `01` had grown to within 40
 bytes of FRDM-MCXA153's flash; `01` keeps the checks that use a
-peripheral (clocks, timing, analog, `Wire`).
+peripheral (clocks, timing, analog, `Wire`). Since 0.12.0 `09` also
+checks the bundled `MsTimer2` and `TimerOne` (and `tone()` alongside
+them, on `D8` for a moment): their timers have no pins, so they need no
+wiring either.
 
 `15_wire_wire1_jumpered_A156` exists only here (FRDM-MCXA156 only, so
 CI builds it for that board alone). The two jumpers join `Wire` (D18/D19,

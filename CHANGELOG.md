@@ -5,6 +5,36 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- **`MsTimer2` and `TimerOne`, bundled with the interfaces of the AVR libraries of those names**, for calling a
+  function from a timer interrupt (UNO R3 has no timer API of its own, and sketches use these libraries for it):
+  `#include <MsTimer2.h>` / `#include <TimerOne.h>`, and sketches written for them build unchanged.
+  `MsTimer2::set()`, `start()` and `stop()` run on the core's 1 ms SysTick interrupt, so they take no timer and no
+  pin. `Timer1.initialize()`, `setPeriod()`, `start()`, `stop()`, `restart()`, `resume()`, `attachInterrupt()` and
+  `detachInterrupt()` run on CTIMER1 (the MCX boards; 12 MHz from the same oscillator as the core clock, so the
+  periods agree with `millis()` and `micros()`; up to about 357 s) and PIT channel 1 (FRDM-MCXC444; up to about
+  178 s). They behave as on AVR: `setPeriod()` also starts a stopped timer, `resume()` goes on with the rest of
+  the period, and a period that ended while nothing was attached is called for as soon as something is. The
+  functions run at the lowest interrupt priority, so `Serial` still works inside them. TimerOne's PWM functions
+  (`pwm()`, `setPwmDuty()`, `disablePwm()`) are not provided and stop the build: on AVR they drive pins 9 and 10
+  from Timer1, which have no counterpart here (use `analogWrite()` and `analogWriteFrequency()`). Original
+  implementations, not ports (MsTimer2 is LGPL 2.1 or later, TimerOne CC BY 3.0); the build picks them over installed
+  copies of those libraries. Checked by `release_check/09` and
+  `examples/Arduino_compatible_API/test_MsTimer2_TimerOne` (no wiring)
+
+### Fixed
+- **`delay()` on FRDM-MCXC444 no longer runs long under interrupts**: with no cycle counter on its Cortex-M0+, it
+  counted a software loop, and every interrupt taken during it added its time on top: `delay(500)` took 501 ms,
+  502.5 ms under a 1 kHz `TimerOne` and 514 ms under a 10 kHz one. It counts SysTick's counter now, as
+  `delayMicroseconds()` already did there, and takes 500.005 ms by `micros()` in all three cases. The MCX boards
+  count the cycle counter, which interrupts don't stop, and were right already
+- **`llms.txt`** for LLMs and AI coding tools, at `https://teddokano.github.io/mcx-arduino-core/llms.txt`
+  ([docs/llms.txt](docs/llms.txt)): the documents to read, and a few points to know before writing a sketch for this
+  core (the board IDs, that instance names such as `Wire1` differ by board, Ethernet on each board). A repo check
+  makes sure its links point at files the repository tracks
+
 ## [0.11.0] - 2026-10-25
 
 ### Highlights

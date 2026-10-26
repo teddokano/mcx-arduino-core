@@ -387,6 +387,53 @@ def check_platform_paths():
                  % len(references))
 
 
+def check_llms_txt():
+    """docs/llms.txt must link only to files the repository tracks, and to every pin mapping.
+
+    Its links are absolute URLs into `main` (raw.githubusercontent.com) and
+    into GitHub Pages, which serves `main`'s docs/. Neither is followed by
+    anything else in the repo, so a renamed or removed document would leave
+    a dead link that shows only after the release reaches `main`. A new
+    board's PIN_MAPPING_*.md not listed there would be missed the same way.
+    """
+    rel_llms = "docs/llms.txt"
+    listing = git("ls-files")
+    if listing is None:
+        fail("llms-links", "git ls-files failed")
+        return
+    tracked = set(listing.splitlines())
+    if rel_llms not in tracked:
+        fail("llms-links", "%s is missing or not tracked by git" % rel_llms)
+        return
+
+    raw = "https://raw.githubusercontent.com/teddokano/mcx-arduino-core/main/"
+    pages = "https://teddokano.github.io/mcx-arduino-core/"
+    urls = re.findall(r"\]\((\S+?)\)", read(os.path.join(REPO, rel_llms)))
+    if not urls:
+        fail("llms-links", "found no links in %s -- has its format changed?" % rel_llms)
+        return
+
+    linked = set()
+    for url in urls:
+        if url.startswith(raw):
+            rel = url[len(raw):]
+        elif url.startswith(pages):
+            rel = "docs/" + url[len(pages):]
+            if rel.endswith("/"):
+                rel += "index.html"
+        else:
+            fail("llms-links", "%s links outside main and its Pages: %s" % (rel_llms, url))
+            continue
+        if rel not in tracked:
+            fail("llms-links", "%s links to %s, which the repository does not track" % (rel_llms, rel))
+        linked.add(rel)
+
+    for rel in sorted(t for t in tracked if re.fullmatch(r"PIN_MAPPING_\w+\.md", t)):
+        if rel not in linked:
+            fail("llms-links", "%s does not list %s" % (rel_llms, rel))
+    notes.append("llms-links: %d link(s) in %s point at tracked files" % (len(urls), rel_llms))
+
+
 def scan_comment_terminators(path):
     """Yield (line_no, line) where a block comment ends mid-line on a continuation line.
 
@@ -623,6 +670,7 @@ def main():
     check_version_fields()
     check_doxyfile_version()
     check_platform_paths()
+    check_llms_txt()
     check_comment_terminators()
     check_board_fallbacks()
     check_mcxpinstate_aliases()

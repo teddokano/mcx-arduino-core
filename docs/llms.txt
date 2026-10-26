@@ -1,0 +1,39 @@
+# mcx-arduino-core
+
+> Arduino board support package (an Arduino core) for NXP's FRDM-MCXA153, FRDM-MCXN947, FRDM-MCXA156, FRDM-MCXN236 and FRDM-MCXC444 boards. Sketches use the standard Arduino API. The documents below say what is supported, and on which pins, for each board.
+
+Points to keep in mind when writing a sketch for this core:
+
+- Install it from the Arduino IDE's Boards Manager with the URL `https://raw.githubusercontent.com/teddokano/mcx-arduino-core/main/package_nxp_mcx_index.json`. The board IDs (FQBNs) are `nxp:mcx:frdm_mcxa153`, `nxp:mcx:frdm_mcxn947`, `nxp:mcx:frdm_mcxa156`, `nxp:mcx:frdm_mcxn236` and `nxp:mcx:frdm_mcxc444`.
+- The boards are ARM Cortex-M (Cortex-M33; Cortex-M0+ on FRDM-MCXC444), not AVR. AVR registers and libraries written only for AVR do not work. `<avr/pgmspace.h>` and `PROGMEM` are provided so that code using them builds.
+- Instance names other than `Serial`, `Wire` and `SPI` (`Serial1`, `Serial2`, `Wire1`, `Wire2`, `SPI1`) mean different pins on each board, and some boards do not have them. Check "Instance names by board" in API_COMPATIBILITY.md first.
+- Which pins have PWM (`analogWrite()`) and analog input (`analogRead()`) differs by board. Check the board's pin mapping.
+- Ethernet: on FRDM-MCXN947, the bundled `MCXEthernet` library (`#include <MCXEthernet.h>`, with the same classes as the official Ethernet library) uses the on-board port. On any of the boards, the official `Ethernet` library works with a W5500 module.
+- `Servo` and `EEPROM` are bundled, with the same API as the official libraries, and so are `MsTimer2` and `TimerOne`, with the API of the AVR libraries of those names (`TimerOne` without its PWM functions: use `analogWrite()` and `analogWriteFrequency()`).
+
+## Docs
+
+- [README](https://raw.githubusercontent.com/teddokano/mcx-arduino-core/main/README.md): supported boards, installation, and an overview of the package
+- [Tutorial](https://raw.githubusercontent.com/teddokano/mcx-arduino-core/main/TUTORIAL.md): from installation to the first sketches, step by step
+- [API compatibility](https://raw.githubusercontent.com/teddokano/mcx-arduino-core/main/API_COMPATIBILITY.md): every Arduino API and its status on each board, instance names by board, and what is not supported
+- [Pin mapping: FRDM-MCXA153](https://raw.githubusercontent.com/teddokano/mcx-arduino-core/main/PIN_MAPPING_A153.md)
+- [Pin mapping: FRDM-MCXN947](https://raw.githubusercontent.com/teddokano/mcx-arduino-core/main/PIN_MAPPING_N947.md)
+- [Pin mapping: FRDM-MCXA156](https://raw.githubusercontent.com/teddokano/mcx-arduino-core/main/PIN_MAPPING_A156.md): the board needs resistor changes, described here
+- [Pin mapping: FRDM-MCXN236](https://raw.githubusercontent.com/teddokano/mcx-arduino-core/main/PIN_MAPPING_N236.md): the board needs resistor changes, described here
+- [Pin mapping: FRDM-MCXC444](https://raw.githubusercontent.com/teddokano/mcx-arduino-core/main/PIN_MAPPING_C444.md)
+
+## Bundled libraries
+
+- [MCXEthernet](https://raw.githubusercontent.com/teddokano/mcx-arduino-core/main/hardware/nxp/mcx/libraries/MCXEthernet/README.md): Ethernet on FRDM-MCXN947's on-board port, with the official Ethernet library's API
+- [mcxPinState](https://raw.githubusercontent.com/teddokano/mcx-arduino-core/main/docs/mcxpinstate_guide.md): shows which peripheral owns each pin, for debugging
+- [mcxRCServo](https://raw.githubusercontent.com/teddokano/mcx-arduino-core/main/hardware/nxp/mcx/libraries/mcxRCServo/README.md): hobby RC servos from the PWM pins
+
+## Optional
+
+- [Changelog](https://raw.githubusercontent.com/teddokano/mcx-arduino-core/main/CHANGELOG.md): changes in each release
+- [API reference](https://teddokano.github.io/mcx-arduino-core/api/): Doxygen class reference (HTML)
+- [Calling the MCUXpresso SDK directly](https://raw.githubusercontent.com/teddokano/mcx-arduino-core/main/docs/advanced_sdk_tuning.md)
+- [Native I3C through r01lib](https://raw.githubusercontent.com/teddokano/mcx-arduino-core/main/docs/advanced_r01lib_i3c.md)
+- [Porting a new board](https://raw.githubusercontent.com/teddokano/mcx-arduino-core/main/docs/porting_a_new_board.md): for adding another FRDM-MCX board to the core
+- [README (Japanese)](https://raw.githubusercontent.com/teddokano/mcx-arduino-core/main/README.ja.md)
+- [Tutorial (Japanese)](https://raw.githubusercontent.com/teddokano/mcx-arduino-core/main/TUTORIAL.ja.md)

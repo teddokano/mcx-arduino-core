@@ -3,20 +3,39 @@
  *
  *  Split out of release_check/01 in 0.9.0, which keeps the checks that use
  *  a peripheral: 01 had grown to fill all but 40 bytes of FRDM-MCXA153's
- *  flash. Nothing here touches a peripheral beyond Serial for the report,
- *  so it runs the same on every board.
+ *  flash. Nothing here touches a peripheral beyond Serial for the report
+ *  and, since 0.12.0, the timers of the bundled MsTimer2 and TimerOne
+ *  (and tone() on D8 for a moment, with nothing wired to it), so it runs
+ *  the same on every board.
  *
  *  Consolidates (from examples/Arduino_compatible_API/): test_math_constants,
  *  test_arduino_compat_macros, test_avr_compat_helpers,
  *  test_MOSI_MISO_SCK_macros, test_Print_writeError, test_String,
  *  test_String_64bit, test_Serial_print_time_t, test_function_local_static
- *  (since 0.9.1), and the representative checks of test_print_float_rounding.
+ *  (since 0.9.1), test_MsTimer2_TimerOne (since 0.12.0), and the
+ *  representative checks of test_print_float_rounding.
  *
  *  Read the final "ALL OK"/"N FAILED" line.
  */
 
 #include <Arduino.h>
 #include <cstring>
+#include <MsTimer2.h>
+#include <TimerOne.h>
+
+// For the MsTimer2 and TimerOne section: each library's function counts
+// its calls and keeps the time of the first and the last, and the
+// shortest and longest gap between two. Ahead of every function, so that
+// the prototypes the IDE adds above the first one can name it
+struct Calls {
+  volatile unsigned long n;
+  volatile unsigned long first;
+  volatile unsigned long last;
+  volatile unsigned long gap_min;
+  volatile unsigned long gap_max;
+};
+Calls ms2Calls;
+Calls t1Calls;
 
 // A minimal Print-derived class that can simulate a failing write(), used
 // by the Print::*WriteError() section below. File-scope, not declared
@@ -82,6 +101,52 @@ int lsInitial() {
 int lsNextFromInitial() {
   static int v = lsInitial();
   return ++v;
+}
+
+void noteCall(Calls &c) {
+  unsigned long now = micros();
+  if (c.n) {
+    unsigned long gap = now - c.last;
+    if (gap < c.gap_min)
+      c.gap_min = gap;
+    if (gap > c.gap_max)
+      c.gap_max = gap;
+  } else {
+    c.first = now;
+  }
+  c.last = now;
+  c.n = c.n + 1;
+}
+void clearCalls(Calls &c) {
+  noInterrupts();
+  c.n = 0;
+  c.first = 0;
+  c.last = 0;
+  c.gap_min = 0xFFFFFFFFul;
+  c.gap_max = 0;
+  interrupts();
+}
+void onMsTimer2() { noteCall(ms2Calls); }
+void onTimer1() { noteCall(t1Calls); }
+bool gapsWithin(const Calls &c, unsigned long period, unsigned long slack) {
+  return c.n >= 2 && c.gap_min + slack >= period && c.gap_max <= period + slack;
+}
+// Waits until the function has been called n times, or timeout_ms
+bool waitCalls(const Calls &c, unsigned long n, unsigned long timeout_ms) {
+  unsigned long start = millis();
+  while (c.n < n)
+    if (millis() - start > timeout_ms)
+      return false;
+  return true;
+}
+void printGaps(const char *label, const Calls &c) {
+  Serial.print(label);
+  Serial.print(c.n);
+  Serial.print(" calls, gaps ");
+  Serial.print(c.gap_min);
+  Serial.print("..");
+  Serial.print(c.gap_max);
+  Serial.println(" us");
 }
 
 int failCount = 0;
@@ -335,6 +400,162 @@ void setup() {
     int e = lsNextFromInitial();
     check("value set from a function call keeps its state, set once",
           d == 101 && e == 102 && lsInitialCalls == 1);
+  }
+
+  // ---- MsTimer2 and TimerOne, bundled with the AVR libraries' API (was
+  //      test_MsTimer2_TimerOne, 0.12.0). MsTimer2 runs on SysTick; TimerOne
+  //      on CTIMER1 (MCX) or PIT channel 1 (FRDM-MCXC444, sharing the PIT
+  //      with tone()) ----
+  Serial.println("--- MsTimer2 and TimerOne ---");
+  {
+    // MsTimer2: every 10 ms for 1 s
+    clearCalls(ms2Calls);
+    MsTimer2::set(10, onMsTimer2);
+    unsigned long t0 = micros();
+    MsTimer2::start();
+    delay(1000);
+    MsTimer2::stop();
+    unsigned long n = ms2Calls.n;
+    printGaps("MsTimer2 set(10): ", ms2Calls);
+    check("MsTimer2 set(10)/start(): 99-101 calls in 1 s", n >= 99 && n <= 101);
+    check("MsTimer2 set(10): every 10 ms (within 0.5 ms)", gapsWithin(ms2Calls, 10000, 500));
+    check("MsTimer2 set(10): the first call 10 ms after start() (within 1 ms)",
+          ms2Calls.first - t0 >= 9000 && ms2Calls.first - t0 <= 11000);
+    delay(50);
+    check("MsTimer2 stop(): no more calls", ms2Calls.n == n);
+    MsTimer2::set(0, onMsTimer2);
+    check("MsTimer2 set(0) is taken as 1 ms", MsTimer2::msecs == 1);
+    clearCalls(ms2Calls);
+    MsTimer2::set(5, onMsTimer2);
+    MsTimer2::start();
+    delay(30);
+    MsTimer2::set(5, onMsTimer2);  // stops it, as on AVR
+    n = ms2Calls.n;
+    delay(30);
+    check("MsTimer2 set() stops a running timer", n >= 4 && ms2Calls.n == n);
+
+    // TimerOne: 1 kHz for 0.5 s
+    clearCalls(t1Calls);
+    Timer1.initialize(1000);
+    Timer1.attachInterrupt(onTimer1);
+    delay(500);
+    Timer1.detachInterrupt();
+    printGaps("Timer1 initialize(1000): ", t1Calls);
+    check("Timer1 initialize(1000): 498-502 calls in 0.5 s", t1Calls.n >= 498 && t1Calls.n <= 502);
+    check("Timer1 initialize(1000): every 1 ms (within 50 us)", gapsWithin(t1Calls, 1000, 50));
+
+    // 100 periods against micros(): the timer counts a clock from the core
+    // clock's oscillator, so the two agree closely
+    Timer1.attachInterrupt(onTimer1, 10000);
+    delay(15);  // past the call at once for the periods that ended detached
+    clearCalls(t1Calls);
+    check("Timer1 attachInterrupt(isr, 10000): 100 calls", waitCalls(t1Calls, 101, 1500));
+    Timer1.detachInterrupt();
+    unsigned long span = t1Calls.last - t1Calls.first;
+    Serial.print("Timer1 100 periods of 10 ms: ");
+    Serial.print(span);
+    Serial.println(" us");
+    check("Timer1 100 periods 1 s by micros() (within 0.1%)", span >= 999000 && span <= 1001000);
+
+    // stop() and resume(): resume goes on with the rest of the period
+    Timer1.initialize(100000);  // 100 ms
+    Timer1.attachInterrupt(onTimer1);
+    delay(30);
+    Timer1.stop();
+    clearCalls(t1Calls);
+    delay(200);
+    check("Timer1 stop(): no calls while stopped", t1Calls.n == 0);
+    unsigned long t_resume = micros();
+    Timer1.resume();
+    bool resumed = waitCalls(t1Calls, 1, 200);
+    unsigned long after = t1Calls.first - t_resume;
+    Serial.print("Timer1 first call after resume(), 30 ms of 100 gone: ");
+    Serial.print(after);
+    Serial.println(" us");
+    check("Timer1 resume(): the rest of the period, about 70 ms (within 5 ms)",
+          resumed && after >= 65000 && after <= 75000);
+
+    // start() begins a whole period; restart() is start()
+    clearCalls(t1Calls);
+    Timer1.stop();
+    t0 = micros();
+    Timer1.start();
+    bool started = waitCalls(t1Calls, 1, 300);
+    after = t1Calls.first - t0;
+    check("Timer1 start(): the first call a whole period later, 100 ms (within 5 ms)",
+          started && after >= 95000 && after <= 105000);
+    Timer1.restart();
+    check("Timer1 restart(): runs as start()", waitCalls(t1Calls, 2, 300));
+
+    // setPeriod() leaves the timer running, even after stop(), as on AVR
+    clearCalls(t1Calls);
+    Timer1.stop();
+    Timer1.setPeriod(5000);
+    check("Timer1 setPeriod() after stop(): runs again", waitCalls(t1Calls, 3, 100));
+
+    // From a long period to a short one: the next period is the new one
+    clearCalls(t1Calls);
+    Timer1.setPeriod(2000000);
+    delay(20);
+    t0 = micros();
+    Timer1.setPeriod(10000);
+    check("Timer1 setPeriod() from 2 s to 10 ms: a call within 15 ms",
+          waitCalls(t1Calls, 1, 15) && t1Calls.first - t0 <= 15000);
+
+    // A period that ended while detached is called for at once, as on AVR
+    Timer1.detachInterrupt();
+    delay(30);
+    clearCalls(t1Calls);
+    t0 = micros();
+    Timer1.attachInterrupt(onTimer1);
+    check("Timer1 attachInterrupt() after missed periods: a call at once (within 1 ms)",
+          waitCalls(t1Calls, 1, 5) && t1Calls.first - t0 <= 1000);
+    Timer1.detachInterrupt();
+    n = t1Calls.n;
+    delay(50);
+    check("Timer1 detachInterrupt(): no more calls", t1Calls.n == n);
+
+    // Both with tone() at once. On FRDM-MCXC444 this is tone()'s first use
+    // of the PIT, with TimerOne already on it: neither may stop the other
+    clearCalls(ms2Calls);
+    clearCalls(t1Calls);
+    MsTimer2::set(2, onMsTimer2);
+    MsTimer2::start();
+    Timer1.initialize(500);
+    Timer1.attachInterrupt(onTimer1);
+    pinMode(D8, INPUT);
+    tone(D8, 1000);
+    unsigned long edges = 0;
+    int was = digitalRead(D8);
+    unsigned long start = millis();
+    while (millis() - start < 200) {
+      int now = digitalRead(D8);
+      if (now != was)
+        edges++;
+      was = now;
+    }
+    noTone(D8);
+    unsigned long ms2_n = ms2Calls.n;
+    unsigned long t1_n = t1Calls.n;
+    delay(100);
+    unsigned long ms2_after = ms2Calls.n;
+    unsigned long t1_after = t1Calls.n;
+    MsTimer2::stop();
+    Timer1.detachInterrupt();
+    Timer1.stop();
+    pinMode(D8, INPUT);
+    Serial.print("200 ms together: tone() ");
+    Serial.print(edges);
+    Serial.print(" edges, MsTimer2 ");
+    Serial.print(ms2_n);
+    Serial.print(" calls, Timer1 ");
+    Serial.print(t1_n);
+    Serial.println(" calls");
+    check("tone(D8, 1000) alongside both: 390-410 edges in 200 ms", edges >= 390 && edges <= 410);
+    check("MsTimer2 every 2 ms alongside: 98-103 calls in 200 ms", ms2_n >= 98 && ms2_n <= 103);
+    check("Timer1 every 500 us alongside: 395-406 calls in 200 ms", t1_n >= 395 && t1_n <= 406);
+    check("noTone() leaves MsTimer2 running", ms2_after - ms2_n >= 45);
+    check("noTone() leaves Timer1 running", t1_after - t1_n >= 190);
   }
 
   // ---- Serial.print(time_t)/(long long)/(unsigned long long) overload

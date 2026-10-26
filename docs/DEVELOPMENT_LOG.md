@@ -3508,3 +3508,20 @@ LPI2CはアドレスとデータのNAKを同じコードで返すので、どち
 - **並行の初回で、前のスケッチの出力を判定に含めかけた**: 書き込む前に記録を始めたので、N947・N236の`13`の記録の頭に、まだ動いていた`12`のFAILが入った。末尾の判定は`13`のものだったが、スクリプトを直し、見出しのあとの出力だけで判定するようにした
 
 ## v0.12.0（`0.12.0-dev` ブランチ、2026-10-25に`main`の`29d5b37`から切った。作業中）
+
+### llms.txt（2026-10-26、ユーザーが決定）
+- `docs/llms.txt`を足した（llmstxt.orgの形。Pagesで`https://teddokano.github.io/mcx-arduino-core/llms.txt`）。冒頭に、スケッチを書く前に知っておくこと（Boards ManagerのURLとFQBN、AVRではないこと、`Wire1`などのインスタンス名がボードで違うこと、PWM・ADCのピン、各ボードのEthernet、同梱の`Servo`・`EEPROM`）、続けてDocs・同梱ライブラリ・Optionalのリンク。リンクは`main`のraw（Markdownをそのまま読める）とPagesの絶対URL
+- 入れなかったもの: DEVELOPMENT_LOG・CLAUDE.md・memo（開発の記録）、llms-full.txt（生成したものをgitに置くとずれる。要るならリリースのときにスクリプトで作る）、版の番号（古くなる所を作らない）
+- READMEとREADME.jaからリンクした。hygieneに`llms-links`を足した（リンクが追跡下のファイルを指すこと、`PIN_MAPPING_*.md`が全部載っていること。わざと壊して3件のFAILが出ることを確かめた）。チェックリストの2（文書の監査）に、冒頭の内容がその版と合っているかを見ることを足した
+
+### MsTimer2とTimerOne（2026-10-27、ユーザーが決定）
+- UNO R3にはタイマーのAPIが無いので、よく使われるMsTimer2とTimerOneと同じAPIのライブラリを同梱した（自前で書いた。MsTimer2は手元のコピー、TimerOneはGitHubのソースで動きを確かめた）。TimerOneのPWMの関数は入れない（ユーザーが決定）
+- MsTimer2はSysTickの1msの割り込みから（コアに`systick_hook`）。TimerOneはMCXが`CTIMER1`、C444がPITのチャネル1。割り込みはいちばん低い優先度（Serialの送信がバッファいっぱいで割り込みを待つため）
+- **C444のPIT**: SDKの`PIT_Init()`が全チャネルの`TEN`・`TIE`を消すので、`tone()`とTimerOneの後から始めたほうが、もう一方を止めるところだった。チャネルに触らない`pit_module_init()`をコアに置き、`PIT_IRQHandler()`は`TIE`の立っているチャネルだけを見る（外している間のTimerOneのフラグを残すため）
+- **TimerOneのクロック**: 最初は`tone()`と同じFRO12Mにしたところ、A156で10msの100周期が`micros()`で994761µs（−0.52%、A153は+0.04%）。コアのクロックと別の発振器なので、コアと同じ`FRO_HF`（N947・N236ではPLL0の元のFIRC 48MHz）を12MHzに分周する形にした（ユーザーが決定）。A153・A156とも1000000µsになった
+- 本物のMsTimer2（`architectures=*`）をユーザーのライブラリに置いても、arduino-cliは同梱のほう（`architectures=mcx`）を選んだ。本物のTimerOneは`architectures=avr,esp32`
+- `test_MsTimer2_TimerOne`と`release_check/09`（項目を足した）がA153・A156でALL OK
+- N947・N236もALL OK。C444は「`initialize(1000)`: 0.5秒で498〜502回」だけFAIL（504回、間隔は全部1000µs）。`delay(500)`のほうが長かった: 別のスケッチで`micros()`で測ると、SysTickだけで501.2ms、TimerOneの1kHzで502.5ms、10kHzで514.1ms（N947はどれも500.005ms）。C444はサイクルカウンタが無く、`SDK_DelayAtLeastUs()`が自分のループを数えるので、割り込みの時間が上に足される
+- C444の`delay()`を、`delayMicroseconds()`と同じくSysTickのカウンタを1msずつ数える形に直した（ユーザーが決定）。3つとも500.005ms。C444で`01`・`06`・`07`（1000回のリセットで失敗0）・`08`・`09`・`test_MsTimer2_TimerOne`がALL OK
+- 気づいたこと（調べていない）: C444の`delayMicroseconds(50000)`は`micros()`で50084µs、N947は50023µs。直す前と同じ値
+- 途中で、前のキャプチャの`cat`が残っていて、C444のポートを2つのプロセスが読み合い、出力が欠けた（`pkill -f 'exec cat'`は、`sh`が`cat`に置き換わったあとのプロセスに当たらなかった）。プロセスの番号で止めて流し直した

@@ -6,10 +6,13 @@
 
 #include	"r01lib.h"
 #include	"Arduino.h"
+#include	"arduino_timer_hooks.h"
 
 extern "C" {
 #include	"fsl_clock.h"
 }
+
+void	(* volatile systick_hook)( uint32_t ms )	= nullptr;
 
 int		main() __attribute__((weak));
 
@@ -56,12 +59,12 @@ int main( void )
 	return 0;
 }
 
+#if !defined( __ARM_ARCH_6M__ )	// Cortex-M0+: below, after millis_init()
 void delay( unsigned long ms )
 {
 	wait( (float)ms / 1000.0f );
 }
 
-#if !defined( __ARM_ARCH_6M__ )	// Cortex-M0+: below, after millis_init()
 void delayMicroseconds( unsigned int us )
 {
 	wait_us( us );
@@ -134,6 +137,36 @@ void delayMicroseconds( unsigned int us )
 		prev	= now;
 	}
 }
+
+// wait() has no cycle counter to read here either: SDK_DelayAtLeastUs()
+// counts its own loop, so every interrupt taken during it added its time on
+// top (delay( 500 ) took 501 ms, and 514 ms under a 10 kHz TimerOne).
+// Count SysTick's down-counter, as delayMicroseconds() does, a whole
+// millisecond at a time so that a long delay doesn't overflow. Only an
+// interrupt running for over 1 ms between two reads would go uncounted
+void delay( unsigned long ms )
+{
+	if ( !millis_ready )
+		millis_init();
+
+	uint32_t	load	= SysTick->LOAD + 1u;
+	uint32_t	elapsed	= 0;
+	uint32_t	prev	= SysTick->VAL;
+
+	while ( ms > 0 )
+	{
+		uint32_t	now	= SysTick->VAL;
+
+		elapsed	+= ( prev >= now ) ? ( prev - now ) : ( prev + load - now );
+		prev	= now;
+
+		while ( ( ms > 0 ) && ( elapsed >= cycles_per_ms ) )
+		{
+			elapsed	-= cycles_per_ms;
+			ms--;
+		}
+	}
+}
 #endif
 
 extern "C" void SysTick_Handler( void )
@@ -150,11 +183,18 @@ extern "C" void SysTick_Handler( void )
 	ms_ticks	= ms_ticks + n;
 	ms_tick_dwt	= ms_tick_dwt + n * cycles_per_ms;
 #else
+	uint32_t	n	= 1;
+
 	ms_ticks	= ms_ticks + 1;
 #endif
 #if defined( CPU_MCXC444VLH )
 	pwm_tpm_service( ms_ticks * 1000u );	// micros() at this tick
 #endif
+
+	void	( *hook )( uint32_t )	= systick_hook;
+
+	if ( hook && n )
+		hook( n );
 }
 
 unsigned long millis( void )

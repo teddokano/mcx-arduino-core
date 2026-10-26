@@ -15,8 +15,10 @@ See [API_COMPATIBILITY.md](API_COMPATIBILITY.md) for the full Arduino API suppor
 [PIN_MAPPING_A156.md](PIN_MAPPING_A156.md) / [PIN_MAPPING_N236.md](PIN_MAPPING_N236.md) /
 [PIN_MAPPING_C444.md](PIN_MAPPING_C444.md) for each board's pin assignments, [CHANGELOG.md](CHANGELOG.md) for release history, and
 the [API reference](https://teddokano.github.io/mcx-arduino-core/api/) for the generated Doxygen class
-reference (the r01lib driver core, the Arduino-compatible API layer and the bundled `EEPROM`, `Servo` and
-`MCXEthernet` libraries; also in [docs/api/](docs/api/index.html)).
+reference (the r01lib driver core, the Arduino-compatible API layer and the bundled `EEPROM`, `Servo`,
+`MsTimer2`, `TimerOne` and `MCXEthernet` libraries; also in [docs/api/](docs/api/index.html)).
+For LLMs and AI coding tools, [llms.txt](https://teddokano.github.io/mcx-arduino-core/llms.txt)
+lists these documents with a few points to know before writing a sketch for this core.
 
 Past the standard Arduino API, a few advanced guides go deeper:
 [calling the MCUXpresso SDK directly](docs/advanced_sdk_tuning.md) for
@@ -143,7 +145,9 @@ mcx-arduino-core/
 │   ├── libraries/            # Bundled libraries
 │   │   ├── EEPROM/            #   AVR-compatible EEPROM, 1KB in on-chip flash (lives here)
 │   │   ├── MCXEthernet/       #   FRDM-MCXN947's on-board Ethernet, with the official Ethernet API (lives here)
+│   │   ├── MsTimer2/          #   MsTimer2's API: a function every N ms, on the 1 ms tick (lives here)
 │   │   ├── Servo/             #   The official Servo library's API, on the PWM pins (lives here)
+│   │   ├── TimerOne/          #   TimerOne's API: a function every N us, without its PWM (lives here)
 │   │   ├── mcxPinState/       #   Pin-ownership debugging (see docs/mcxpinstate_guide.md);
 │   │   │                      #   developed in its own repo, synced here at release time
 │   │   └── mcxRCServo/        #   RC servo driver for the PWM pins; likewise synced
@@ -217,7 +221,9 @@ on FRDM-MCXC444 both work on `Wire`, a bus can't address its own target, and
 the timeout watches SCL only),
 and the bundled `EEPROM` library keeps 1KB in on-chip flash across resets
 and uploads. The bundled `Servo` library takes the official Servo library's
-interface. Ethernet works on every board with the official Ethernet library
+interface, and the bundled `MsTimer2` and `TimerOne` take the interfaces of
+the timer-interrupt libraries of those names for AVR (TimerOne without its
+PWM functions). Ethernet works on every board with the official Ethernet library
 and a WIZnet W5500 module, and on FRDM-MCXN947 the bundled `MCXEthernet`
 library also drives the on-board Ethernet with the same interface
 (`#include <MCXEthernet.h>` in place of `<Ethernet.h>`; TLS, IPv6 and Wi-Fi

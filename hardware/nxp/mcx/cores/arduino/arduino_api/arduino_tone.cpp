@@ -11,11 +11,13 @@
  *
  *  The timer is CTIMER0's match 0 on the MCX A/N chips, and PIT channel 0
  *  on FRDM-MCXC444, which has no CTIMER. Only timer_init(), timer_start()
- *  and timer_stop() differ.
+ *  and timer_stop() differ. PIT channel 1 is the bundled TimerOne's; the
+ *  PIT's one interrupt handler, here, serves both.
  */
 
 #include	"r01lib.h"
 #include	"Arduino.h"
+#include	"arduino_timer_hooks.h"
 
 extern "C" {
 #if defined( CPU_MCXC444VLH )
@@ -41,10 +43,7 @@ bool			timer_ready		= false;
 
 void timer_init( void )
 {
-	pit_config_t	cfg;
-
-	PIT_GetDefaultConfig( &cfg );
-	PIT_Init( PIT, &cfg );	// also turns the PIT's clock on
+	pit_module_init();
 
 	timer_ready	= true;
 }
@@ -159,14 +158,47 @@ void tone_tick( void )
 
 #if defined( CPU_MCXC444VLH )
 
+void	(* volatile pit_channel1_hook)( void )	= nullptr;
+
+// PIT_Init() without its stopping every channel: tone() and TimerOne each
+// call this the first time they use their channel, and mustn't stop the
+// other's. It does the rest as PIT_Init() with the default configuration
+// does: the clock on, the module on (after a read of MCR, for erratum
+// 7914), and the timers stopped while a debugger halts the core
+void pit_module_init( void )
+{
+	CLOCK_EnableClock( kCLOCK_Pit0 );
+	(void)PIT->MCR;
+	PIT->MCR	= ( PIT->MCR & ~PIT_MCR_MDIS_MASK ) | PIT_MCR_FRZ_MASK;
+}
+
+// Channel 1 is the bundled TimerOne's (arduino_timer_hooks.h). Each
+// channel's flag is only looked at while its interrupt is on: TimerOne's
+// flag also sets while it runs with no interrupt attached, and has to stay
+// set then, as Timer1's overflow flag does on AVR
 extern "C" void PIT_IRQHandler( void )
 {
-	uint32_t	flags	= PIT_GetStatusFlags( PIT, kPIT_Chnl_0 );
+	if ( PIT->CHANNEL[ kPIT_Chnl_0 ].TCTRL & PIT_TCTRL_TIE_MASK )
+	{
+		uint32_t	flags	= PIT_GetStatusFlags( PIT, kPIT_Chnl_0 );
 
-	PIT_ClearStatusFlags( PIT, kPIT_Chnl_0, flags );
+		PIT_ClearStatusFlags( PIT, kPIT_Chnl_0, flags );
 
-	if ( flags & kPIT_TimerFlag )
-		tone_tick();
+		if ( flags & kPIT_TimerFlag )
+			tone_tick();
+	}
+
+	if ( PIT->CHANNEL[ kPIT_Chnl_1 ].TCTRL & PIT_TCTRL_TIE_MASK )
+	{
+		uint32_t	flags	= PIT_GetStatusFlags( PIT, kPIT_Chnl_1 );
+
+		PIT_ClearStatusFlags( PIT, kPIT_Chnl_1, flags );
+
+		void	( *hook )( void )	= pit_channel1_hook;
+
+		if ( ( flags & kPIT_TimerFlag ) && hook )
+			hook();
+	}
 }
 
 #else

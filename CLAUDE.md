@@ -5,13 +5,14 @@
 - **内容**: NXP FRDM-MCXA153 / FRDM-MCXN947 / FRDM-MCXA156（0.8.0から）/ FRDM-MCXN236（0.9.0から。ここまではCortex-M33）/ FRDM-MCXC444（0.10.0から。Cortex-M0+）向けのArduino IDEボードサポートパッケージ。
   v0.4.0以降は**ソース配布方式**（プリビルド`.a`は廃止）で、`hardware/nxp/mcx/cores/arduino/`（全ボード共有）と
   `hardware/nxp/mcx/variants/<board>/src/`（ボード固有）が唯一の実体。編集すれば次のビルドにそのまま反映される
-- **同梱ライブラリ**: `mcxPinState`（ピン所有状況のデバッグ表示）、`mcxRCServo`（RCサーボ）、`EEPROM`（0.7.0で追加）、`Servo`（0.10.0で追加、公式のServoライブラリと同じAPI、PWMのピンだけ）。
+- **同梱ライブラリ**: `mcxPinState`（ピン所有状況のデバッグ表示）、`mcxRCServo`（RCサーボ）、`EEPROM`（0.7.0で追加）、`Servo`（0.10.0で追加、公式のServoライブラリと同じAPI、PWMのピンだけ）、`MsTimer2`と`TimerOne`（0.12.0で追加、AVR向けの同じ名前のライブラリと同じAPI。TimerOneのPWMの関数は無い）。
   前の2つは別リポジトリが開発の本拠地で、`hardware/nxp/mcx/libraries/`配下はリリース時に同期する取り込みコピー。
   `EEPROM`はこのリポジトリが本体（フラッシュの配置がリンカスクリプトと一体なので）。`Servo`もこのリポジトリが本体で、コアの`analog_pwm_out()`（`arduino_analog.h`）でピンの`PwmOut`を受け取り、マイクロ秒でパルス幅を設定する（`analogWriteResolution()`に触らない）
 - **現在のリリース**: **v0.11.0**（2026-10-25。FRDM-MCXN947のオンボードのEthernetを同梱の`MCXEthernet`で、どのボードでも公式`Ethernet`とW5500で、`endTransmission()`の戻り値をAVRの0〜5に、`print()`・`String`の基数の扱いをAVR・ArduinoCore-APIに合わせ、`millis()`・`micros()`を起動から数える修正）。macOS・Windows・Linuxの3プラットフォームで、ステージング（`staging-0.11.0`）と本番の`main`のURLの両方から、インストールと動作をユーザーが確かめた。
   リリースzipはSHA-256 `61a01912d0404551bc0943c4340625e5b2954922afb9c51640712bedf12b7ee3`、12458855 bytes。タグ`0.11.0`は`2f8761d`、`main`は`29d5b37`（`cd46d55`で0.11.0のエントリ、`29d5b37`でリリースの画像）。APIのリファレンスはGitHub Pages（`https://teddokano.github.io/mcx-arduino-core/api/`）。
   その前はv0.10.0（2026-10-18。5つ目のボードFRDM-MCXC444、同梱の`Servo`、ネットワーク基底クラスと`<avr/pgmspace.h>`、`noInterrupts()`の中の`micros()`の修正。zipはSHA-256 `e2f8b9bf19cbf4ec90cceb02ba655ca5482d1c75821a9093ee4443b59a71e8e3`、タグ`0.10.0`は`9cfcf96`）と、v0.10.1（2026-10-20、Fritzingの部品だけ。パッケージのzipは無く、索引にも載っていない）
-- **開発中**: **v0.12.0**（`0.12.0-dev`ブランチ、2026-10-25に`main`の`29d5b37`から切った）。範囲は未定（1.0までの版の割り振りは[memo/notes_toward_1.0.0.md](memo/notes_toward_1.0.0.md)の§9）
+- **開発中**: **v0.12.0**（`0.12.0-dev`ブランチ、2026-10-25に`main`の`29d5b37`から切った）。範囲は未定で、入れたものは`docs/llms.txt`（2026-10-26、ユーザーが決定）と`MsTimer2`・`TimerOne`（2026-10-27、ユーザーが決定。下の項目）（1.0までの版の割り振りは[memo/notes_toward_1.0.0.md](memo/notes_toward_1.0.0.md)の§9）
+- **`MsTimer2`・`TimerOne`（0.12.0、2026-10-27にユーザーが決定）**: UNO R3にはタイマーのAPIが無く、スケッチはこの2つのライブラリを使うので、同じAPIのものを同梱する（`Servo`と同じ扱い、自前で書く。MsTimer2はLGPL 2.1またはそれ以降、TimerOneはCC BY 3.0）。**TimerOneの`pwm()`・`setPwmDuty()`・`disablePwm()`は入れない**（`= delete`でビルドエラー。ユーザーが決定）。MsTimer2はコアのSysTickの割り込みから呼ぶ（`arduino_timer_hooks.h`の`systick_hook`。タイマーもピンも使わない）。TimerOneはMCXの4ボードが`CTIMER1`、C444がPITのチャネル1。**`CTIMER1`のクロックはコアと同じ発振器（`FRO_HF`、N947・N236ではPLL0の元）を12MHzに分周したもの**（ユーザーが決定。FRO12Mでは、A156で`micros()`に対して0.5%ずれた。いまは5ボードとも100周期が`micros()`でちょうど1000000µs）。割り込みはどちらもいちばん低い優先度（Serialの送信はバッファがいっぱいだと割り込みを待つので、同じか高い優先度だと関数の中の`Serial.print()`で止まりうる）。動きはAVRに合わせた（`setPeriod()`は止めたタイマーも動かす、`resume()`は続きから、外している間に終わった周期は付けたとたんに呼ぶ）。C444はPITの割り込みが1つなので、`PIT_IRQHandler()`（`arduino_tone.cpp`）が`tone()`のチャネル0とTimerOneのチャネル1（`pit_channel1_hook`）に分ける。**SDKの`PIT_Init()`は両方のチャネルを止める**ので、`tone()`もTimerOneもチャネルに触らない`pit_module_init()`を使う。確認は`release_check/09`（2026-10-27、ユーザーが決定）と`test_MsTimer2_TimerOne`（どちらも配線なし。`tone()`をD8で少し鳴らす）で、5ボードともALL OK（2026-10-27。C444は`delay()`を直してから。C444は`01`・`06`・`07`・`08`も流し直してALL OK）
 - **v0.11.0の経緯**（`0.11.0-dev`ブランチ、2026-10-18に`main`の`49fccaf`から切った）。範囲はN947のEthernet（ENET・lwIP）。同梱ライブラリは`MCXEthernet.h`でクラスの名前は公式`Ethernet`と同じ、MACアドレスは`begin(mac)`と引数なしの`begin()`（チップのIDから）の両方（2026-10-23、ユーザーが決定。memoの§6-4。2026-10-24に、公式の作例が`#include`を替えないとビルドできない件で見直し、このままにした）。
   **2026-10-23の時点（ビルドだけ）**: `libraries/MCXEthernet/`（lwIP 2.2.1とSDKのENETのport・ドライバを`ref/SDK_2_16_000_FRDM-MCXN947_network.zip`から無改変で取り込み（2026-10-24に、SDKのportの4行に型変換を足した）、自前のコードはlwIPをCTIMER2の1msの割り込みで回す）ができ、公式`Ethernet` 2.0.2の作例13本が`#include`の差し替えだけでビルドできる。
   文書（LICENSE・ライブラリのREADME・PIN_MAPPING_N947・API_COMPATIBILITY・CHANGELOG・README）と`release_check/25_ethernet_pc_N947`（PC側は`pc_check.py`）も書いた。
@@ -57,6 +58,7 @@
 | リリースごとの変更点 | [CHANGELOG.md](CHANGELOG.md) |
 | 使い方の入門 | [TUTORIAL.md](TUTORIAL.md) / [TUTORIAL.ja.md](TUTORIAL.ja.md) |
 | クラス・関数のリファレンス | `docs/api/`（Doxygen生成、リリース前に再生成する） |
+| LLM・AIのツール向けの案内 | [docs/llms.txt](docs/llms.txt)（Pagesで`https://teddokano.github.io/mcx-arduino-core/llms.txt`。0.12.0から） |
 | ボードを追加する手順 | [docs/porting_a_new_board.md](docs/porting_a_new_board.md) |
 | 上級者向けの個別トピック | `docs/advanced_sdk_tuning.md` / `docs/advanced_r01lib_i3c.md` / `docs/mcxpinstate_guide.md` |
 | リリース前の実機チェック手順 | [examples/release_check/README.md](examples/release_check/README.md) |
@@ -370,6 +372,7 @@ xPack checksums（正しい値）：
     コンストラクタ（C444の分岐）でALT1にし、GPIOに戻す所は`kPORT_MuxAsGpio`（MCXでは0、C444では1）にした
   - **ADCの基準電圧**: 上のVREFHの件。`AnalogIn`はVALTHを使う（VDDAを約3.29Vと読む）
   - **`delayMicroseconds()`**: `wait_us()`の倍精度と64ビットの計算がM0+ではソフトウェアで約45µsかかり、10µsが56µsになった。M0+ではSysTickのカウンタを数える（割り込みを止めていても正しい）
+  - **`delay()`**（2026-10-27に直した、ユーザーが決定）: `wait()`（`SDK_DelayAtLeastUs()`）はサイクルカウンタが無いと自分のループを数えるので、その間の割り込みの時間が上に足された。`micros()`で`delay(500)`が501.2ms、TimerOneの1kHzで502.5ms、10kHzで514.1ms（`test_MsTimer2_TimerOne`の0.5秒で504回のFAILで見つかった）。M0+では`delayMicroseconds()`と同じくSysTickのカウンタを1msずつ数える（3つとも500.005ms）。1msを超えて動く割り込みが2回の読みの間にあると、その分は数えない。MCXの4ボードはDWTを数えるので元から正しい（N947で3つとも500.005ms）
   - **I2CのSCL**: `I2C_MasterSetBaudRate()`の引数（ボーレートと元のクロック）が逆で、いつも2.4MHzだった（LPI2Cの関数は順番が逆）
   - **I2Cのリピーテッドスタート**: STOPを付けない書き込みがNAKで失敗したあとも印が残り、次の転送が失敗した（`release_check/01`のStreamの3項目）。失敗したら消す
   - **SPIのSCK**: `SPI::frequency()`が頼まれた周波数を半分にしていた（以前のバスクロックの誤りを打ち消していたもの）。2026-10-17にクロックを直したので、半分にするのをやめた
@@ -529,6 +532,7 @@ v0.4.0の`main`マージ直前、ユーザーから「今回のリリース準�
    - **節の冒頭に3〜5行の要約（`### Highlights`の見出しと箇条書き。Added/Changed/Fixedと同じレベル）を書く**（0.7.0から）。詳細は正確だが一般ユーザーが読み切るには多いので、詳細を読むかどうかをここで判断できるようにする。
      主な追加・互換性の改善・重要な修正を、1行1項目で平易に書く。GitHub Releaseのノートはこの節をそのまま使うので、要約もそこに載る
 2. **ドキュメント全体の再監査**: Explore agentに、全`.md`ファイル（README/README.ja/TUTORIAL/TUTORIAL.ja/API_COMPATIBILITY/CHANGELOG/PIN_MAPPING_*/LICENSE/`docs/`配下/`variants/*/README.md`/`examples/release_check/README.md`）を対象にした網羅監査を依頼する。特に開発期間中にリネーム・統合・移動したファイル/サンプル名/パスへの追従漏れ（古い名前の残存、リンク切れ）を機械的に洗い出すのが目的——`CLAUDE.md`自身の過去形の言及（開発日誌としての性質上正しい）は対象外としてよい
+   - **`docs/llms.txt`も対象にする**（0.12.0から、2026-10-26にユーザーが決定）: 冒頭の「Points to keep in mind」（FQBN、インスタンス名、Ethernet、同梱ライブラリなど）がその版の内容と合っているか、新しい文書やライブラリを足したならリストに載せたかを見る。リンクが追跡下のファイルを指していることと、`PIN_MAPPING_*.md`が全部載っていることは、hygieneの`llms-links`が毎push確かめる。リンクは`main`（raw）とPagesの絶対URLなので、公開されるのは`main`にマージしてから。版の番号は本文に書かない。llms-full.txt（全文をまとめたもの）は作らない
 3. **`docs/api/`（Doxygen）の再生成**: `doxygen Doxyfile`を実行し、直近のソース変更（コメントを含む）が反映された状態にする。`docs/api/index.html`のタイムスタンプより新しいソースファイルがないか確認してから判断するとよい
    **`main`の`docs/`はGitHub Pagesで公開する**（0.11.0から、2026-10-25にユーザーが決定）: 公開先は`https://teddokano.github.io/mcx-arduino-core/api/`で、READMEからリンクしている。`docs/.nojekyll`を消さないこと（無いとJekyllが`_`で始まるファイルを公開せず、Doxygenのページの多くが404になる）。Pagesの設定（Settings → Pages、`main`の`/docs`）は**0.11.0を`main`にマージしたあとで、ユーザーが一度だけ行う**（`.nojekyll`より先に有効にすると、`_`のファイルが抜けたものが公開される）
 4. **ライセンスチェック**: `LICENSE`全文を読み返し、開発期間中に追加した新規ツール/ファイル（外部プロジェクトのソースを読んで挙動を参考にしたもの含む）で、帰属記載が漏れているものがないか確認する。「コードは一切コピーしていないが、他プロジェクトのソースを読んで互換動作を実装した」ケースは、コピーでなくても透明性のため記載する、というこのプロジェクトの既存の判断基準（`upload.sh`のArduinoCore-zephyr参照等）を毎回適用する
