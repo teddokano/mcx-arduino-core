@@ -25,6 +25,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   `examples/Arduino_compatible_API/test_MsTimer2_TimerOne` (no wiring)
 
 ### Fixed
+- **A sketch or library can define a class named `Ticker`** on the MCX boards: r01lib's own `Ticker` came in through
+  `Arduino.h`, so a sketch's `class Ticker` (ESP32's core and several timer libraries have one) stopped the build
+  with `redefinition of 'class Ticker'`. `Arduino.h` leaves it out now; a sketch that uses r01lib's `Ticker`
+  includes `<Ticker.h>` itself, as `examples/Arduino_incompatible_API/r01lib_I3C_demo` does. `release_check/09`
+  defines a `Ticker` of its own to keep it so
 - **`delay()` on FRDM-MCXC444 no longer runs long under interrupts**: with no cycle counter on its Cortex-M0+, it
   counted a software loop, and every interrupt taken during it added its time on top: `delay(500)` took 501 ms,
   502.5 ms under a 1 kHz `TimerOne` and 514 ms under a 10 kHz one. It counts SysTick's counter now, as

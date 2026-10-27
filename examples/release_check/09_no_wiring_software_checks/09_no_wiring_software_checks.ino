@@ -14,6 +14,8 @@
  *  test_String_64bit, test_Serial_print_time_t, test_function_local_static
  *  (since 0.9.1), test_MsTimer2_TimerOne (since 0.12.0), and the
  *  representative checks of test_print_float_rounding.
+ *  It also defines a class named Ticker of its own (since 0.12.0), which
+ *  r01lib's Ticker kept from building on the MCX boards before.
  *
  *  Read the final "ALL OK"/"N FAILED" line.
  */
@@ -36,6 +38,29 @@ struct Calls {
 };
 Calls ms2Calls;
 Calls t1Calls;
+
+// For the sketch's own Ticker section: a class named Ticker, as ESP32's
+// core and several timer libraries have. Building at all is the first
+// check: up to 0.11.0, r01lib's Ticker came in through Arduino.h, and this
+// stopped the build on the MCX boards ("redefinition of 'class Ticker'")
+class Ticker {
+public:
+  void attach(void (*f)(), unsigned long ticks) {
+    func = f;
+    period = ticks;
+    left = ticks;
+  }
+  void tick() {
+    if (func && --left == 0) {
+      left = period;
+      func();
+    }
+  }
+private:
+  void (*func)() = nullptr;
+  unsigned long period = 0;
+  unsigned long left = 0;
+};
 
 // A minimal Print-derived class that can simulate a failing write(), used
 // by the Print::*WriteError() section below. File-scope, not declared
@@ -148,6 +173,11 @@ void printGaps(const char *label, const Calls &c) {
   Serial.print(c.gap_max);
   Serial.println(" us");
 }
+
+int tickerA = 0;
+int tickerB = 0;
+void onTickerA() { tickerA++; }
+void onTickerB() { tickerB++; }
 
 int failCount = 0;
 
@@ -556,6 +586,20 @@ void setup() {
     check("Timer1 every 500 us alongside: 395-406 calls in 200 ms", t1_n >= 395 && t1_n <= 406);
     check("noTone() leaves MsTimer2 running", ms2_after - ms2_n >= 45);
     check("noTone() leaves Timer1 running", t1_after - t1_n >= 190);
+  }
+
+  // ---- a sketch's own class named Ticker (0.12.0) ----
+  Serial.println("--- the sketch's own Ticker ---");
+  {
+    Ticker a, b;
+    a.attach(onTickerA, 2);
+    b.attach(onTickerB, 5);
+    for (int i = 0; i < 10; i++) {
+      a.tick();
+      b.tick();
+    }
+    check("a class named Ticker builds and runs: 5 and 2 calls in 10 ticks",
+          tickerA == 5 && tickerB == 2);
   }
 
   // ---- Serial.print(time_t)/(long long)/(unsigned long long) overload

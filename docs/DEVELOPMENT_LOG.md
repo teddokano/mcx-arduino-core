@@ -3525,3 +3525,9 @@ LPI2CはアドレスとデータのNAKを同じコードで返すので、どち
 - C444の`delay()`を、`delayMicroseconds()`と同じくSysTickのカウンタを1msずつ数える形に直した（ユーザーが決定）。3つとも500.005ms。C444で`01`・`06`・`07`（1000回のリセットで失敗0）・`08`・`09`・`test_MsTimer2_TimerOne`がALL OK
 - 気づいたこと（調べていない）: C444の`delayMicroseconds(50000)`は`micros()`で50084µs、N947は50023µs。直す前と同じ値
 - 途中で、前のキャプチャの`cat`が残っていて、C444のポートを2つのプロセスが読み合い、出力が欠けた（`pkill -f 'exec cat'`は、`sh`が`cat`に置き換わったあとのプロセスに当たらなかった）。プロセスの番号で止めて流し直した
+
+### r01libの`Ticker`と名前の衝突（2026-10-27、ユーザーが決定）
+- ユーザーがチャットでの検討（MsTimer2で複数の周期、mbedの`Ticker`相当）を`memo/arduino_ticker_study.md`に置いた。その§4の`class Ticker`と使用例を1本のスケッチにすると、A153で`redefinition of 'class Ticker'`、C444では通った。`Arduino.h`→`r01lib.h`→`Ticker.h`で、r01libの`Ticker`がどのスケッチからも見えていたため（C444ではr01libの`Ticker`を外してある）
+- `r01lib.h`から`Ticker.h`を外し、r01libの`Ticker`を使う唯一の作例`r01lib_I3C_demo`に`#include <Ticker.h>`を足した。`release_check/09`に、自分の`class Ticker`を定義して動かす節を足した（毎pushのfastのビルドに入る）
+- 09、`r01lib_I3C_demo`、メモのスケッチが5ボードでビルドできる（メモのスケッチは`--t->remain`に`-Wvolatile`の警告が1つ）
+- 複数のインスタンスを持てる`Ticker`を同梱する案（ESP32の`Ticker`のAPIなど）は、sstaubのTicker（`loop()`で回す形でAPIが違う）を入れた人のスケッチで同梱のほうが選ばれて壊れるので、名前の扱いを決めるまで入れない

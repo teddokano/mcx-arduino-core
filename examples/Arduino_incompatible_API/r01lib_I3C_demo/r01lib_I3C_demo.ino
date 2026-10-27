@@ -51,6 +51,7 @@
  */
 
 #include <Arduino.h>
+#include <Ticker.h>  //	r01lib's Ticker, which Arduino.h doesn't include (since 0.12.0)
 #include "P3T1755.h"
 
 #if defined(FRDM_MCXC444)

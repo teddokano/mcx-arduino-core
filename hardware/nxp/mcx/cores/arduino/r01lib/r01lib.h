@@ -6,8 +6,13 @@
 
 /** @file r01lib.h
  *  Single top-level include for the whole r01lib peripheral driver set
- *  (I2C/I3C, SPI, Serial, AnalogIn, PwmOut, GPIO, InterruptIn, BusInOut,
- *  Ticker) plus mcu.h's chip bring-up/utility functions.
+ *  (I2C/I3C, SPI, Serial, AnalogIn, PwmOut, GPIO, InterruptIn, BusInOut)
+ *  plus mcu.h's chip bring-up/utility functions.
+ *
+ *  Ticker is left out: Arduino.h includes this file, and a class named
+ *  Ticker here kept sketches and libraries from defining their own (as
+ *  ESP32's and several timer libraries' Ticker do). A sketch that uses
+ *  r01lib's includes "Ticker.h" itself.
  */
 
 #ifndef R01LIB_R01LIB_H
@@ -52,7 +57,6 @@ extern "C" {
 #include	"i2c.h"
 #include	"r01lib_spi.h"
 #include	"io.h"
-#include	"Ticker.h"
 #include	"InterruptIn.h"
 #include	"BusInOut.h"
 #include	"Serial.h"
