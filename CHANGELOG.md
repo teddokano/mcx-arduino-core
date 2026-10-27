@@ -21,8 +21,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   (`pwm()`, `setPwmDuty()`, `disablePwm()`) are not provided and stop the build: on AVR they drive pins 9 and 10
   from Timer1, which have no counterpart here (use `analogWrite()` and `analogWriteFrequency()`). Original
   implementations, not ports (MsTimer2 is LGPL 2.1 or later, TimerOne CC BY 3.0); the build picks them over installed
-  copies of those libraries. Checked by `release_check/09` and
+  copies of those libraries. MsTimer2's example `MultipleTickers` shows several functions, each at a period of its
+  own, from its one timer, with a small `Ticker` class like mbed's. Checked by `release_check/09` and
   `examples/Arduino_compatible_API/test_MsTimer2_TimerOne` (no wiring)
+- **`llms.txt`** for LLMs and AI coding tools, at `https://teddokano.github.io/mcx-arduino-core/llms.txt`
+  ([docs/llms.txt](docs/llms.txt)): the documents to read, and a few points to know before writing a sketch for this
+  core (the board IDs, that instance names such as `Wire1` differ by board, Ethernet on each board). A repo check
+  makes sure its links point at files the repository tracks
 
 ### Fixed
 - **A sketch or library can define a class named `Ticker`** on the MCX boards: r01lib's own `Ticker` came in through
@@ -35,10 +40,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   502.5 ms under a 1 kHz `TimerOne` and 514 ms under a 10 kHz one. It counts SysTick's counter now, as
   `delayMicroseconds()` already did there, and takes 500.005 ms by `micros()` in all three cases. The MCX boards
   count the cycle counter, which interrupts don't stop, and were right already
-- **`llms.txt`** for LLMs and AI coding tools, at `https://teddokano.github.io/mcx-arduino-core/llms.txt`
-  ([docs/llms.txt](docs/llms.txt)): the documents to read, and a few points to know before writing a sketch for this
-  core (the board IDs, that instance names such as `Wire1` differ by board, Ethernet on each board). A repo check
-  makes sure its links point at files the repository tracks
+- **r01lib's `I3C` no longer hangs on a byte left in its receive FIFO** (the MCX boards):
+  `examples/Arduino_incompatible_API/r01lib_I3C_demo` stopped printing after a few minutes on an FRDM-MCXN947 with
+  three P3T1755s whose IBIs were coming in, while the LED kept blinking. A read of a target that had just sent an
+  IBI came back right but left one more byte in the controller's receive FIFO, and the SDK's interrupt handler,
+  with no transfer of its own going on, never read it, so its interrupt came straight back without end and `loop()`
+  never ran again. The same happened with 0.11.0. r01lib now throws such a byte away from the interrupt (not
+  while a transfer is reading its own bytes). On FRDM-MCXN947 the demo ran 15 minutes through 90 IBIs.
+  `examples/Arduino_incompatible_API/test_r01lib_I3C_rx_leftover` (no wiring, but FRDM-MCXN236 needs an I3C sensor on
+  D18/D19) leaves such a byte on purpose, 20 times, and checks that the sketch goes on; with the SDK's handler
+  alone, it hangs on the first one
 
 ## [0.11.0] - 2026-10-25
 

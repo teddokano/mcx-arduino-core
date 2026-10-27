@@ -45,6 +45,35 @@ volatile status_t		g_completionStatus;
 
 i3c_func_ptr			g_ibi_callback	= NULL;
 
+/*
+ *  Wraps the SDK's interrupt handler, to throw away a byte that nobody
+ *  will read from the RX FIFO.
+ *
+ *  I3C_MasterTransferBlocking() turns the controller's interrupts back on
+ *  when it returns, RXPEND among them, without looking at the RX FIFO, and
+ *  I3C_MasterTransferHandleIRQ() does nothing while its handle is idle. On
+ *  FRDM-MCXN947 with three P3T1755s, a 2-byte read of a target that had
+ *  just sent an IBI came back right but left one more byte in the RX FIFO
+ *  (the same value as the last byte read). The level-triggered RXPEND then
+ *  brought the interrupt straight back, forever, and loop() never ran
+ *  again; only the LED's Ticker still ran between the interrupts.
+ *
+ *  A byte left there while the handle is idle and RXPEND is enabled
+ *  belongs to no transfer: a blocking transfer turns RXPEND off while it
+ *  runs, so the bytes it is reading are never thrown away.
+ */
+static void master_irq_handler( I3C_Type *base, void *intHandle )
+{
+	I3C_MasterTransferHandleIRQ( base, intHandle );
+
+	if ( (0 == ((i3c_master_handle_t *)intHandle)->state)	//	kIdleState, which fsl_i3c.c keeps to itself
+		&& (base->MINTSET & I3C_MINTSET_RXPEND_MASK)
+		&& (base->MDATACTRL & I3C_MDATACTRL_RXCOUNT_MASK) )
+	{
+		base->MDATACTRL |= I3C_MDATACTRL_FLUSHFB_MASK;
+	}
+}
+
 //I3C::I3C( int sda, int scl )
 I3C::I3C( int sda, int scl, uint32_t i2c_freq, uint32_t i3c_od_freq, uint32_t i3c_pp_freq )
 	: I2C( sda, scl, true )
@@ -91,6 +120,7 @@ I3C::I3C( int sda, int scl, uint32_t i2c_freq, uint32_t i3c_od_freq, uint32_t i3
 
 	/* Create I3C handle. */
 	I3C_MasterTransferCreateHandle( EXAMPLE_MASTER, &g_i3c_m_handle, &masterCallback, NULL );
+	s_i3cMasterIsr	= master_irq_handler;	//	in place of I3C_MasterTransferHandleIRQ(), which it calls
 
 	first_broadcast	= true;
 
