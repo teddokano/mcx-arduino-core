@@ -3,8 +3,8 @@
  *
  *  Released under the MIT license
  *
- *  Hooks into interrupts the core owns, for the bundled MsTimer2 and
- *  TimerOne libraries. Internal: not part of the public API, and not
+ *  Hooks into interrupts the core owns, for the bundled MsTimer2,
+ *  TimerOne and mcxTicker libraries. Internal: not part of the public API, and not
  *  included from Arduino.h.
  */
 
@@ -18,6 +18,11 @@
  *  for over 1 ms (never 0). nullptr when nothing is hooked (MsTimer2).
  */
 extern void	(* volatile systick_hook)( uint32_t ms );
+
+/** The same, for mcxTicker, called after systick_hook. nullptr until the
+ *  first mcxTicker is attached.
+ */
+extern void	(* volatile systick_ticker_hook)( uint32_t ms );
 
 #if defined( CPU_MCXC444VLH )
 /** Called from PIT_IRQHandler() when PIT channel 1 has expired, its flag

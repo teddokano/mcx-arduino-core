@@ -3576,3 +3576,10 @@ LPI2CはアドレスとデータのNAKを同じコードで返すので、どち
 - MCPは、セッションの開始時に`ECONNREFUSED`だった（Logic 2が自動化APIの10430番だけ受け付けていて、MCPの10530番は無効だった）。ユーザーがLogic 2側で有効にしてから使えた。Logic16は`digitalThresholdVolts`に3.3も1.8も受け付けなかったので、指定せずに記録した。ジャンパを挿したピンにはロジアナを並べられない
 - C444の`13`の`shiftOut()`の項目が2回FAILした（`captured`が`0xFF`と`0x00`）。D8-D9のジャンパがつながっていなかった。挿し直してALL OK
 - **5ボードとも`13`がALL OK**（2026-10-30）。`Sweep`と`13`は5ボードで`--warnings all`の警告なしにビルドできる
+
+### `mcxTicker`（2026-10-30、APIなどはユーザーが決定）
+- 複数のインスタンスを持てる`Ticker`を同梱した。名前は`mcxTicker`（2026-10-30にユーザーが決定）。APIはESP32・ESP8266のコアの`Ticker`の形、時間の元はSysTickで1ms単位、関数は関数ポインタと引数1つ、確認は`release_check/09`と`test_mcxTicker`（いずれもユーザーが決定。比べた案はmbedの形、専用のハードウェアタイマーでµs単位、`std::function`）
+- SysTickのフックは1つ（MsTimer2の）だったので、2つ目の`systick_ticker_hook`をコアに足した。作りは`memo/arduino_ticker_study.md`の§4やMsTimer2の作例`MultipleTickers`と同じ連結リストで、関数の中からの`attach()`・`detach()`に備えて、次の要素を呼ぶ前に読み、1回のSysTickで同じオブジェクトを2回扱わないよう通し番号を持たせた
+- ESPの形の`template<typename TArg> attach(float, void (*)(TArg), TArg)`のままだと、`toggle(int)`に`RED`（列挙型）を渡すと推論がぶつかってビルドが止まるので、最後の引数を推論に使わない形にした
+- 最初の呼び出しの時刻: `loop()`からの`attach()`は、次のSysTickまで1ms未満なので数えを1つ多くし、「少なくとも指定の時間」にした。関数の中から（SysTickの割り込みの中、`IPSR`が15）はちょうどの時間
+- `test_mcxTicker`と`09`が5ボードでALL OK（2026-10-30）。最初の呼び出しは`attach_ms(10)`の10.4〜10.9ms後、`once_ms(30)`の30.3〜30.9ms後。10msの100周期は`micros()`で999999〜1000000µs。3つの`mcxTicker`とMsTimer2を一緒に動かすと、間隔のぶれはMCXで±3µs、C444で±12µs（同じ1msに呼ぶ関数が重なり、M0+で順に回すため）

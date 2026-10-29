@@ -4,15 +4,16 @@
  *  Split out of release_check/01 in 0.9.0, which keeps the checks that use
  *  a peripheral: 01 had grown to fill all but 40 bytes of FRDM-MCXA153's
  *  flash. Nothing here touches a peripheral beyond Serial for the report
- *  and, since 0.12.0, the timers of the bundled MsTimer2 and TimerOne
- *  (and tone() on D8 for a moment, with nothing wired to it), so it runs
- *  the same on every board.
+ *  and, since 0.12.0, the timers of the bundled MsTimer2, TimerOne and
+ *  mcxTicker (and tone() on D8 for a moment, with nothing wired to it), so
+ *  it runs the same on every board.
  *
  *  Consolidates (from examples/Arduino_compatible_API/): test_math_constants,
  *  test_arduino_compat_macros, test_avr_compat_helpers,
  *  test_MOSI_MISO_SCK_macros, test_Print_writeError, test_String,
  *  test_String_64bit, test_Serial_print_time_t, test_function_local_static
- *  (since 0.9.1), test_MsTimer2_TimerOne (since 0.12.0), and the
+ *  (since 0.9.1), test_MsTimer2_TimerOne and test_mcxTicker (since
+ *  0.12.0), and the
  *  representative checks of test_print_float_rounding.
  *  It also defines a class named Ticker of its own (since 0.12.0), which
  *  r01lib's Ticker kept from building on the MCX boards before.
@@ -24,6 +25,7 @@
 #include <cstring>
 #include <MsTimer2.h>
 #include <TimerOne.h>
+#include <mcxTicker.h>
 
 // For the MsTimer2 and TimerOne section: each library's function counts
 // its calls and keeps the time of the first and the last, and the
@@ -38,6 +40,9 @@ struct Calls {
 };
 Calls ms2Calls;
 Calls t1Calls;
+Calls tkA;  // mcxTicker's
+Calls tkB;
+Calls tkC;
 
 // For the sketch's own Ticker section: a class named Ticker, as ESP32's
 // core and several timer libraries have. Building at all is the first
@@ -153,6 +158,26 @@ void clearCalls(Calls &c) {
 }
 void onMsTimer2() { noteCall(ms2Calls); }
 void onTimer1() { noteCall(t1Calls); }
+
+// mcxTicker's functions: the argument says which Calls
+mcxTicker tickA, tickB, tickC;
+void onTick(Calls *c) { noteCall(*c); }
+volatile int tickInt = 0;
+volatile int tickIntCalls = 0;
+void onTickInt(int v) {
+  tickInt = v;
+  tickIntCalls = tickIntCalls + 1;
+}
+void onTickFiveThenDetach(Calls *c) {  // detaches its own object
+  noteCall(*c);
+  if (c->n >= 5)
+    tickA.detach();
+}
+void onTickChain(Calls *c) {  // once_ms() again from its own function
+  noteCall(*c);
+  if (c->n < 5)
+    tickB.once_ms(10, onTickChain, c);
+}
 bool gapsWithin(const Calls &c, unsigned long period, unsigned long slack) {
   return c.n >= 2 && c.gap_min + slack >= period && c.gap_max <= period + slack;
 }
@@ -586,6 +611,110 @@ void setup() {
     check("Timer1 every 500 us alongside: 395-406 calls in 200 ms", t1_n >= 395 && t1_n <= 406);
     check("noTone() leaves MsTimer2 running", ms2_after - ms2_n >= 45);
     check("noTone() leaves Timer1 running", t1_after - t1_n >= 190);
+  }
+
+  // ---- mcxTicker, bundled with the API of the ESP32/ESP8266 cores'
+  //      Ticker (was test_mcxTicker, 0.12.0). Runs on SysTick, with
+  //      MsTimer2 ----
+  Serial.println("--- mcxTicker ---");
+  {
+    clearCalls(tkA);
+    unsigned long t0 = micros();
+    tickA.attach_ms(10, onTick, &tkA);
+    delay(1000);
+    tickA.detach();
+    printGaps("mcxTicker attach_ms(10): ", tkA);
+    check("mcxTicker attach_ms(10): 99-100 calls in 1 s, every 10 ms (within 0.5 ms)",
+          tkA.n >= 99 && tkA.n <= 100 && gapsWithin(tkA, 10000, 500));
+    check("mcxTicker attach_ms(10): the first call 10-11 ms after attach_ms()",
+          tkA.first - t0 >= 10000 && tkA.first - t0 <= 11200);
+
+    clearCalls(tkA);
+    tickA.attach_ms(10, onTick, &tkA);
+    check("mcxTicker attach_ms(10): 101 calls", waitCalls(tkA, 101, 1500));
+    tickA.detach();
+    unsigned long span = tkA.last - tkA.first;
+    check("mcxTicker 100 periods 1 s by micros() (within 0.1%)", span >= 999000 && span <= 1001000);
+
+    // Three at once, and MsTimer2 on the same SysTick
+    clearCalls(tkA);
+    clearCalls(tkB);
+    clearCalls(tkC);
+    clearCalls(ms2Calls);
+    tickA.attach_ms(3, onTick, &tkA);
+    tickB.attach_ms(7, onTick, &tkB);
+    tickC.attach(0.02f, onTick, &tkC);
+    MsTimer2::set(5, onMsTimer2);
+    MsTimer2::start();
+    delay(1000);
+    tickA.detach();
+    tickB.detach();
+    tickC.detach();
+    MsTimer2::stop();
+    printGaps("mcxTicker attach_ms(3): ", tkA);
+    printGaps("mcxTicker attach_ms(7): ", tkB);
+    printGaps("mcxTicker attach(0.02): ", tkC);
+    printGaps("MsTimer2 set(5) alongside: ", ms2Calls);
+    check("mcxTicker three at once: every 3, 7 and 20 ms (within 0.5 ms)",
+          gapsWithin(tkA, 3000, 500) && tkA.n >= 332 && gapsWithin(tkB, 7000, 500) && tkB.n >= 141 &&
+          gapsWithin(tkC, 20000, 500) && tkC.n >= 49);
+    check("MsTimer2 alongside mcxTicker: every 5 ms (within 0.5 ms)",
+          gapsWithin(ms2Calls, 5000, 500) && ms2Calls.n >= 199);
+
+    // once_ms(): one call, then not active()
+    clearCalls(tkA);
+    t0 = micros();
+    tickA.once_ms(30, onTick, &tkA);
+    bool activeBefore = tickA.active();
+    delay(100);
+    check("mcxTicker once_ms(30): one call, 30-31 ms later, active() until then",
+          activeBefore && !tickA.active() && tkA.n == 1 && tkA.first - t0 >= 30000 && tkA.first - t0 <= 31200);
+    clearCalls(tkB);
+    tickB.once_ms(10, onTickChain, &tkB);
+    delay(100);
+    check("mcxTicker once_ms() again from its function: 5 calls, 10 ms apart (within 0.2 ms)",
+          tkB.n == 5 && gapsWithin(tkB, 10000, 200) && !tickB.active());
+
+    // The argument: an int, and an enum value for a function taking int
+    tickIntCalls = 0;
+    tickA.attach_ms(5, onTickInt, 1234);
+    delay(30);
+    bool gotInt = tickIntCalls >= 4 && tickInt == 1234;
+    tickA.attach_ms(5, onTickInt, RED);
+    delay(30);
+    tickA.detach();
+    check("mcxTicker attach_ms(5, f, 1234) and (5, f, RED): f gets them", gotInt && tickInt == (int)RED);
+
+    // detach(), attach() on a running object, detach() from its function,
+    // a null function, an object out of scope
+    clearCalls(tkA);
+    tickA.attach_ms(5, onTick, &tkA);
+    delay(30);
+    tickA.attach_ms(20, onTick, &tkA);
+    delay(15);
+    clearCalls(tkA);
+    delay(200);
+    tickA.detach();
+    unsigned long n = tkA.n;
+    delay(50);
+    check("mcxTicker attach_ms() on a running object: the new period, 20 ms",
+          gapsWithin(tkA, 20000, 500));
+    check("mcxTicker detach(): no more calls, active() false", tkA.n == n && !tickA.active());
+    clearCalls(tkA);
+    tickA.attach_ms(2, onTickFiveThenDetach, &tkA);
+    delay(100);
+    check("mcxTicker detach() from its own function: 5 calls", tkA.n == 5 && !tickA.active());
+    tickA.attach_ms(5, (mcxTicker::callback_t)nullptr);
+    check("mcxTicker attach_ms() with a null function: not active", !tickA.active());
+    clearCalls(tkA);
+    {
+      mcxTicker scoped;
+      scoped.attach_ms(2, onTick, &tkA);
+      delay(20);
+    }
+    n = tkA.n;
+    delay(30);
+    check("mcxTicker out of scope: stops", n >= 8 && tkA.n == n);
   }
 
   // ---- a sketch's own class named Ticker (0.12.0) ----

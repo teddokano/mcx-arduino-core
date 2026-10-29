@@ -16,7 +16,7 @@ See [API_COMPATIBILITY.md](API_COMPATIBILITY.md) for the full Arduino API suppor
 [PIN_MAPPING_C444.md](PIN_MAPPING_C444.md) for each board's pin assignments, [CHANGELOG.md](CHANGELOG.md) for release history, and
 the [API reference](https://teddokano.github.io/mcx-arduino-core/api/) for the generated Doxygen class
 reference (the r01lib driver core, the Arduino-compatible API layer and the bundled `EEPROM`, `Servo`,
-`MsTimer2`, `TimerOne` and `MCXEthernet` libraries; also in [docs/api/](docs/api/index.html)).
+`MsTimer2`, `TimerOne`, `mcxTicker` and `MCXEthernet` libraries; also in [docs/api/](docs/api/index.html)).
 For LLMs and AI coding tools, [llms.txt](https://teddokano.github.io/mcx-arduino-core/llms.txt)
 lists these documents with a few points to know before writing a sketch for this core.
 
@@ -149,6 +149,7 @@ mcx-arduino-core/
 │   │   ├── MsTimer2/          #   MsTimer2's API: a function every N ms, on the 1 ms tick (lives here)
 │   │   ├── Servo/             #   The official Servo library's API, on any pin (lives here)
 │   │   ├── TimerOne/          #   TimerOne's API: a function every N us, without its PWM (lives here)
+│   │   ├── mcxTicker/         #   The ESP32/ESP8266 cores' Ticker API: many functions, each every N ms (lives here)
 │   │   ├── mcxPinState/       #   Pin-ownership debugging (see docs/mcxpinstate_guide.md);
 │   │   │                      #   developed in its own repo, synced here at release time
 │   │   └── mcxRCServo/        #   RC servo driver for the PWM pins; likewise synced
@@ -224,7 +225,8 @@ and the bundled `EEPROM` library keeps 1KB in on-chip flash across resets
 and uploads. The bundled `Servo` library takes the official Servo library's
 interface, and the bundled `MsTimer2` and `TimerOne` take the interfaces of
 the timer-interrupt libraries of those names for AVR (TimerOne without its
-PWM functions). Ethernet works on every board with the official Ethernet library
+PWM functions); the bundled `mcxTicker` takes the interface of the ESP32 and
+ESP8266 cores' `Ticker`, for any number of functions, each at a period of its own. Ethernet works on every board with the official Ethernet library
 and a WIZnet W5500 module, and on FRDM-MCXN947 the bundled `MCXEthernet`
 library also drives the on-board Ethernet with the same interface
 (`#include <MCXEthernet.h>` in place of `<Ethernet.h>`; TLS, IPv6 and Wi-Fi

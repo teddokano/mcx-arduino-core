@@ -10,7 +10,7 @@ Points to keep in mind when writing a sketch for this core:
 - Which pins have PWM (`analogWrite()`) and analog input (`analogRead()`) differs by board. Check the board's pin mapping.
 - A shield whose I2C is on `A4`/`A5` (UNO R3 style) needs `Wire.setPins(A4, A5)` before `Wire.begin()`. It works on FRDM-MCXA156, FRDM-MCXN236 and FRDM-MCXC444, and returns `false` on FRDM-MCXA153 and FRDM-MCXN947, whose `A4`/`A5` have no I2C.
 - Ethernet: on FRDM-MCXN947, the bundled `MCXEthernet` library (`#include <MCXEthernet.h>`, with the same classes as the official Ethernet library) uses the on-board port. On any of the boards, the official `Ethernet` library works with a W5500 module.
-- `Servo` and `EEPROM` are bundled, with the same API as the official libraries, and so are `MsTimer2` and `TimerOne`, with the API of the AVR libraries of those names (`TimerOne` without its PWM functions: use `analogWrite()` and `analogWriteFrequency()`).
+- `Servo` and `EEPROM` are bundled, with the same API as the official libraries, and so are `MsTimer2` and `TimerOne`, with the API of the AVR libraries of those names (`TimerOne` without its PWM functions: use `analogWrite()` and `analogWriteFrequency()`). `mcxTicker` has the API of the ESP32/ESP8266 cores' `Ticker` under that class name (`#include <mcxTicker.h>`, `mcxTicker t; t.attach_ms(500, f);`), for any number of functions, in whole milliseconds.
 
 ## Docs
 

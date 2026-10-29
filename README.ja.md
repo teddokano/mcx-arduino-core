@@ -13,7 +13,7 @@ English version → [README.md](README.md)
 Arduino API対応状況の一覧は[API_COMPATIBILITY.md](API_COMPATIBILITY.md)、
 各ボードのピン配置は[PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) / [PIN_MAPPING_N947.md](PIN_MAPPING_N947.md) / [PIN_MAPPING_A156.md](PIN_MAPPING_A156.md) / [PIN_MAPPING_N236.md](PIN_MAPPING_N236.md) / [PIN_MAPPING_C444.md](PIN_MAPPING_C444.md)、
 バージョン間の変更点は[CHANGELOG.md](CHANGELOG.md)、
-生成済みDoxygenクラスリファレンス（r01libドライバコア、Arduino互換APIレイヤー、同梱の`EEPROM`・`Servo`・`MsTimer2`・`TimerOne`・`MCXEthernet`ライブラリ）は
+生成済みDoxygenクラスリファレンス（r01libドライバコア、Arduino互換APIレイヤー、同梱の`EEPROM`・`Servo`・`MsTimer2`・`TimerOne`・`mcxTicker`・`MCXEthernet`ライブラリ）は
 [APIリファレンス](https://teddokano.github.io/mcx-arduino-core/api/)（[docs/api/](docs/api/index.html)にも同じもの）を参照してください（これらは英語のみです）。
 LLMやAIのコーディングツール向けには、これらの文書と、このコアでスケッチを書く前に知っておくことをまとめた[llms.txt](https://teddokano.github.io/mcx-arduino-core/llms.txt)（英語）があります。
 
@@ -129,6 +129,7 @@ mcx-arduino-core/
 │   │   ├── MsTimer2/          #   MsTimer2と同じAPI、1msの割り込みでNミリ秒ごとに関数を呼ぶ（本体はここ）
 │   │   ├── Servo/             #   公式のServoライブラリと同じAPI、どのピンでも（本体はここ）
 │   │   ├── TimerOne/          #   TimerOneと同じAPI、Nマイクロ秒ごとに関数を呼ぶ。PWMの関数は無し（本体はここ）
+│   │   ├── mcxTicker/         #   ESP32・ESP8266のコアのTickerと同じAPI、いくつもの関数をそれぞれNミリ秒ごとに（本体はここ）
 │   │   ├── mcxPinState/       #   ピン所有状況のデバッグ（docs/mcxpinstate_guide.md参照）。
 │   │   │                      #   開発は専用リポジトリで行い、リリース時にここへ同期
 │   │   └── mcxRCServo/        #   PWMのピンからRCサーボを駆動。同じく同期
@@ -192,7 +193,7 @@ GPIO、割り込み、Serial（USB＋ハードウェアUART）、Wire（I2Cお�
 analogRead/analogWrite、millis/micros、tone/noTone、delay系、String、本物の
 `Print`/`Stream`/`Printable`基底クラス、F()/PROGMEMと`<avr/pgmspace.h>`、ネットワークの基底クラス（`Client`/`Server`/`UDP`/`IPAddress`）、UNO R3/R4互換マクロ、いずれも対応済みです。
 I2Cターゲット（スレーブ）モードは`Wire`で、`Wire.setWireTimeout`は`Wire`とFRDM-MCXN947の`Wire2`で使えます（FRDM-MCXA153・FRDM-MCXN947でI3C上で動く`Wire1`ではどちらも使えません。FRDM-MCXA156とFRDM-MCXN236の`Wire1`はMikroBusのI2Cで、どちらも使えます。FRDM-MCXC444では`Wire`でどちらも使えますが、自分のターゲットは呼べず、タイムアウトはSCLだけを見ます）。
-同梱の`EEPROM`ライブラリは、リセットや書き込みをまたいで1KBをオンチップのフラッシュに保持します。同梱の`Servo`ライブラリは公式のServoライブラリと同じ使い方ができます。同梱の`MsTimer2`と`TimerOne`は、AVR向けの同じ名前のタイマー割り込みのライブラリと同じ使い方ができます（TimerOneのPWMの関数は除きます）。Ethernetは、どのボードでも公式のEthernetライブラリとWIZnetのW5500のモジュールで使えます。FRDM-MCXN947では、同梱の`MCXEthernet`ライブラリで、オンボードのEthernetも同じ使い方で動かせます（`<Ethernet.h>`の代わりに`#include <MCXEthernet.h>`。TLS・IPv6・Wi-Fiには対応していません）。`Print`を直接継承する、
+同梱の`EEPROM`ライブラリは、リセットや書き込みをまたいで1KBをオンチップのフラッシュに保持します。同梱の`Servo`ライブラリは公式のServoライブラリと同じ使い方ができます。同梱の`MsTimer2`と`TimerOne`は、AVR向けの同じ名前のタイマー割り込みのライブラリと同じ使い方ができます（TimerOneのPWMの関数は除きます）。同梱の`mcxTicker`は、ESP32・ESP8266のコアの`Ticker`と同じ使い方で、いくつもの関数をそれぞれの周期で呼べます。Ethernetは、どのボードでも公式のEthernetライブラリとWIZnetのW5500のモジュールで使えます。FRDM-MCXN947では、同梱の`MCXEthernet`ライブラリで、オンボードのEthernetも同じ使い方で動かせます（`<Ethernet.h>`の代わりに`#include <MCXEthernet.h>`。TLS・IPv6・Wi-Fiには対応していません）。`Print`を直接継承する、
 または`Stream&`を受け取るサードパーティライブラリ（ArduinoJson、LiquidCrystal、Adafruit系
 センサーライブラリ等）もこのコア上でコンパイルできます。
 

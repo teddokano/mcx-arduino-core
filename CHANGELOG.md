@@ -24,6 +24,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   copies of those libraries. MsTimer2's example `MultipleTickers` shows several functions, each at a period of its
   own, from its one timer, with a small `Ticker` class like mbed's. Checked by `release_check/09` and
   `examples/Arduino_compatible_API/test_MsTimer2_TimerOne` (no wiring)
+- **`mcxTicker`, bundled: any number of functions, each called every given time or once after it**, with the
+  interface of the `Ticker` in the ESP32 and ESP8266 cores: `attach(seconds, f)`, `attach_ms(ms, f)`,
+  `once(seconds, f)`, `once_ms(ms, f)`, `detach()` and `active()`, each also with one argument for `f` (a pointer,
+  or a value no larger than one). Each `mcxTicker` object calls its own function; make as many as needed. A sketch
+  written for the ESP `Ticker` moves here by changing `#include <Ticker.h>` to `#include <mcxTicker.h>` and the
+  class name to `mcxTicker` (other Arduino libraries have a class named `Ticker` too). It runs on the core's 1 ms
+  SysTick interrupt, alongside `MsTimer2`, so it takes no timer and no pin; times are in whole milliseconds, and the
+  first call comes at least the given time after `attach()`. The functions run at the lowest interrupt priority,
+  so `Serial` still works inside them, and may attach or detach any `mcxTicker`, their own included. Checked on all
+  five boards by `release_check/09` and `examples/Arduino_compatible_API/test_mcxTicker` (no wiring)
 - **The bundled `Servo` drives a servo from any digital pin**: on a pin without PWM, where `attach()` used to stop
   the sketch with an error message, a timer interrupt now raises and lowers the pin, as the official library does
   on AVR, so its examples' `D9` works on every board. The servos on such pins get their pulses one after another

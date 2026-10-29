@@ -37,7 +37,8 @@ No source code was copied from either project.
 The same holds for the rest of the Arduino API layer in
 `hardware/nxp/mcx/cores/arduino/arduino_api/` and for the bundled
 `hardware/nxp/mcx/libraries/EEPROM/`, `hardware/nxp/mcx/libraries/Servo/`,
-`hardware/nxp/mcx/libraries/MsTimer2/` and `hardware/nxp/mcx/libraries/TimerOne/`:
+`hardware/nxp/mcx/libraries/MsTimer2/`, `hardware/nxp/mcx/libraries/TimerOne/` and
+`hardware/nxp/mcx/libraries/mcxTicker/`:
 they are written from scratch to
 the interfaces those projects define, so that sketches and libraries
 written for them build and behave the same. That covers names,
@@ -45,8 +46,10 @@ signatures, default values and constant values (for example
 `Wire.setWireTimeout()` and its defaults, I2C target mode's `onReceive()`/
 `onRequest()`, the `SERIAL_8N1` family, `BitOrder`, `SDA`/`SCL`, the
 network base classes `Client`/`Server`/`UDP`/`IPAddress`, the AVR EEPROM
-library's API, the official Servo library's API, and the MsTimer2 and
-TimerOne libraries' APIs), with behavior checked against their source
+library's API, the official Servo library's API, the MsTimer2 and
+TimerOne libraries' APIs, and the API of the Ticker in the ESP32 and
+ESP8266 Arduino cores, which mcxTicker takes under its own class name),
+with behavior checked against their source
 and documentation. The UNO R4 core, the official Servo library, MsTimer2
 and TimerOne were consulted the same way, and
 avr-libc's documentation for `ltoa()`/`ultoa()`/`dtostrf()`, the
@@ -58,6 +61,8 @@ any of them.
 - Servo — https://github.com/arduino-libraries/Servo (LGPL 2.1)
 - MsTimer2 — https://github.com/PaulStoffregen/MsTimer2 (LGPL 2.1 or later)
 - TimerOne — https://github.com/PaulStoffregen/TimerOne (Creative Commons Attribution 3.0 United States)
+- Arduino core for the ESP32 (its Ticker library) — https://github.com/espressif/arduino-esp32 (LGPL 2.1)
+- Arduino core for the ESP8266 (its Ticker library) — https://github.com/esp8266/Arduino (LGPL 2.1)
 - avr-libc — https://github.com/avrdudes/avr-libc (Modified BSD License)
 
 The Linux LinkServer-discovery logic in `hardware/nxp/mcx/tools/upload.sh`

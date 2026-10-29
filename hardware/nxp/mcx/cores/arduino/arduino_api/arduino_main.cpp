@@ -13,6 +13,7 @@ extern "C" {
 }
 
 void	(* volatile systick_hook)( uint32_t ms )	= nullptr;
+void	(* volatile systick_ticker_hook)( uint32_t ms )	= nullptr;
 
 int		main() __attribute__((weak));
 
@@ -192,6 +193,11 @@ extern "C" void SysTick_Handler( void )
 #endif
 
 	void	( *hook )( uint32_t )	= systick_hook;
+
+	if ( hook && n )
+		hook( n );
+
+	hook	= systick_ticker_hook;
 
 	if ( hook && n )
 		hook( n );
