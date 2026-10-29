@@ -12,9 +12,8 @@
  *  attach(), the 20ms period, detach(), more objects than MAX_SERVOS, and
  *  that analogWrite() keeps its own 8-bit scaling afterwards.
  *
- *  attach() on a pin with no PWM stops the sketch with panic(), so that is
- *  not checked here: try servo.attach(D2) by hand, which should print
- *  "error: Servo: pin has no PWM ...".
+ *  This checks a pin with PWM. On a pin without, a timer interrupt makes
+ *  the pulses (since v0.12.0): release_check/13 checks that, on D2 and D4.
  *
  *  Read the final "ALL PASS"/"N FAIL" line.
  */

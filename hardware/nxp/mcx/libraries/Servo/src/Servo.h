@@ -21,29 +21,28 @@
 #define INVALID_SERVO		255		///< what attach() returns for an object beyond MAX_SERVOS
 ///@}
 
-/** How many Servo objects can be made: one for each pin with PWM */
-#if defined( FRDM_MCXA156 )
-#define MAX_SERVOS			10
-#elif defined( FRDM_MCXA153 ) || defined( FRDM_MCXN947 ) || defined( FRDM_MCXN236 )
-#define MAX_SERVOS			6
-#elif defined( FRDM_MCXC444 )
-#define MAX_SERVOS			5	// D3, D5, D6, D9, D10 -- but D5/D6/D9 one at a time (see below)
-#else
-#error "Servo: no MAX_SERVOS for this board yet"
-#endif
+/** How many Servo objects can be made, as on an UNO: on pins with PWM and
+ *  without, together */
+#define MAX_SERVOS			12
 
 /** Drives a hobby RC servo, with the official Servo library's interface:
  *  attach()/detach(), write() in degrees or microseconds,
  *  writeMicroseconds(), read() and readMicroseconds().
  *
- *  The pulses come from the pin's PWM hardware (FlexPWM), at 50Hz, so their
- *  width doesn't jitter. That limits the servo to a pin with PWM:
- *  PWM0-PWM5 on every board, and also D3, D5, D6 and D9 on FRDM-MCXA156 and
- *  FRDM-MCXN236 (on FRDM-MCXN236 these are four of PWM0-PWM5), and on
- *  FRDM-MCXC444 D3, D5, D6, D9 and D10, as on an UNO. On any other
- *  pin, attach() stops the sketch with panic(), naming the pins to use.
- *  The official library on AVR uses any pin, which is why its examples use
- *  D9: on FRDM-MCXA153 and FRDM-MCXN947, change that to a PWM pin.
+ *  On a pin with PWM -- PWM0-PWM5 on every board, and also D3, D5, D6 and
+ *  D9 on FRDM-MCXA156 and FRDM-MCXN236 (on FRDM-MCXN236 these are four of
+ *  PWM0-PWM5), and on FRDM-MCXC444 D3, D5, D6, D9 and D10, as on an UNO --
+ *  the pulses come from the PWM hardware, at 50Hz, so their width doesn't
+ *  jitter.
+ *
+ *  On any other digital pin, a timer interrupt raises and lowers the pin,
+ *  as the official library does on AVR: one pulse after another, every
+ *  20ms, or longer when the pulses add up to more (12 servos at 2400us
+ *  take about 29ms). Other interrupts can make these pulses a few
+ *  microseconds longer or shorter, as on AVR. The timer is CTIMER2
+ *  (CTIMER3 on FRDM-MCXN947, where MCXEthernet uses CTIMER2), and TPM2 on
+ *  FRDM-MCXC444. It runs only while such a servo is attached. A pulse is
+ *  at most 20000us here.
  *
  *  The two pins of a FlexPWM submodule share their period (see the board's
  *  PIN_MAPPING_*.md): attaching a servo sets the other pin's PWM to 50Hz
@@ -63,12 +62,12 @@ public:
 
 	/** Start sending pulses on a pin, for 0-180 degrees as 544-2400us.
 	 *  A value written before is sent from the start; otherwise 1500us.
-	 * @param pin a pin with PWM (see above); any other pin stops the sketch with panic()
+	 * @param pin any digital pin (see above); a pin that doesn't exist stops the sketch with panic()
 	 * @return this servo's index, or INVALID_SERVO if this object is beyond MAX_SERVOS
 	 */
 	uint8_t	attach( int pin );
 	/** The same, with the pulse widths for 0 and 180 degrees.
-	 * @param pin a pin with PWM
+	 * @param pin any digital pin
 	 * @param min pulse width for 0 degrees [us]
 	 * @param max pulse width for 180 degrees [us]
 	 * @return this servo's index, or INVALID_SERVO if this object is beyond MAX_SERVOS
@@ -98,6 +97,7 @@ private:
 	uint8_t	index;
 	int		pin			= -1;
 	PwmOut	*pwm		= nullptr;
+	bool	on_timer	= false;	// attached to a pin without PWM: the timer interrupt makes its pulses
 	int		min_us		= MIN_PULSE_WIDTH;
 	int		max_us		= MAX_PULSE_WIDTH;
 	int		pulse_us	= DEFAULT_PULSE_WIDTH;

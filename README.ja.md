@@ -21,7 +21,7 @@ LLMやAIのコーディングツール向けには、これらの文書と、こ
 [MCUXpresso SDKを直接呼び出す](docs/advanced_sdk_tuning.md)（GPIO速度チューニング）、
 [r01libによるネイティブI3C](docs/advanced_r01lib_i3c.md)（`Wire`形式のAPIでは扱えない機能向け）、
 [mcxPinStateによるピン所有状況のデバッグ](docs/mcxpinstate_guide.md)（そのためのライブラリ、本パッケージに同梱済み）。
-同梱ライブラリはもう1つあります——[mcxRCServo](https://github.com/teddokano/mcxRCServo)はPWMのピン（`PWM0`〜`PWM5`と、FRDM-MCXA156・FRDM-MCXN236では`D3`・`D5`・`D6`・`D9`。FRDM-MCXC444には`PWM0`〜`PWM5`が無く、作例は`D3`を使います）からRCサーボを駆動します。同じピンで、同梱の`Servo`ライブラリは公式のServoライブラリと同じ使い方（`#include <Servo.h>`、`attach()`、`write()`）ができ、公式向けに書かれたスケッチがそのままビルドできます。
+同梱ライブラリはもう1つあります——[mcxRCServo](https://github.com/teddokano/mcxRCServo)はPWMのピン（`PWM0`〜`PWM5`と、FRDM-MCXA156・FRDM-MCXN236では`D3`・`D5`・`D6`・`D9`。FRDM-MCXC444には`PWM0`〜`PWM5`が無く、作例は`D3`を使います）からRCサーボを駆動します。同梱の`Servo`ライブラリは公式のServoライブラリと同じ使い方（`#include <Servo.h>`、`attach()`、`write()`）ができ、公式向けに書かれたスケッチがそのままビルドできます。これらのPWMのピンではPWMのハードウェアで、それ以外のピンではAVRと同じくタイマーの割り込みでパルスを出します。
 
 このコアにFRDM-MCXボードを追加する作業は、コアを使う作業とは別物なので専用の手順書があります:
 [新しいボードの移植](docs/porting_a_new_board.md)（英語のみ）。
@@ -127,7 +127,7 @@ mcx-arduino-core/
 │   │   ├── EEPROM/            #   AVR互換のEEPROM、オンチップのフラッシュに1KB（本体はここ）
 │   │   ├── MCXEthernet/       #   FRDM-MCXN947のオンボードのEthernet、公式のEthernetと同じAPI（本体はここ）
 │   │   ├── MsTimer2/          #   MsTimer2と同じAPI、1msの割り込みでNミリ秒ごとに関数を呼ぶ（本体はここ）
-│   │   ├── Servo/             #   公式のServoライブラリと同じAPI、PWMのピンで（本体はここ）
+│   │   ├── Servo/             #   公式のServoライブラリと同じAPI、どのピンでも（本体はここ）
 │   │   ├── TimerOne/          #   TimerOneと同じAPI、Nマイクロ秒ごとに関数を呼ぶ。PWMの関数は無し（本体はここ）
 │   │   ├── mcxPinState/       #   ピン所有状況のデバッグ（docs/mcxpinstate_guide.md参照）。
 │   │   │                      #   開発は専用リポジトリで行い、リリース時にここへ同期

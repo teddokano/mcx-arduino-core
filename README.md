@@ -29,9 +29,10 @@ bundled companion library for exactly that. A second bundled library,
 [mcxRCServo](https://github.com/teddokano/mcxRCServo), drives hobby RC
 servos from the PWM pins (`PWM0`-`PWM5`, and `D3`/`D5`/`D6`/`D9` on
 FRDM-MCXA156 and FRDM-MCXN236; FRDM-MCXC444 has no `PWM0`-`PWM5`, and
-its examples use `D3`). From the same pins, the bundled `Servo`
-library takes the official Servo library's interface (`#include <Servo.h>`,
-`attach()`, `write()`), so sketches written for it build unchanged.
+its examples use `D3`). The bundled `Servo` library takes the official
+Servo library's interface (`#include <Servo.h>`, `attach()`, `write()`), so
+sketches written for it build unchanged: from the PWM hardware on those
+pins, and from a timer interrupt on any other pin, as on AVR.
 
 Adding another FRDM-MCX board to this core is a different job from using
 it, and has its own guide:
@@ -146,7 +147,7 @@ mcx-arduino-core/
 │   │   ├── EEPROM/            #   AVR-compatible EEPROM, 1KB in on-chip flash (lives here)
 │   │   ├── MCXEthernet/       #   FRDM-MCXN947's on-board Ethernet, with the official Ethernet API (lives here)
 │   │   ├── MsTimer2/          #   MsTimer2's API: a function every N ms, on the 1 ms tick (lives here)
-│   │   ├── Servo/             #   The official Servo library's API, on the PWM pins (lives here)
+│   │   ├── Servo/             #   The official Servo library's API, on any pin (lives here)
 │   │   ├── TimerOne/          #   TimerOne's API: a function every N us, without its PWM (lives here)
 │   │   ├── mcxPinState/       #   Pin-ownership debugging (see docs/mcxpinstate_guide.md);
 │   │   │                      #   developed in its own repo, synced here at release time

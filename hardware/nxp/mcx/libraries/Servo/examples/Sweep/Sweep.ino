@@ -5,12 +5,13 @@
  *  than one, or a larger one, use a separate 5V supply and join its GND
  *  to the board's.
  *
- *  The servo has to be on a pin with PWM: PWM0-PWM5, and also D3, D5, D6
- *  and D9 on FRDM-MCXA156 and FRDM-MCXN236. FRDM-MCXC444 has no PWM0-PWM5,
- *  so the sketch uses D9 there. The same sketch for the
- *  official Servo library on AVR uses D9, which has no PWM on FRDM-MCXA153
- *  and FRDM-MCXN947: there attach() stops the sketch with an error message
- *  on Serial.
+ *  Any digital pin works. On a pin with PWM -- PWM0-PWM5, and also D3, D5,
+ *  D6 and D9 on FRDM-MCXA156 and FRDM-MCXN236, and D3, D5, D6, D9 and D10
+ *  on FRDM-MCXC444 -- the pulses come from the PWM hardware and don't
+ *  jitter, which is why the sketch uses PWM0 (D9 on FRDM-MCXC444, which
+ *  has no PWM0-PWM5). On any other pin, such as D9 on FRDM-MCXA153 and
+ *  FRDM-MCXN947, which the official library's example uses, a timer
+ *  interrupt makes them, as on AVR.
  */
 
 #include <Servo.h>
@@ -24,7 +25,7 @@
 Servo servo;
 
 void setup() {
-  servo.attach(SERVO_PIN);  // on a pin with no PWM, stops with an error on Serial
+  servo.attach(SERVO_PIN);
 }
 
 void loop() {

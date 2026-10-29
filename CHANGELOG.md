@@ -24,6 +24,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   copies of those libraries. MsTimer2's example `MultipleTickers` shows several functions, each at a period of its
   own, from its one timer, with a small `Ticker` class like mbed's. Checked by `release_check/09` and
   `examples/Arduino_compatible_API/test_MsTimer2_TimerOne` (no wiring)
+- **The bundled `Servo` drives a servo from any digital pin**: on a pin without PWM, where `attach()` used to stop
+  the sketch with an error message, a timer interrupt now raises and lowers the pin, as the official library does
+  on AVR, so its examples' `D9` works on every board. The servos on such pins get their pulses one after another
+  every 20 ms (longer if they add up to more), and other interrupts can make a pulse a few microseconds longer or
+  shorter; a pin with PWM still gets its pulses from the PWM hardware, which doesn't jitter. The timer is CTIMER2
+  (CTIMER3 on FRDM-MCXN947, where `MCXEthernet` has CTIMER2) and TPM2 on FRDM-MCXC444, running only while such a
+  servo is attached. `MAX_SERVOS` is 12 on every board, as on UNO R3 (it was the number of PWM pins). Checked on
+  all five boards by `release_check/13`, with the jumpers it already had (`D2` and `D4`, measured on `D3` and `D5`)
 - **`Wire.setPins(sda, scl)`, to put a bus on `A4`/`A5`**, for shields made for UNO boards whose I2C is on `A4`/`A5`
   (the signature is ESP32's; AVR has no such function). Call it before `begin()` or after `end()`:
   `Wire.setPins(A4, A5); Wire.begin();`. It returns `false`, and leaves the pins as they were, for any pins other

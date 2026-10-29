@@ -29,7 +29,7 @@ with one setup each:
 | 09 | `09_no_wiring_software_checks` | none | automatic (reads "ALL OK"/"N FAILED") |
 | 11 | `11_serial1_and_gpio_loopback` | Serial1 TX/RX loopback jumper (D0-D1 on A153, A156 and N236, MikroBus MB_TX-MB_RX on N947) + D2-D3 jumper. C444 has no Serial1 (D0/D1 are `Serial`, driven by the MCU-LINK): the D2-D3 jumper only, and the Serial1 sections print SKIP | automatic |
 | 12 | `12_spi_loopback` | D11-D12 jumper + MikroBus MOSI-MISO jumper (only the first on N236 and C444, which have no `SPI1`: their MikroBus MOSI/MISO are D11/D12) | automatic |
-| 13 | `13_shiftout_pulsein_loopback` | D0-D1, D2-D3, D4-D5, D6-D7 jumpers (4 adjacent pairs) + PWM0-D8 jumper (not on FRDM-MCXN236, where PWM0 is D6 itself). On FRDM-MCXC444: D8-D9 in place of D0-D1 (those are `Serial` there), and the servo pulses come out of D6 to D7 as on N236, so D8-D9, D2-D3, D4-D5, D6-D7 | automatic |
+| 13 | `13_shiftout_pulsein_loopback` | D0-D1, D2-D3, D4-D5, D6-D7 jumpers (4 adjacent pairs) + PWM0-D8 jumper (not on FRDM-MCXN236, where PWM0 is D6 itself). On FRDM-MCXC444: D8-D9 in place of D0-D1 (those are `Serial` there), and the servo pulses come out of D6 to D7 as on N236, so D8-D9, D2-D3, D4-D5, D6-D7. The bundled `Servo` on pins without PWM is checked through the same jumpers: servos on D2 and D4, measured on D3 and D5 | automatic |
 | 14 | `14_wire_timeout` | D19(SCL)-D8 + D18(SDA)-D7 jumpers, nothing else on `Wire`; on FRDM-MCXN947 also MB_SCL-MB_PWM + MB_SDA-MB_INT, for `Wire2`, and the same on FRDM-MCXA156 and FRDM-MCXN236, for `Wire1`. On FRDM-MCXC444 the target section prints SKIP (see #01) | automatic |
 | 15 | `15_wire_wire1_jumpered_A156` | A156 only: MB_SDA-D18 + MB_SCL-D19, nothing else on either bus (joins `Wire` and `Wire1` into one bus) | automatic |
 | 16 | `16_wire_setpins_A4A5` | A156 and N236: A4-D18 + A5-D19, nothing else on them (joins A4/A5 to `Wire`'s D18/D19). C444: A5-D8 + A4-D7. A153 and N947: none (A4/A5 have no I2C there; only the `false` cases run) | automatic |
@@ -167,6 +167,17 @@ the PWM pin back to an input and measuring it with `pulseIn()`. That
 path is not redundant with #02: #02 drives PWM at the default 8-bit
 resolution, while `mcxRCServo` runs `analogWriteResolution(16)` and
 asks for 2.5%-12% duty fractions, which nothing else here exercises.
+
+#13 also checks the bundled `Servo` on pins without PWM (since 0.12.0),
+where a timer interrupt raises and lowers the pin: servos on D2 and D4,
+which have no PWM on any board, are measured on D3 and D5 through the
+jumpers already there, each edge timed with `micros()` in a pin
+interrupt. The pin interrupt runs after the timer interrupt that made the
+edge, so a width can read a few microseconds long (about 5us on
+FRDM-MCXC444, where a logic analyzer saw them within 0.1% of the
+setting); the checks allow
+15us. `Servo` on a PWM pin is checked by
+`examples/Arduino_compatible_API/test_Servo`.
 
 Also intentionally not folded in: `test_GPIO_D0_to_D7` and
 `test_analogWrite_duty` (superseded by the more complete `_all_pins`/

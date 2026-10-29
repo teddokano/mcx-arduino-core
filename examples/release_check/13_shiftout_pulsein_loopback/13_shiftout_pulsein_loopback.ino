@@ -42,6 +42,14 @@
  *       On FRDM-MCXN236, PWM0 is D6 itself, so jumper 3 already carries
  *       the servo pulses to D7 and the sketch measures them there: no
  *       jumper 4 on that board.
+ *    5) No new jumper: the bundled Servo library on pins without PWM,
+ *       whose pulses come from a timer interrupt (CTIMER2, CTIMER3 on
+ *       FRDM-MCXN947, TPM2 on FRDM-MCXC444) raising and lowering the pin.
+ *       A servo on D2 is measured on D3 through jumper 1's clock pair, and
+ *       one on D4 on D5 through jumper 2. Each edge's time is taken with
+ *       micros() in a pin interrupt: the widths, the 20ms period, the
+ *       D4 pulse starting as the D2 pulse ends (one after another, as on
+ *       AVR), and detach() stopping the pulses.
  *
  *  FRDM-MCXC444: D0/D1 are Serial there (the USB serial port's own lines,
  *  driven by the MCU-LINK), so jumper 1's data pair moves to D8 <-> D9.
@@ -52,6 +60,7 @@
 
 #include <Arduino.h>
 #include <SG90.h>          // bundled with this core: libraries/mcxRCServo
+#include <Servo.h>         // bundled with this core: libraries/Servo
 
 #if defined(FRDM_MCXC444)
 #define SHIFTOUT_DATA      D8   // D0/D1 are Serial there
@@ -79,6 +88,25 @@
 #error "This sketch has no settings for this board yet"
 #endif
 
+// ---- Servo edge capture (item 5) ----
+#define TIMED_SERVO_A      SHIFTOUT_CLOCK   // D2, no PWM on any board
+#define TIMED_MONITOR_A    MONITOR_CLOCK    // D3
+#define TIMED_SERVO_B      SHIFTIN_DATA     // D4, no PWM on any board
+#define TIMED_MONITOR_B    SHIFTIN_CLOCK    // D5
+
+struct Edge { unsigned long t; uint8_t which; uint8_t level; };
+const int MAX_EDGES = 64;
+volatile Edge edges[MAX_EDGES];
+volatile int  edgeCount = 0;
+volatile bool capturing = false;
+
+struct PulseStats {
+  int pulses;              // complete high pulses seen
+  unsigned long minW, maxW;
+  int periods;             // rise-to-rise intervals seen
+  unsigned long minP, maxP;
+};
+
 volatile uint8_t captured     = 0;
 volatile uint8_t bitsCaptured = 0;
 
@@ -95,6 +123,162 @@ void check(const char *label, bool ok) {
 void onMonitorClockRise() {
   captured = (uint8_t)((captured << 1) | (digitalRead(MONITOR_DATA) ? 1 : 0));
   bitsCaptured = bitsCaptured + 1;
+}
+
+void recordEdge(uint8_t which, int pin) {
+  unsigned long t = micros();
+  if (!capturing || edgeCount >= MAX_EDGES)
+    return;
+  edges[edgeCount].t     = t;
+  edges[edgeCount].which = which;
+  edges[edgeCount].level = digitalRead(pin) ? 1 : 0;
+  edgeCount = edgeCount + 1;
+}
+
+void onTimedA() { recordEdge(0, TIMED_MONITOR_A); }
+void onTimedB() { recordEdge(1, TIMED_MONITOR_B); }
+
+// Edges for ms milliseconds, after the pulses in flight have settled
+void captureEdges(unsigned long ms) {
+  delay(45);  // past two 20ms frames, so a width just written is in effect
+  noInterrupts();
+  edgeCount = 0;
+  capturing = true;
+  interrupts();
+  delay(ms);
+  capturing = false;
+}
+
+PulseStats statsFor(uint8_t which) {
+  PulseStats s = { 0, 0xFFFFFFFFUL, 0, 0, 0xFFFFFFFFUL, 0 };
+  long lastRise = -1;
+  for (int i = 0; i < edgeCount; i++) {
+    if (edges[i].which != which)
+      continue;
+    if (edges[i].level) {
+      if (lastRise >= 0) {
+        unsigned long p = edges[i].t - edges[lastRise].t;
+        s.periods++;
+        if (p < s.minP) s.minP = p;
+        if (p > s.maxP) s.maxP = p;
+      }
+      lastRise = i;
+    } else if (lastRise >= 0) {
+      unsigned long w = edges[i].t - edges[lastRise].t;
+      s.pulses++;
+      if (w < s.minW) s.minW = w;
+      if (w > s.maxW) s.maxW = w;
+    }
+  }
+  return s;
+}
+
+void printStats(const char *name, const PulseStats &s) {
+  Serial.print(name);
+  Serial.print(": "); Serial.print(s.pulses); Serial.print(" pulses ");
+  Serial.print(s.minW); Serial.print("-"); Serial.print(s.maxW);
+  Serial.print("us, "); Serial.print(s.periods); Serial.print(" periods ");
+  Serial.print(s.minP); Serial.print("-"); Serial.print(s.maxP);
+  Serial.println("us");
+}
+
+bool widthsNear(const PulseStats &s, unsigned long us) {
+  return s.pulses >= 3 && s.minW + 15 >= us && s.maxW <= us + 15;
+}
+
+bool periodsNear20ms(const PulseStats &s) {
+  return s.periods >= 3 && s.minP + 30 >= 20000UL && s.maxP <= 20030UL;
+}
+
+void checkTimedServos() {
+  pinMode(TIMED_MONITOR_B, INPUT);  // was shiftIn()'s clock output: the servo on D4 drives it now
+  pinMode(TIMED_MONITOR_A, INPUT);
+  detachInterrupt(digitalPinToInterrupt(TIMED_MONITOR_A));
+  attachInterrupt(digitalPinToInterrupt(TIMED_MONITOR_A), onTimedA, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(TIMED_MONITOR_B), onTimedB, CHANGE);
+
+  Servo a, b;
+
+  a.attach(TIMED_SERVO_A);
+  check("Servo on D2 (no PWM): attached()", a.attached());
+
+  struct { int value; unsigned long expect_us; const char *label; } points[] = {
+    {    0,  544, "Servo on D2: write(0) -> 544us pulses at 20ms"   },
+    {   90, 1472, "Servo on D2: write(90) -> 1472us pulses at 20ms" },
+    {  180, 2400, "Servo on D2: write(180) -> 2400us pulses at 20ms" },
+    { 1000, 1000, "Servo on D2: write(1000) -> 1000us pulses at 20ms" },
+  };
+
+  for (auto &p : points) {
+    a.write(p.value);
+    captureEdges(110);
+    PulseStats s = statsFor(0);
+    printStats("  D3", s);
+    check(p.label, widthsNear(s, p.expect_us) && periodsNear20ms(s));
+  }
+
+  // Two servos: D4's pulse follows D2's, one after the other
+  b.attach(TIMED_SERVO_B);
+  b.writeMicroseconds(2000);
+  captureEdges(110);
+  PulseStats sa = statsFor(0);
+  PulseStats sb = statsFor(1);
+  printStats("  D3", sa);
+  printStats("  D5", sb);
+  check("Two servos: D2 still 1000us at 20ms", widthsNear(sa, 1000) && periodsNear20ms(sa));
+  check("Two servos: D4 2000us at 20ms", widthsNear(sb, 2000) && periodsNear20ms(sb));
+
+  // Each D5 rise against the D3 fall nearest in time: the two pin
+  // interrupts may record the edges in either order
+  int follows = 0, pairs = 0;
+  unsigned long worstGap = 0;
+  for (int i = 0; i < edgeCount; i++) {
+    if (edges[i].which != 1 || !edges[i].level)
+      continue;
+    unsigned long nearest = 0xFFFFFFFFUL;
+    for (int j = 0; j < edgeCount; j++) {
+      if (edges[j].which != 0 || edges[j].level)
+        continue;
+      unsigned long d = edges[i].t >= edges[j].t ? edges[i].t - edges[j].t : edges[j].t - edges[i].t;
+      if (d < nearest)
+        nearest = d;
+    }
+    pairs++;
+    if (nearest <= 20)
+      follows++;
+    if (nearest > worstGap)
+      worstGap = nearest;
+  }
+  Serial.print("  D4 rises within 20us of a D2 fall: ");
+  Serial.print(follows); Serial.print(" of "); Serial.print(pairs);
+  Serial.print(" (farthest "); Serial.print(worstGap); Serial.println("us)");
+  check("Two servos: D4's pulse starts as D2's ends", pairs >= 3 && follows == pairs);
+
+  // detach() stops D2's pulses and leaves it LOW; D4's go on
+  a.detach();
+  captureEdges(110);
+  sa = statsFor(0);
+  sb = statsFor(1);
+  printStats("  D3", sa);
+  printStats("  D5", sb);
+  check("detach(): D2 stops, LOW", !a.attached() && sa.pulses == 0 && sa.periods == 0 && digitalRead(TIMED_MONITOR_A) == LOW);
+  check("detach(): D4 goes on at 2000us, 20ms", widthsNear(sb, 2000) && periodsNear20ms(sb));
+
+  // The last detach() stops the timer after its frame
+  b.detach();
+  captureEdges(110);
+  check("Both detached: no pulses", edgeCount == 0 && digitalRead(TIMED_MONITOR_B) == LOW);
+
+  // attach() again starts the timer again, with the width written before
+  a.attach(TIMED_SERVO_A);
+  captureEdges(110);
+  sa = statsFor(0);
+  printStats("  D3", sa);
+  check("attach() again: D2 1000us at 20ms", widthsNear(sa, 1000) && periodsNear20ms(sa));
+  a.detach();
+
+  detachInterrupt(digitalPinToInterrupt(TIMED_MONITOR_A));
+  detachInterrupt(digitalPinToInterrupt(TIMED_MONITOR_B));
 }
 
 void setup() {
@@ -181,6 +365,9 @@ void setup() {
   analogWriteResolution(8);
   analogWrite(SERVO_PWM_PIN, 0);
   analogWriteFrequency(SERVO_PWM_PIN, 1000);
+
+  // ---- Servo on pins without PWM (D2->D3, D4->D5, no new jumper) ----
+  checkTimedServos();
 
   // ---- random / randomSeed ----
   // Not checked against exact values (that would couple this test to the
