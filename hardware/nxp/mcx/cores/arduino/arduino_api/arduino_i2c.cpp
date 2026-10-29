@@ -4,9 +4,17 @@
  *  Released under the MIT license
  */
 
+#include	<cstdio>
+#include	<cstring>
+
 #include	"r01lib.h"
 #include	"i3c.h"
+#include	"pin_registry.h"
 #include	"arduino_i2c.h"
+
+// arduino_io.cpp: an Arduino pin number (A4, D18, ...) as r01lib's raw pin
+// value, which this file speaks, or -1
+int arduino_pin_raw( int pin_num );
 
 TwoWire	Wire(  I2C_SDA, I2C_SCL );
 #if defined( CPU_MCXA153VLH )
@@ -29,6 +37,69 @@ TwoWire	Wire1( PTE25,  PTE24 );
 #else
 #error "arduino_i2c.cpp: say which pins this board's Wire1 is on"
 #endif
+
+/*
+ *  The peripheral behind each pin pair a TwoWire can be on, so that
+ *  setPins() and begin() keep two TwoWires off one peripheral: one LPI2C
+ *  (or I2C, or I3C) runs one bus, and a second begin() on it would
+ *  re-initialize it under the first. Pairs as raw r01lib pin values; the
+ *  names go into panic()'s message.
+ */
+struct WirePins
+{
+	int			sda;
+	int			scl;
+	const char	*periph;
+};
+
+static const WirePins	s_wire_pins[]	=
+{
+#if defined( CPU_MCXA153VLH )
+	{ I2C_SDA,	I2C_SCL,	"LPI2C0" },
+	{ I3C_SDA,	I3C_SCL,	"I3C0" },
+#elif defined( CPU_MCXN947VDF )
+	{ I2C_SDA,	I2C_SCL,	"LPI2C2" },
+	{ MB_SDA,	MB_SCL,		"LPI2C3" },
+	{ I3C_SDA,	I3C_SCL,	"I3C1" },
+#elif defined( CPU_MCXA156VLL )
+	{ I2C_SDA,	I2C_SCL,	"LPI2C0" },
+	{ MB_SDA,	MB_SCL,		"LPI2C3" },
+	{ A4,		A5,			"LPI2C1" },
+#elif defined( CPU_MCXN236VDF )
+	{ I2C_SDA,	I2C_SCL,	"LPI2C5" },
+	{ MB_SDA,	MB_SCL,		"LPI2C2" },
+	{ A4,		A5,			"LPI2C2" },
+#elif defined( CPU_MCXC444VLH )
+	{ D18,		D19,		"I2C1" },
+	{ A4,		A5,			"I2C1" },
+	{ PTE25,	PTE24,		"I2C0" },
+#else
+#error "arduino_i2c.cpp: say which peripheral each of this board's I2C pin pairs reaches"
+#endif
+};
+
+static const char *peripheral_of( int sda, int scl )
+{
+	for ( const WirePins &p : s_wire_pins )
+		if ( p.sda == sda && p.scl == scl )
+			return	p.periph;
+
+	return	nullptr;
+}
+
+// Every TwoWire made, so begin() can see which are running: Wire, Wire1,
+// Wire2, and room for one more. Filled by the constructors, before setup().
+static TwoWire	*s_wires[ 4 ];
+
+static const char *name_of( const TwoWire *w )
+{
+	if ( w == &Wire )	return	"Wire";
+	if ( w == &Wire1 )	return	"Wire1";
+#ifdef	CPU_MCXN947VDF
+	if ( w == &Wire2 )	return	"Wire2";
+#endif
+	return	"a TwoWire";
+}
 
 /*
  *  Target (slave) mode, on the SDK's LPI2C_Slave* transfer API.
@@ -88,10 +159,95 @@ static void target_callback( LPI2C_Type *, lpi2c_slave_transfer_t *xfer, void *s
 #endif
 
 TwoWire::TwoWire( int sda_pin, int scl_pin )
-	: _sda( sda_pin ), _scl( scl_pin ), i2c( nullptr ),
+	: own_sda( sda_pin ), own_scl( scl_pin ), _sda( sda_pin ), _scl( scl_pin ),
+	  pad_mux( 0xFF ), i2c( nullptr ),
 	  tx_size( 0 ), rx_data( rx_buf ), rx_index( 0 ), rx_size( 0 ),
 	  target( nullptr ), user_onReceive( nullptr ), user_onRequest( nullptr ),
-	  timeout_us( 0 ), reset_on_timeout( false ), timed_out( false ), last_status( 0 ){}
+	  timeout_us( 0 ), reset_on_timeout( false ), timed_out( false ), last_status( 0 )
+{
+	for ( TwoWire *&w : s_wires )
+		if ( !w )
+		{
+			w	= this;
+			break;
+		}
+}
+
+const char *TwoWire::peripheral( void ) const
+{
+	return	peripheral_of( _sda, _scl );
+}
+
+TwoWire *TwoWire::running_on( const char *periph, const TwoWire *except )
+{
+	if ( !periph )
+		return	nullptr;
+
+	for ( TwoWire *w : s_wires )
+		if ( w && w != except && w->i2c && w->peripheral() && !strcmp( w->peripheral(), periph ) )
+			return	w;
+
+	return	nullptr;
+}
+
+bool TwoWire::setPins( int sda, int scl )
+{
+	int	s	= arduino_pin_raw( sda );
+	int	c	= arduino_pin_raw( scl );
+
+	if ( i2c )
+		return	false;		// begun: end() first
+
+	bool	own	= ( s == own_sda ) && ( c == own_scl );
+
+	if ( !own && !( ( s == A4 ) && ( c == A5 ) ) )
+		return	false;
+
+#if defined( CPU_MCXC444VLH )
+	//	Wire1 is the on-board accelerometer's I2C0, on pins with no Arduino
+	//	pin number, so once on A4/A5 it couldn't be moved back; and Wire is
+	//	A4/A5's I2C1 already
+	if ( !own && this == &Wire1 )
+		return	false;
+#endif
+
+	//	Not in s_wire_pins[] where A4/A5 have no I2C (FRDM-MCXA153, FRDM-MCXN947)
+	const char	*periph	= peripheral_of( s, c );
+
+	if ( !periph || running_on( periph, this ) )
+		return	false;
+
+	if ( s != _sda || c != _scl )
+	{
+		release_pads();
+		_sda	= s;
+		_scl	= c;
+	}
+
+	return	true;
+}
+
+//	The pins this bus is leaving go back to GPIO inputs (as at reset), so
+//	that the signal isn't on two pairs of pins at once: begin() muxed them,
+//	and end() leaves them so. Only while they still have the ALT begin()
+//	gave them: a pinMode() since has made them the sketch's.
+void TwoWire::release_pads( void )
+{
+	if ( pad_mux == 0xFF )
+		return;
+
+	for ( int pin : { _sda, _scl } )
+		if ( pin_registry_read_pcr( (uint8_t)pin ).mux == pad_mux )
+		{
+			//	An input; its constructor muxes the pin to GPIO on
+			//	FRDM-MCXC444 only (the MCX chips are GPIO out of reset), so
+			//	pin_mux() as pinMode() does, which turns the input buffer on too
+			DigitalInOut	gpio( (uint8_t)pin );
+			gpio.pin_mux( kPORT_MuxAsGpio );
+		}
+
+	pad_mux	= 0xFF;
+}
 
 bool TwoWire::on_i3c_pins( void ) const
 {
@@ -512,6 +668,23 @@ void TwoWire::start( int baud )
 
 	if ( !i2c )
 	{
+		if ( TwoWire *other = running_on( peripheral(), this ) )
+		{
+			static char	msg[ 112 ];
+
+			snprintf( msg, sizeof( msg ), "%s: begin() on %s, which %s is running (setPins()). Call %s.end() first",
+				name_of( this ), peripheral(), name_of( other ), name_of( other ) );
+			panic( msg );
+		}
+
+		//	Another TwoWire that ran this peripheral on other pins left them
+		//	muxed to it (end() does): it would drive them too. FRDM-MCXN236's
+		//	LPI2C2, Wire1's on MB_SDA/MB_SCL and Wire's on A4/A5
+		for ( TwoWire *w : s_wires )
+			if ( w && w != this && w->peripheral() && peripheral() && !strcmp( w->peripheral(), peripheral() )
+				&& ( w->_sda != _sda || w->_scl != _scl ) )
+				w->release_pads();
+
 #if !defined( CPU_MCXC444VLH )	// LPI2C and I3C; FRDM-MCXC444 has the Kinetis I2C
 		if ( is_i3c )
 		{
@@ -566,6 +739,8 @@ void TwoWire::start( int baud )
 			//	low, and the first transfer hangs or finds the bus busy.
 			//	Harmless next to external pull-ups, which set the rise time.
 			i2c->pullup( true );
+
+			pad_mux	= pin_registry_read_pcr( (uint8_t)_sda ).mux;	// for release_pads()
 		}
 	}
 

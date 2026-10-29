@@ -113,6 +113,8 @@ from whether that instance's own known pins actually show up correctly
 owned in the registry — not from calling any `begin()`-state accessor
 (there isn't one), so it's a real answer even for peripherals you didn't
 build this library to know about ahead of time.
+The `Wire` rows look at the pins each bus is on now, so a bus moved with
+`Wire.setPins(A4, A5)` (0.12.0) shows A4/A5's pins.
 
 ## Reading a conflict
 

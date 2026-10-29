@@ -122,6 +122,12 @@ hardware testing showed `SPI` reporting PARTIAL just because
 same physical pin as `SPI`'s default SCLK, entirely unrelated to whether
 `SPI.begin()` was ever called.
 
+The pins a `Wire`/`Wire1`/`Wire2` row checks are the ones that bus is on
+now: from mcx-arduino-core 0.12.0, `Wire.setPins(A4, A5)` can move a bus
+to A4/A5, and its row then holds A4/A5's pins. This is read from the
+core's internal `TwoWire::raw_sda()`/`raw_scl()`, and with an older core,
+which has neither (nor `setPins()`), the row keeps the bus's fixed pins.
+
 ## Staying in sync with mcx-arduino-core
 
 `ALIAS_NAMES` and `KNOWN_INSTANCES` (`PinState.cpp`) are both

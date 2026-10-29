@@ -78,6 +78,19 @@ void pinMode( int pin_num, int mode )
 		set_pin_mode( pin_num, mode );
 }
 
+// For TwoWire::setPins(): arduino_i2c.cpp speaks r01lib's raw pin values
+// only, and sketches give it Arduino pin numbers. -1 for no such pin
+int arduino_pin_raw( int pin_num )
+{
+#ifdef  ARDUINO_PIN_RENUMBERING
+		constexpr int   count   = (int)( sizeof( arduino_pin_by_number ) / sizeof( arduino_pin_by_number[0] ) );
+
+		return ( 0 <= pin_num && pin_num < count ) ? arduino_pin_by_number[ pin_num ] : -1;
+#else
+		return pin_num;
+#endif
+}
+
 void digitalWrite( int pin_num, bool state )
 {
 #ifdef  ARDUINO_PIN_RENUMBERING

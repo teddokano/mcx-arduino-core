@@ -88,7 +88,8 @@ notice:
 > input is tied to `D11` through a 0Ω resistor (R40).
 
 > **`Wire`** (`D18`/`D19`) and **`A4`/`A5`** both reach the same `I2C1`, so
-> they cannot be two buses at once. Both buses are Kinetis I2Cs, which
+> they cannot be two buses at once: `Wire.setPins(A4, A5)` moves `Wire` there
+> (0.12.0), with the board's 4.7kΩ pull-ups on `A4`/`A5`. Both buses are Kinetis I2Cs, which
 > differ from the other boards' LPI2C in two ways:
 >
 > - **I2C target (slave) mode** (`Wire.begin(address)`) works, but a bus is

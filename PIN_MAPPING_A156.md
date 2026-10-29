@@ -65,7 +65,7 @@ physical MCU port pin.
 | `D18` | `P0_16` | `Wire` (I2C) SDA — the on-board P3T1755 is on this bus too, see below |
 | `D19` | `P0_17` | `Wire` (I2C) SCL |
 | `A0`-`A3` | `P1_10`, `P2_5`, `P2_3`, `P2_4` | `analogRead` (LPADC/ADC1), 10bit |
-| `A4`, `A5` | `P1_12`, `P1_13` | `analogRead` (LPADC/ADC1), 10bit — **remove R75/R76 first** (see above) |
+| `A4`, `A5` | `P1_12`, `P1_13` | `analogRead` (LPADC/ADC1), 10bit — **remove R75/R76 first** (see above). Also an I2C (LPI2C1), which `Wire.setPins(A4, A5)` (or `Wire1`'s) moves a bus to (0.12.0); no pull-up resistors on the board |
 
 All six analog inputs are on one converter (ADC1), unlike FRDM-MCXA153, where
 `A4`/`A5` are digital only.

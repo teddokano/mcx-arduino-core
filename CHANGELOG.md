@@ -24,6 +24,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   copies of those libraries. MsTimer2's example `MultipleTickers` shows several functions, each at a period of its
   own, from its one timer, with a small `Ticker` class like mbed's. Checked by `release_check/09` and
   `examples/Arduino_compatible_API/test_MsTimer2_TimerOne` (no wiring)
+- **`Wire.setPins(sda, scl)`, to put a bus on `A4`/`A5`**, for shields made for UNO boards whose I2C is on `A4`/`A5`
+  (the signature is ESP32's; AVR has no such function). Call it before `begin()` or after `end()`:
+  `Wire.setPins(A4, A5); Wire.begin();`. It returns `false`, and leaves the pins as they were, for any pins other
+  than `A4`/`A5` and the bus's own, after `begin()`, where `A4`/`A5` have no I2C (FRDM-MCXA153 and FRDM-MCXN947), and
+  when another `TwoWire` is running the peripheral behind them. `A4`/`A5` are LPI2C1 on FRDM-MCXA156 (`Wire` or
+  `Wire1`), LPI2C2 on FRDM-MCXN236 (`Wire1`'s own: `Wire` or `Wire1`, not both at once) and I2C1 on FRDM-MCXC444
+  (`Wire`'s own; `Wire` only). The pins a bus leaves go back to plain GPIO inputs, as do those another bus left on the same peripheral. FRDM-MCXA156 and FRDM-MCXN236 have
+  no pull-up resistors on `A4`/`A5`; the internal ones are turned on, as on every bus, and external ones are better.
+  Checked on all five boards by `release_check/16` (two jumper wires on the boards with an I2C on `A4`/`A5`)
+- **`WIRE_HAS_END`**, defined as `1` as on AVR: `Wire.end()` was there, but libraries that check this macro before
+  calling it didn't call it
 - **`llms.txt`** for LLMs and AI coding tools, at `https://teddokano.github.io/mcx-arduino-core/llms.txt`
   ([docs/llms.txt](docs/llms.txt)): the documents to read, and a few points to know before writing a sketch for this
   core (the board IDs, that instance names such as `Wire1` differ by board, Ethernet on each board). A repo check

@@ -21,6 +21,10 @@ struct WireTarget;	// target (slave) mode state, arduino_i2c.cpp; allocated
  *  setWireTimeout() calls with it pick it up here too. */
 #define	WIRE_HAS_TIMEOUT
 
+/** Wire has end(). The same macro, and value, as ArduinoCore-avr's, which
+ *  libraries check before calling end(). */
+#define	WIRE_HAS_END	1
+
 /** Size of each of TwoWire's two buffers: the most one endTransmission()
  *  sends or one requestFrom() reads. AVR's is 32. */
 #define	WIRE_BUFFER_SIZE	128
@@ -102,6 +106,37 @@ public:
 	 *  pull-ups off again (as AVR does), and free the underlying I2C/I3C
 	 *  instance. */
 	void	end( void );
+
+	/** Not in AVR's API (ESP32 has the same one): move this bus to A4/A5,
+	 *  or back to its own pins, for shields made for UNO boards whose I2C
+	 *  is on A4/A5. Call it before begin(), or after end().
+	 *
+	 *  A4/A5 have an I2C on FRDM-MCXA156 (LPI2C1; Wire or Wire1 can move
+	 *  there), FRDM-MCXN236 (LPI2C2, Wire1's own; Wire or Wire1) and
+	 *  FRDM-MCXC444 (I2C1, Wire's own; Wire only, as Wire1's own pins
+	 *  have no Arduino pin number to move it back by), and none on
+	 *  FRDM-MCXA153 and FRDM-MCXN947. One peripheral runs one bus at a
+	 *  time: on FRDM-MCXN236, Wire on A4/A5 and Wire1 can't both be
+	 *  begun. A begin() that would take a peripheral another TwoWire is
+	 *  running stops in panic().
+	 *
+	 *  The pins it leaves go back to plain GPIO inputs, if this bus had
+	 *  them and nothing has taken them since. So do another TwoWire's,
+	 *  left on the same peripheral by its end(), when begin() starts it
+	 *  here (FRDM-MCXN236: Wire on A4/A5 after Wire1, or the other way).
+	 *
+	 *  begin() turns on the pins' internal pull-ups, as it does on every
+	 *  pin pair. FRDM-MCXA156 and FRDM-MCXN236 have no pull-up resistors
+	 *  on A4/A5 (FRDM-MCXC444 has 4.7k), so give the bus external ones
+	 *  there unless the shield has them.
+	 * @param sda SDA pin (A4, or this bus's own SDA)
+	 * @param scl SCL pin (A5, or this bus's own SCL)
+	 * @return true if the bus is now on these pins; false, with the pins
+	 *         unchanged, if this board has no I2C there, after begin()
+	 *         (until end()), or if another TwoWire is running on the
+	 *         peripheral behind them
+	 */
+	bool	setPins( int sda, int scl );
 
 	/** Set the handler called when a controller has written to this
 	 *  target, once the write ends (STOP or repeated start). Inside it,
@@ -251,15 +286,27 @@ public:
 	/** Internal: target-side event from the LPI2C slave interrupt. */
 	void	target_event( void *xfer );
 
+	/** Internal, for the mcxPinState library: the pins this bus is on now
+	 *  (setPins() moves them), as r01lib's raw pin values. Not part of the
+	 *  API. */
+	int		raw_sda( void ) const { return _sda; }
+	int		raw_scl( void ) const { return _scl; }	///< as raw_sda()
+
 private:
 	void	start( int baud );
 	void	target_arm( void );
 	void	target_stop( void );
 	bool	on_i3c_pins( void ) const;
 	void	check_timeout( int status );
+	void	release_pads( void );
+	const char	*peripheral( void ) const;
+	static TwoWire	*running_on( const char *periph, const TwoWire *except );
 
-	const int	_sda;
-	const int	_scl;
+	const int	own_sda;	// the pins it was made on, raw r01lib values
+	const int	own_scl;
+	int			_sda;		// the pins it is on now (setPins())
+	int			_scl;
+	uint8_t		pad_mux;	// the pins' ALT once begin() muxed them, 0xFF before
 	I2C			*i2c;
 	uint8_t		targ_addr;
 	int			baudrate;

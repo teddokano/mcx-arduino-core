@@ -224,22 +224,39 @@ struct KnownInstance
 	const char	*owner_name;	// class-level label this instance's pins register under -- see owned_by()
 	uint8_t		pin[ 3 ];
 	uint8_t		pin_count;
+	const TwoWire	*wire;		// a Wire row's TwoWire, which setPins() can move off pin[]; nullptr for the rest
 };
+
+// The pins a Wire row's TwoWire is on now: from mcx-arduino-core 0.12.0,
+// setPins() can move it to A4/A5. Picked by whether TwoWire has
+// raw_sda(), so that this still builds with an older core, where a
+// TwoWire never leaves the pins in the table.
+template <typename W>
+auto wire_pins( const W &w, uint8_t *pins, int ) -> decltype( w.raw_sda(), void() )
+{
+	pins[ 0 ]	= (uint8_t)w.raw_sda();
+	pins[ 1 ]	= (uint8_t)w.raw_scl();
+}
+
+template <typename W>
+void wire_pins( const W &, uint8_t *, long )
+{
+}
 
 const KnownInstance KNOWN_INSTANCES[]	=
 {
-	{ "Wire",    "GPIO",   { (uint8_t)I2C_SDA, (uint8_t)I2C_SCL, 0 }, 2 },
+	{ "Wire",    "GPIO",   { (uint8_t)I2C_SDA, (uint8_t)I2C_SCL, 0 }, 2, &Wire },
 #if defined( FRDM_MCXA153 ) || defined( FRDM_MCXN947 )
-	{ "Wire1",   "GPIO",   { (uint8_t)I3C_SDA, (uint8_t)I3C_SCL, 0 }, 2 },
+	{ "Wire1",   "GPIO",   { (uint8_t)I3C_SDA, (uint8_t)I3C_SCL, 0 }, 2, &Wire1 },
 #elif defined( FRDM_MCXA156 ) || defined( FRDM_MCXN236 )
 	// The MikroBus I2C (LPI2C3 on FRDM-MCXA156, LPI2C2 on FRDM-MCXN236):
 	// FRDM-MCXA156's on-board sensor, and with it its I3C pins, are on
 	// Wire's own D18/D19, and FRDM-MCXN236 has no I3C sensor.
-	{ "Wire1",   "GPIO",   { (uint8_t)arduino_pin_by_number[ MB_SDA ], (uint8_t)arduino_pin_by_number[ MB_SCL ], 0 }, 2 },
+	{ "Wire1",   "GPIO",   { (uint8_t)arduino_pin_by_number[ MB_SDA ], (uint8_t)arduino_pin_by_number[ MB_SCL ], 0 }, 2, &Wire1 },
 #elif defined( FRDM_MCXC444 )
 	// The on-board accelerometer's bus (I2C0), on pins no header reaches,
 	// so they have no Arduino name and appear in this table only.
-	{ "Wire1",   "GPIO",   { (uint8_t)PTE25, (uint8_t)PTE24, 0 }, 2 },
+	{ "Wire1",   "GPIO",   { (uint8_t)PTE25, (uint8_t)PTE24, 0 }, 2, &Wire1 },
 #else
 #error "mcxPinState: say which pins this board's Wire1 is on"
 #endif
@@ -247,7 +264,7 @@ const KnownInstance KNOWN_INSTANCES[]	=
 	// A153 has no Wire2 at all: a single physical I2C peripheral, already
 	// spoken for by Wire, makes a genuinely independent third I2C bus
 	// impossible on that board.
-	{ "Wire2",   "GPIO",   { (uint8_t)arduino_pin_by_number[ MB_SDA ], (uint8_t)arduino_pin_by_number[ MB_SCL ], 0 }, 2 },
+	{ "Wire2",   "GPIO",   { (uint8_t)arduino_pin_by_number[ MB_SDA ], (uint8_t)arduino_pin_by_number[ MB_SCL ], 0 }, 2, &Wire2 },
 #endif
 	{ "SPI",     "SPI",    { (uint8_t)arduino_pin_by_number[ ARD_MOSI ], (uint8_t)arduino_pin_by_number[ ARD_MISO ], (uint8_t)arduino_pin_by_number[ ARD_SCK ] }, 3 },
 #if !defined( FRDM_MCXN236 ) && !defined( FRDM_MCXC444 )
@@ -462,21 +479,26 @@ void PinState::print( Print &out ) const
 
 		holds_buf[ 0 ]	= '\0';
 
+		uint8_t	pins[ 3 ]	= { k.pin[ 0 ], k.pin[ 1 ], k.pin[ 2 ] };
+
+		if ( k.wire )
+			wire_pins( *k.wire, pins, 0 );
+
 		for ( uint8_t i = 0; i < k.pin_count; i++ )
 		{
 			char	owner_buf[ 24 ];
-			int		owners	= owners_of( k.pin[ i ], owner_buf, sizeof( owner_buf ), nullptr );
+			int		owners	= owners_of( pins[ i ], owner_buf, sizeof( owner_buf ), nullptr );
 
 			if ( owners > 1 )
 				conflict	= true;
 
-			if ( !owned_by( k.pin[ i ], k.owner_name ) )
+			if ( !owned_by( pins[ i ], k.owner_name ) )
 				continue;
 
 			char	pin_name[ 12 ];
 
 			held++;
-			pin_registry_pin_name( k.pin[ i ], pin_name, sizeof( pin_name ) );
+			pin_registry_pin_name( pins[ i ], pin_name, sizeof( pin_name ) );
 
 			int	n	= snprintf( holds_buf + pos, sizeof( holds_buf ) - pos, "%s%s", (pos > 0) ? ", " : "", pin_name );
 

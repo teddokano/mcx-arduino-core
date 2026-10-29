@@ -122,9 +122,10 @@ I2C::I2C( int sda, int scl, bool no_hw ) : Obj( true ), _sda( sda ), _scl( scl )
 		panic( "FRDM-MCXN947 supports I2C_SDA(D18)/I2C_SCL(D19) or MB_SDA/MB_SCL pins for I2C" );
 
 #elif	CPU_MCXN236VDF
-	/* Rev C board. ALT2 for both pairs, per Zephyr's MCXN236VDF-pinctrl.h.
+	/* Rev C board. ALT2 for every pair, per Zephyr's MCXN236VDF-pinctrl.h.
 	 * D18/D19 (P1_16/P1_17) are FC5_P0/P1. MB_SDA/MB_SCL (P4_0/P4_1) are
-	 * FC2_P0/P1, the bus of the on-board accelerometer; FlexComm2 is also
+	 * FC2_P0/P1, the bus of the on-board accelerometer, and so are A4/A5
+	 * (P4_12/P4_13): one LPI2C2 behind both pairs. FlexComm2 is also
 	 * Serial1's LPUART2 (flexcomm_keep_shared() in mcu.h). */
 	constexpr int	mux_setting	= kPORT_MuxAlt2;
 
@@ -132,8 +133,10 @@ I2C::I2C( int sda, int scl, bool no_hw ) : Obj( true ), _sda( sda ), _scl( scl )
 		unit_base	= LPI2C5;
 	else if ( (sda == MB_SDA) && (scl == MB_SCL) )
 		unit_base	= LPI2C2;
+	else if ( (sda == A4) && (scl == A5) )
+		unit_base	= LPI2C2;
 	else
-		panic( "FRDM-MCXN236 supports I2C_SDA(D18)/I2C_SCL(D19) or MB_SDA/MB_SCL pins for I2C" );
+		panic( "FRDM-MCXN236 supports I2C_SDA(D18)/I2C_SCL(D19), MB_SDA/MB_SCL or A4/A5 pins for I2C" );
 
 #elif	CPU_MCXA156VLL
 	/* ALTs from Zephyr's MCXA156VLL-pinctrl.h. I3C_SDA/I3C_SCL are the

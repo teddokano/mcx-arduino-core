@@ -58,7 +58,7 @@ SJ1 and SJ2 are left at their factory 1-2 position, which puts `SPI` on
 | `A0` | `P4_6` | `analogRead` (LPADC/ADC0), 10bit |
 | `A1`, `A2` | `P4_15`, `P4_16` | `analogRead` (LPADC/ADC0), 10bit — **remove R25/R67 first** (see above) |
 | `A3` | `P4_17` | digital only, on-board blue LED (`BLUE`); `analogRead` returns `-1` |
-| `A4`, `A5` | `P4_12`, `P4_13` | `analogRead` (LPADC/ADC0), 10bit |
+| `A4`, `A5` | `P4_12`, `P4_13` | `analogRead` (LPADC/ADC0), 10bit. Also an I2C: `Wire1`'s LPI2C2, which `Wire.setPins(A4, A5)` or `Wire1.setPins(A4, A5)` moves there (0.12.0; `Wire` on `A4`/`A5` and `Wire1` can't run at once). No pull-up resistors on the board (R298/R299 not fitted) |
 
 `NUM_ANALOG_INPUTS` is 5.
 
