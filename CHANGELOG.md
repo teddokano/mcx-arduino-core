@@ -70,6 +70,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   so the IDE shows the board next to its port, selects it, and `arduino-cli board list` names it. A probe that
   stores no board name reports `MCU-LINK on-board ...` (an FRDM-MCXA156 here does): its port shows as `Unknown`,
   and the board is chosen by hand as before. Checked on macOS with Arduino IDE 2.3.10 and all five boards
+- **A guide to the bundled libraries**, [docs/bundled_libraries.md](docs/bundled_libraries.md) (and
+  [in Japanese](docs/bundled_libraries.ja.md)), where the tutorial ends: which of the eight to use for what, a
+  short sketch for each, and which timer each feature takes. Linked from the tutorial's "Where to go next" and the
+  README
 - **`llms.txt`** for LLMs and AI coding tools, at `https://teddokano.github.io/mcx-arduino-core/llms.txt`
   ([docs/llms.txt](docs/llms.txt)): the documents to read, and a few points to know before writing a sketch for this
   core (the board IDs, that instance names such as `Wire1` differ by board, Ethernet on each board, the bundled

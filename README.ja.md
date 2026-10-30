@@ -200,7 +200,7 @@ I2Cターゲット（スレーブ）モードは`Wire`で、`Wire.setWireTimeout
 または`Stream&`を受け取るサードパーティライブラリ（ArduinoJson、LiquidCrystal、Adafruit系
 センサーライブラリ等）もこのコア上でコンパイルできます。
 
-API単位の対応状況・注意点の全表は[API_COMPATIBILITY.md](API_COMPATIBILITY.md)を参照してください。
+API単位の対応状況・注意点の全表は[API_COMPATIBILITY.md](API_COMPATIBILITY.md)を参照してください。同梱ライブラリが何のためのものかと短いスケッチは[docs/bundled_libraries.ja.md](docs/bundled_libraries.ja.md)にあります。
 
 ## ArduinoCore-zephyrとの関係
 

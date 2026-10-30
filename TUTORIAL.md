@@ -864,6 +864,7 @@ notes in the [Ethernet section of API_COMPATIBILITY.md](API_COMPATIBILITY.md#eth
 
 ## Where to go next
 
+- [Bundled libraries](docs/bundled_libraries.md) — what each of the eight bundled libraries is for, with a short sketch: timers (`mcxTicker`, `MsTimer2`, `TimerOne`), servos (`Servo`, `mcxRCServo`), `EEPROM`, `MCXEthernet` and `mcxPinState`
 - [API_COMPATIBILITY.md](API_COMPATIBILITY.md) — full API support table
 - [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) — pin mapping
 - [`examples/Arduino_compatible_API/`](examples/Arduino_compatible_API) — one focused sketch per feature

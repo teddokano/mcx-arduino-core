@@ -239,7 +239,8 @@ inherit `Print` directly or take `Stream&` (e.g. ArduinoJson, LiquidCrystal,
 Adafruit sensor libraries) compile against this core.
 
 See [API_COMPATIBILITY.md](API_COMPATIBILITY.md) for the full per-API status
-table and notes/caveats.
+table and notes/caveats, and [docs/bundled_libraries.md](docs/bundled_libraries.md)
+for what each bundled library is for, with a short sketch.
 
 ## Relationship to ArduinoCore-zephyr
 

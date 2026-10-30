@@ -28,7 +28,7 @@ Points to keep in mind when writing a sketch for this core:
 - [MCXEthernet](https://raw.githubusercontent.com/teddokano/mcx-arduino-core/main/hardware/nxp/mcx/libraries/MCXEthernet/README.md): Ethernet on FRDM-MCXN947's on-board port, with the official Ethernet library's API
 - [mcxPinState](https://raw.githubusercontent.com/teddokano/mcx-arduino-core/main/docs/mcxpinstate_guide.md): shows which peripheral owns each pin, for debugging
 - [mcxRCServo](https://raw.githubusercontent.com/teddokano/mcx-arduino-core/main/hardware/nxp/mcx/libraries/mcxRCServo/README.md): hobby RC servos from the PWM pins
-- `EEPROM`, `Servo`, `MsTimer2`, `TimerOne` and `mcxTicker`: described in the [API compatibility](https://raw.githubusercontent.com/teddokano/mcx-arduino-core/main/API_COMPATIBILITY.md) list, in its EEPROM, Servo and Timer interrupts sections
+- [Bundled libraries](https://raw.githubusercontent.com/teddokano/mcx-arduino-core/main/docs/bundled_libraries.md): all eight bundled libraries, what each is for and a short sketch, including `EEPROM`, `Servo`, `MsTimer2`, `TimerOne` and `mcxTicker`, which have no README of their own, and which timer each feature takes
 
 ## Optional
 

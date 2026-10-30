@@ -677,6 +677,7 @@ HTTPSなどのTLS、IPv6、Wi-Fiは、このコアでは使えません（[API_C
 
 ## 次に見るべきもの
 
+- [同梱ライブラリ](docs/bundled_libraries.ja.md) — 8つの同梱ライブラリが何のためのものかと短いスケッチ: タイマー（`mcxTicker`、`MsTimer2`、`TimerOne`）、サーボ（`Servo`、`mcxRCServo`）、`EEPROM`、`MCXEthernet`、`mcxPinState`
 - [API_COMPATIBILITY.md](API_COMPATIBILITY.md) — API対応表
 - [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) — ピン配置
 - [`examples/Arduino_compatible_API/`](examples/Arduino_compatible_API) — 機能ごとの単体サンプル
