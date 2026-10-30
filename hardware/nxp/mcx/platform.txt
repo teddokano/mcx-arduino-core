@@ -116,3 +116,9 @@ debug.server=openocd
 # (debug.server.openocd.script). A board that forgets to set one gets the
 # IDE's own "at least one configuration file" error, which says so plainly.
 debug.server.openocd.scripts_dir={runtime.platform.path}/tools/gdb-bridge/
+# LinkServer tells gdb a memory map with only the flash and the RAM, and gdb
+# then refuses, without asking the probe, every address outside it -- the
+# peripheral registers included, so the IDE's CORTEX PERIPHERALS view showed
+# 0xffffffff everywhere. This lets gdb pass those reads and writes to the
+# probe, which answers with an error only where there is nothing to read.
+debug.cortex-debug.custom.preLaunchCommands.0=set mem inaccessible-by-default off

@@ -3619,3 +3619,9 @@ LPI2CはアドレスとデータのNAKを同じコードで返すので、どち
 - `LICENSE`はMITの本文だけにし（GitHubの`licenses/mit`の文面と、年と名前のほかは同じ）、残りは中身を変えずに`THIRD_PARTY_NOTICES.md`へ移した。README・README.ja・`MCXEthernet`のREADME・CLAUDE.mdのチェックリスト（2と4）を直した。GitHubが判定するのは`main`だけなので、表示が変わるのは0.12.0を`main`にマージしたとき
 - 移すときに、arduino-cliのライセンスを「Apache License 2.0」から「GNU GPL v3」に直した（`gh api repos/arduino/arduino-cli`のライセンスがGPL-3.0）
 - リリースzipに`LICENSE`も`THIRD_PARTY_NOTICES.md`も入っていないこと（zipは`hardware/nxp/mcx/`だけ）も分かった。別の項目にした（CLAUDE.mdのPendingタスク11）
+
+### IDEのデバッガでペリフェラルのレジスタが読めなかった件（2026-10-31、直し方はユーザーが決定）
+- **きっかけ**: A153で`06_GPIO_MCUX_direct_register_access`を止めてCORTEX PERIPHERALSのGPIO3を開くと、レジスタが全部`0xffffffff`（`PDR[n]`は`0xff`）だった（ユーザーの報告）。読み出し専用の`VERID`・`PARAM`もそうなので、読めていない表示と見た
+- **切り分け**: Debug Consoleで`x/4wx 0x40105000`が`Cannot access memory`。LinkServerの`devices/MCXA153.json`（26.6・26.9とも）の`memory`はフラッシュとRAMだけで、gdbはこの地図をもらうと、既定では地図の外へのアクセスをプローブに送らずに断る。A156・N947・N236・C444の定義も同じく、`0x40000000`からのペリフェラルを含まない。gdb-bridgeは通信を中継するだけで、地図に手を入れていない
+- **確認**: Debug Consoleで`set mem inaccessible-by-default off`のあと、`x/4wx 0x40105000`が`0x02010000 0x00000001 0x00000000 0x00000000`（`VERID`・`PARAM`）。SVDの`VERID`の既定値（`0x1000001`）とは違う
+- **直し方**: `platform.txt`に`debug.cortex-debug.custom.preLaunchCommands.0=set mem inaccessible-by-default off`（Arduinoの`renesas_uno`コアと同じ`debug.cortex-debug.custom.*`の形）。IDEのデバッグだけに効き、書き込みとgdb-bridgeは変わらない。`arduino-cli debug --info`で5ボードとも`preLaunchCommands`に入ることを確かめた。IDE（macOS）で5ボードとも、コマンドを手で打たずにCORTEX PERIPHERALSに本物の値が出ることをユーザーが確かめた

@@ -111,6 +111,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   Its I3C1 clock was 12.5 MHz, at which the controller can't reach the push-pull rate r01lib asks for, and the
   open-drain low came out too short for the P3T1755. It is 25 MHz now, as on FRDM-MCXN947, and DAA finds the sensor.
   The same sensor answered at once over I2C on the same pins, before and after
+- **The Arduino IDE debugger reads the peripheral registers** (all boards): CORTEX PERIPHERALS showed `0xffffffff`
+  in every register, and `x/4wx 0x40105000` in the Debug Console answered `Cannot access memory`. LinkServer gives
+  gdb a memory map with only the flash and the RAM, and gdb turned down every address outside it without asking
+  the probe. The platform now has the IDE send `set mem inaccessible-by-default off` to gdb at the start of a debug
+  session, and FRDM-MCXA153's GPIO3 reads `0x02010000` for `VERID`
 
 ## [0.11.0] - 2026-10-25
 
