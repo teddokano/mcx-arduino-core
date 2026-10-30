@@ -55,6 +55,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   Checked on all five boards by `release_check/16` (two jumper wires on the boards with an I2C on `A4`/`A5`)
 - **`WIRE_HAS_END`**, defined as `1` as on AVR: `Wire.end()` was there, but libraries that check this macro before
   calling it didn't call it
+- **Arduino IDE 2 and arduino-cli recognize which board is on a port**: the on-board MCU-LINK probes of all five
+  boards have the same USB VID/PID, so a port matched every board and the IDE asked which one it was. The bundled
+  `tools/mcx-discovery` reads the board's name from the probe's USB product string (`MCU-LINK FRDM-MCXN947 ...`),
+  so the IDE shows the board next to its port, selects it, and `arduino-cli board list` names it. A probe that
+  stores no board name reports `MCU-LINK on-board ...` (an FRDM-MCXA156 here does): its port shows as `Unknown`,
+  and the board is chosen by hand as before. Checked on macOS with Arduino IDE 2.3.10 and all five boards
 - **`llms.txt`** for LLMs and AI coding tools, at `https://teddokano.github.io/mcx-arduino-core/llms.txt`
   ([docs/llms.txt](docs/llms.txt)): the documents to read, and a few points to know before writing a sketch for this
   core (the board IDs, that instance names such as `Wire1` differ by board, Ethernet on each board). A repo check

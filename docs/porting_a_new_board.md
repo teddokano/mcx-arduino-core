@@ -98,6 +98,9 @@ Every property below is required. The ones that bite hardest are marked.
 <board>.upload.tool=linkserver
 <board>.vid.0=0x1FC9
 <board>.pid.0=0x0143                # ! same for every FRDM board
+<board>.upload_port.0.vid=0x1FC9
+<board>.upload_port.0.pid=0x0143
+<board>.upload_port.0.board=FRDM-MCXxxxx   # ! from the probe's USB product string
 <board>.debug.server.openocd.path=…/tools/gdb-bridge/launch.sh
 <board>.debug.server.openocd.path.windows=…\tools\gdb-bridge\gdb-bridge-windows-amd64.exe
 <board>.debug.server.openocd.script=<board>.cfg   # ! carries the LinkServer device
@@ -108,10 +111,17 @@ Every property below is required. The ones that bite hardest are marked.
   Check with LinkServer's own device list; do not guess it from the part
   number.
 - **VID/PID are identical across all FRDM boards** (same MCU-Link probe
-  family), so `arduino-cli board list` cannot tell them apart. Always
-  pass `--fqbn` explicitly, and confirm verbally which board is plugged
-  in. This has caused at least one round of debugging a board that was
-  not the one under test.
+  family), so they alone cannot tell the boards apart. Since 0.12.0
+  `tools/mcx-discovery` reads the board's name from the probe's USB
+  product string (`MCU-LINK FRDM-MCXN947 (r0E7) CMSIS-DAP V3.128`) and
+  reports it as the port property `board`, which `upload_port.0.board`
+  matches. Check the new board's string with `arduino-cli board list`
+  (the port should show the board) or, on macOS, `ioreg -p IOUSB -l -w0`.
+  A probe with no target strings stored reports `MCU-LINK on-board`
+  instead (the FRDM-MCXA156 used here does) and matches no board, so
+  still pass `--fqbn` explicitly in scripts, and confirm which board is
+  plugged in. Picking the wrong board has caused at least one round of
+  debugging a board that was not the one under test.
 - The Windows debug path must use **backslashes throughout**. A path
   mixing `{runtime.platform.path}`'s backslashes with literal forward
   slashes broke the IDE debugger once.

@@ -135,8 +135,10 @@ mcx-arduino-core/
 │   │   └── mcxRCServo/        #   PWMのピンからRCサーボを駆動。同じく同期
 │   ├── tools/
 │   │   ├── upload.sh         # アップロードスクリプト（LinkServer自動検出）、Windows用はupload.bat
-│   │   └── gdb-bridge/       # Arduino IDE 2のcortex-debug（OpenOCDを想定）をLinkServer自身の
-│   │                         #   gdbserverへ橋渡しし、IDE内デバッグを実現
+│   │   ├── gdb-bridge/       # Arduino IDE 2のcortex-debug（OpenOCDを想定）をLinkServer自身の
+│   │   │                     #   gdbserverへ橋渡しし、IDE内デバッグを実現
+│   │   └── mcx-discovery/    # MCU-LINKのUSBの製品名にあるボード名から、ポートのボードを
+│   │                         #   IDEに知らせる
 │   └── variants/
 │       └── frdm_mcxa153/     # 対応ボードごとにこのようなディレクトリが1つずつ
 │           ├── include/      # ボード固有のヘッダ

@@ -3605,3 +3605,11 @@ LPI2CはアドレスとデータのNAKを同じコードで返すので、どち
 - 計算の確認（新しい計算をPythonで再現）: 8ビットの256段階が上の上限まで、1 kHzの12ビットで4096段階、16ビットで48001段階（N947/N236は37501）。0%と100%も残る
 - **実機（2026-10-30、5ボード）**: `release_check/08`がALL OK（N947は最初D4にN236との配線が残っていて`INPUT_PULLDOWN`の2件がFAIL、外してALL OK）。`release_check/13`と`test_Servo`がALL OK/ALL PASS（mcxRCServoの16ビットの500/1450/2400 µs、PWMの無いピンの`Servo`も）。PWMの関連のスケッチ6本が5ボードで警告なしでビルドできる
 - **ロジアナ**（Logic16、50 MS/s、5ボードの`PWM0`（C444はD3）を同時に。スクラッチパッドのスケッチ`pwm_steps_la`）: 1 kHz・12ビットの1と2が240〜260 nsと480〜500 ns、20 kHz・8ビットの1と2が180〜200 nsと400 ns、20 kHz・128が周期の50.2%、30 kHzの周期は1 kHzの周期のちょうど1/30（ロジアナの時計に対するボードの時計のずれは、A153が0.75%、A156が0.53%、N236が0.6%、N947が−0.09%、C444が0.07%）、2 MHzの周期は500 ns。今までの計算では1〜4行目のパルスは0（変える前の版は測っていない）
+
+### IDEがポートのボードを見分ける`mcx-discovery`（2026-10-31、0.12.0に入れることはユーザーが決定）
+- **きっかけ**: スケッチを開くたびに、IDEが「Select Other Board and Port」でボードを聞くことがあった（ユーザーの報告）。
+- **原因**: 5ボードのオンボードMCU-LINKはUSBのVID/PIDが`0x1FC9:0x0143`で同じ。標準の`serial-discovery`がポートに付けるのは`vid`・`pid`・`serialNumber`だけなので、`arduino-cli board list`では1つのポートに5ボードとも当てはまった。IDEはスケッチごとに前回のボードを覚えているが、それはスケッチの外にあり、無いと聞いてくる。`sketch.yaml`の`default_fqbn`はarduino-cliは使うが、IDE 2が開いたときに使うかは確かめられなかった
+- **手がかり**: プローブのUSBの製品名（macOSの`kUSBProductString`）にボード名が入っている。5枚のうち4枚は`MCU-LINK FRDM-MCXxxxx (r0E7) CMSIS-DAP V3.1xx`。開発用のA156だけ`MCU-LINK on-board (r0E7) CMSIS-DAP V3.128`。LinkServerのMCU-LINKのReadmeでは、ファームはどのプローブも同じで、ボード名はプローブに書いた対象の文字列（V3.128から）から取る。N947もV3.128で名前が入っているので、A156は版ではなく、文字列が書かれていないため
+- **作り**: `tools/mcx-discovery/`（Go、外部の依存なし）。Arduinoのpluggable discoveryの第1版（`HELLO`・`START`・`STOP`・`LIST`・`START_SYNC`・`QUIT`）で、MCU-LINKのポートだけを1秒ごとに探し、標準の`serial-discovery`と同じアドレス・ラベル・プロパティ（その出力で確かめた）に`board`を足す。`boards.txt`の`upload_port.0`に`board=FRDM-MCXxxxx`を足し、vid・pid・boardの3つがそろったポートだけが当てはまる（`upload_port`があると古い`vid.0`/`pid.0`は使われず、標準のdiscoveryの分は`Unknown`になる）。`platform.txt`の`pluggable_discovery`に自分の分と標準の2つを書く
+- **試作（スクラッチパッド、`platform.local.txt`と`boards.local.txt`で入れた）で分かったこと**: arduino-cliの`board list`は同じポートを2行（標準の`Unknown`と、こちらのボード名）出す。IDE 2.3.10は1つにまとめ、ボード名を出す。試作の`ioreg`のテキストの解析は、ハブの下に2つのMCU-LINKがあると取り違えうるので、本実装は`ioreg -a`のXMLを木として読み、ポートをいちばん近い`IOUSBHostDevice`に付ける
+- **確認**: `go test`（ボード名の取り出しとプロトコルの流れ）、`go vet`をmacOS・Linux・Windows向けに。macOSのIDEで、ユーザーが5ボードを確かめた: ボード名が出る、開き直すと前のボードが選ばれる、抜き挿ししても同じ、名前の無いA156は`Unknown`で、手で選べば書き込める。**Linux・Windowsの実機はまだ**

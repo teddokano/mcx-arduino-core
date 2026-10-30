@@ -72,6 +72,18 @@ recipe.size.regex=^(?:\.text|\.data|\.rodata)\s+([0-9]+).*
 # room before its hardware limit (MSPLIM, set at the end of the heap)
 recipe.size.regex.data=^(?:\.data|\.bss|\.noinit|\.uninit_RESERVED|\.heap)\s+([0-9]+).*
 
+# Port discovery
+# The builtin serial-discovery finds every serial port, but an MCU-LINK port
+# matched all five boards (their probes share one VID/PID). mcx-discovery
+# reports the MCU-LINK ports again with the board's name from the probe's
+# USB product string as the port property "board", which boards.txt matches
+# (see tools/mcx-discovery/src/main.go). Declaring any discovery here drops
+# the builtin defaults, so the two builtin ones are listed as well.
+pluggable_discovery.required.0=builtin:serial-discovery
+pluggable_discovery.required.1=builtin:mdns-discovery
+pluggable_discovery.mcx.pattern="{runtime.platform.path}/tools/mcx-discovery/launch.sh"
+pluggable_discovery.mcx.pattern.windows="{runtime.platform.path}\tools\mcx-discovery\mcx-discovery-windows-amd64.exe"
+
 # Upload
 tools.linkserver.upload.params.verbose=
 tools.linkserver.upload.params.quiet=

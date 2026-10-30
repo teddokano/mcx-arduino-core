@@ -153,3 +153,14 @@ details were cross-checked and where.
 
 - arduino-cli — https://github.com/arduino/arduino-cli (Apache License 2.0)
 - cortex-debug — https://github.com/Marus/cortex-debug (MIT License, Copyright 2017-2022 Marcel Ball)
+
+`hardware/nxp/mcx/tools/mcx-discovery` (Go, original code, no external
+dependencies) reports the MCU-LINK serial ports with the board's name,
+so Arduino IDE 2 and arduino-cli recognize each board. It speaks
+Arduino's pluggable discovery protocol, written from arduino-cli's
+published specification of that protocol, and gives its ports the same
+address, labels and properties as Arduino's builtin `serial-discovery`,
+taken from that tool's output. No source code was copied from either.
+
+- Arduino pluggable discovery specification — https://arduino.github.io/arduino-cli/latest/pluggable-discovery-specification/
+- serial-discovery — https://github.com/arduino/serial-discovery (GNU GPL v3)

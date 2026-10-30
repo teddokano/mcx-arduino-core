@@ -155,8 +155,10 @@ mcx-arduino-core/
 │   │   └── mcxRCServo/        #   RC servo driver for the PWM pins; likewise synced
 │   ├── tools/
 │   │   ├── upload.sh         # Upload script (auto-detects LinkServer), upload.bat for Windows
-│   │   └── gdb-bridge/       # Bridges Arduino IDE 2's cortex-debug (expects OpenOCD) to
-│   │                         #   LinkServer's own gdbserver, for in-IDE debugging
+│   │   ├── gdb-bridge/       # Bridges Arduino IDE 2's cortex-debug (expects OpenOCD) to
+│   │   │                     #   LinkServer's own gdbserver, for in-IDE debugging
+│   │   └── mcx-discovery/    # Tells the IDE which board is on a port, from the name
+│   │                         #   in the MCU-LINK probe's USB product string
 │   └── variants/
 │       └── frdm_mcxa153/     # one such directory per supported board
 │           ├── include/      # Board-specific headers
