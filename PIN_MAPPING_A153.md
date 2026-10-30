@@ -30,7 +30,7 @@ physical MCU port pin.
 | `D18` | `P1_8` | `Wire` (I2C) SDA |
 | `D19` | `P1_9` | `Wire` (I2C) SCL |
 | `A0`-`A3` | `P1_10`, `P1_12`, `P1_13`, `P2_0` | `analogRead` (LPADC), 10bit |
-| `A4`, `A5` | `P3_31`, `P3_30` | digital I/O only, not ADC-capable |
+| `A4`, `A5` | `P3_31`, `P3_30` | digital I/O only, not ADC-capable; no I2C either (`Wire.setPins(A4, A5)` returns `false`) |
 | `PWM0`-`PWM5` | `P3_11`...`P3_6` | `analogWrite` (FlexPWM0), see [`test_PWM_pin_identify`](examples/Arduino_compatible_API/test_PWM_pin_identify) |
 
 > **PWM frequency**: `analogWriteFrequency(pin, hz)` sets a pin's PWM

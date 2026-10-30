@@ -168,6 +168,14 @@ is the LPI2C/LPSPI peripheral family the other chips share.
 |------|-------------|
 | `arduino_api/arduino_i2c.{h,cpp}`, `arduino_serial.{h,cpp}` | Which of `Wire2`/`Serial1`/`Serial2` exist at all (`Serial2` only on A156). On A153 `Wire2` **does not exist as a symbol**, so anything referencing it unconditionally fails to compile |
 
+**Timers and pin pairs of the bundled libraries** (since 0.12.0)
+
+| File | What to add |
+|------|-------------|
+| `libraries/TimerOne/src/TimerOne.cpp` | CTIMER1's clock divider on an MCX chip (12 MHz from the core's oscillator, so periods agree with `micros()`); FRDM-MCXC444 uses PIT channel 1 instead |
+| `libraries/Servo/src/Servo.cpp` | The timer for servos on pins without PWM, and its clock divider (CTIMER2, CTIMER3 on FRDM-MCXN947 where `MCXEthernet` has CTIMER2, TPM2 on FRDM-MCXC444). It must not be one that `tone()` (CTIMER0) or TimerOne (CTIMER1) takes |
+| `arduino_api/arduino_i2c.cpp` | `s_wire_pins[]`: each bus's own pin pair and, where the chip has I2C on them, `A4`/`A5`, with the peripheral and ALT, for `Wire.setPins()` |
+
 Work out peripheral availability from the device header before writing
 code. A153 has exactly one LPI2C, so an independent `Wire2` is
 physically impossible there; its MikroBus I2C pins are just another

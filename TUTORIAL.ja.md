@@ -1,6 +1,6 @@
 # mcx-arduino-core 入門チュートリアル
 
-NXP FRDM-MCXA153ボードでArduino APIを使うためのハンズオンガイドです。インストールから、対応している各種ペリフェラルまで一通り扱います。各セクションはそのまま書き込んで動く完結したスケッチです。API対応表は[API_COMPATIBILITY.md](API_COMPATIBILITY.md)、概要は[README.md](README.md)、バージョン間の変更点は[CHANGELOG.md](CHANGELOG.md)を参照してください。
+NXP FRDM-MCXA153ボードでArduino APIを使うためのハンズオンガイドです。インストールから、対応している各種ペリフェラルまで一通り扱います。各セクションはそのまま書き込んで動く完結したスケッチです。API対応表は[API_COMPATIBILITY.md](API_COMPATIBILITY.md)、概要は[README.ja.md](README.ja.md)、バージョン間の変更点は[CHANGELOG.md](CHANGELOG.md)を参照してください。
 
 > **注**: このチュートリアルの例は**FRDM-MCXA153**を使用しています。
 
@@ -119,7 +119,7 @@ English version → [TUTORIAL.md](TUTORIAL.md)
 
    ![tutorial_selecting_port](img/tutorial_selecting_port.png)
 
-詳細は[README.md](README.md#installation)を参照してください。
+詳細は[README.ja.md](README.ja.md#インストール)を参照してください。
 
 ### 1.6. Arduino IDEツールバーの基本
 
@@ -163,7 +163,7 @@ English version → [TUTORIAL.md](TUTORIAL.md)
 - コアが意図的にスケッチを止めています。理由は、シリアルモニタに`error:`で始まる行として数秒ごとに繰り返し表示されます（ボーレートはスケッチの`Serial.begin()`の値、`Serial.begin()`を呼んでいなければ115200）
 - `error: HardFault: ...`は、プログラム自体がクラッシュしたことを示します。不正なポインタや、スタックあふれ（ローカル変数の使いすぎや、終わらない再帰）などです。その行の`PC 0x...`が発生箇所です。ソースの行に直すには、ビルドで作られた`.elf`（**スケッチ → コンパイルしたバイナリをエクスポート**でスケッチのフォルダ内の`build/`に出力されます）に対して`arm-none-eabi-addr2line -e <スケッチ>.elf 0x...`を実行します
 
-これでも解決しない場合は[README.md](README.md)により詳しい情報があるほか、[GitHubリポジトリ](https://github.com/teddokano/mcx-arduino-core/issues)でIssueを立てていただいても構いません。
+これでも解決しない場合は[README.ja.md](README.ja.md)により詳しい情報があるほか、[GitHubリポジトリ](https://github.com/teddokano/mcx-arduino-core/issues)でIssueを立てていただいても構いません。
 
 ## 2. 動作確認
 

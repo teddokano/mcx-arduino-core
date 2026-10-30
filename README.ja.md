@@ -195,7 +195,7 @@ MIT License — [LICENSE](LICENSE)を参照。ほかのプロジェクトから�
 GPIO、割り込み、Serial（USB＋ハードウェアUART）、Wire（I2CおよびI3CのI2Cモード）、SPI、
 analogRead/analogWrite、millis/micros、tone/noTone、delay系、String、本物の
 `Print`/`Stream`/`Printable`基底クラス、F()/PROGMEMと`<avr/pgmspace.h>`、ネットワークの基底クラス（`Client`/`Server`/`UDP`/`IPAddress`）、UNO R3/R4互換マクロ、いずれも対応済みです。
-I2Cターゲット（スレーブ）モードは`Wire`で、`Wire.setWireTimeout`は`Wire`とFRDM-MCXN947の`Wire2`で使えます（FRDM-MCXA153・FRDM-MCXN947でI3C上で動く`Wire1`ではどちらも使えません。FRDM-MCXA156とFRDM-MCXN236の`Wire1`はMikroBusのI2Cで、どちらも使えます。FRDM-MCXC444では`Wire`でどちらも使えますが、自分のターゲットは呼べず、タイムアウトはSCLだけを見ます）。
+I2Cターゲット（スレーブ）モードは`Wire`で、`Wire.setWireTimeout`は`Wire`とFRDM-MCXN947の`Wire2`で使えます（FRDM-MCXA153・FRDM-MCXN947でI3C上で動く`Wire1`ではどちらも使えません。FRDM-MCXA156とFRDM-MCXN236の`Wire1`はMikroBusのI2Cで、どちらも使えます。FRDM-MCXC444では`Wire`でどちらも使えますが、自分のターゲットは呼べず、タイムアウトはSCLだけを見ます）。FRDM-MCXA156・FRDM-MCXN236・FRDM-MCXC444では、`Wire.setPins(A4, A5)`でバスを`A4`/`A5`へ移せます（I2Cが`A4`/`A5`にあるUNO向けのシールドのため）。
 同梱の`EEPROM`ライブラリは、リセットや書き込みをまたいで1KBをオンチップのフラッシュに保持します。同梱の`Servo`ライブラリは公式のServoライブラリと同じ使い方ができます。同梱の`MsTimer2`と`TimerOne`は、AVR向けの同じ名前のタイマー割り込みのライブラリと同じ使い方ができます（TimerOneのPWMの関数は除きます）。同梱の`mcxTicker`は、ESP32・ESP8266のコアの`Ticker`と同じ使い方で、いくつもの関数をそれぞれの周期で呼べます。Ethernetは、どのボードでも公式のEthernetライブラリとWIZnetのW5500のモジュールで使えます。FRDM-MCXN947では、同梱の`MCXEthernet`ライブラリで、オンボードのEthernetも同じ使い方で動かせます（`<Ethernet.h>`の代わりに`#include <MCXEthernet.h>`。TLS・IPv6・Wi-Fiには対応していません）。`Print`を直接継承する、
 または`Stream&`を受け取るサードパーティライブラリ（ArduinoJson、LiquidCrystal、Adafruit系
 センサーライブラリ等）もこのコア上でコンパイルできます。

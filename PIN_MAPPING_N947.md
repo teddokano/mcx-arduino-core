@@ -29,7 +29,7 @@ for the full verification status and per-feature notes this table summarizes.
 | `D18` | `P4_0` | `Wire` (I2C) SDA |
 | `D19` | `P4_1` | `Wire` (I2C) SCL |
 | `A0`, `A1` | — | **not available** — not wired to an ADC channel on this board |
-| `A2`-`A5` | `P0_14`, `P0_22`, `P0_15`, `P0_23` | `analogRead` (LPADC/ADC0), 10bit |
+| `A2`-`A5` | `P0_14`, `P0_22`, `P0_15`, `P0_23` | `analogRead` (LPADC/ADC0), 10bit; no I2C on `A4`/`A5` (`Wire.setPins(A4, A5)` returns `false`) |
 
 `analogWrite` pins (FlexPWM1, not FlexPWM0 — see note below):
 

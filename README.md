@@ -223,7 +223,8 @@ works on `Wire`, and `Wire.setWireTimeout` on `Wire` and FRDM-MCXN947's `Wire2`
 (neither on `Wire1`, which runs on I3C there and on FRDM-MCXA153; on
 FRDM-MCXA156 and FRDM-MCXN236, `Wire1` is the MikroBus I2C and both work on it;
 on FRDM-MCXC444 both work on `Wire`, a bus can't address its own target, and
-the timeout watches SCL only),
+the timeout watches SCL only); `Wire.setPins(A4, A5)` puts a bus on `A4`/`A5`
+for UNO shields on FRDM-MCXA156, FRDM-MCXN236 and FRDM-MCXC444,
 and the bundled `EEPROM` library keeps 1KB in on-chip flash across resets
 and uploads. The bundled `Servo` library takes the official Servo library's
 interface, and the bundled `MsTimer2` and `TimerOne` take the interfaces of

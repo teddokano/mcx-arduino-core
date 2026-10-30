@@ -25,7 +25,7 @@ physical MCU port pin.
 > footprints.
 
 > [!NOTE]
-> **Remove R75 and R76 to use `A4`/`A5` as analog inputs.** As shipped, `A4`
+> **Remove R75 and R76 to use `A4`/`A5` as analog inputs or for I2C.** As shipped, `A4`
 > (`P1_12`) and `A5` (`P1_13`) are also wired through R75/R76 to the on-board
 > CAN transceiver (TJA1057), whose receive output drives `A4`. The schematic
 > says to remove both when the Arduino `A4`/`A5` are used. `A0`-`A3` are not

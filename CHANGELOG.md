@@ -72,7 +72,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   and the board is chosen by hand as before. Checked on macOS with Arduino IDE 2.3.10 and all five boards
 - **`llms.txt`** for LLMs and AI coding tools, at `https://teddokano.github.io/mcx-arduino-core/llms.txt`
   ([docs/llms.txt](docs/llms.txt)): the documents to read, and a few points to know before writing a sketch for this
-  core (the board IDs, that instance names such as `Wire1` differ by board, Ethernet on each board). A repo check
+  core (the board IDs, that instance names such as `Wire1` differ by board, Ethernet on each board, the bundled
+  libraries, `Wire.setPins()`). A repo check
   makes sure its links point at files the repository tracks
 
 ### Changed
@@ -96,7 +97,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   20 kHz and 8 bits, and a 500 ns period at 2 MHz; by the old arithmetic those pulses were 0. A pulse width set in microseconds
   (`Servo`, `PwmOut::pulsewidth_us()`) comes out as before. `examples/release_check/08` and `13` and
   `test_Servo` pass on all five boards
-
 - **mcxPinState's `Wire` rows show the pins the bus is on**: after `Wire.setPins(A4, A5)`, the row names `A4`/`A5`
   instead of the bus's own pins. With a core before 0.12.0 the rows stay as they were
 

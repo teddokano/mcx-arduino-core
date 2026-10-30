@@ -137,7 +137,10 @@ library), `test_analogRead_precision_N947` and
 the bundled `mcxRCServo` library's own examples (`SG90_basic`,
 `SG90_moves`, `FS90R_rotate` -- each needs a real servo and its own
 supply), and the bundled `Servo` library's `Sweep` and `Knob` (a real
-servo, and for `Knob` a potentiometer on `A2`). CI still compiles all of those (the bundled
+servo, and for `Knob` a potentiometer on `A2`). The examples of the bundled
+`MsTimer2` (`BlinkEvery500ms`, `MultipleTickers`), `TimerOne`
+(`BlinkEvery150ms`) and `mcxTicker` (`Blink`, `ArgumentAndOnce`) blink an LED
+with no verdict; #09 checks those libraries. CI still compiles all of those (the bundled
 libraries' examples on every push, the rest in the full sweep on `main`,
 tags and manual runs); what it cannot do is watch a shaft turn.
 
@@ -160,6 +163,13 @@ LAN cable: the ENET and the PHY without lwIP, for telling a hardware problem
 from one in `MCXEthernet`; it prints its own verdict), and
 `test_ethernet_throughput` with its `pc_throughput.py` (TCP and UDP rates with
 a PC; a measurement, with no verdict). #25 and #26 cover the Ethernet itself.
+
+Also on their own, from 0.12.0: `test_r01lib_I3C_rx_leftover`
+(`examples/Arduino_incompatible_API/`, the four MCX boards: it leaves a byte
+in r01lib's I3C receive FIFO on purpose and checks the sketch goes on; no
+wiring, but FRDM-MCXN236 has no I3C device of its own, so it needs an I3C
+sensor on `D18`/`D19`, such as an FRDM-MCXN947's on-board P3T1755 wired to its
+`MB_RX`/`MB_TX`; it prints its own verdict).
 
 What *can* go wrong in `mcxRCServo` without a servo present -- the pulse
 width it asks the core for -- is checked in #13 instead, by jumpering
