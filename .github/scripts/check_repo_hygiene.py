@@ -434,6 +434,29 @@ def check_llms_txt():
     notes.append("llms-links: %d link(s) in %s point at tracked files" % (len(urls), rel_llms))
 
 
+# The release zip is `git archive` of hardware/nxp/mcx/ alone, so the
+# package carries its own copies of these; the ones at the top of the
+# repository are where they are edited (GitHub reads the license there).
+LICENSE_DOCS = ["LICENSE", "THIRD_PARTY_NOTICES.md"]
+
+
+def check_license_copies():
+    """hardware/nxp/mcx/ must hold tracked, byte-identical copies of the top-level license documents."""
+    listing = git("ls-files")
+    if listing is None:
+        fail("license-copies", "git ls-files failed")
+        return
+    tracked = set(listing.splitlines())
+    for name in LICENSE_DOCS:
+        copy = "hardware/nxp/mcx/" + name
+        if copy not in tracked:
+            fail("license-copies", "%s is missing or not tracked by git, so the release zip would lack it" % copy)
+            continue
+        if read(os.path.join(REPO, name)) != read(os.path.join(REPO, copy)):
+            fail("license-copies", "%s differs from %s; copy it over with `cp %s %s`" % (copy, name, name, copy))
+    notes.append("license-copies: %s in hardware/nxp/mcx/ match the top level" % " and ".join(LICENSE_DOCS))
+
+
 def scan_comment_terminators(path):
     """Yield (line_no, line) where a block comment ends mid-line on a continuation line.
 
@@ -671,6 +694,7 @@ def main():
     check_doxyfile_version()
     check_platform_paths()
     check_llms_txt()
+    check_license_copies()
     check_comment_terminators()
     check_board_fallbacks()
     check_mcxpinstate_aliases()

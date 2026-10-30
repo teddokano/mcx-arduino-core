@@ -3,6 +3,10 @@
 mcx-arduino-core is under the MIT License (see [LICENSE](LICENSE)). This file lists the code
 from other projects it contains, and the projects whose interfaces or behavior it was written to match.
 
+Paths in this file are from the top of the repository. The Boards Manager package holds only
+`hardware/nxp/mcx/`, which is its top folder, and carries a copy of this file and of `LICENSE` there;
+the `examples/` folder is in the repository only.
+
 The Arduino compatibility constants, macros, and templates in
 `hardware/nxp/mcx/cores/arduino/arduino_api/Arduino.h` (math constants, `min()`/`max()`,
 bit-manipulation macros, `map()`, `random()`/`randomSeed()`, and related
@@ -116,8 +120,8 @@ r01lib's device drivers (MIT License, by the author of this package).
 
 - NXP Application Code Hub, dm-i3c-temperature-sensor — https://github.com/nxp-appcodehub/dm-i3c-temperature-sensor (BSD-3-Clause)
 
-`hardware/nxp/mcx/tools/gdb-bridge` (Go, original code, no external
-dependencies) relays Arduino IDE 2's built-in debugger to NXP
+`hardware/nxp/mcx/tools/gdb-bridge` (Go, original code, no dependencies
+beyond Go's standard library) relays Arduino IDE 2's built-in debugger to NXP
 LinkServer's own gdbserver. Its LinkServer-executable discovery logic
 reuses the same adapted pattern as `tools/upload.sh`/`upload.bat`
 above (see the ArduinoCore-zephyr notice). Its protocol handling was
@@ -133,8 +137,8 @@ details were cross-checked and where.
 - arduino-cli — https://github.com/arduino/arduino-cli (GNU GPL v3)
 - cortex-debug — https://github.com/Marus/cortex-debug (MIT License, Copyright 2017-2022 Marcel Ball)
 
-`hardware/nxp/mcx/tools/mcx-discovery` (Go, original code, no external
-dependencies) reports the MCU-LINK serial ports with the board's name,
+`hardware/nxp/mcx/tools/mcx-discovery` (Go, original code, no dependencies
+beyond Go's standard library) reports the MCU-LINK serial ports with the board's name,
 so Arduino IDE 2 and arduino-cli recognize each board. It speaks
 Arduino's pluggable discovery protocol, written from arduino-cli's
 published specification of that protocol, and gives its ports the same
@@ -143,3 +147,39 @@ taken from that tool's output. No source code was copied from either.
 
 - Arduino pluggable discovery specification — https://arduino.github.io/arduino-cli/latest/pluggable-discovery-specification/
 - serial-discovery — https://github.com/arduino/serial-discovery (GNU GPL v3)
+
+The executables of `hardware/nxp/mcx/tools/gdb-bridge` and
+`hardware/nxp/mcx/tools/mcx-discovery` are built with the Go toolchain and
+contain parts of Go's standard library and runtime, which are under this license:
+
+- Go — https://go.dev/ (BSD-3-Clause)
+
+```
+Copyright 2009 The Go Authors.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+   * Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+   * Redistributions in binary form must reproduce the above
+copyright notice, this list of conditions and the following disclaimer
+in the documentation and/or other materials provided with the
+distribution.
+   * Neither the name of Google LLC nor the names of its
+contributors may be used to endorse or promote products derived from
+this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+```

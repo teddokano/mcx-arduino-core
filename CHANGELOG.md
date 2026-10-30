@@ -70,6 +70,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - **The third-party notices moved from `LICENSE` to `THIRD_PARTY_NOTICES.md`**, so that `LICENSE` holds only the
   MIT License and GitHub recognizes it. arduino-cli's license there is corrected to GNU GPL v3 (it said Apache
   License 2.0)
+- **The Boards Manager package carries `LICENSE` and `THIRD_PARTY_NOTICES.md`**, in its top folder. Earlier
+  packages had neither, as they hold only `hardware/nxp/mcx/` of the repository. `THIRD_PARTY_NOTICES.md` now also
+  gives the license of Go's standard library and runtime, which the `gdb-bridge` and `mcx-discovery` executables
+  contain. A repo check makes sure the package's copies match the ones at the top of the repository
 - **`analogWrite()` keeps its resolution at high PWM frequencies, and `analogWriteFrequency()` sets the frequency
   to the nearest clock tick** (all boards): `PwmOut` kept the period and pulse width in whole microseconds, so the
   duty had at most as many steps as the period had microseconds. 8 bits held only up to about 3.9 kHz (51 steps

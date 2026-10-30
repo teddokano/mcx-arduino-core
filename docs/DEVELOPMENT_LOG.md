@@ -3630,3 +3630,11 @@ LPI2CはアドレスとデータのNAKを同じコードで返すので、どち
 - 0.12.0の範囲に入れていた調査（CLAUDE.mdのPendingタスク9）。NXPのLinkServerのページの最新は26.9.130（2026-09-21）のままで、A153のフラッシュの件を直した版は出ていない
 - 26.9だけでA153に32KBを超えるスケッチを書く方法は見つからなかった。A153をつなぎ、26.9.130で46KBの`hello_world`がまだ`Attempt to load into missing flash area`で失敗することを確かめた（そのあと26.6.137で書き直し、`Hello, world!`が出ることを確かめた）
 - コードは変えない。26.9を避ける仕組み（`upload.sh`・`upload.bat`・gdb-bridgeの3か所）と、失敗したときの案内（READMEの26.6.137の直接のURLの表を指す）は今のまま
+
+### リリースzipにライセンスの文書を入れた（2026-10-31、0.12.0でやることと形はユーザーが決定）
+- zipは`git archive --prefix=mcx/ <コミット>:hardware/nxp/mcx`なので、リポジトリの直下の`LICENSE`と`THIRD_PARTY_NOTICES.md`は入っていなかった（今までの版も同じ）。`MCXEthernet`のREADMEのリンク（`../../../../../LICENSE`）もzipの中では切れていた
+- 案は3つ出した（A: `hardware/nxp/mcx/`に2つの写しを置く、B: `THIRD_PARTY_NOTICES.md`を`hardware/nxp/mcx/`へ移して1つにし`LICENSE`だけ写す、C: リリースのときに`git archive --add-file`で足す）。ユーザーがAに決めた（変更が小さく、READMEのリンクも直下の構成も変わらない）
+- 直すのは直下のほうで、写しは`cp`で作る。hygieneに`license-copies`を足し、写しが追跡下にあり直下とバイト単位で同じことを毎push見る（追跡外・中身の違い・一致の3つで判定を確かめた）。`MCXEthernet`のREADMEは写しを指す`../../LICENSE`にし、リポジトリでもzipでも切れない
+- `THIRD_PARTY_NOTICES.md`の冒頭に、パスはリポジトリの直下から書いてあり、パッケージは`hardware/nxp/mcx/`が一番上のフォルダーで、`examples/`はリポジトリにだけある、と足した
+- 調べていて、gdb-bridgeとmcx-discoveryのバイナリ（Go 1.27.1と1.27.3でビルド）にGoの標準ライブラリとランタイム（BSD-3-Clause、バイナリで配るときに条文を添える）が入るのに、`THIRD_PARTY_NOTICES.md`が「no external dependencies」としか書いていなかったことに気づいた。2つの項目を「Goの標準ライブラリのほかに依存なし」にし、Goの条文（Goの配布物の`LICENSE`のまま）を最後に足した
+- ステージした木から`git archive`で作ったzipの`mcx/`の直下に2つとも入り、中身が直下のものと同じことを確かめた
