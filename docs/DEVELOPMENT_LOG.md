@@ -3583,3 +3583,11 @@ LPI2CはアドレスとデータのNAKを同じコードで返すので、どち
 - ESPの形の`template<typename TArg> attach(float, void (*)(TArg), TArg)`のままだと、`toggle(int)`に`RED`（列挙型）を渡すと推論がぶつかってビルドが止まるので、最後の引数を推論に使わない形にした
 - 最初の呼び出しの時刻: `loop()`からの`attach()`は、次のSysTickまで1ms未満なので数えを1つ多くし、「少なくとも指定の時間」にした。関数の中から（SysTickの割り込みの中、`IPSR`が15）はちょうどの時間
 - `test_mcxTicker`と`09`が5ボードでALL OK（2026-10-30）。最初の呼び出しは`attach_ms(10)`の10.4〜10.9ms後、`once_ms(30)`の30.3〜30.9ms後。10msの100周期は`micros()`で999999〜1000000µs。3つの`mcxTicker`とMsTimer2を一緒に動かすと、間隔のぶれはMCXで±3µs、C444で±12µs（同じ1msに呼ぶ関数が重なり、M0+で順に回すため）
+
+### I3Cの受信FIFOの修正の実機確認と、N236のI3C1のクロック（2026-10-30、直し方はユーザーが決定）
+- `test_r01lib_I3C_rx_leftover`をA153・A156で流してALL OK（配線なし、オンボードのP3T1755。20回とも1バイト残り、5ms後に空、続く読み出しも正しい）
+- N236はオンボードにI3Cのデバイスが無く、r01libの`I3C`はN236で一度も流していなかった。`release_check/21`と同じく、N947のオンボードのP3T1755をつないだ（N236のD18-N947の`MB_RX`、D19-`MB_TX`、GND-GND、N947は`hello_world`。21はN236の`MB_SDA`/`MB_SCL`（`Wire1`）につなぐが、I3C1はD18/D19にしか出ない）。DAAが1台も見つけなかった
+- 切り分け: 同じ配線で、N236の`Wire`（D18/D19のI2C）は`0x48`を見つけて温度も読めた。診断のスケッチ（スクラッチパッドだけ）で、ピン（`P1_16`/`P1_17`、ALT10、PCRは`0x1A00`）とI3C1のクロック（PLL0の12分周の12.5MHz）は設定どおり、`RSTDAA`は通り（初回の`ccc_broadcast()`は2MHzで送る）、`I3C_MasterProcessDAA()`はstatus 0で0台、そのあと`MSTATUS`=`3F001043`（STATEがDAAのまま、NACKED）でSDAがLOWのまま。同じI3C1をI2Cモードにすると`0x48`を読めた。`MCONFIG`は`E1010009`（PPBAUD=0、ODBAUD=1）
+- 原因: N236のI3C1のクロックが12.5MHz（`mcu.cpp`、SDKのN236のI3Cの作例と同じ）で、r01libが頼むpush-pullの12.5MHzに届かずPPBAUD=0の6.25MHzになり、SDKが決めるopen-drainのLOWが短くなった（計算で約160ns。ロジアナでは見ていない）。N947は25MHzで、`fsl_i3c.c`は2つのvariantで同じファイル。I3C1のクロックだけを150MHz/6＝25MHzにすると、DAAが1台を見つけ、`MCONFIG`は`A1040009`（ODBAUD=4、LOWは約200ns）
+- **直し方**（ユーザーが決定）: コア同梱のr01libの`mcu.cpp`で、N236のI3C1の分周を12から6にした（N947と同じ25MHz。上流は変えない。ほかのボードは変わらない）。`test_r01lib_I3C_rx_leftover`がN236でもALL OK。これでMCXの4ボードともALL OK
+- N947のUSBを抜き挿しするたびに、開いていたN236のキャプチャの`cat`が止まっていた（N236のポートの名前は変わらない）。原因は調べていない。書き込みの前に`lsof`でキャプチャがポートを開いていることを確かめる

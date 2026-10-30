@@ -26,6 +26,9 @@
  *
  * Wiring: none on FRDM-MCXA153, FRDM-MCXN947 and FRDM-MCXA156 (the on-board
  * P3T1755). FRDM-MCXN236 has no I3C sensor on board: connect one to D18/D19.
+ * An FRDM-MCXN947's on-board one does: D18 to its MB_RX, D19 to MB_TX, GND
+ * to GND, with the FRDM-MCXN947 running a sketch that leaves those pins
+ * alone (hello_world).
  * FRDM-MCXC444 has no I3C: there the sketch only says so.
  *
  * The sensor keeps the dynamic address DAA gives it until it loses power, so

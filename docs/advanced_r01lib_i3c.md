@@ -49,8 +49,12 @@ was run on all three.
 **FRDM-MCXN236**: the same as FRDM-MCXA156 for the I3C peripheral: it
 reaches only `D18`/`D19`, which `I3C_SDA`/`I3C_SCL` name and `Wire` uses.
 Nothing on the board speaks I3C (the on-board accelerometer is plain I2C,
-on `Wire1`), so this guide needs an I3C device on `D18`/`D19`. It was not
-run on FRDM-MCXN236.
+on `Wire1`), so this guide needs an I3C device on `D18`/`D19`. An
+FRDM-MCXN947's on-board P3T1755 does: wire FRDM-MCXN236's `D18` to its
+`MB_RX`, `D19` to `MB_TX` and GND to GND, with the FRDM-MCXN947 running a
+sketch that leaves those pins alone. DAA was checked that way (0.12.0,
+`examples/Arduino_incompatible_API/test_r01lib_I3C_rx_leftover`); this
+guide's examples were not run on FRDM-MCXN236.
 
 **FRDM-MCXC444**: the chip has no I3C peripheral, so `I3C_SDA`/`I3C_SCL`
 and the `I3C` class don't exist there, and nothing in this guide applies.

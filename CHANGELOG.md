@@ -78,7 +78,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   while a transfer is reading its own bytes). On FRDM-MCXN947 the demo ran 15 minutes through 90 IBIs.
   `examples/Arduino_incompatible_API/test_r01lib_I3C_rx_leftover` (no wiring, but FRDM-MCXN236 needs an I3C sensor on
   D18/D19) leaves such a byte on purpose, 20 times, and checks that the sketch goes on; with the SDK's handler
-  alone, it hangs on the first one
+  alone, it hangs on the first one. It passes on all four MCX boards (FRDM-MCXN236 with an FRDM-MCXN947's on-board
+  P3T1755 wired to its D18/D19)
+- **r01lib's `I3C` finds I3C targets on FRDM-MCXN236**: its dynamic address assignment (DAA) found none, so
+  nothing past it worked. The board has no I3C device of its own, and r01lib's `I3C` had never been run on it.
+  Its I3C1 clock was 12.5 MHz, at which the controller can't reach the push-pull rate r01lib asks for, and the
+  open-drain low came out too short for the P3T1755. It is 25 MHz now, as on FRDM-MCXN947, and DAA finds the sensor.
+  The same sensor answered at once over I2C on the same pins, before and after
 
 ## [0.11.0] - 2026-10-25
 

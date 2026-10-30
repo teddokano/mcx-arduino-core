@@ -135,8 +135,11 @@ void init_mcu( void )
 	CLOCK_AttachClk(BOARD_DEBUG_UART_CLK_ATTACH);
 
 	/* I3C1, on D18/D19: only r01lib's own I3C class uses it here. PLL0
-	   150MHz / 12 = 12.5MHz, as the SDK's FRDM-MCXN236 I3C master examples. */
-	CLOCK_SetClkDiv(kCLOCK_DivI3c1FClk, 12U);
+	   150MHz / 6 = 25MHz, as on N947. At 12.5MHz (the SDK's FRDM-MCXN236
+	   I3C master examples) the push-pull rate r01lib asks for, 12.5MHz,
+	   can't be reached, the open-drain low comes out too short, and DAA
+	   found no P3T1755. */
+	CLOCK_SetClkDiv(kCLOCK_DivI3c1FClk, 6U);
 	CLOCK_AttachClk(kPLL0_to_I3C1FCLK);
 
 	/* Wire1 (LPI2C2) and Serial1 (LPUART2), which share FlexComm2 */
