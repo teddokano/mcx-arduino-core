@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Highlights
+- Timers for sketches: the bundled `MsTimer2`, `TimerOne` and `mcxTicker` (the ESP cores' `Ticker` interface), and
+  `Servo` on any digital pin, so the official examples' `D9` works on every board
+- `Wire.setPins(A4, A5)`, for UNO shields with their I2C on `A4`/`A5` (FRDM-MCXA156, FRDM-MCXN236, FRDM-MCXC444)
+- Arduino IDE 2 shows which board is on each port, and its debugger shows the peripheral registers
+- `analogWrite()` keeps its full resolution at high PWM frequencies
+- Fixed: r01lib's `I3C` hanging on a byte left in its receive FIFO (the MCX boards) and finding no target on
+  FRDM-MCXN236, `delay()` running long on FRDM-MCXC444, and a sketch's own `class Ticker` failing to build
+
 ### Added
 - **`MsTimer2` and `TimerOne`, bundled with the interfaces of the AVR libraries of those names**, for calling a
   function from a timer interrupt (UNO R3 has no timer API of its own, and sketches use these libraries for it):
@@ -87,6 +96,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   20 kHz and 8 bits, and a 500 ns period at 2 MHz; by the old arithmetic those pulses were 0. A pulse width set in microseconds
   (`Servo`, `PwmOut::pulsewidth_us()`) comes out as before. `examples/release_check/08` and `13` and
   `test_Servo` pass on all five boards
+
+- **mcxPinState's `Wire` rows show the pins the bus is on**: after `Wire.setPins(A4, A5)`, the row names `A4`/`A5`
+  instead of the bus's own pins. With a core before 0.12.0 the rows stay as they were
 
 ### Fixed
 - **A sketch or library can define a class named `Ticker`** on the MCX boards: r01lib's own `Ticker` came in through

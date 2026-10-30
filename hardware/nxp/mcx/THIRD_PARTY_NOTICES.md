@@ -30,23 +30,29 @@ signatures, default values and constant values (for example
 `onRequest()`, the `SERIAL_8N1` family, `BitOrder`, `SDA`/`SCL`, the
 network base classes `Client`/`Server`/`UDP`/`IPAddress`, the AVR EEPROM
 library's API, the official Servo library's API, the MsTimer2 and
-TimerOne libraries' APIs, and the API of the Ticker in the ESP32 and
-ESP8266 Arduino cores, which mcxTicker takes under its own class name),
+TimerOne libraries' APIs, the API of the Ticker in the ESP32 and
+ESP8266 Arduino cores, which mcxTicker takes under its own class name, and
+the ESP32 core's `Wire.setPins()`, whose signature `TwoWire::setPins()` takes),
 with behavior checked against their source
 and documentation. The UNO R4 core, the official Servo library, MsTimer2
 and TimerOne were consulted the same way, and
 avr-libc's documentation for `ltoa()`/`ultoa()`/`dtostrf()`, the
 string functions declared in `Arduino.h`, and `<avr/pgmspace.h>`
 (`cores/arduino/arduino_api/avr/pgmspace.h`). No source code was copied from
-any of them.
+any of them. The `debug.cortex-debug.custom.*` line in
+`hardware/nxp/mcx/platform.txt`, which passes a command to the IDE's
+debugger, takes its form from the UNO R4 core's `platform.txt`. MsTimer2's
+example `MultipleTickers` has a small `Ticker` class of its own with the
+names of mbed OS's `Ticker` (`attach()`, `detach()`), also written from scratch.
 
 - ArduinoCore-renesas (UNO R4) — https://github.com/arduino/ArduinoCore-renesas (LGPL 2.1)
 - Servo — https://github.com/arduino-libraries/Servo (LGPL 2.1)
 - MsTimer2 — https://github.com/PaulStoffregen/MsTimer2 (LGPL 2.1 or later)
 - TimerOne — https://github.com/PaulStoffregen/TimerOne (Creative Commons Attribution 3.0 United States)
-- Arduino core for the ESP32 (its Ticker library) — https://github.com/espressif/arduino-esp32 (LGPL 2.1)
+- Arduino core for the ESP32 (its Ticker library and `Wire.setPins()`) — https://github.com/espressif/arduino-esp32 (LGPL 2.1)
 - Arduino core for the ESP8266 (its Ticker library) — https://github.com/esp8266/Arduino (LGPL 2.1)
 - avr-libc — https://github.com/avrdudes/avr-libc (Modified BSD License)
+- Mbed OS — https://github.com/ARMmbed/mbed-os (Apache License 2.0)
 
 The Linux LinkServer-discovery logic in `hardware/nxp/mcx/tools/upload.sh`
 (checking a fixed install path, then versioned `LinkServer_<version>`
