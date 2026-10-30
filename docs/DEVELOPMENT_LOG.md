@@ -3625,3 +3625,8 @@ LPI2CはアドレスとデータのNAKを同じコードで返すので、どち
 - **切り分け**: Debug Consoleで`x/4wx 0x40105000`が`Cannot access memory`。LinkServerの`devices/MCXA153.json`（26.6・26.9とも）の`memory`はフラッシュとRAMだけで、gdbはこの地図をもらうと、既定では地図の外へのアクセスをプローブに送らずに断る。A156・N947・N236・C444の定義も同じく、`0x40000000`からのペリフェラルを含まない。gdb-bridgeは通信を中継するだけで、地図に手を入れていない
 - **確認**: Debug Consoleで`set mem inaccessible-by-default off`のあと、`x/4wx 0x40105000`が`0x02010000 0x00000001 0x00000000 0x00000000`（`VERID`・`PARAM`）。SVDの`VERID`の既定値（`0x1000001`）とは違う
 - **直し方**: `platform.txt`に`debug.cortex-debug.custom.preLaunchCommands.0=set mem inaccessible-by-default off`（Arduinoの`renesas_uno`コアと同じ`debug.cortex-debug.custom.*`の形）。IDEのデバッグだけに効き、書き込みとgdb-bridgeは変わらない。`arduino-cli debug --info`で5ボードとも`preLaunchCommands`に入ることを確かめた。IDE（macOS）で5ボードとも、コマンドを手で打たずにCORTEX PERIPHERALSに本物の値が出ることをユーザーが確かめた
+
+### LinkServer 26.9の件の調査（2026-10-31、コードを変えないことはユーザーが決定）
+- 0.12.0の範囲に入れていた調査（CLAUDE.mdのPendingタスク9）。NXPのLinkServerのページの最新は26.9.130（2026-09-21）のままで、A153のフラッシュの件を直した版は出ていない
+- 26.9だけでA153に32KBを超えるスケッチを書く方法は見つからなかった。A153をつなぎ、26.9.130で46KBの`hello_world`がまだ`Attempt to load into missing flash area`で失敗することを確かめた（そのあと26.6.137で書き直し、`Hello, world!`が出ることを確かめた）
+- コードは変えない。26.9を避ける仕組み（`upload.sh`・`upload.bat`・gdb-bridgeの3か所）と、失敗したときの案内（READMEの26.6.137の直接のURLの表を指す）は今のまま
