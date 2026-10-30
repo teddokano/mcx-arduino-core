@@ -63,7 +63,16 @@ void setup() {
       presses++;
       Serial.print("SW2 pressed: ");
       Serial.println(presses);
-      delay(100);  // debounce
+      // Debounce: a button bounces on press and on release, and each
+      // bounce is another falling edge, so wait for the release, let it
+      // settle, and drop what came in meanwhile (FRDM-MCXA156's SW2 counted
+      // one press twice without this)
+      delay(50);
+      unsigned long heldStart = millis();
+      while (digitalRead(SW2) == LOW && millis() - heldStart < 5000)
+        ;
+      delay(50);
+      sw_pressed = false;
     }
   }
   if (presses < 3)
