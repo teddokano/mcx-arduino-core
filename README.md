@@ -199,7 +199,8 @@ void loop() {
 
 ## License
 
-MIT License — see [LICENSE](LICENSE)
+MIT License — see [LICENSE](LICENSE). The code from other projects, and the projects whose interfaces it was
+written to match, are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ## Pin Mapping
 

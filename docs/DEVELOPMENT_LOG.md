@@ -3613,3 +3613,9 @@ LPI2CはアドレスとデータのNAKを同じコードで返すので、どち
 - **作り**: `tools/mcx-discovery/`（Go、外部の依存なし）。Arduinoのpluggable discoveryの第1版（`HELLO`・`START`・`STOP`・`LIST`・`START_SYNC`・`QUIT`）で、MCU-LINKのポートだけを1秒ごとに探し、標準の`serial-discovery`と同じアドレス・ラベル・プロパティ（その出力で確かめた）に`board`を足す。`boards.txt`の`upload_port.0`に`board=FRDM-MCXxxxx`を足し、vid・pid・boardの3つがそろったポートだけが当てはまる（`upload_port`があると古い`vid.0`/`pid.0`は使われず、標準のdiscoveryの分は`Unknown`になる）。`platform.txt`の`pluggable_discovery`に自分の分と標準の2つを書く
 - **試作（スクラッチパッド、`platform.local.txt`と`boards.local.txt`で入れた）で分かったこと**: arduino-cliの`board list`は同じポートを2行（標準の`Unknown`と、こちらのボード名）出す。IDE 2.3.10は1つにまとめ、ボード名を出す。試作の`ioreg`のテキストの解析は、ハブの下に2つのMCU-LINKがあると取り違えうるので、本実装は`ioreg -a`のXMLを木として読み、ポートをいちばん近い`IOUSBHostDevice`に付ける
 - **確認**: `go test`（ボード名の取り出しとプロトコルの流れ）、`go vet`をmacOS・Linux・Windows向けに。macOSのIDEで、ユーザーが5ボードを確かめた: ボード名が出る、開き直すと前のボードが選ばれる、抜き挿ししても同じ、名前の無いA156は`Unknown`で、手で選べば書き込める。**Linux・Windowsの実機はまだ**
+
+### `LICENSE`から`THIRD_PARTY_NOTICES.md`を分けた（2026-10-31、ユーザーが決定）
+- GitHubがこのリポジトリのライセンスを「Other」（`NOASSERTION`）としていた。`LICENSE`がMITの本文のあとに「Third-Party Notices」を持っていたため（ユーザーの指摘）
+- `LICENSE`はMITの本文だけにし（GitHubの`licenses/mit`の文面と、年と名前のほかは同じ）、残りは中身を変えずに`THIRD_PARTY_NOTICES.md`へ移した。README・README.ja・`MCXEthernet`のREADME・CLAUDE.mdのチェックリスト（2と4）を直した。GitHubが判定するのは`main`だけなので、表示が変わるのは0.12.0を`main`にマージしたとき
+- 移すときに、arduino-cliのライセンスを「Apache License 2.0」から「GNU GPL v3」に直した（`gh api repos/arduino/arduino-cli`のライセンスがGPL-3.0）
+- リリースzipに`LICENSE`も`THIRD_PARTY_NOTICES.md`も入っていないこと（zipは`hardware/nxp/mcx/`だけ）も分かった。別の項目にした（CLAUDE.mdのPendingタスク11）

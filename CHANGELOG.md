@@ -67,6 +67,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   makes sure its links point at files the repository tracks
 
 ### Changed
+- **The third-party notices moved from `LICENSE` to `THIRD_PARTY_NOTICES.md`**, so that `LICENSE` holds only the
+  MIT License and GitHub recognizes it. arduino-cli's license there is corrected to GNU GPL v3 (it said Apache
+  License 2.0)
 - **`analogWrite()` keeps its resolution at high PWM frequencies, and `analogWriteFrequency()` sets the frequency
   to the nearest clock tick** (all boards): `PwmOut` kept the period and pulse width in whole microseconds, so the
   duty had at most as many steps as the period had microseconds. 8 bits held only up to about 3.9 kHz (51 steps

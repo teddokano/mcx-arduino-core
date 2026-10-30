@@ -161,4 +161,4 @@ lwIP's heap and the ENET's buffers.
 | `src/lwip/`, `src/netif/`, `src/compat/` (headers), `src/lwip_src/` (sources) | lwIP 2.2.1, unmodified, as in the MCUXpresso SDK. Its license is in `LICENSE.lwIP` (BSD-3-Clause) |
 | `src/arch/`, `src/mcx_port/` | From the network package of the NXP MCUXpresso SDK 2.16.000 for FRDM-MCXN947, unmodified except for a cast in four comparisons of signed and unsigned integers (in `enet_ethernetif.c`, `enet_ethernetif_lpc.c` and `ethernetif.c`, so that nothing warns with the compiler warnings set to "All"): the SDK's lwIP port (`arch/`, `ethernetif*`, `enet_ethernetif*.c`, `enet_configchecks.h`) and its ENET, LAN8741 PHY and GPIO adapter drivers (BSD-3-Clause, each with its own copyright header) |
 
-See the package's [LICENSE](../../../../../LICENSE).
+See the package's [LICENSE](../../../../../LICENSE) and [THIRD_PARTY_NOTICES.md](../../../../../THIRD_PARTY_NOTICES.md).

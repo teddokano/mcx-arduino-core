@@ -178,7 +178,8 @@ void loop() {
 
 ## ライセンス
 
-MIT License — [LICENSE](LICENSE)を参照
+MIT License — [LICENSE](LICENSE)を参照。ほかのプロジェクトから取り込んだコードと、インターフェースを合わせたプロジェクトは
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)にまとめてある。
 
 ## ピン配置
 
