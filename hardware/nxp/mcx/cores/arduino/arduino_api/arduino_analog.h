@@ -26,7 +26,11 @@ int		analogRead( int pin_num );
  *  On a pin with no PWM it drives the pin HIGH or LOW instead, as AVR's
  *  core does.
  * @param pin_num PWM pin (PWM0..PWM5, and D3/D5/D6/D9 on FRDM-MCXA156 and FRDM-MCXN236)
- * @param value duty cycle, scaled to analogWriteResolution() bits (8 by default, so 0..255)
+ * @param value duty cycle, scaled to analogWriteResolution() bits (8 by default, so 0..255).
+ *  It is set to the nearest tick of the PWM's counter: every value is a
+ *  step of its own while one period has at least as many ticks as the
+ *  resolution has values (8 bits up to 375kHz on FRDM-MCXA153/A156, about
+ *  586kHz on FRDM-MCXN947/N236 and 187.5kHz on FRDM-MCXC444).
  */
 void	analogWrite( int pin_num, int value );
 
@@ -37,8 +41,9 @@ void	analogWrite( int pin_num, int value );
  *  official Arduino never standardized PWM frequency control since AVR's
  *  timers can't do it cleanly.
  *
- *  Sets the given pin's PWM period to 1/frequency, preserving its
- *  current pulse width in microseconds (same semantics as PwmOut::
+ *  Sets the given pin's PWM period to 1/frequency, to the nearest tick
+ *  of the PWM's clock, preserving its current pulse width (same
+ *  semantics as PwmOut::
  *  period()/period_us() -- the duty cycle *ratio* is not preserved
  *  across a frequency change, only the absolute pulse width, clamped to
  *  the new period if it no longer fits).
@@ -47,7 +52,7 @@ void	analogWrite( int pin_num, int value );
  *  PWM2/PWM3, PWM4/PWM5; on FRDM-MCXA156 also D6/D9), and a submodule's
  *  period register is shared by both channels -- changing one pin's
  *  frequency changes its paired pin's frequency too, and the paired pin
- *  keeps its pulse width in microseconds as above. analogWrite() on
+ *  keeps its pulse width as above. analogWrite() on
  *  either pin afterwards sets its duty at the shared frequency. See this
  *  board's PIN_MAPPING_*.md.
  *

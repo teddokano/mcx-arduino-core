@@ -82,7 +82,7 @@ too:
 > share its period register, so changing one pin's frequency changes its
 > paired pin's frequency too.
 >
-> The paired pin keeps its pulse width in microseconds, cut short if it no
+> The paired pin keeps its pulse width, cut short if it no
 > longer fits the new period; `analogWrite()` on either pin then sets its
 > duty at the shared frequency. A pin's first `analogWrite()` joins its pair
 > at the frequency the pair is already running at. (Before 0.9.0,

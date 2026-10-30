@@ -58,6 +58,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   core (the board IDs, that instance names such as `Wire1` differ by board, Ethernet on each board). A repo check
   makes sure its links point at files the repository tracks
 
+### Changed
+- **`analogWrite()` keeps its resolution at high PWM frequencies, and `analogWriteFrequency()` sets the frequency
+  to the nearest clock tick** (all boards): `PwmOut` kept the period and pulse width in whole microseconds, so the
+  duty had at most as many steps as the period had microseconds. 8 bits held only up to about 3.9 kHz (51 steps
+  at 20 kHz, 11 at 100 kHz), at the default 1 kHz no `analogWriteResolution()` gave more than 1001 steps, 30 kHz
+  came out at 30.3 kHz, and above 1 MHz the period became 0 (24 MHz on FRDM-MCXC444). They are kept in ticks of
+  the PWM's clock now, and on the FlexPWM boards the compare registers are written in ticks too, not through the
+  SDK's 16-bit duty fraction. Every value is a step of its own while one period has as many ticks as the
+  resolution has values: 8 bits up to 375 kHz on FRDM-MCXA153/A156, about 586 kHz on FRDM-MCXN947/N236 and
+  187.5 kHz on FRDM-MCXC444, and 12 bits (and up to 48000 steps) at 1 kHz. A logic analyzer on all five boards
+  read 240-260 ns and 480-500 ns for values 1 and 2 at 1 kHz and 12 bits, 180-200 ns and 400 ns for 1 and 2 at
+  20 kHz and 8 bits, and a 500 ns period at 2 MHz; by the old arithmetic those pulses were 0. A pulse width set in microseconds
+  (`Servo`, `PwmOut::pulsewidth_us()`) comes out as before. `examples/release_check/08` and `13` and
+  `test_Servo` pass on all five boards
+
 ### Fixed
 - **A sketch or library can define a class named `Ticker`** on the MCX boards: r01lib's own `Ticker` came in through
   `Arduino.h`, so a sketch's `class Ticker` (ESP32's core and several timer libraries have one) stopped the build

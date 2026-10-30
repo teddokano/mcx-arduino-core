@@ -154,7 +154,7 @@ void analogWrite( int pin_num, int value )
 	if ( PwmOut *pwm = pwm_for( pin ) )
 	{
 		own_pin( pin, pwm );
-		pwm->write( (float)value / (float)max_value );
+		pwm->write_ratio( (uint32_t)value, (uint32_t)max_value );
 		return;
 	}
 
@@ -187,7 +187,7 @@ void analogWriteFrequency( int pin_num, uint32_t frequency )
 	if ( frequency < 1 )
 		frequency	= 1;
 
-	pwm->period_us( (int)( 1000000UL / frequency ) );
+	pwm->frequency( frequency );	//	to the nearest tick, not microsecond
 }
 
 void analogReference( uint8_t mode )

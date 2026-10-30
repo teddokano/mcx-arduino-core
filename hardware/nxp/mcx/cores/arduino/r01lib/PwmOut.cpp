@@ -13,19 +13,22 @@
  *    these boards, so the disable-map is cleared for both channels of a
  *    submodule the first time it is used, otherwise the PWM output may
  *    never toggle.
- *  - `PWM_SetupPwm()` only supports integer 0-100% duty. For the
- *    continuous-duty Mbed API this file uses the raw-tick API
- *    `PWM_UpdatePwmPeriodAndDutycycle()` (16-bit period/duty) for all
- *    period()/write() calls after the one-time `PWM_SetupPwm()` call that
- *    establishes OUTEN/polarity/fault-state for the channel. The registers
- *    both write are buffered until LDOK, so the placeholder period
- *    `PWM_SetupPwm()` writes never reaches a running channel: apply()
- *    writes the real one before setting LDOK.
+ *  - `PWM_SetupPwm()` only supports integer 0-100% duty. It is called once
+ *    per channel, to set up OUTEN/polarity/fault-state; after that, apply()
+ *    writes the period and compare registers itself, in ticks (the
+ *    registers `PWM_UpdatePwmPeriodAndDutycycle()` writes, without its
+ *    16-bit duty fraction). The registers are buffered until LDOK, so the
+ *    placeholder period `PWM_SetupPwm()` writes never reaches a running
+ *    channel: apply() writes the real one before setting LDOK.
  *
  * The period and both channels' pulse widths are kept per submodule
  * (s_sm[] below), not per PwmOut: the two channels share the period
  * register, and apply() rewrites both channels' compare values whenever
  * either changes, so neither is left measured against the other's period.
+ * They are kept in ticks of the source clock, not in microseconds, so the
+ * duty has as many steps as the counter at any frequency, and a frequency
+ * is set to the nearest tick (0.12.0; before, 8 bits held only up to about
+ * 3.9kHz, and a frequency was set to the nearest whole microsecond).
  *
  * @author  Tedd OKANO
  * @copyright MIT License
@@ -177,20 +180,58 @@ const PwmPinDescriptor s_pins[] = {
 #error "PwmOut.cpp: no PWM outputs for this chip"
 #endif
 
-// Per-submodule state, shared by the PwmOut on each of its two channels
+// Per-submodule state, shared by the PwmOut on each of its two channels.
+// Times are in ticks of the source clock, before the prescaler, so the
+// duty has as many steps as the hardware can make at any frequency
 struct SubmoduleState {
     bool     init;          // PWM_Init() and the fault map done
     uint8_t  users;         // bit 0 = chA has a PwmOut, bit 1 = chB
-    uint32_t period_us;
-    uint32_t pulse_us[ 2 ];
+    uint32_t period_ticks;
+    uint32_t pulse_ticks[ 2 ];
 };
 
 SubmoduleState  s_sm[ PWM_MODULES ][ 3 ]  = {};
 uint8_t         s_module_users[ PWM_MODULES ] = {};
 
+constexpr uint32_t  MIN_TICKS   = 1u;               // 1 tick @ prescale/1
+constexpr uint32_t  MAX_TICKS   = 0xFFFFu << 7;     // 65535 ticks @ prescale/128
+
 inline pwm_channels_t sdk_channel( uint8_t channel )
 {
     return ( channel == 0 ) ? kPWM_PwmA : kPWM_PwmB;
+}
+
+inline uint32_t source_clock( void )
+{
+    return CLOCK_GetFreq( PWM_SOURCE_CLOCK );
+}
+
+// Source-clock ticks counted with a prescaler of 2^prescale, rounded
+inline uint32_t ticks_at( uint32_t ticks, uint8_t prescale )
+{
+    return (uint32_t)( ( (uint64_t)ticks + ( ( 1u << prescale ) >> 1 ) ) >> prescale );
+}
+
+uint32_t us_to_ticks( int64_t us )
+{
+    if ( us <= 0 )
+        return 0u;
+
+    uint64_t ticks = ( (uint64_t)us * source_clock() + 500000u ) / 1000000u;
+
+    return ( ticks > 0xFFFFFFFFu ) ? 0xFFFFFFFFu : (uint32_t)ticks;
+}
+
+uint32_t seconds_to_ticks( float seconds )
+{
+    float ticks = seconds * (float)source_clock() + 0.5f;
+
+    if ( !( ticks >= 1.0f ) )   // NaN too
+        return 0u;
+    if ( ticks >= 4294967040.0f )   // the largest float below 2^32
+        return 0xFFFFFFFFu;
+
+    return (uint32_t)ticks;
 }
 
 const PwmPinDescriptor *find_pin( int pin )
@@ -264,10 +305,10 @@ PwmOut::PwmOut( int pin )
     // The first PwmOut on the submodule sets the Mbed default of 20ms; one
     // made next to a running channel takes over its period
     if ( !sm.users )
-        sm.period_us = 20000u;
+        sm.period_ticks = us_to_ticks( 20000 );
 
-    sm.users                 |= (uint8_t)( 1u << _channel );
-    sm.pulse_us[ _channel ]   = 0u;
+    sm.users                    |= (uint8_t)( 1u << _channel );
+    sm.pulse_ticks[ _channel ]   = 0u;
 
     // One-time setup of OUTEN/polarity/fault-state for this channel. The
     // period it writes is a placeholder that apply() replaces before LDOK.
@@ -297,7 +338,7 @@ PwmOut::~PwmOut()
 
     SubmoduleState &sm = s_sm[ _module ][ _submodule ];
 
-    sm.pulse_us[ _channel ] = 0u;
+    sm.pulse_ticks[ _channel ] = 0u;
     apply();
     sm.users &= (uint8_t)~( 1u << _channel );
 
@@ -330,29 +371,37 @@ void PwmOut::apply( void )
 
     PWM_Type       *base    = s_module[ _module ];
     SubmoduleState &sm      = s_sm[ _module ][ _submodule ];
-    uint32_t        src_clk = CLOCK_GetFreq( PWM_SOURCE_CLOCK );
 
     // Pick the smallest prescaler (highest resolution) for which the period
-    // still fits the 16-bit tick counter, clamping to the fastest/slowest
-    // achievable period at the extremes.
-    uint8_t  prescale   = 0;
-    uint64_t pulseCnt64 = 0;
+    // still fits the 16-bit tick counter. period() keeps it within
+    // MIN_TICKS..MAX_TICKS, so the count is 1..0xFFFF.
+    uint8_t  prescale = 0;
+    uint32_t count    = 0;
     for ( prescale = 0; prescale <= 7; prescale++ )
     {
-        pulseCnt64 = ( (uint64_t)sm.period_us * ( src_clk >> prescale ) ) / 1000000ULL;
-        if ( pulseCnt64 <= 0xFFFFu || prescale == 7 )
+        count = ticks_at( sm.period_ticks, prescale );
+        if ( count <= 0xFFFFu || prescale == 7 )
             break;
     }
-    if ( pulseCnt64 < 1 )
-        pulseCnt64 = 1;
-    if ( pulseCnt64 > 0xFFFFu )
-        pulseCnt64 = 0xFFFFu;
-
-    uint16_t pulseCnt = (uint16_t)pulseCnt64;
+    if ( count < 1 )
+        count = 1;
+    if ( count > 0xFFFFu )
+        count = 0xFFFFu;
 
     uint16_t cur_prsc = (uint16_t)( ( base->SM[ _submodule ].CTRL & PWM_CTRL_PRSC_MASK ) >> PWM_CTRL_PRSC_SHIFT );
     if ( cur_prsc != prescale )
         PWM_SetClockMode( base, (pwm_submodule_t)_submodule, (pwm_clock_prescale_t)prescale );
+
+    // Edge-aligned, as PWM_SetupPwm() set the channel up: the counter runs
+    // from INIT = 0 to VAL1, and a channel is high from VAL2 (A) or VAL4
+    // (B), 0, until VAL3 or VAL5. A pulse as long as the period never
+    // reaches its VAL3/VAL5 and stays high. These are the registers the
+    // SDK's PWM_UpdatePwmPeriodAndDutycycle() writes, here in ticks: that
+    // function takes the duty as a 16-bit fraction and turns it back into
+    // ticks, which loses steps. Like it, the values wait for LDOK.
+    base->SM[ _submodule ].INIT = 0u;
+    base->SM[ _submodule ].VAL0 = (uint16_t)( count / 2u );
+    base->SM[ _submodule ].VAL1 = (uint16_t)( count - 1u );
 
     // Both channels, so the one this PwmOut isn't on keeps its pulse width
     // against the period it now shares
@@ -361,77 +410,99 @@ void PwmOut::apply( void )
         if ( !( sm.users & ( 1u << ch ) ) )
             continue;
 
-        uint64_t dutyTicks = ( (uint64_t)sm.pulse_us[ ch ] * ( src_clk >> prescale ) ) / 1000000ULL;
-        if ( dutyTicks > pulseCnt )
-            dutyTicks = pulseCnt;
-        uint16_t duty16 = (uint16_t)( ( dutyTicks * 65535ULL ) / pulseCnt );
+        uint32_t high = ticks_at( sm.pulse_ticks[ ch ], prescale );
+        if ( sm.pulse_ticks[ ch ] >= sm.period_ticks || high > count )
+            high = count;
 
-        PWM_UpdatePwmPeriodAndDutycycle( base, (pwm_submodule_t)_submodule, sdk_channel( ch ),
-                                          kPWM_EdgeAligned, pulseCnt, duty16 );
+        if ( ch == 0 )
+        {
+            base->SM[ _submodule ].VAL2 = 0u;
+            base->SM[ _submodule ].VAL3 = (uint16_t)high;
+        }
+        else
+        {
+            base->SM[ _submodule ].VAL4 = 0u;
+            base->SM[ _submodule ].VAL5 = (uint16_t)high;
+        }
     }
     PWM_SetPwmLdok( base, (uint8_t)( 1u << _submodule ), true );
 }
 
-void PwmOut::period( float seconds )
+void PwmOut::set_period( uint32_t ticks )
 {
     if ( -1 == _pin )
         return;
 
-    SubmoduleState &sm         = s_sm[ _module ][ _submodule ];
-    uint32_t        src_clk    = CLOCK_GetFreq( PWM_SOURCE_CLOCK );
-    float           min_period = 1.0e6f / (float)src_clk;                    // 1 tick @ prescale/1
-    float           max_period = 1.0e6f * 65535.0f * 128.0f / (float)src_clk; // 65535 ticks @ prescale/128
-    float           period_us  = seconds * 1.0e6f;
+    SubmoduleState &sm = s_sm[ _module ][ _submodule ];
 
-    if ( period_us < min_period )
-        period_us = min_period;
-    if ( period_us > max_period )
-        period_us = max_period;
+    if ( ticks < MIN_TICKS )
+        ticks = MIN_TICKS;
+    if ( ticks > MAX_TICKS )
+        ticks = MAX_TICKS;
 
-    sm.period_us = (uint32_t)period_us;
+    sm.period_ticks = ticks;
     for ( uint8_t ch = 0; ch < 2; ch++ )
     {
-        if ( sm.pulse_us[ ch ] > sm.period_us )
-            sm.pulse_us[ ch ] = sm.period_us;
+        if ( sm.pulse_ticks[ ch ] > sm.period_ticks )
+            sm.pulse_ticks[ ch ] = sm.period_ticks;
     }
 
     apply();
 }
 
-void PwmOut::period_ms( int ms ) { period( (float)ms * 1.0e-3f ); }
-void PwmOut::period_us( int us ) { period( (float)us * 1.0e-6f ); }
-
-void PwmOut::pulsewidth( float seconds )
+void PwmOut::set_pulse( uint32_t ticks )
 {
     if ( -1 == _pin )
         return;
 
-    SubmoduleState &sm       = s_sm[ _module ][ _submodule ];
-    float           pulse_us = seconds * 1.0e6f;
+    SubmoduleState &sm = s_sm[ _module ][ _submodule ];
 
-    if ( pulse_us < 0.0f )
-        pulse_us = 0.0f;
-    if ( pulse_us > (float)sm.period_us )
-        pulse_us = (float)sm.period_us;
-
-    sm.pulse_us[ _channel ] = (uint32_t)pulse_us;
+    sm.pulse_ticks[ _channel ] = ( ticks > sm.period_ticks ) ? sm.period_ticks : ticks;
     apply();
 }
 
-void PwmOut::pulsewidth_ms( int ms ) { pulsewidth( (float)ms * 1.0e-3f ); }
-void PwmOut::pulsewidth_us( int us ) { pulsewidth( (float)us * 1.0e-6f ); }
+void PwmOut::period( float seconds ) { set_period( seconds_to_ticks( seconds ) ); }
+void PwmOut::period_ms( int ms )     { set_period( us_to_ticks( (int64_t)ms * 1000 ) ); }
+void PwmOut::period_us( int us )     { set_period( us_to_ticks( us ) ); }
+
+void PwmOut::frequency( uint32_t hz )
+{
+    if ( hz < 1u )
+        hz = 1u;
+
+    set_period( ( source_clock() + hz / 2u ) / hz );
+}
+
+void PwmOut::pulsewidth( float seconds ) { set_pulse( seconds_to_ticks( seconds ) ); }
+void PwmOut::pulsewidth_ms( int ms )     { set_pulse( us_to_ticks( (int64_t)ms * 1000 ) ); }
+void PwmOut::pulsewidth_us( int us )     { set_pulse( us_to_ticks( us ) ); }
 
 void PwmOut::write( float duty )
 {
     if ( -1 == _pin )
         return;
 
-    if ( duty < 0.0f )
+    if ( !( duty > 0.0f ) )     // NaN too
         duty = 0.0f;
     if ( duty > 1.0f )
         duty = 1.0f;
 
-    pulsewidth( duty * (float)s_sm[ _module ][ _submodule ].period_us * 1.0e-6f );
+    set_pulse( (uint32_t)( duty * (float)s_sm[ _module ][ _submodule ].period_ticks + 0.5f ) );
+}
+
+void PwmOut::write_ratio( uint32_t num, uint32_t den )
+{
+    if ( -1 == _pin )
+        return;
+
+    uint32_t period = s_sm[ _module ][ _submodule ].period_ticks;
+
+    if ( den == 0u )
+        num = 0u;
+    else if ( num > den )
+        num = den;
+
+    set_pulse( den ? (uint32_t)( ( (uint64_t)period * num + den / 2u ) / den ) : 0u );
 }
 
 float PwmOut::read( void )
@@ -441,7 +512,7 @@ float PwmOut::read( void )
 
     const SubmoduleState &sm = s_sm[ _module ][ _submodule ];
 
-    return sm.period_us ? ( (float)sm.pulse_us[ _channel ] / (float)sm.period_us ) : 0.0f;
+    return sm.period_ticks ? ( (float)sm.pulse_ticks[ _channel ] / (float)sm.period_ticks ) : 0.0f;
 }
 
 PwmOut &PwmOut::operator=( float duty )
@@ -492,7 +563,7 @@ constexpr uint8_t   MOD_BIT     = 1u << CHANNELS;  // in waiting: MOD has a valu
 
 struct TpmState {
     bool     init;
-    uint32_t period_us;
+    uint32_t period_ticks;          // in ticks of the source clock, before the prescaler
     PwmOut   *owner[ CHANNELS ];
     uint32_t mod;                   // MOD as last written
     uint32_t mod_free_at;           // micros() when that write has left the MOD buffer
@@ -532,6 +603,37 @@ bool running( const TpmState &st )
 inline uint32_t source_clock( void )
 {
     return CLOCK_GetFreq( kCLOCK_McgIrc48MClk );   // TPMSRC = 1, set below
+}
+
+constexpr uint32_t  MIN_TICKS   = 2u;               // 2 ticks @ prescale/1
+constexpr uint32_t  MAX_TICKS   = 0xFFFFu << 7;     // 65535 ticks @ prescale/128
+
+// Source-clock ticks counted with a prescaler of 2^prescale, rounded
+inline uint32_t ticks_at( uint32_t ticks, uint8_t prescale )
+{
+    return (uint32_t)( ( (uint64_t)ticks + ( ( 1u << prescale ) >> 1 ) ) >> prescale );
+}
+
+uint32_t us_to_ticks( int64_t us )
+{
+    if ( us <= 0 )
+        return 0u;
+
+    uint64_t ticks = ( (uint64_t)us * source_clock() + 500000u ) / 1000000u;
+
+    return ( ticks > 0xFFFFFFFFu ) ? 0xFFFFFFFFu : (uint32_t)ticks;
+}
+
+uint32_t seconds_to_ticks( float seconds )
+{
+    float ticks = seconds * (float)source_clock() + 0.5f;
+
+    if ( !( ticks >= 1.0f ) )   // NaN too
+        return 0u;
+    if ( ticks >= 4294967040.0f )   // the largest float below 2^32
+        return 0xFFFFFFFFu;
+
+    return (uint32_t)ticks;
 }
 
 // At most how long until the counter next goes from MOD to 0, when the
@@ -722,7 +824,7 @@ bool PwmOut::shares_running_period( int pin )
 }
 
 PwmOut::PwmOut( int pin )
-    : Obj( true ), _tpm( 0 ), _channel( 0 ), _alt( 0 ), _holds_pin( false ), _pulse_us( 0 ), _pin( -1 )
+    : Obj( true ), _tpm( 0 ), _channel( 0 ), _alt( 0 ), _holds_pin( false ), _pulse_ticks( 0 ), _pin( -1 )
 {
     const TpmPin *d = find_pin( pin );
 
@@ -752,7 +854,7 @@ PwmOut::PwmOut( int pin )
     // The first PwmOut on a TPM sets the Mbed default of 20ms; one made next
     // to a running channel takes over the TPM's period
     if ( !running( st ) )
-        st.period_us = 20000u;
+        st.period_ticks = us_to_ticks( 20000 );
 
     take_channel();
 }
@@ -768,7 +870,7 @@ PwmOut::~PwmOut()
 
     if ( st.owner[ _channel ] == this )
     {
-        _pulse_us   = 0u;
+        _pulse_ticks    = 0u;
         apply();
         st.owner[ _channel ] = nullptr;
     }
@@ -826,17 +928,16 @@ void PwmOut::apply( void )
 
     TPM_Type    *base   = s_tpm[ _tpm ];
     TpmState    &st     = s_state[ _tpm ];
-    uint32_t    src_clk = source_clock();
     uint32_t    now     = (uint32_t)micros();
 
     // The smallest prescaler (highest resolution) for which the period
     // still fits the 16-bit counter. At most 0xFFFF ticks, so MOD stays
     // below 0xFFFF: a 100% pulse needs CnV > MOD, and CnV is 16 bits too
     uint8_t     prescale    = 0;
-    uint64_t    ticks       = 0;
+    uint32_t    ticks       = 0;
     for ( prescale = 0; prescale <= 7; prescale++ )
     {
-        ticks = ( (uint64_t)st.period_us * ( src_clk >> prescale ) ) / 1000000ULL;
+        ticks = ticks_at( st.period_ticks, prescale );
         if ( ticks <= 0xFFFFu || prescale == 7 )
             break;
     }
@@ -856,7 +957,7 @@ void PwmOut::apply( void )
         st.waiting      = 0u;
     }
 
-    set_mod( _tpm, (uint32_t)( ticks - 1u ), now );
+    set_mod( _tpm, ticks - 1u, now );
 
     for ( int ch = 0; ch < CHANNELS; ch++ )
     {
@@ -866,8 +967,8 @@ void PwmOut::apply( void )
             continue;
 
         // A pulse as long as the period needs CnV = MOD + 1 to stay high
-        uint64_t    cnv = ( (uint64_t)o->_pulse_us * ( src_clk >> prescale ) ) / 1000000ULL;
-        if ( o->_pulse_us >= st.period_us || cnv > ticks )
+        uint32_t    cnv = ticks_at( o->_pulse_ticks, prescale );
+        if ( o->_pulse_ticks >= st.period_ticks || cnv > ticks )
             cnv = ticks;
 
         set_cnv( _tpm, ch, (uint16_t)cnv, now );
@@ -877,50 +978,37 @@ void PwmOut::apply( void )
         TPM_StartTimer( base, kTPM_SystemClock );
 }
 
-void PwmOut::period( float seconds )
+void PwmOut::set_period( uint32_t ticks )
 {
     if ( -1 == _pin )
         return;
 
-    TpmState    &st         = s_state[ _tpm ];
-    uint32_t    src_clk     = source_clock();
-    float       min_period  = 2.0e6f / (float)src_clk;                      // 2 ticks @ prescale/1
-    float       max_period  = 1.0e6f * 65535.0f * 128.0f / (float)src_clk;  // 65535 ticks @ prescale/128
-    float       period_us   = seconds * 1.0e6f;
+    TpmState    &st = s_state[ _tpm ];
 
-    if ( period_us < min_period )
-        period_us = min_period;
-    if ( period_us > max_period )
-        period_us = max_period;
+    if ( ticks < MIN_TICKS )
+        ticks = MIN_TICKS;
+    if ( ticks > MAX_TICKS )
+        ticks = MAX_TICKS;
 
-    st.period_us    = (uint32_t)period_us;
+    st.period_ticks = ticks;
 
     for ( int ch = 0; ch < CHANNELS; ch++ )
     {
-        if ( st.owner[ ch ] && st.owner[ ch ]->_pulse_us > st.period_us )
-            st.owner[ ch ]->_pulse_us   = st.period_us;
+        if ( st.owner[ ch ] && st.owner[ ch ]->_pulse_ticks > st.period_ticks )
+            st.owner[ ch ]->_pulse_ticks    = st.period_ticks;
     }
 
     apply();
 }
 
-void PwmOut::period_ms( int ms ) { period( (float)ms * 1.0e-3f ); }
-void PwmOut::period_us( int us ) { period( (float)us * 1.0e-6f ); }
-
-void PwmOut::pulsewidth( float seconds )
+void PwmOut::set_pulse( uint32_t ticks )
 {
     if ( -1 == _pin )
         return;
 
-    TpmState    &st         = s_state[ _tpm ];
-    float       pulse_us    = seconds * 1.0e6f;
+    TpmState    &st = s_state[ _tpm ];
 
-    if ( pulse_us < 0.0f )
-        pulse_us = 0.0f;
-    if ( pulse_us > (float)st.period_us )
-        pulse_us = (float)st.period_us;
-
-    _pulse_us   = (uint32_t)pulse_us;
+    _pulse_ticks    = ( ticks > st.period_ticks ) ? st.period_ticks : ticks;
 
     if ( st.owner[ _channel ] != this )
         take_channel();     // a pin sharing the channel had it: this one takes it back
@@ -928,20 +1016,48 @@ void PwmOut::pulsewidth( float seconds )
         apply();
 }
 
-void PwmOut::pulsewidth_ms( int ms ) { pulsewidth( (float)ms * 1.0e-3f ); }
-void PwmOut::pulsewidth_us( int us ) { pulsewidth( (float)us * 1.0e-6f ); }
+void PwmOut::period( float seconds ) { set_period( seconds_to_ticks( seconds ) ); }
+void PwmOut::period_ms( int ms )     { set_period( us_to_ticks( (int64_t)ms * 1000 ) ); }
+void PwmOut::period_us( int us )     { set_period( us_to_ticks( us ) ); }
+
+void PwmOut::frequency( uint32_t hz )
+{
+    if ( hz < 1u )
+        hz = 1u;
+
+    set_period( ( source_clock() + hz / 2u ) / hz );
+}
+
+void PwmOut::pulsewidth( float seconds ) { set_pulse( seconds_to_ticks( seconds ) ); }
+void PwmOut::pulsewidth_ms( int ms )     { set_pulse( us_to_ticks( (int64_t)ms * 1000 ) ); }
+void PwmOut::pulsewidth_us( int us )     { set_pulse( us_to_ticks( us ) ); }
 
 void PwmOut::write( float duty )
 {
     if ( -1 == _pin )
         return;
 
-    if ( duty < 0.0f )
+    if ( !( duty > 0.0f ) )     // NaN too
         duty = 0.0f;
     if ( duty > 1.0f )
         duty = 1.0f;
 
-    pulsewidth( duty * (float)s_state[ _tpm ].period_us * 1.0e-6f );
+    set_pulse( (uint32_t)( duty * (float)s_state[ _tpm ].period_ticks + 0.5f ) );
+}
+
+void PwmOut::write_ratio( uint32_t num, uint32_t den )
+{
+    if ( -1 == _pin )
+        return;
+
+    uint32_t    period  = s_state[ _tpm ].period_ticks;
+
+    if ( den == 0u )
+        num = 0u;
+    else if ( num > den )
+        num = den;
+
+    set_pulse( den ? (uint32_t)( ( (uint64_t)period * num + den / 2u ) / den ) : 0u );
 }
 
 float PwmOut::read( void )
@@ -951,7 +1067,7 @@ float PwmOut::read( void )
 
     const TpmState &st = s_state[ _tpm ];
 
-    return st.period_us ? ( (float)_pulse_us / (float)st.period_us ) : 0.0f;
+    return st.period_ticks ? ( (float)_pulse_ticks / (float)st.period_ticks ) : 0.0f;
 }
 
 PwmOut &PwmOut::operator=( float duty )

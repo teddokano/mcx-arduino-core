@@ -3591,3 +3591,17 @@ LPI2CはアドレスとデータのNAKを同じコードで返すので、どち
 - 原因: N236のI3C1のクロックが12.5MHz（`mcu.cpp`、SDKのN236のI3Cの作例と同じ）で、r01libが頼むpush-pullの12.5MHzに届かずPPBAUD=0の6.25MHzになり、SDKが決めるopen-drainのLOWが短くなった（計算で約160ns。ロジアナでは見ていない）。N947は25MHzで、`fsl_i3c.c`は2つのvariantで同じファイル。I3C1のクロックだけを150MHz/6＝25MHzにすると、DAAが1台を見つけ、`MCONFIG`は`A1040009`（ODBAUD=4、LOWは約200ns）
 - **直し方**（ユーザーが決定）: コア同梱のr01libの`mcu.cpp`で、N236のI3C1の分周を12から6にした（N947と同じ25MHz。上流は変えない。ほかのボードは変わらない）。`test_r01lib_I3C_rx_leftover`がN236でもALL OK。これでMCXの4ボードともALL OK
 - N947のUSBを抜き挿しするたびに、開いていたN236のキャプチャの`cat`が止まっていた（N236のポートの名前は変わらない）。原因は調べていない。書き込みの前に`lsof`でキャプチャがポートを開いていることを確かめる
+
+### PWMの周期とパルス幅をtickで持つ（2026-10-30、0.12.0に入れること・C444も同時に直すことはユーザーが決定）
+- もとは`memo/pwm_resolution.md`（2026-10-27、ユーザーとの検討。未追跡のファイル）の改善案。採用したので、ここへ移してメモのファイルはゴミ箱に移した
+- **問題**: `PwmOut`は周期とパルス幅を整数のµsで持っていた（FlexPWMは`SubmoduleState::period_us`・`pulse_us[2]`、C444のTPMは`TpmState::period_us`・`PwmOut::_pulse_us`）。デューティの段階は「周期のµs数」が上限で、周波数も1 µs刻み。経路は`analogWriteFrequency()`→`period_us( 1000000 / f )`（切り捨て）、`analogWrite()`→`write( v / max )`→`pulsewidth()`→µsに切り捨て（floatの往復も）、`apply()`がµsをtickに直し、FlexPWMはさらにSDKの`PWM_UpdatePwmPeriodAndDutycycle()`がデューティを16ビットの割合で受けてtickに戻す（ここでも切り捨て）
+- **影響（今のコードの計算をPythonで再現、実機では測っていない）**: 8ビットを保てるのは約3.9 kHz（256 µs）まで。20 kHzで51段階、100 kHzで11段階。既定の1 kHzでも9ビット以上は1001段階で頭打ち。30 kHzは33 µsで30.3 kHz。1 MHzを超えると周期が0 µsになり、最小のtick（C444では2 tick = 24 MHz）になった。ハードウェアの8ビットの上限はA153/A156が96MHz/256 = 375 kHz、N947/N236が150MHz/256 ≈ 586 kHz、C444が48MHz/256 = 187.5 kHz。50 Hzでは20001段階（約14.3ビット）、ハードウェアは約15.9ビット（A153/A156・C444は60000 tick、N947/N236は46875 tick）
+- **直し方**（`PwmOut.{h,cpp}`のFlexPWMとTPMの両方、`arduino_analog.cpp`）:
+  - 周期とパルス幅を、分周前のソースクロックのtick数（`uint32_t`、最大65535×128）で持つ。`apply()`は16ビットに収まる最小の分周を選び（今までどおり）、分周したtickは丸める
+  - 入口: `PwmOut::frequency( hz )`（`analogWriteFrequency()`、`( clk + hz/2 ) / hz`）と`PwmOut::write_ratio( num, den )`（`analogWrite()`、64ビットの整数で丸め、floatを通らない）を足した。`period()`/`pulsewidth()`（秒、float）と`_us`/`_ms`はtickに丸める。`read()`はtickの比
+  - FlexPWMは`PWM_UpdatePwmPeriodAndDutycycle()`を使わず、エッジアラインドでSDKが書くのと同じレジスタ（`INIT`=0、`VAL0`=周期/2、`VAL1`=周期−1、`VAL2`/`VAL4`=0、`VAL3`/`VAL5`=HIGHのtick）を直接書く。LDOKまでバッファされるのは同じ。周期と同じパルスは`VAL3`=周期で、カウンタが届かず常にHIGH（今までと同じ）
+  - C444のTPMは`CnV`を元から直接書いていたので、持ち方だけ。`CnV`・`MOD`のバッファを待つ処理（`set_mod()`・`set_cnv()`・`us_to_overflow()`・`pwm_tpm_service()`）は`micros()`で時刻を見るだけで、そのまま
+  - 変わらない約束: 周期を変えると相手のパルス幅は絶対値のまま（周期でクリップ）、0%と100%、D5/D6/D9の取り合い。µsで指定したパルス（`Servo`、`pulsewidth_us()`）はどのボードでもtickで割り切れ、今までと同じ値が出る
+- 計算の確認（新しい計算をPythonで再現）: 8ビットの256段階が上の上限まで、1 kHzの12ビットで4096段階、16ビットで48001段階（N947/N236は37501）。0%と100%も残る
+- **実機（2026-10-30、5ボード）**: `release_check/08`がALL OK（N947は最初D4にN236との配線が残っていて`INPUT_PULLDOWN`の2件がFAIL、外してALL OK）。`release_check/13`と`test_Servo`がALL OK/ALL PASS（mcxRCServoの16ビットの500/1450/2400 µs、PWMの無いピンの`Servo`も）。PWMの関連のスケッチ6本が5ボードで警告なしでビルドできる
+- **ロジアナ**（Logic16、50 MS/s、5ボードの`PWM0`（C444はD3）を同時に。スクラッチパッドのスケッチ`pwm_steps_la`）: 1 kHz・12ビットの1と2が240〜260 nsと480〜500 ns、20 kHz・8ビットの1と2が180〜200 nsと400 ns、20 kHz・128が周期の50.2%、30 kHzの周期は1 kHzの周期のちょうど1/30（ロジアナの時計に対するボードの時計のずれは、A153が0.75%、A156が0.53%、N236が0.6%、N947が−0.09%、C444が0.07%）、2 MHzの周期は500 ns。今までの計算では1〜4行目のパルスは0（変える前の版は測っていない）
