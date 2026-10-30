@@ -4,5 +4,9 @@ var searchData=
   ['mcu_2eh_1',['mcu.h',['../mcu_8h.html',1,'']]],
   ['mcx_5farduino_5fcore_5fversion_2eh_2',['mcx_arduino_core_version.h',['../mcx__arduino__core__version_8h.html',1,'']]],
   ['mcxethernet_2ecpp_3',['MCXEthernet.cpp',['../_m_c_x_ethernet_8cpp.html',1,'']]],
-  ['mcxethernet_2eh_4',['MCXEthernet.h',['../_m_c_x_ethernet_8h.html',1,'']]]
+  ['mcxethernet_2eh_4',['MCXEthernet.h',['../_m_c_x_ethernet_8h.html',1,'']]],
+  ['mcxticker_2ecpp_5',['mcxTicker.cpp',['../mcx_ticker_8cpp.html',1,'']]],
+  ['mcxticker_2eh_6',['mcxTicker.h',['../mcx_ticker_8h.html',1,'']]],
+  ['mstimer2_2ecpp_7',['MsTimer2.cpp',['../_ms_timer2_8cpp.html',1,'']]],
+  ['mstimer2_2eh_8',['MsTimer2.h',['../_ms_timer2_8h.html',1,'']]]
 ];

@@ -23,7 +23,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.11.0</span>
+   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.12.0</span>
    </div>
    <div id="projectbrief">Arduino board support package for NXP FRDM MCX Series boards</div>
   </td>
@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 
 <h3 class="doxsection"><a id="index_a" name="index_a"></a>- a -</h3><ul>
 <li>accept()&#160;:&#160;<a class="el" href="class_ethernet_server.html#ac5a0ad051fd91b55780158da0c92e7b6">EthernetServer</a></li>
-<li>active&#160;:&#160;<a class="el" href="struct_wire_target.html#ac3bbd4d20c65cf6d74a082cbb7bdabba">WireTarget</a></li>
+<li>active()&#160;:&#160;<a class="el" href="classmcx_ticker.html#a76dbc8074deaea42e3c651eb583dc3a0">mcxTicker</a>, <a class="el" href="struct_wire_target.html#ac3bbd4d20c65cf6d74a082cbb7bdabba">WireTarget</a></li>
 <li>addr&#160;:&#160;<a class="el" href="structmcx__eth_1_1_0fstruct_0e_8lookup.html#a5beac423e4133017431bdac67b4aef8e">mcx_eth::[struct].lookup</a></li>
 <li>address&#160;:&#160;<a class="el" href="struct_wire_target.html#ac11ed2706ae6bb01dd4a2e9e35a7e77c">WireTarget</a></li>
 <li>AnalogIn()&#160;:&#160;<a class="el" href="class_analog_in.html#a29d1ca5a56ced8294a2eaf759aaed003">AnalogIn</a></li>
@@ -108,8 +108,11 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 <li>apply_baudrate()&#160;:&#160;<a class="el" href="class_i3_c.html#aec7147205ab45712c2fd62da742c791e">I3C</a></li>
 <li>apply_pin_low_timeout()&#160;:&#160;<a class="el" href="class_i2_c.html#a37ac837977043fc4fde83716dd8afac3">I2C</a></li>
 <li>apply_pin_mux()&#160;:&#160;<a class="el" href="class_serial.html#ab3630a43ede4290182b1330af2f6007c">Serial</a></li>
-<li>attach()&#160;:&#160;<a class="el" href="class_serial.html#a257eb0add816d5e57a87074d6f2aa4a3">Serial</a>, <a class="el" href="class_servo.html#aeccd2077f07ebc45250da14e72a0c461">Servo</a>, <a class="el" href="class_ticker.html#a3ec63d92db3a89deb93a4b638a558a3d">Ticker</a></li>
+<li>arg&#160;:&#160;<a class="el" href="classmcx_ticker.html#a65320b18431bfa475b9b6b3202177499">mcxTicker</a></li>
+<li>attach()&#160;:&#160;<a class="el" href="classmcx_ticker.html#a1317c317b34f24e261f5b35addfaa77c">mcxTicker</a>, <a class="el" href="class_serial.html#a257eb0add816d5e57a87074d6f2aa4a3">Serial</a>, <a class="el" href="class_servo.html#aeccd2077f07ebc45250da14e72a0c461">Servo</a>, <a class="el" href="class_ticker.html#a3ec63d92db3a89deb93a4b638a558a3d">Ticker</a></li>
+<li>attach_ms()&#160;:&#160;<a class="el" href="classmcx_ticker.html#ada32d3ba8be3a3dbfb31cf7a84c45278">mcxTicker</a></li>
 <li>attached()&#160;:&#160;<a class="el" href="class_servo.html#a48607d47aa5678780b1b927102bd3b1b">Servo</a></li>
+<li>attachInterrupt()&#160;:&#160;<a class="el" href="class_timer_one.html#a231d952a57e61bba69ba271f276339bc">TimerOne</a></li>
 <li>available()&#160;:&#160;<a class="el" href="classarduino_1_1_client.html#aaab0aa5331d98bdf6d446fbd0cd3648b">arduino::Client</a>, <a class="el" href="classarduino_1_1_u_d_p.html#a5598f32d2ca6a3222b00b1ff47e8136c">arduino::UDP</a>, <a class="el" href="class_client.html#aaab0aa5331d98bdf6d446fbd0cd3648b">Client</a>, <a class="el" href="class_ethernet_client.html#aca0f978fbcc3d13a0e3702478c24cd95">EthernetClient</a>, <a class="el" href="class_ethernet_server.html#a609906d2a44c915990d4bf8437f01a2d">EthernetServer</a>, <a class="el" href="class_ethernet_u_d_p.html#a647171f7cc969d75295f93db76b7749f">EthernetUDP</a>, <a class="el" href="class_serial.html#ab2bb569cb27ea4aca3151a88ef99d3e7">Serial</a>, <a class="el" href="class_serial_class.html#ace61138ec9862decdd7199e26c799141">SerialClass</a>, <a class="el" href="class_stream.html#a581d4e5d65d14b52406f65be388bae96">Stream</a>, <a class="el" href="class_two_wire.html#a586cbdcad2958a65fdd085c9e9fe428f">TwoWire</a>, <a class="el" href="class_u_d_p.html#a5598f32d2ca6a3222b00b1ff47e8136c">UDP</a></li>
 <li>availableForWrite()&#160;:&#160;<a class="el" href="class_ethernet_client.html#ae6529f892cce9bea44a1a66f564afd2b">EthernetClient</a>, <a class="el" href="class_print.html#a81abda2ddaf3c5c6ec165d3b00aa69bf">Print</a>, <a class="el" href="class_serial.html#ac92af5ee41a978c04671a5c1d81b5ca9">Serial</a>, <a class="el" href="class_serial_class.html#a9f9968b0f7683e7889e510ee345ca957">SerialClass</a></li>
 </ul>

@@ -23,7 +23,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.11.0</span>
+   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.12.0</span>
    </div>
    <div id="projectbrief">Arduino board support package for NXP FRDM MCX Series boards</div>
   </td>
@@ -99,18 +99,139 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 <div id="doc-content">
 <div class="header">
   <div class="summary">
+<a href="#define-members">Macros</a> &#124;
+<a href="#func-members">Functions</a> &#124;
 <a href="#var-members">Variables</a>  </div>
   <div class="headertitle"><div class="title">Servo.cpp File Reference</div></div>
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &quot;<a class="el" href="_servo_8h_source.html">Servo.h</a>&quot;</code><br />
+<code>#include &quot;fsl_ctimer.h&quot;</code><br />
+<code>#include &quot;fsl_clock.h&quot;</code><br />
 </div>
 <p><a href="_servo_8cpp_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-define-members" class="groupheader"><a id="define-members" name="define-members"></a>
+Macros</h2></td></tr>
+<tr class="memitem:a00d53024d7d4798b88eadb6b4d4aed5a" id="r_a00d53024d7d4798b88eadb6b4d4aed5a"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#a00d53024d7d4798b88eadb6b4d4aed5a">SERVO_CTIMER</a>&#160;&#160;&#160;CTIMER3</td></tr>
+<tr class="memitem:a99d64721b8bb6a2f157340e86e6db9d8" id="r_a99d64721b8bb6a2f157340e86e6db9d8"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#a99d64721b8bb6a2f157340e86e6db9d8">SERVO_CTIMER_INDEX</a>&#160;&#160;&#160;3u</td></tr>
+<tr class="memitem:a272b271871f7cdfa7a25b7475f502b95" id="r_a272b271871f7cdfa7a25b7475f502b95"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#a272b271871f7cdfa7a25b7475f502b95">SERVO_IRQn</a>&#160;&#160;&#160;CTIMER3_IRQn</td></tr>
+<tr class="memitem:a2362a15f0bc0d658ddf008209ff553ae" id="r_a2362a15f0bc0d658ddf008209ff553ae"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#a2362a15f0bc0d658ddf008209ff553ae">SERVO_IRQHandler</a></td></tr>
+<tr class="memitem:a39d41ae752af1046c887c7deee14d75b" id="r_a39d41ae752af1046c887c7deee14d75b"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#a39d41ae752af1046c887c7deee14d75b">SERVO_CLOCK_ATTACH</a>&#160;&#160;&#160;kFRO_HF_to_CTIMER3</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:a667140a6e63e11fe7dee1a39f4a32824" id="r_a667140a6e63e11fe7dee1a39f4a32824"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#a667140a6e63e11fe7dee1a39f4a32824">arduino_pin_raw</a> (int pin_num)</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-var-members" class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
 <tr class="memitem:abc00ea18975c0223e091c61ea7aeba9f" id="r_abc00ea18975c0223e091c61ea7aeba9f"><td class="memItemLeft">static uint8_t&#160;</td><td class="memItemRight"><a class="el" href="#abc00ea18975c0223e091c61ea7aeba9f">servo_count</a> = 0</td></tr>
 </table>
+<a name="doc-define-members" id="doc-define-members"></a><h2 id="header-doc-define-members" class="groupheader">Macro Definition Documentation</h2>
+<a id="a39d41ae752af1046c887c7deee14d75b" name="a39d41ae752af1046c887c7deee14d75b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a39d41ae752af1046c887c7deee14d75b">&#9670;&#160;</a></span>SERVO_CLOCK_ATTACH</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define SERVO_CLOCK_ATTACH&#160;&#160;&#160;kFRO_HF_to_CTIMER3</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="_servo_8cpp_source.html#l00101">101</a> of file <a class="el" href="_servo_8cpp_source.html">Servo.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a00d53024d7d4798b88eadb6b4d4aed5a" name="a00d53024d7d4798b88eadb6b4d4aed5a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a00d53024d7d4798b88eadb6b4d4aed5a">&#9670;&#160;</a></span>SERVO_CTIMER</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define SERVO_CTIMER&#160;&#160;&#160;CTIMER3</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="_servo_8cpp_source.html#l00097">97</a> of file <a class="el" href="_servo_8cpp_source.html">Servo.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a99d64721b8bb6a2f157340e86e6db9d8" name="a99d64721b8bb6a2f157340e86e6db9d8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a99d64721b8bb6a2f157340e86e6db9d8">&#9670;&#160;</a></span>SERVO_CTIMER_INDEX</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define SERVO_CTIMER_INDEX&#160;&#160;&#160;3u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="_servo_8cpp_source.html#l00098">98</a> of file <a class="el" href="_servo_8cpp_source.html">Servo.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a2362a15f0bc0d658ddf008209ff553ae" name="a2362a15f0bc0d658ddf008209ff553ae"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2362a15f0bc0d658ddf008209ff553ae">&#9670;&#160;</a></span>SERVO_IRQHandler</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void SERVO_IRQHandler</td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>void</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line">CTIMER3_IRQHandler</div>
+</div><!-- fragment -->
+<p class="definition">Definition at line <a class="el" href="_servo_8cpp_source.html#l00286">286</a> of file <a class="el" href="_servo_8cpp_source.html">Servo.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a272b271871f7cdfa7a25b7475f502b95" name="a272b271871f7cdfa7a25b7475f502b95"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a272b271871f7cdfa7a25b7475f502b95">&#9670;&#160;</a></span>SERVO_IRQn</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define SERVO_IRQn&#160;&#160;&#160;CTIMER3_IRQn</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="_servo_8cpp_source.html#l00099">99</a> of file <a class="el" href="_servo_8cpp_source.html">Servo.cpp</a>.</p>
+
+</div>
+</div>
+<a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function Documentation</h2>
+<a id="a667140a6e63e11fe7dee1a39f4a32824" name="a667140a6e63e11fe7dee1a39f4a32824"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a667140a6e63e11fe7dee1a39f4a32824">&#9670;&#160;</a></span>arduino_pin_raw()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int arduino_pin_raw </td>
+          <td>(</td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>pin_num</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="arduino__io_8cpp_source.html#l00083">83</a> of file <a class="el" href="arduino__io_8cpp_source.html">arduino_io.cpp</a>.</p>
+
+</div>
+</div>
 <a name="doc-var-members" id="doc-var-members"></a><h2 id="header-doc-var-members" class="groupheader">Variable Documentation</h2>
 <a id="abc00ea18975c0223e091c61ea7aeba9f" name="abc00ea18975c0223e091c61ea7aeba9f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#abc00ea18975c0223e091c61ea7aeba9f">&#9670;&#160;</a></span>servo_count</h2>
@@ -132,7 +253,7 @@ Variables</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_servo_8cpp_source.html#l00012">12</a> of file <a class="el" href="_servo_8cpp_source.html">Servo.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_servo_8cpp_source.html#l00025">25</a> of file <a class="el" href="_servo_8cpp_source.html">Servo.cpp</a>.</p>
 
 </div>
 </div>

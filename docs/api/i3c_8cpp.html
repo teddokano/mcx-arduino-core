@@ -23,7 +23,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.11.0</span>
+   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.12.0</span>
    </div>
    <div id="projectbrief">Arduino board support package for NXP FRDM MCX Series boards</div>
   </td>
@@ -100,6 +100,7 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 <div class="header">
   <div class="summary">
 <a href="#define-members">Macros</a> &#124;
+<a href="#func-members">Functions</a> &#124;
 <a href="#var-members">Variables</a>  </div>
   <div class="headertitle"><div class="title">i3c.cpp File Reference</div></div>
 </div><!--header-->
@@ -115,6 +116,10 @@ Macros</h2></td></tr>
 <tr class="memitem:a039307005eb408df115b1aef7055ba21" id="r_a039307005eb408df115b1aef7055ba21"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#a039307005eb408df115b1aef7055ba21">IBI_PAYLOAD_BUFFER_SIZE</a>&#160;&#160;&#160;10</td></tr>
 <tr class="memitem:a30612a5f6e47af8a081afa4ef7e81a01" id="r_a30612a5f6e47af8a081afa4ef7e81a01"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#a30612a5f6e47af8a081afa4ef7e81a01">EXAMPLE_MASTER</a>&#160;&#160;&#160;I3C1</td></tr>
 <tr class="memitem:a142c8fbc2a69aced6f313af4316f2902" id="r_a142c8fbc2a69aced6f313af4316f2902"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#a142c8fbc2a69aced6f313af4316f2902">I3C_MASTER_CLOCK_FREQUENCY</a>&#160;&#160;&#160;CLOCK_GetI3cClkFreq(1)</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:a1330c740c63d58566eb3ca2ccb2705e9" id="r_a1330c740c63d58566eb3ca2ccb2705e9"><td class="memItemLeft">static void&#160;</td><td class="memItemRight"><a class="el" href="#a1330c740c63d58566eb3ca2ccb2705e9">master_irq_handler</a> (I3C_Type *base, void *intHandle)</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-var-members" class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
@@ -174,6 +179,38 @@ Variables</h2></td></tr>
 </div><div class="memdoc">
 
 <p class="definition">Definition at line <a class="el" href="i3c_8cpp_source.html#l00018">18</a> of file <a class="el" href="i3c_8cpp_source.html">i3c.cpp</a>.</p>
+
+</div>
+</div>
+<a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function Documentation</h2>
+<a id="a1330c740c63d58566eb3ca2ccb2705e9" name="a1330c740c63d58566eb3ca2ccb2705e9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1330c740c63d58566eb3ca2ccb2705e9">&#9670;&#160;</a></span>master_irq_handler()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void master_irq_handler </td>
+          <td>(</td>
+          <td class="paramtype">I3C_Type *</td>          <td class="paramname"><span class="paramname"><em>base</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *</td>          <td class="paramname"><span class="paramname"><em>intHandle</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="i3c_8cpp_source.html#l00065">65</a> of file <a class="el" href="i3c_8cpp_source.html">i3c.cpp</a>.</p>
 
 </div>
 </div>

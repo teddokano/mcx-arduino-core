@@ -23,7 +23,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.11.0</span>
+   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.12.0</span>
    </div>
    <div id="projectbrief">Arduino board support package for NXP FRDM MCX Series boards</div>
   </td>
@@ -126,17 +126,19 @@ Private Attributes</h2></td></tr>
 <tr class="memitem:aa7b529a6932a903b4ab207818efb8409" id="r_aa7b529a6932a903b4ab207818efb8409"><td class="memItemLeft">uint8_t&#160;</td><td class="memItemRight"><a class="el" href="#aa7b529a6932a903b4ab207818efb8409">index</a></td></tr>
 <tr class="memitem:a423cc26aa772ef17e936a855e2f5fe1b" id="r_a423cc26aa772ef17e936a855e2f5fe1b"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#a423cc26aa772ef17e936a855e2f5fe1b">pin</a> = -1</td></tr>
 <tr class="memitem:aefffbacda871da255fcce80dd7eb7f1f" id="r_aefffbacda871da255fcce80dd7eb7f1f"><td class="memItemLeft"><a class="el" href="class_pwm_out.html">PwmOut</a> *&#160;</td><td class="memItemRight"><a class="el" href="#aefffbacda871da255fcce80dd7eb7f1f">pwm</a> = nullptr</td></tr>
+<tr class="memitem:a462d210b215dea4c4f7eccda738d8091" id="r_a462d210b215dea4c4f7eccda738d8091"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a462d210b215dea4c4f7eccda738d8091">on_timer</a> = false</td></tr>
 <tr class="memitem:a63bfa7d4fef58dabe9f14fd0c771ade3" id="r_a63bfa7d4fef58dabe9f14fd0c771ade3"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#a63bfa7d4fef58dabe9f14fd0c771ade3">min_us</a> = <a class="el" href="_servo_8h.html#ad95c8286fc30ece77d632ad00a94d80e">MIN_PULSE_WIDTH</a></td></tr>
 <tr class="memitem:ab01416b0aa2359e19057c06c62f8f799" id="r_ab01416b0aa2359e19057c06c62f8f799"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#ab01416b0aa2359e19057c06c62f8f799">max_us</a> = <a class="el" href="_servo_8h.html#a57a10261e6511f97317cee9076692315">MAX_PULSE_WIDTH</a></td></tr>
 <tr class="memitem:a9de99d191611f4b91b8b73690325ae74" id="r_a9de99d191611f4b91b8b73690325ae74"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#a9de99d191611f4b91b8b73690325ae74">pulse_us</a> = <a class="el" href="_servo_8h.html#a7eada57cb49e7b1766a813e4635d79bd">DEFAULT_PULSE_WIDTH</a></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>How many <a class="el" href="class_servo.html">Servo</a> objects can be made: one for each pin with PWM Drives a hobby RC servo, with the official <a class="el" href="class_servo.html">Servo</a> library's interface: <a class="el" href="#aeccd2077f07ebc45250da14e72a0c461">attach()</a>/detach(), <a class="el" href="#a72b4b546912eada96a6ef705168ceb8a">write()</a> in degrees or microseconds, <a class="el" href="#ac7fe3d6d2ea285ead98814bcfc417029">writeMicroseconds()</a>, <a class="el" href="#aaca0af33ba7d7c87c8a785b8eabf95a7">read()</a> and <a class="el" href="#a43950424d146c1414460066483d9561b">readMicroseconds()</a>.</p>
-<p>The pulses come from the pin's PWM hardware (FlexPWM), at 50Hz, so their width doesn't jitter. That limits the servo to a pin with PWM: PWM0-PWM5 on every board, and also D3, D5, D6 and D9 on FRDM-MCXA156 and FRDM-MCXN236 (on FRDM-MCXN236 these are four of PWM0-PWM5), and on FRDM-MCXC444 D3, D5, D6, D9 and D10, as on an UNO. On any other pin, <a class="el" href="#aeccd2077f07ebc45250da14e72a0c461">attach()</a> stops the sketch with <a class="el" href="mcu_8cpp.html#ad3cdbe388204f1d2a626f695cf59ddbb">panic()</a>, naming the pins to use. The official library on AVR uses any pin, which is why its examples use D9: on FRDM-MCXA153 and FRDM-MCXN947, change that to a PWM pin.</p>
+<div class="textblock"><p>Drives a hobby RC servo, with the official <a class="el" href="class_servo.html">Servo</a> library's interface: <a class="el" href="#aeccd2077f07ebc45250da14e72a0c461">attach()</a>/detach(), <a class="el" href="#a72b4b546912eada96a6ef705168ceb8a">write()</a> in degrees or microseconds, <a class="el" href="#ac7fe3d6d2ea285ead98814bcfc417029">writeMicroseconds()</a>, <a class="el" href="#aaca0af33ba7d7c87c8a785b8eabf95a7">read()</a> and <a class="el" href="#a43950424d146c1414460066483d9561b">readMicroseconds()</a>.</p>
+<p>On a pin with PWM &ndash; PWM0-PWM5 on every board, and also D3, D5, D6 and D9 on FRDM-MCXA156 and FRDM-MCXN236 (on FRDM-MCXN236 these are four of PWM0-PWM5), and on FRDM-MCXC444 D3, D5, D6, D9 and D10, as on an UNO &ndash; the pulses come from the PWM hardware, at 50Hz, so their width doesn't jitter.</p>
+<p>On any other digital pin, a timer interrupt raises and lowers the pin, as the official library does on AVR: one pulse after another, every 20ms, or longer when the pulses add up to more (12 servos at 2400us take about 29ms). Other interrupts can make these pulses a few microseconds longer or shorter, as on AVR. The timer is CTIMER2 (CTIMER3 on FRDM-MCXN947, where MCXEthernet uses CTIMER2), and TPM2 on FRDM-MCXC444. It runs only while such a servo is attached. A pulse is at most 20000us here.</p>
 <p>The two pins of a FlexPWM submodule share their period (see the board's PIN_MAPPING_*.md): attaching a servo sets the other pin's PWM to 50Hz too, and <a class="el" href="arduino__analog_8cpp.html#a43691e56dde3aceefab3866ded458ded">analogWriteFrequency()</a> on the other pin changes the servo's. Another servo, or <a class="el" href="arduino__analog_8cpp.html#a68551ebddbaf0d0ebfdb22a2a0be9d71">analogWrite()</a> at 50Hz, on the other pin is fine. On FRDM-MCXC444 the period is shared by a whole TPM: D5, D6, D9 and D10 (TPM0), and D3 (TPM1). D5, D6 and D9 share one TPM0 channel as well, so only one servo among them runs at a time: the one written last.</p>
 <p>Unlike the bundled mcxRCServo library, this leaves <a class="el" href="arduino__analog_8cpp.html#a68551ebddbaf0d0ebfdb22a2a0be9d71">analogWrite()</a>'s resolution alone. </p>
 
-<p class="definition">Definition at line <a class="el" href="_servo_8h_source.html#l00059">59</a> of file <a class="el" href="_servo_8h_source.html">Servo.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_servo_8h_source.html#l00058">58</a> of file <a class="el" href="_servo_8h_source.html">Servo.h</a>.</p>
 </div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a70b2b17657cf258cdcb57503bcf62cd2" name="a70b2b17657cf258cdcb57503bcf62cd2"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a70b2b17657cf258cdcb57503bcf62cd2">&#9670;&#160;</a></span>Servo()</h2>
@@ -153,7 +155,7 @@ Private Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_servo_8cpp_source.html#l00014">14</a> of file <a class="el" href="_servo_8cpp_source.html">Servo.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_servo_8cpp_source.html#l00292">292</a> of file <a class="el" href="_servo_8cpp_source.html">Servo.cpp</a>.</p>
 
 </div>
 </div>
@@ -174,13 +176,13 @@ Private Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>Start sending pulses on a pin, for 0-180 degrees as 544-2400us. A value written before is sent from the start; otherwise 1500us. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">pin</td><td>a pin with PWM (see above); any other pin stops the sketch with <a class="el" href="mcu_8cpp.html#ad3cdbe388204f1d2a626f695cf59ddbb">panic()</a> </td></tr>
+    <tr><td class="paramname">pin</td><td>any digital pin (see above); a pin that doesn't exist stops the sketch with <a class="el" href="mcu_8cpp.html#ad3cdbe388204f1d2a626f695cf59ddbb">panic()</a> </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>this servo's index, or INVALID_SERVO if this object is beyond MAX_SERVOS </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_servo_8cpp_source.html#l00019">19</a> of file <a class="el" href="_servo_8cpp_source.html">Servo.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_servo_8cpp_source.html#l00297">297</a> of file <a class="el" href="_servo_8cpp_source.html">Servo.cpp</a>.</p>
 
 </div>
 </div>
@@ -209,7 +211,7 @@ Private Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>The same, with the pulse widths for 0 and 180 degrees. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">pin</td><td>a pin with PWM </td></tr>
+    <tr><td class="paramname">pin</td><td>any digital pin </td></tr>
     <tr><td class="paramname">min</td><td>pulse width for 0 degrees [us] </td></tr>
     <tr><td class="paramname">max</td><td>pulse width for 180 degrees [us] </td></tr>
   </table>
@@ -217,7 +219,7 @@ Private Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>this servo's index, or INVALID_SERVO if this object is beyond MAX_SERVOS </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_servo_8cpp_source.html#l00024">24</a> of file <a class="el" href="_servo_8cpp_source.html">Servo.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_servo_8cpp_source.html#l00302">302</a> of file <a class="el" href="_servo_8cpp_source.html">Servo.cpp</a>.</p>
 
 </div>
 </div>
@@ -237,7 +239,7 @@ Private Attributes</h2></td></tr>
 </div><div class="memdoc">
 <dl class="section return"><dt>Returns</dt><dd>true between <a class="el" href="#aeccd2077f07ebc45250da14e72a0c461">attach()</a> and <a class="el" href="#a0b69ccc5c8b348ebaa84be91d973a362">detach()</a> </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_servo_8cpp_source.html#l00102">102</a> of file <a class="el" href="_servo_8cpp_source.html">Servo.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_servo_8cpp_source.html#l00425">425</a> of file <a class="el" href="_servo_8cpp_source.html">Servo.cpp</a>.</p>
 
 </div>
 </div>
@@ -257,7 +259,7 @@ Private Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>Stop the pulses; the pin stays LOW. <a class="el" href="#aeccd2077f07ebc45250da14e72a0c461">attach()</a> starts them again. </p>
 
-<p class="definition">Definition at line <a class="el" href="_servo_8cpp_source.html#l00055">55</a> of file <a class="el" href="_servo_8cpp_source.html">Servo.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_servo_8cpp_source.html#l00365">365</a> of file <a class="el" href="_servo_8cpp_source.html">Servo.cpp</a>.</p>
 
 </div>
 </div>
@@ -277,7 +279,7 @@ Private Attributes</h2></td></tr>
 </div><div class="memdoc">
 <dl class="section return"><dt>Returns</dt><dd>the current position as an angle, 0-180 degrees </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_servo_8cpp_source.html#l00090">90</a> of file <a class="el" href="_servo_8cpp_source.html">Servo.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_servo_8cpp_source.html#l00413">413</a> of file <a class="el" href="_servo_8cpp_source.html">Servo.cpp</a>.</p>
 
 </div>
 </div>
@@ -297,7 +299,7 @@ Private Attributes</h2></td></tr>
 </div><div class="memdoc">
 <dl class="section return"><dt>Returns</dt><dd>the current pulse width [us], or 0 if this object is beyond MAX_SERVOS </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_servo_8cpp_source.html#l00097">97</a> of file <a class="el" href="_servo_8cpp_source.html">Servo.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_servo_8cpp_source.html#l00420">420</a> of file <a class="el" href="_servo_8cpp_source.html">Servo.cpp</a>.</p>
 
 </div>
 </div>
@@ -324,7 +326,7 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_servo_8cpp_source.html#l00084">84</a> of file <a class="el" href="_servo_8cpp_source.html">Servo.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_servo_8cpp_source.html#l00405">405</a> of file <a class="el" href="_servo_8cpp_source.html">Servo.cpp</a>.</p>
 
 </div>
 </div>
@@ -349,7 +351,7 @@ Private Attributes</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="_servo_8cpp_source.html#l00064">64</a> of file <a class="el" href="_servo_8cpp_source.html">Servo.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_servo_8cpp_source.html#l00385">385</a> of file <a class="el" href="_servo_8cpp_source.html">Servo.cpp</a>.</p>
 
 </div>
 </div>
@@ -374,7 +376,7 @@ Private Attributes</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="_servo_8cpp_source.html#l00075">75</a> of file <a class="el" href="_servo_8cpp_source.html">Servo.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_servo_8cpp_source.html#l00396">396</a> of file <a class="el" href="_servo_8cpp_source.html">Servo.cpp</a>.</p>
 
 </div>
 </div>
@@ -399,7 +401,7 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_servo_8h_source.html#l00098">98</a> of file <a class="el" href="_servo_8h_source.html">Servo.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_servo_8h_source.html#l00097">97</a> of file <a class="el" href="_servo_8h_source.html">Servo.h</a>.</p>
 
 </div>
 </div>
@@ -451,6 +453,30 @@ Private Attributes</h2></td></tr>
 
 </div>
 </div>
+<a id="a462d210b215dea4c4f7eccda738d8091" name="a462d210b215dea4c4f7eccda738d8091"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a462d210b215dea4c4f7eccda738d8091">&#9670;&#160;</a></span>on_timer</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Servo::on_timer = false</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="_servo_8h_source.html#l00100">100</a> of file <a class="el" href="_servo_8h_source.html">Servo.h</a>.</p>
+
+</div>
+</div>
 <a id="a423cc26aa772ef17e936a855e2f5fe1b" name="a423cc26aa772ef17e936a855e2f5fe1b"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a423cc26aa772ef17e936a855e2f5fe1b">&#9670;&#160;</a></span>pin</h2>
 
@@ -471,7 +497,7 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_servo_8h_source.html#l00099">99</a> of file <a class="el" href="_servo_8h_source.html">Servo.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_servo_8h_source.html#l00098">98</a> of file <a class="el" href="_servo_8h_source.html">Servo.h</a>.</p>
 
 </div>
 </div>
@@ -519,7 +545,7 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_servo_8h_source.html#l00100">100</a> of file <a class="el" href="_servo_8h_source.html">Servo.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_servo_8h_source.html#l00099">99</a> of file <a class="el" href="_servo_8h_source.html">Servo.h</a>.</p>
 
 </div>
 </div>

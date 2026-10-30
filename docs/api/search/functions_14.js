@@ -11,5 +11,6 @@ var searchData=
   ['write_5fcore_8',['write_core',['../class_i2_c.html#a895c650f96ccd365be3f8841740cece1',1,'I2C']]],
   ['write_5flpi2c_9',['write_lpi2c',['../class_i2_c.html#a118479e8de3a0ba1fd26609c56aed375',1,'I2C']]],
   ['write_5fpolled_10',['write_polled',['../class_serial.html#a1648ffa115989f842ed3aae5aea8cda4',1,'Serial']]],
-  ['writemicroseconds_11',['writeMicroseconds',['../class_servo.html#ac7fe3d6d2ea285ead98814bcfc417029',1,'Servo']]]
+  ['write_5fratio_11',['write_ratio',['../class_pwm_out.html#a6e73cdb05146f1b54be973bc423ffe75',1,'PwmOut']]],
+  ['writemicroseconds_12',['writeMicroseconds',['../class_servo.html#ac7fe3d6d2ea285ead98814bcfc417029',1,'Servo']]]
 ];

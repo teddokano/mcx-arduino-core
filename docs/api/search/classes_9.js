@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['obj_0',['Obj',['../class_obj.html',1,'']]]
+  ['mcxticker_0',['mcxTicker',['../classmcx_ticker.html',1,'']]]
 ];

@@ -9,6 +9,7 @@ var searchData=
   ['masterconfig_6',['masterConfig',['../class_i2_c.html#ad3ac8e63765dd4cb1c31f2673fec0ab3',1,'I2C::masterConfig'],['../class_i3_c.html#ad7223ba2ecb5a0bf86e59cb754ba982a',1,'I3C::masterConfig'],['../class_s_p_i.html#a8c66f4b0497cf5edce3e6f4882f529b6',1,'SPI::masterConfig']]],
   ['max_5fus_7',['max_us',['../class_servo.html#ab01416b0aa2359e19057c06c62f8f799',1,'Servo']]],
   ['min_5fus_8',['min_us',['../class_servo.html#a63bfa7d4fef58dabe9f14fd0c771ade3',1,'Servo']]],
-  ['msg_9',['msg',['../mcu_8cpp.html#abd9542aa0655c819034a3e6831db5fc0',1,'mcu.cpp']]],
-  ['mux_10',['mux',['../struct_pin_pcr_info.html#a2aa65809ff660b613c3aa66361274150',1,'PinPcrInfo']]]
+  ['msecs_9',['msecs',['../namespace_ms_timer2.html#a5c1a7d4078da8dd273ca47091f69cf88',1,'MsTimer2']]],
+  ['msg_10',['msg',['../mcu_8cpp.html#abd9542aa0655c819034a3e6831db5fc0',1,'mcu.cpp']]],
+  ['mux_11',['mux',['../struct_pin_pcr_info.html#a2aa65809ff660b613c3aa66361274150',1,'PinPcrInfo']]]
 ];

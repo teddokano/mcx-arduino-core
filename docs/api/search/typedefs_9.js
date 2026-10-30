@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['uint_5ffarptr_5ft_0',['uint_farptr_t',['../pgmspace_8h.html#a72b6692e3f3123903c1a0d9a960c59b1',1,'pgmspace.h']]],
-  ['utick_5fcallback_5ft_1',['utick_callback_t',['../_interrupt_in_8cpp.html#aa3d22a18e554732d4d10adb16231100a',1,'InterruptIn.cpp']]]
+  ['thunk_5ft_0',['thunk_t',['../classmcx_ticker.html#a50c3575294ab012d5041728364fb1fad',1,'mcxTicker']]],
+  ['ticker_5fcallback_5ffp_5ft_1',['ticker_callback_fp_t',['../_ticker_8h.html#ac35acab1869d65eb7162f0ce9642abb0',1,'Ticker.h']]],
+  ['type_2',['type',['../structmcx_ticker_1_1same.html#a9d46baa87e3d70b736f20664457dd34c',1,'mcxTicker::same']]]
 ];

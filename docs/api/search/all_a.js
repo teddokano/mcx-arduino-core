@@ -6,7 +6,7 @@ var searchData=
   ['hardware_5finit_3',['hardware_init',['../namespacemcx__eth.html#af21ccf3cf80ddc3f6a51e99161fb6d05',1,'mcx_eth']]],
   ['hardwareserial_4',['HardwareSerial',['../arduino__serial_8h.html#a7cf3e960311084c07d356003c6353cd4',1,'arduino_serial.h']]],
   ['hardwarestatus_5',['hardwareStatus',['../class_ethernet_class.html#a5b5dbe23c5ebacb103ac138296c3e10e',1,'EthernetClass']]],
-  ['head_6',['head',['../struct_udp_slot.html#ae2077963df23e58e28fd6a874474cb8c',1,'UdpSlot']]],
+  ['head_6',['head',['../classmcx_ticker.html#af50d7d336c3c28b71fa6061e90cfc194',1,'mcxTicker::head'],['../struct_udp_slot.html#ae2077963df23e58e28fd6a874474cb8c',1,'UdpSlot::head']]],
   ['heap_5fend_7',['heap_end',['../dummy_8cpp.html#aa2a0cb9b31e7f4015c682831b5cfc2e1',1,'dummy.cpp']]],
   ['hex_8',['HEX',['../_print_8h.html#a9075d93e0ab26ccd6e059fa06aa4e3de',1,'Print.h']]],
   ['hex_5fvalue_9',['hex_value',['../_i_p_address_8cpp.html#a135cb3167b46a5d935a4576da8f9af96',1,'IPAddress.cpp']]],

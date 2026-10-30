@@ -17,6 +17,7 @@ var searchData=
   ['arduino_5fstdlib_2ecpp_14',['arduino_stdlib.cpp',['../arduino__stdlib_8cpp.html',1,'']]],
   ['arduino_5fstring_2ecpp_15',['arduino_string.cpp',['../arduino__string_8cpp.html',1,'']]],
   ['arduino_5fstring_2eh_16',['arduino_string.h',['../arduino__string_8h.html',1,'']]],
-  ['arduino_5ftone_2ecpp_17',['arduino_tone.cpp',['../arduino__tone_8cpp.html',1,'']]],
-  ['arduino_5ftone_2eh_18',['arduino_tone.h',['../arduino__tone_8h.html',1,'']]]
+  ['arduino_5ftimer_5fhooks_2eh_17',['arduino_timer_hooks.h',['../arduino__timer__hooks_8h.html',1,'']]],
+  ['arduino_5ftone_2ecpp_18',['arduino_tone.cpp',['../arduino__tone_8cpp.html',1,'']]],
+  ['arduino_5ftone_2eh_19',['arduino_tone.h',['../arduino__tone_8h.html',1,'']]]
 ];

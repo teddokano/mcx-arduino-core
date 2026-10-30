@@ -5,5 +5,6 @@ var searchData=
   ['addr_2',['addr',['../structmcx__eth_1_1_0fstruct_0e_8lookup.html#a5beac423e4133017431bdac67b4aef8e',1,'mcx_eth::[struct].lookup']]],
   ['address_3',['address',['../struct_wire_target.html#ac11ed2706ae6bb01dd4a2e9e35a7e77c',1,'WireTarget']]],
   ['analog_5fin_5fpins_4',['analog_in_pins',['../arduino__analog_8cpp.html#a212c6b8c03c6b287ea69883505e7e830',1,'arduino_analog.cpp']]],
-  ['arduino_5fpin_5fby_5fnumber_5',['arduino_pin_by_number',['../arduino__io_8h.html#a454580977bc2ef78058df44317dc705d',1,'arduino_io.h']]]
+  ['arduino_5fpin_5fby_5fnumber_5',['arduino_pin_by_number',['../arduino__io_8h.html#a454580977bc2ef78058df44317dc705d',1,'arduino_io.h']]],
+  ['arg_6',['arg',['../classmcx_ticker.html#a65320b18431bfa475b9b6b3202177499',1,'mcxTicker']]]
 ];

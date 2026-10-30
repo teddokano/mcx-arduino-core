@@ -23,7 +23,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.11.0</span>
+   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.12.0</span>
    </div>
    <div id="projectbrief">Arduino board support package for NXP FRDM MCX Series boards</div>
   </td>
@@ -308,7 +308,7 @@ Variables</h2></td></tr>
 <p>Set a PWM output pin's duty cycle. Lazily creates the pin's <a class="el" href="class_pwm_out.html" title="Mbed-compatible PWM output class.">PwmOut</a> instance on first use, with the default 1kHz period &ndash; or, if the other pin of its FlexPWM submodule is already running, at that pin's period. After <a class="el" href="arduino__io_8cpp.html#a2bf1cdfe3caa1e897b3511044b7b9bac">pinMode()</a> has made the pin GPIO, this puts it back on FlexPWM. On a pin with no PWM it drives the pin HIGH or LOW instead, as AVR's core does. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">pin_num</td><td>PWM pin (PWM0..PWM5, and D3/D5/D6/D9 on FRDM-MCXA156 and FRDM-MCXN236) </td></tr>
-    <tr><td class="paramname">value</td><td>duty cycle, scaled to <a class="el" href="arduino__analog_8h.html#a25470b33598d47433259152681ae63f2">analogWriteResolution()</a> bits (8 by default, so 0..255) </td></tr>
+    <tr><td class="paramname">value</td><td>duty cycle, scaled to <a class="el" href="arduino__analog_8h.html#a25470b33598d47433259152681ae63f2">analogWriteResolution()</a> bits (8 by default, so 0..255). It is set to the nearest tick of the PWM's counter: every value is a step of its own while one period has at least as many ticks as the resolution has values (8 bits up to 375kHz on FRDM-MCXA153/A156, about 586kHz on FRDM-MCXN947/N236 and 187.5kHz on FRDM-MCXC444). </td></tr>
   </table>
   </dd>
 </dl>

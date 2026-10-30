@@ -23,7 +23,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.11.0</span>
+   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.12.0</span>
    </div>
    <div id="projectbrief">Arduino board support package for NXP FRDM MCX Series boards</div>
   </td>
@@ -130,6 +130,8 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:ab992254dbb79b4cd796707848a90e501"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set period in milliseconds.  <br /></td></tr>
 <tr class="memitem:ad09052cd11bca81702be83beaf751851" id="r_ad09052cd11bca81702be83beaf751851"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ad09052cd11bca81702be83beaf751851">period_us</a> (int us)</td></tr>
 <tr class="memdesc:ad09052cd11bca81702be83beaf751851"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set period in microseconds.  <br /></td></tr>
+<tr class="memitem:a92988b7795fe7099c5cbc73176b0d064" id="r_a92988b7795fe7099c5cbc73176b0d064"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a92988b7795fe7099c5cbc73176b0d064">frequency</a> (uint32_t hz)</td></tr>
+<tr class="memdesc:a92988b7795fe7099c5cbc73176b0d064"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the period from a frequency in Hz, to the nearest tick of the PWM's clock (<a class="el" href="arduino__analog_8cpp.html#a43691e56dde3aceefab3866ded458ded">analogWriteFrequency()</a>).  <br /></td></tr>
 <tr class="memitem:a459fd3989531768d87769adc43b5d55f" id="r_a459fd3989531768d87769adc43b5d55f"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a459fd3989531768d87769adc43b5d55f">pulsewidth</a> (float seconds)</td></tr>
 <tr class="memdesc:a459fd3989531768d87769adc43b5d55f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set pulse width in seconds (clamped to period).  <br /></td></tr>
 <tr class="memitem:ad821e98b82bab332a3e53499f44fb188" id="r_ad821e98b82bab332a3e53499f44fb188"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ad821e98b82bab332a3e53499f44fb188">pulsewidth_ms</a> (int ms)</td></tr>
@@ -138,6 +140,8 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a862bf72b654374398ac730b4940d41ed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set pulse width in microseconds.  <br /></td></tr>
 <tr class="memitem:a4d95bd01f786eee501bc948e39c5e6e4" id="r_a4d95bd01f786eee501bc948e39c5e6e4"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a4d95bd01f786eee501bc948e39c5e6e4">write</a> (float duty)</td></tr>
 <tr class="memdesc:a4d95bd01f786eee501bc948e39c5e6e4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set duty cycle, 0.0 - 1.0.  <br /></td></tr>
+<tr class="memitem:a6e73cdb05146f1b54be973bc423ffe75" id="r_a6e73cdb05146f1b54be973bc423ffe75"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a6e73cdb05146f1b54be973bc423ffe75">write_ratio</a> (uint32_t num, uint32_t den)</td></tr>
+<tr class="memdesc:a6e73cdb05146f1b54be973bc423ffe75"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the duty as <code class="param">num</code> / <code class="param">den</code> of the period, to the nearest tick, with no float: <a class="el" href="arduino__analog_8cpp.html#a68551ebddbaf0d0ebfdb22a2a0be9d71">analogWrite()</a>'s value over its largest value.  <br /></td></tr>
 <tr class="memitem:a4e4f332621e66e098c157fe9f0eb2a3d" id="r_a4e4f332621e66e098c157fe9f0eb2a3d"><td class="memItemLeft">float&#160;</td><td class="memItemRight"><a class="el" href="#a4e4f332621e66e098c157fe9f0eb2a3d">read</a> (void)</td></tr>
 <tr class="memdesc:a4e4f332621e66e098c157fe9f0eb2a3d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get current duty cycle, 0.0 - 1.0.  <br /></td></tr>
 <tr class="memitem:a673fa0919719b180b6ed623e7e7e6b12" id="r_a673fa0919719b180b6ed623e7e7e6b12"><td class="memItemLeft"><a class="el" href="class_pwm_out.html">PwmOut</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a673fa0919719b180b6ed623e7e7e6b12">operator=</a> (float duty)</td></tr>
@@ -162,6 +166,8 @@ Static Public Member Functions</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 id="header-pri-methods" class="groupheader"><a id="pri-methods" name="pri-methods"></a>
 Private Member Functions</h2></td></tr>
 <tr class="memitem:a47d7d7a668ff0ad4429428262452bab5" id="r_a47d7d7a668ff0ad4429428262452bab5"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a47d7d7a668ff0ad4429428262452bab5">apply</a> (void)</td></tr>
+<tr class="memitem:aacf66cafa479099d5095a5b60e306b07" id="r_aacf66cafa479099d5095a5b60e306b07"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#aacf66cafa479099d5095a5b60e306b07">set_period</a> (uint32_t ticks)</td></tr>
+<tr class="memitem:aae81965a2bc17a5fb1d62406326b74b1" id="r_aae81965a2bc17a5fb1d62406326b74b1"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#aae81965a2bc17a5fb1d62406326b74b1">set_pulse</a> (uint32_t ticks)</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pri-attribs" class="groupheader"><a id="pri-attribs" name="pri-attribs"></a>
 Private Attributes</h2></td></tr>
@@ -174,7 +180,7 @@ Private Attributes</h2></td></tr>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Mbed-compatible PWM output class. </p>
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8h_source.html#l00061">61</a> of file <a class="el" href="_pwm_out_8h_source.html">PwmOut.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8h_source.html#l00065">65</a> of file <a class="el" href="_pwm_out_8h_source.html">PwmOut.h</a>.</p>
 </div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="ab9e14adc0a7c64520f9c647cdbeabcec" name="ab9e14adc0a7c64520f9c647cdbeabcec"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ab9e14adc0a7c64520f9c647cdbeabcec">&#9670;&#160;</a></span>PwmOut()</h2>
@@ -208,7 +214,7 @@ Private Attributes</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00220">220</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00261">261</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
 
 </div>
 </div>
@@ -237,7 +243,7 @@ Private Attributes</h2></td></tr>
 
 <p>Destroy the <a class="el" href="class_pwm_out.html" title="Mbed-compatible PWM output class.">PwmOut</a>. Sets duty to 0 (does not free the pin). </p>
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00291">291</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00332">332</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
 
 </div>
 </div>
@@ -265,7 +271,7 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00326">326</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00367">367</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
 
 </div>
 </div>
@@ -287,7 +293,28 @@ Private Attributes</h2></td></tr>
 <p>Put the pin back on FlexPWM after something else took it. </p>
 <p><a class="el" href="arduino__io_8cpp.html#a2bf1cdfe3caa1e897b3511044b7b9bac">pinMode()</a> switches a pin to GPIO without knowing about any <a class="el" href="class_pwm_out.html" title="Mbed-compatible PWM output class.">PwmOut</a> on it. This muxes the pin to FlexPWM again and records this <a class="el" href="class_pwm_out.html" title="Mbed-compatible PWM output class.">PwmOut</a> as its owner; the channel's period and duty are as they were. </p>
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00307">307</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00348">348</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a92988b7795fe7099c5cbc73176b0d064" name="a92988b7795fe7099c5cbc73176b0d064"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a92988b7795fe7099c5cbc73176b0d064">&#9670;&#160;</a></span>frequency()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void PwmOut::frequency </td>
+          <td>(</td>
+          <td class="paramtype">uint32_t</td>          <td class="paramname"><span class="paramname"><em>hz</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set the period from a frequency in Hz, to the nearest tick of the PWM's clock (<a class="el" href="arduino__analog_8cpp.html#a43691e56dde3aceefab3866ded458ded">analogWriteFrequency()</a>). </p>
+
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00468">468</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
 
 </div>
 </div>
@@ -324,7 +351,7 @@ Private Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true if FlexPWM reaches this pin </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00208">208</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00249">249</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
 
 </div>
 </div>
@@ -345,7 +372,7 @@ Private Attributes</h2></td></tr>
 
 <p>Mbed-style implicit conversion, equivalent to <a class="el" href="#a4e4f332621e66e098c157fe9f0eb2a3d" title="Get current duty cycle, 0.0 - 1.0.">read()</a>. </p>
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00453">453</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00524">524</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
 
 </div>
 </div>
@@ -366,7 +393,7 @@ Private Attributes</h2></td></tr>
 
 <p>Mbed-style assignment, equivalent to <a class="el" href="#a4d95bd01f786eee501bc948e39c5e6e4" title="Set duty cycle, 0.0 - 1.0.">write()</a>. </p>
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00447">447</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00518">518</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
 
 </div>
 </div>
@@ -387,7 +414,7 @@ Private Attributes</h2></td></tr>
 
 <p>Set period in seconds. Shared with the paired channel. </p>
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00375">375</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00464">464</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
 
 </div>
 </div>
@@ -408,7 +435,7 @@ Private Attributes</h2></td></tr>
 
 <p>Set period in milliseconds. </p>
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00401">401</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00465">465</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
 
 </div>
 </div>
@@ -429,7 +456,7 @@ Private Attributes</h2></td></tr>
 
 <p>Set period in microseconds. </p>
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00402">402</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00466">466</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
 
 </div>
 </div>
@@ -450,7 +477,7 @@ Private Attributes</h2></td></tr>
 
 <p>Set pulse width in seconds (clamped to period). </p>
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00404">404</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00476">476</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
 
 </div>
 </div>
@@ -471,7 +498,7 @@ Private Attributes</h2></td></tr>
 
 <p>Set pulse width in milliseconds. </p>
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00421">421</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00477">477</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
 
 </div>
 </div>
@@ -492,7 +519,7 @@ Private Attributes</h2></td></tr>
 
 <p>Set pulse width in microseconds. </p>
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00422">422</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00478">478</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
 
 </div>
 </div>
@@ -513,7 +540,7 @@ Private Attributes</h2></td></tr>
 
 <p>Get current duty cycle, 0.0 - 1.0. </p>
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00437">437</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00508">508</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
 
 </div>
 </div>
@@ -535,7 +562,61 @@ Private Attributes</h2></td></tr>
 <p>Stop recording this <a class="el" href="class_pwm_out.html" title="Mbed-compatible PWM output class.">PwmOut</a> as the pin's owner. </p>
 <p>For a caller about to switch the pin to another function. The channel itself keeps running, so <a class="el" href="#a9997d00aaed4279a61814e2f8d556442" title="Put the pin back on FlexPWM after something else took it.">claim_pin()</a> can take the pin back. </p>
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00321">321</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00362">362</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+
+</div>
+</div>
+<a id="aacf66cafa479099d5095a5b60e306b07" name="aacf66cafa479099d5095a5b60e306b07"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aacf66cafa479099d5095a5b60e306b07">&#9670;&#160;</a></span>set_period()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void PwmOut::set_period </td>
+          <td>(</td>
+          <td class="paramtype">uint32_t</td>          <td class="paramname"><span class="paramname"><em>ticks</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00431">431</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+
+</div>
+</div>
+<a id="aae81965a2bc17a5fb1d62406326b74b1" name="aae81965a2bc17a5fb1d62406326b74b1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aae81965a2bc17a5fb1d62406326b74b1">&#9670;&#160;</a></span>set_pulse()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void PwmOut::set_pulse </td>
+          <td>(</td>
+          <td class="paramtype">uint32_t</td>          <td class="paramname"><span class="paramname"><em>ticks</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00453">453</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
 
 </div>
 </div>
@@ -572,7 +653,7 @@ Private Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true if a <a class="el" href="class_pwm_out.html" title="Mbed-compatible PWM output class.">PwmOut</a> already exists on this pin's submodule </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00213">213</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00254">254</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
 
 </div>
 </div>
@@ -593,7 +674,32 @@ Private Attributes</h2></td></tr>
 
 <p>Set duty cycle, 0.0 - 1.0. </p>
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00424">424</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00480">480</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a6e73cdb05146f1b54be973bc423ffe75" name="a6e73cdb05146f1b54be973bc423ffe75"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6e73cdb05146f1b54be973bc423ffe75">&#9670;&#160;</a></span>write_ratio()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void PwmOut::write_ratio </td>
+          <td>(</td>
+          <td class="paramtype">uint32_t</td>          <td class="paramname"><span class="paramname"><em>num</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t</td>          <td class="paramname"><span class="paramname"><em>den</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set the duty as <code class="param">num</code> / <code class="param">den</code> of the period, to the nearest tick, with no float: <a class="el" href="arduino__analog_8cpp.html#a68551ebddbaf0d0ebfdb22a2a0be9d71">analogWrite()</a>'s value over its largest value. </p>
+
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00493">493</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
 
 </div>
 </div>
@@ -618,7 +724,7 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8h_source.html#l00151">151</a> of file <a class="el" href="_pwm_out_8h_source.html">PwmOut.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8h_source.html#l00163">163</a> of file <a class="el" href="_pwm_out_8h_source.html">PwmOut.h</a>.</p>
 
 </div>
 </div>
@@ -642,7 +748,7 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8h_source.html#l00150">150</a> of file <a class="el" href="_pwm_out_8h_source.html">PwmOut.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8h_source.html#l00162">162</a> of file <a class="el" href="_pwm_out_8h_source.html">PwmOut.h</a>.</p>
 
 </div>
 </div>
@@ -666,7 +772,7 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8h_source.html#l00148">148</a> of file <a class="el" href="_pwm_out_8h_source.html">PwmOut.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8h_source.html#l00160">160</a> of file <a class="el" href="_pwm_out_8h_source.html">PwmOut.h</a>.</p>
 
 </div>
 </div>
@@ -690,7 +796,7 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8h_source.html#l00152">152</a> of file <a class="el" href="_pwm_out_8h_source.html">PwmOut.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8h_source.html#l00164">164</a> of file <a class="el" href="_pwm_out_8h_source.html">PwmOut.h</a>.</p>
 
 </div>
 </div>
@@ -714,7 +820,7 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8h_source.html#l00149">149</a> of file <a class="el" href="_pwm_out_8h_source.html">PwmOut.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8h_source.html#l00161">161</a> of file <a class="el" href="_pwm_out_8h_source.html">PwmOut.h</a>.</p>
 
 </div>
 </div>

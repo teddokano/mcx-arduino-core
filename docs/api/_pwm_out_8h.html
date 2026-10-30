@@ -23,7 +23,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.11.0</span>
+   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.12.0</span>
    </div>
    <div id="projectbrief">Arduino board support package for NXP FRDM MCX Series boards</div>
   </td>
@@ -141,14 +141,15 @@ Example usage</h3>
 <div class="fragment"><div class="line"><a class="code hl_class" href="class_pwm_out.html">PwmOut</a> pwm( <a class="code hl_define" href="io_8h.html#a7a4ad06a2bcb1065209a117ea09bbfbf">PWM0</a> );</div>
 <div class="line">pwm.period_ms( 20 );</div>
 <div class="line">pwm.write( 0.5f );    <span class="comment">// 50% duty</span></div>
-<div class="ttc" id="aclass_pwm_out_html"><div class="ttname"><a href="class_pwm_out.html">PwmOut</a></div><div class="ttdoc">Mbed-compatible PWM output class.</div><div class="ttdef"><b>Definition</b> <a href="_pwm_out_8h_source.html#l00061">PwmOut.h:62</a></div></div>
+<div class="ttc" id="aclass_pwm_out_html"><div class="ttname"><a href="class_pwm_out.html">PwmOut</a></div><div class="ttdoc">Mbed-compatible PWM output class.</div><div class="ttdef"><b>Definition</b> <a href="_pwm_out_8h_source.html#l00065">PwmOut.h:66</a></div></div>
 <div class="ttc" id="aio_8h_html_a7a4ad06a2bcb1065209a117ea09bbfbf"><div class="ttname"><a href="io_8h.html#a7a4ad06a2bcb1065209a117ea09bbfbf">PWM0</a></div><div class="ttdeci">#define PWM0</div><div class="ttdef"><b>Definition</b> <a href="io_8h_source.html#l00237">io.h:237</a></div></div>
 </div><!-- fragment --><h3 class="doxsection"><a class="anchor" id="autotoc_md3"></a>
 Design notes &ndash; IMPORTANT</h3>
 <ul>
-<li><b>The period is shared per submodule.</b> Channels A and B of a submodule share one period register; only the duty is independent. period() on one <a class="el" href="class_pwm_out.html" title="Mbed-compatible PWM output class.">PwmOut</a> changes the period of the other channel of its submodule too, and that channel keeps its pulse width in microseconds (clamped to the new period). A <a class="el" href="class_pwm_out.html" title="Mbed-compatible PWM output class.">PwmOut</a> made on a submodule whose other channel is already running takes over the running period instead of resetting it. This is a hardware constraint, documented here per Mbed HAL convention (same approach as shared-timer PWM pins on official Mbed targets).</li>
+<li><b>The period is shared per submodule.</b> Channels A and B of a submodule share one period register; only the duty is independent. period() on one <a class="el" href="class_pwm_out.html" title="Mbed-compatible PWM output class.">PwmOut</a> changes the period of the other channel of its submodule too, and that channel keeps its pulse width (clamped to the new period). A <a class="el" href="class_pwm_out.html" title="Mbed-compatible PWM output class.">PwmOut</a> made on a submodule whose other channel is already running takes over the running period instead of resetting it. This is a hardware constraint, documented here per Mbed HAL convention (same approach as shared-timer PWM pins on official Mbed targets).</li>
 <li>Each FlexPWM instance is taken out of reset by the first <a class="el" href="class_pwm_out.html" title="Mbed-compatible PWM output class.">PwmOut</a> on it, and each submodule is initialized (fault-disable map cleared) by the first <a class="el" href="class_pwm_out.html" title="Mbed-compatible PWM output class.">PwmOut</a> on that submodule.</li>
 <li>~PwmOut() only sets the duty to 0; it does not revert the pin to GPIO (matches Mbed's pwmout_free() scope).</li>
+<li>Periods and pulse widths are kept in ticks of FlexPWM's clock (96MHz on FRDM-MCXA153/A156, 150MHz on FRDM-MCXN947/N236), before the prescaler, and set to the nearest tick: the duty has as many steps as the 16-bit counter counts in one period at any frequency.</li>
 </ul>
 <dl class="section author"><dt>Author</dt><dd>Tedd OKANO </dd></dl>
 <dl class="section copyright"><dt>Copyright</dt><dd>MIT License </dd></dl>

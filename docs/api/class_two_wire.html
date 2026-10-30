@@ -23,7 +23,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.11.0</span>
+   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.12.0</span>
    </div>
    <div id="projectbrief">Arduino board support package for NXP FRDM MCX Series boards</div>
   </td>
@@ -97,6 +97,7 @@ document.addEventListener('DOMContentLoaded', codefold.init);
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pri-methods">Private Member Functions</a> &#124;
+<a href="#pri-static-methods">Static Private Member Functions</a> &#124;
 <a href="#pri-attribs">Private Attributes</a> &#124;
 <a href="class_two_wire-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">TwoWire Class Reference</div></div>
@@ -122,6 +123,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a96f2477bba1630c25b9e318ced8585ab" id="r_a96f2477bba1630c25b9e318ced8585ab"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a96f2477bba1630c25b9e318ced8585ab">begin</a> (uint8_t address)</td></tr>
 <tr class="memitem:af8592d8df650701e088e22e564bc73c8" id="r_af8592d8df650701e088e22e564bc73c8"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#af8592d8df650701e088e22e564bc73c8">begin</a> (int address)</td></tr>
 <tr class="memitem:ab20ec491749f826abab709e3fce0183c" id="r_ab20ec491749f826abab709e3fce0183c"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ab20ec491749f826abab709e3fce0183c">end</a> (void)</td></tr>
+<tr class="memitem:af47888c4eb28879a1a1cf4ab80c2ae97" id="r_af47888c4eb28879a1a1cf4ab80c2ae97"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#af47888c4eb28879a1a1cf4ab80c2ae97">setPins</a> (int sda, int scl)</td></tr>
 <tr class="memitem:a7a3448f4e65902faedff1eac8f5ac5cc" id="r_a7a3448f4e65902faedff1eac8f5ac5cc"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a7a3448f4e65902faedff1eac8f5ac5cc">onReceive</a> (void(*handler)(int))</td></tr>
 <tr class="memitem:a957e81e816b2d5e7184c3a769e59a4e1" id="r_a957e81e816b2d5e7184c3a769e59a4e1"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a957e81e816b2d5e7184c3a769e59a4e1">onRequest</a> (void(*handler)(void))</td></tr>
 <tr class="memitem:a1a575ef5585ac41f10b9d10de54b6bc6" id="r_a1a575ef5585ac41f10b9d10de54b6bc6"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a1a575ef5585ac41f10b9d10de54b6bc6">setClock</a> (uint32_t freq)</td></tr>
@@ -140,6 +142,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a8276178adf940a550b8d71082c735c44" id="r_a8276178adf940a550b8d71082c735c44"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a8276178adf940a550b8d71082c735c44">getWireTimeoutFlag</a> (void)</td></tr>
 <tr class="memitem:a8a4dc7bcbde6fc35ae2fa8a9c572ccc6" id="r_a8a4dc7bcbde6fc35ae2fa8a9c572ccc6"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a8a4dc7bcbde6fc35ae2fa8a9c572ccc6">clearWireTimeoutFlag</a> (void)</td></tr>
 <tr class="memitem:ada135d88d3e90a5ac89d08bef8be26c2" id="r_ada135d88d3e90a5ac89d08bef8be26c2"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ada135d88d3e90a5ac89d08bef8be26c2">target_event</a> (void *xfer)</td></tr>
+<tr class="memitem:a1fa23e6643f893e657a908d5d0c48c1d" id="r_a1fa23e6643f893e657a908d5d0c48c1d"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#a1fa23e6643f893e657a908d5d0c48c1d">raw_sda</a> (void) const</td></tr>
+<tr class="memitem:adb245388b9b1e554af05f35168bf7b54" id="r_adb245388b9b1e554af05f35168bf7b54"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#adb245388b9b1e554af05f35168bf7b54">raw_scl</a> (void) const</td></tr>
+<tr class="memdesc:adb245388b9b1e554af05f35168bf7b54"><td class="mdescLeft">&#160;</td><td class="mdescRight">as <a class="el" href="#a1fa23e6643f893e657a908d5d0c48c1d">raw_sda()</a>  <br /></td></tr>
 <tr class="memitem:abfdd93a61c4b95a3ba41680188505e73" id="r_abfdd93a61c4b95a3ba41680188505e73"><td class="memItemLeft">size_t&#160;</td><td class="memItemRight"><a class="el" href="#abfdd93a61c4b95a3ba41680188505e73">write</a> (const char *buffer, size_t size)</td></tr>
 <tr class="memitem:a5b40e0e9cab1f2fe5bb0cb22ffe5adda" id="r_a5b40e0e9cab1f2fe5bb0cb22ffe5adda"><td class="memItemLeft">size_t&#160;</td><td class="memItemRight"><a class="el" href="#a5b40e0e9cab1f2fe5bb0cb22ffe5adda">write</a> (const char *str)</td></tr>
 <tr id="pub-methods-0" class="groupHeader"><td colspan="2"><div class="groupHeader">write() of an integer queues its low byte</div></td></tr>
@@ -206,11 +211,20 @@ Private Member Functions</h2></td></tr>
 <tr class="memitem:acfd618ebfa1d6750c40fe4f0c96f18c9" id="r_acfd618ebfa1d6750c40fe4f0c96f18c9"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#acfd618ebfa1d6750c40fe4f0c96f18c9">target_stop</a> (void)</td></tr>
 <tr class="memitem:a8eec900e1ec7276d29d35e2133060514" id="r_a8eec900e1ec7276d29d35e2133060514"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a8eec900e1ec7276d29d35e2133060514">on_i3c_pins</a> (void) const</td></tr>
 <tr class="memitem:a6fb77f1f9b076f44fcb32f0e958907fd" id="r_a6fb77f1f9b076f44fcb32f0e958907fd"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a6fb77f1f9b076f44fcb32f0e958907fd">check_timeout</a> (int status)</td></tr>
+<tr class="memitem:a2506c4062e8fe33f3ed05fe8e392412c" id="r_a2506c4062e8fe33f3ed05fe8e392412c"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a2506c4062e8fe33f3ed05fe8e392412c">release_pads</a> (void)</td></tr>
+<tr class="memitem:aa1de0ee99d5b9215ca26d0e3733cf26f" id="r_aa1de0ee99d5b9215ca26d0e3733cf26f"><td class="memItemLeft">const char *&#160;</td><td class="memItemRight"><a class="el" href="#aa1de0ee99d5b9215ca26d0e3733cf26f">peripheral</a> (void) const</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-pri-static-methods" class="groupheader"><a id="pri-static-methods" name="pri-static-methods"></a>
+Static Private Member Functions</h2></td></tr>
+<tr class="memitem:a66c69695207c944de2dc716edd3bf88c" id="r_a66c69695207c944de2dc716edd3bf88c"><td class="memItemLeft">static <a class="el" href="class_two_wire.html">TwoWire</a> *&#160;</td><td class="memItemRight"><a class="el" href="#a66c69695207c944de2dc716edd3bf88c">running_on</a> (const char *periph, const <a class="el" href="class_two_wire.html">TwoWire</a> *except)</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pri-attribs" class="groupheader"><a id="pri-attribs" name="pri-attribs"></a>
 Private Attributes</h2></td></tr>
-<tr class="memitem:a38c0a1c4cf88597fe04f3a9dfef02c06" id="r_a38c0a1c4cf88597fe04f3a9dfef02c06"><td class="memItemLeft">const int&#160;</td><td class="memItemRight"><a class="el" href="#a38c0a1c4cf88597fe04f3a9dfef02c06">_sda</a></td></tr>
-<tr class="memitem:ac3a581a0fb6f55957406080bc66cfcbb" id="r_ac3a581a0fb6f55957406080bc66cfcbb"><td class="memItemLeft">const int&#160;</td><td class="memItemRight"><a class="el" href="#ac3a581a0fb6f55957406080bc66cfcbb">_scl</a></td></tr>
+<tr class="memitem:a5f8d5e50702fe87cd13fe576b3ae417f" id="r_a5f8d5e50702fe87cd13fe576b3ae417f"><td class="memItemLeft">const int&#160;</td><td class="memItemRight"><a class="el" href="#a5f8d5e50702fe87cd13fe576b3ae417f">own_sda</a></td></tr>
+<tr class="memitem:a853dcf81bc3ae8e6502365ec13070c8b" id="r_a853dcf81bc3ae8e6502365ec13070c8b"><td class="memItemLeft">const int&#160;</td><td class="memItemRight"><a class="el" href="#a853dcf81bc3ae8e6502365ec13070c8b">own_scl</a></td></tr>
+<tr class="memitem:ae79740839a0b361cfebc03c6a033ea2f" id="r_ae79740839a0b361cfebc03c6a033ea2f"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#ae79740839a0b361cfebc03c6a033ea2f">_sda</a></td></tr>
+<tr class="memitem:a42825e721f4682c68c2db2aa4f56734f" id="r_a42825e721f4682c68c2db2aa4f56734f"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#a42825e721f4682c68c2db2aa4f56734f">_scl</a></td></tr>
+<tr class="memitem:a2f056d4eacea07d8e31f5b96bfd53429" id="r_a2f056d4eacea07d8e31f5b96bfd53429"><td class="memItemLeft">uint8_t&#160;</td><td class="memItemRight"><a class="el" href="#a2f056d4eacea07d8e31f5b96bfd53429">pad_mux</a></td></tr>
 <tr class="memitem:acf9e7bbf42b6303fc9d80e27853ad768" id="r_acf9e7bbf42b6303fc9d80e27853ad768"><td class="memItemLeft"><a class="el" href="class_i2_c.html">I2C</a> *&#160;</td><td class="memItemRight"><a class="el" href="#acf9e7bbf42b6303fc9d80e27853ad768">i2c</a></td></tr>
 <tr class="memitem:a7a7578126e1c1e69c286b4cd110d360f" id="r_a7a7578126e1c1e69c286b4cd110d360f"><td class="memItemLeft">uint8_t&#160;</td><td class="memItemRight"><a class="el" href="#a7a7578126e1c1e69c286b4cd110d360f">targ_addr</a></td></tr>
 <tr class="memitem:a70674110940c550ec49a44d410c90c55" id="r_a70674110940c550ec49a44d410c90c55"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#a70674110940c550ec49a44d410c90c55">baudrate</a></td></tr>
@@ -245,7 +259,7 @@ Additional Inherited Members</h2></td></tr>
 <p>A <a class="el" href="class_stream.html">Stream</a>, as in every official core: <a class="el" href="class_print.html#a4ba8a908c5e7297f219849355d1c90f9">print()</a> goes into the transaction being built, and the parse/find/readBytes helpers read what the last <a class="el" href="#aea9b0478fb81b05bff3934e8a5044e5c">requestFrom()</a> got, so a Wire can be handed to code that takes a <a class="el" href="class_print.html">Print</a>&amp; or <a class="el" href="class_stream.html">Stream</a>&amp;. The outgoing and incoming data have separate buffers, so starting a transaction does not throw away bytes not yet read.</p>
 <p>begin(address) also makes it a target (slave), as on AVR: <a class="el" href="#a7a3448f4e65902faedff1eac8f5ac5cc">onReceive()</a> and <a class="el" href="#a957e81e816b2d5e7184c3a769e59a4e1">onRequest()</a> handlers run, from the interrupt, when a controller writes to or reads from that address, and the bus can still be used as a controller at the same time. Not on Wire1 where it runs on the <a class="el" href="class_i3_c.html">I3C</a> peripheral (FRDM-MCXA153 and FRDM-MCXN947), and not on FRDM-MCXN947's Wire2, whose LPI2C doesn't respond as a target (see <a class="el" href="#a96f2477bba1630c25b9e318ced8585ab">begin(uint8_t)</a>). </p>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00052">52</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00056">56</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 </div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a5fa75b7b2ac33b8a92a7fb0d4b8d4f41" name="a5fa75b7b2ac33b8a92a7fb0d4b8d4f41"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a5fa75b7b2ac33b8a92a7fb0d4b8d4f41">&#9670;&#160;</a></span>TwoWire()</h2>
@@ -274,7 +288,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00090">90</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00161">161</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -305,7 +319,7 @@ Additional Inherited Members</h2></td></tr>
 
 <p>Implements <a class="el" href="class_stream.html#a581d4e5d65d14b52406f65be388bae96">Stream</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00794">794</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00969">969</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -331,7 +345,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00141">141</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00297">297</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -357,7 +371,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00115">115</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00271">271</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -377,7 +391,7 @@ Additional Inherited Members</h2></td></tr>
 </div><div class="memdoc">
 <p>Join the bus as the controller (master), at 100kHz; <a class="el" href="#a1a575ef5585ac41f10b9d10de54b6bc6">setClock()</a> changes that. Lazily creates the underlying <a class="el" href="class_i2_c.html">I2C</a> or <a class="el" href="class_i3_c.html">I3C</a> instance (<a class="el" href="class_i3_c.html">I3C</a>, in I2C_MODE, if sda_pin/scl_pin are this board's I3C_SDA/I3C_SCL). On the LPI2C buses (Wire, Wire2) it also turns on the pins' internal pull-ups, as AVR and UNO R4 do. </p>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00109">109</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00265">265</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -402,7 +416,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00628">628</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00803">803</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -429,7 +443,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00772">772</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00947">947</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -449,7 +463,7 @@ Additional Inherited Members</h2></td></tr>
 </div><div class="memdoc">
 <p>Clear the flag <a class="el" href="#a8276178adf940a550b8d71082c735c44">getWireTimeoutFlag()</a> reports. </p>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00767">767</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00942">942</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -469,7 +483,7 @@ Additional Inherited Members</h2></td></tr>
 </div><div class="memdoc">
 <p>Deinitialize the bus, target side included, turn the internal pull-ups off again (as AVR does), and free the underlying I2C/I3C instance. </p>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00602">602</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00777">777</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -495,7 +509,7 @@ Additional Inherited Members</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>as AVR's: 0 success, 2 the address was not acknowledged, 3 a data byte was not acknowledged, 4 another error (bus busy, arbitration lost, ...), 5 timeout (<a class="el" href="#aa797b7d683b4ea371b7c20df9b96483b">setWireTimeout()</a>). The LPI2C (Wire on every board but FRDM-MCXC444, and the other LPI2C buses) can't tell a data byte's NAK from the address's, so it gives 2 for both. <a class="el" href="#ac1d3082a4e621256b8244770c0071109">lastStatus()</a> has the driver's own status code </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00692">692</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00867">867</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -525,7 +539,7 @@ Additional Inherited Members</h2></td></tr>
 
 <p>Reimplemented from <a class="el" href="class_print.html#a26dfe3ee0d55233c117464b91b9b9cdc">Print</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00220">220</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00255">255</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -545,7 +559,7 @@ Additional Inherited Members</h2></td></tr>
 </div><div class="memdoc">
 <dl class="section return"><dt>Returns</dt><dd>true if a transfer has timed out since the flag was last cleared </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00762">762</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00937">937</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -573,7 +587,7 @@ Additional Inherited Members</h2></td></tr>
 </div><div class="memdoc">
 <p>Not in the official API: the driver's status code from the last <a class="el" href="#aff155a1530c1bf8a5ad96e6e30c2821a">endTransmission()</a> or <a class="el" href="#aea9b0478fb81b05bff3934e8a5044e5c">requestFrom()</a> (an MCUXpresso SDK status_t, 0 on success), for telling apart what <a class="el" href="#aff155a1530c1bf8a5ad96e6e30c2821a">endTransmission()</a>'s 4 covers. <a class="el" href="#aff155a1530c1bf8a5ad96e6e30c2821a">endTransmission()</a> returned this, cut to 8 bits, before v0.11.0 </p>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00182">182</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00217">217</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -600,7 +614,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00096">96</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00252">252</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -626,7 +640,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00154">154</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00310">310</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -651,7 +665,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00159">159</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00315">315</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -681,7 +695,91 @@ Additional Inherited Members</h2></td></tr>
 
 <p>Implements <a class="el" href="class_stream.html#ae32bb452cfa163b14bde00ce292737f5">Stream</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00806">806</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00981">981</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+
+</div>
+</div>
+<a id="aa1de0ee99d5b9215ca26d0e3733cf26f" name="aa1de0ee99d5b9215ca26d0e3733cf26f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa1de0ee99d5b9215ca26d0e3733cf26f">&#9670;&#160;</a></span>peripheral()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const char * TwoWire::peripheral </td>
+          <td>(</td>
+          <td class="paramtype">void</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00176">176</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+
+</div>
+</div>
+<a id="adb245388b9b1e554af05f35168bf7b54" name="adb245388b9b1e554af05f35168bf7b54"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adb245388b9b1e554af05f35168bf7b54">&#9670;&#160;</a></span>raw_scl()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int TwoWire::raw_scl </td>
+          <td>(</td>
+          <td class="paramtype">void</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>as <a class="el" href="#a1fa23e6643f893e657a908d5d0c48c1d">raw_sda()</a> </p>
+
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00293">293</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+
+</div>
+</div>
+<a id="a1fa23e6643f893e657a908d5d0c48c1d" name="a1fa23e6643f893e657a908d5d0c48c1d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1fa23e6643f893e657a908d5d0c48c1d">&#9670;&#160;</a></span>raw_sda()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int TwoWire::raw_sda </td>
+          <td>(</td>
+          <td class="paramtype">void</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Internal, for the mcxPinState library: the pins this bus is on now (<a class="el" href="#af47888c4eb28879a1a1cf4ab80c2ae97">setPins()</a> moves them), as r01lib's raw pin values. Not part of the API. </p>
+
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00292">292</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -711,7 +809,34 @@ Additional Inherited Members</h2></td></tr>
 
 <p>Implements <a class="el" href="class_stream.html#a58207b97e74e5500a85f1ac88199636f">Stream</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00799">799</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00974">974</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a2506c4062e8fe33f3ed05fe8e392412c" name="a2506c4062e8fe33f3ed05fe8e392412c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2506c4062e8fe33f3ed05fe8e392412c">&#9670;&#160;</a></span>release_pads()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void TwoWire::release_pads </td>
+          <td>(</td>
+          <td class="paramtype">void</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00234">234</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -748,7 +873,7 @@ Additional Inherited Members</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>number of bytes actually read (0 on failure) </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00701">701</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00876">876</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -798,7 +923,38 @@ Additional Inherited Members</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>number of bytes actually read; 0 if the target did not acknowledge the register address, where AVR goes on to attempt the read anyway </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00724">724</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00899">899</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a66c69695207c944de2dc716edd3bf88c" name="a66c69695207c944de2dc716edd3bf88c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a66c69695207c944de2dc716edd3bf88c">&#9670;&#160;</a></span>running_on()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="class_two_wire.html">TwoWire</a> * TwoWire::running_on </td>
+          <td>(</td>
+          <td class="paramtype">const char *</td>          <td class="paramname"><span class="paramname"><em>periph</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="class_two_wire.html">TwoWire</a> *</td>          <td class="paramname"><span class="paramname"><em>except</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel static">static</span><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00181">181</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -823,7 +979,41 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00613">613</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00788">788</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+
+</div>
+</div>
+<a id="af47888c4eb28879a1a1cf4ab80c2ae97" name="af47888c4eb28879a1a1cf4ab80c2ae97"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af47888c4eb28879a1a1cf4ab80c2ae97">&#9670;&#160;</a></span>setPins()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool TwoWire::setPins </td>
+          <td>(</td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>sda</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>scl</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Not in AVR's API (ESP32 has the same one): move this bus to A4/A5, or back to its own pins, for shields made for UNO boards whose <a class="el" href="class_i2_c.html">I2C</a> is on A4/A5. Call it before <a class="el" href="#aa66b28250a467de8ba1c7da97872e74a">begin()</a>, or after <a class="el" href="#ab20ec491749f826abab709e3fce0183c">end()</a>.</p>
+<p>A4/A5 have an <a class="el" href="class_i2_c.html">I2C</a> on FRDM-MCXA156 (LPI2C1; Wire or Wire1 can move there), FRDM-MCXN236 (LPI2C2, Wire1's own; Wire or Wire1) and FRDM-MCXC444 (I2C1, Wire's own; Wire only, as Wire1's own pins have no Arduino pin number to move it back by), and none on FRDM-MCXA153 and FRDM-MCXN947. One peripheral runs one bus at a time: on FRDM-MCXN236, Wire on A4/A5 and Wire1 can't both be begun. A <a class="el" href="#aa66b28250a467de8ba1c7da97872e74a">begin()</a> that would take a peripheral another <a class="el" href="class_two_wire.html">TwoWire</a> is running stops in <a class="el" href="mcu_8cpp.html#ad3cdbe388204f1d2a626f695cf59ddbb">panic()</a>.</p>
+<p>The pins it leaves go back to plain GPIO inputs, if this bus had them and nothing has taken them since. So do another <a class="el" href="class_two_wire.html">TwoWire</a>'s, left on the same peripheral by its <a class="el" href="#ab20ec491749f826abab709e3fce0183c">end()</a>, when <a class="el" href="#aa66b28250a467de8ba1c7da97872e74a">begin()</a> starts it here (FRDM-MCXN236: Wire on A4/A5 after Wire1, or the other way).</p>
+<p><a class="el" href="#aa66b28250a467de8ba1c7da97872e74a">begin()</a> turns on the pins' internal pull-ups, as it does on every pin pair. FRDM-MCXA156 and FRDM-MCXN236 have no pull-up resistors on A4/A5 (FRDM-MCXC444 has 4.7k), so give the bus external ones there unless the shield has them. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">sda</td><td>SDA pin (A4, or this bus's own SDA) </td></tr>
+    <tr><td class="paramname">scl</td><td>SCL pin (A5, or this bus's own SCL) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true if the bus is now on these pins; false, with the pins unchanged, if this board has no <a class="el" href="class_i2_c.html">I2C</a> there, after <a class="el" href="#aa66b28250a467de8ba1c7da97872e74a">begin()</a> (until <a class="el" href="#ab20ec491749f826abab709e3fce0183c">end()</a>), or if another <a class="el" href="class_two_wire.html">TwoWire</a> is running on the peripheral behind them </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00193">193</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -857,7 +1047,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00747">747</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00922">922</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -884,7 +1074,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00507">507</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00663">663</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -911,7 +1101,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00165">165</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00321">321</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -931,7 +1121,7 @@ Additional Inherited Members</h2></td></tr>
 </div><div class="memdoc">
 <p>Internal: target-side event from the LPI2C slave interrupt. </p>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00211">211</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00367">367</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -958,7 +1148,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00195">195</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00351">351</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -1043,7 +1233,7 @@ Additional Inherited Members</h2></td></tr>
 
 <p>Reimplemented from <a class="el" href="class_print.html#ad98d820df11e2697be1e4b1ea30b4a23">Print</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00658">658</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00833">833</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -1070,7 +1260,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00160">160</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00195">195</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -1097,7 +1287,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00158">158</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00193">193</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -1133,7 +1323,7 @@ Additional Inherited Members</h2></td></tr>
 
 <p>Implements <a class="el" href="class_print.html#ab9195b97274029f693aaddce6c7a0021">Print</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00634">634</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8cpp_source.html#l00809">809</a> of file <a class="el" href="arduino__i2c_8cpp_source.html">arduino_i2c.cpp</a>.</p>
 
 </div>
 </div>
@@ -1160,7 +1350,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00159">159</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00194">194</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -1187,13 +1377,13 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00157">157</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00192">192</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
 <a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
-<a id="ac3a581a0fb6f55957406080bc66cfcbb" name="ac3a581a0fb6f55957406080bc66cfcbb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac3a581a0fb6f55957406080bc66cfcbb">&#9670;&#160;</a></span>_scl</h2>
+<a id="a42825e721f4682c68c2db2aa4f56734f" name="a42825e721f4682c68c2db2aa4f56734f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a42825e721f4682c68c2db2aa4f56734f">&#9670;&#160;</a></span>_scl</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1202,7 +1392,7 @@ Additional Inherited Members</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const int TwoWire::_scl</td>
+          <td class="memname">int TwoWire::_scl</td>
         </tr>
       </table>
   </td>
@@ -1212,12 +1402,12 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00262">262</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00308">308</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
-<a id="a38c0a1c4cf88597fe04f3a9dfef02c06" name="a38c0a1c4cf88597fe04f3a9dfef02c06"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a38c0a1c4cf88597fe04f3a9dfef02c06">&#9670;&#160;</a></span>_sda</h2>
+<a id="ae79740839a0b361cfebc03c6a033ea2f" name="ae79740839a0b361cfebc03c6a033ea2f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae79740839a0b361cfebc03c6a033ea2f">&#9670;&#160;</a></span>_sda</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1226,7 +1416,7 @@ Additional Inherited Members</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const int TwoWire::_sda</td>
+          <td class="memname">int TwoWire::_sda</td>
         </tr>
       </table>
   </td>
@@ -1236,7 +1426,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00261">261</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00307">307</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -1260,7 +1450,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00265">265</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00312">312</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -1284,7 +1474,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00263">263</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00310">310</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -1308,7 +1498,79 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00279">279</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00326">326</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+
+</div>
+</div>
+<a id="a853dcf81bc3ae8e6502365ec13070c8b" name="a853dcf81bc3ae8e6502365ec13070c8b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a853dcf81bc3ae8e6502365ec13070c8b">&#9670;&#160;</a></span>own_scl</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const int TwoWire::own_scl</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00306">306</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+
+</div>
+</div>
+<a id="a5f8d5e50702fe87cd13fe576b3ae417f" name="a5f8d5e50702fe87cd13fe576b3ae417f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5f8d5e50702fe87cd13fe576b3ae417f">&#9670;&#160;</a></span>own_sda</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const int TwoWire::own_sda</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00305">305</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+
+</div>
+</div>
+<a id="a2f056d4eacea07d8e31f5b96bfd53429" name="a2f056d4eacea07d8e31f5b96bfd53429"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2f056d4eacea07d8e31f5b96bfd53429">&#9670;&#160;</a></span>pad_mux</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint8_t TwoWire::pad_mux</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00309">309</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -1332,7 +1594,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00277">277</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00324">324</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -1356,7 +1618,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00268">268</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00315">315</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -1380,7 +1642,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00269">269</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00316">316</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -1404,7 +1666,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00271">271</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00318">318</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -1428,7 +1690,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00272">272</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00319">319</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -1452,7 +1714,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00264">264</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00311">311</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -1476,7 +1738,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00273">273</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00320">320</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -1500,7 +1762,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00278">278</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00325">325</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -1524,7 +1786,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00276">276</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00323">323</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -1548,7 +1810,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00266">266</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00313">313</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -1572,7 +1834,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00267">267</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00314">314</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -1596,7 +1858,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00274">274</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00321">321</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>
@@ -1620,7 +1882,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00275">275</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__i2c_8h_source.html#l00322">322</a> of file <a class="el" href="arduino__i2c_8h_source.html">arduino_i2c.h</a>.</p>
 
 </div>
 </div>

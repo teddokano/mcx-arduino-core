@@ -23,7 +23,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.11.0</span>
+   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.12.0</span>
    </div>
    <div id="projectbrief">Arduino board support package for NXP FRDM MCX Series boards</div>
   </td>
@@ -129,9 +129,9 @@ Variables</h2></td></tr>
 <li>FSL_FEATURE_PWM_FAULT_CH_COUNT is 1, so only <span class="tt">kPWM_faultchannel_0</span> (a single DISMAP register per submodule) exists.</li>
 <li>The SDK doc for <span class="tt">PWM_SetupFaultDisableMap()</span> states "a reset sets all
    bits in this field" — i.e. out of reset, <em>every</em> FAULTx input is mapped to disable each channel's output. No fault pins are driven on these boards, so the disable-map is cleared for both channels of a submodule the first time it is used, otherwise the PWM output may never toggle.</li>
-<li><span class="tt">PWM_SetupPwm()</span> only supports integer 0-100% duty. For the continuous-duty Mbed API this file uses the raw-tick API <span class="tt">PWM_UpdatePwmPeriodAndDutycycle()</span> (16-bit period/duty) for all period()/write() calls after the one-time <span class="tt">PWM_SetupPwm()</span> call that establishes OUTEN/polarity/fault-state for the channel. The registers both write are buffered until LDOK, so the placeholder period <span class="tt">PWM_SetupPwm()</span> writes never reaches a running channel: apply() writes the real one before setting LDOK.</li>
+<li><span class="tt">PWM_SetupPwm()</span> only supports integer 0-100% duty. It is called once per channel, to set up OUTEN/polarity/fault-state; after that, apply() writes the period and compare registers itself, in ticks (the registers <span class="tt">PWM_UpdatePwmPeriodAndDutycycle()</span> writes, without its 16-bit duty fraction). The registers are buffered until LDOK, so the placeholder period <span class="tt">PWM_SetupPwm()</span> writes never reaches a running channel: apply() writes the real one before setting LDOK.</li>
 </ul>
-<p>The period and both channels' pulse widths are kept per submodule (s_sm[] below), not per <a class="el" href="class_pwm_out.html" title="Mbed-compatible PWM output class.">PwmOut</a>: the two channels share the period register, and apply() rewrites both channels' compare values whenever either changes, so neither is left measured against the other's period.</p>
+<p>The period and both channels' pulse widths are kept per submodule (s_sm[] below), not per <a class="el" href="class_pwm_out.html" title="Mbed-compatible PWM output class.">PwmOut</a>: the two channels share the period register, and apply() rewrites both channels' compare values whenever either changes, so neither is left measured against the other's period. They are kept in ticks of the source clock, not in microseconds, so the duty has as many steps as the counter at any frequency, and a frequency is set to the nearest tick (0.12.0; before, 8 bits held only up to about 3.9kHz, and a frequency was set to the nearest whole microsecond).</p>
 <dl class="section author"><dt>Author</dt><dd>Tedd OKANO </dd></dl>
 <dl class="section copyright"><dt>Copyright</dt><dd>MIT License </dd></dl>
 
@@ -149,7 +149,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00068">68</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00071">71</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
 
 </div>
 </div>
@@ -165,7 +165,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00069">69</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00072">72</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
 
 </div>
 </div>
@@ -190,7 +190,7 @@ Variables</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00047">47</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_pwm_out_8cpp_source.html#l00050">50</a> of file <a class="el" href="_pwm_out_8cpp_source.html">PwmOut.cpp</a>.</p>
 
 </div>
 </div>

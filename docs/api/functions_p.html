@@ -23,7 +23,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.11.0</span>
+   <div id="projectname">mcx-arduino-core<span id="projectnumber">&#160;0.12.0</span>
    </div>
    <div id="projectbrief">Arduino board support package for NXP FRDM MCX Series boards</div>
   </td>
@@ -99,6 +99,7 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 
 
 <h3 class="doxsection"><a id="index_p" name="index_p"></a>- p -</h3><ul>
+<li>pad_mux&#160;:&#160;<a class="el" href="class_two_wire.html#a2f056d4eacea07d8e31f5b96bfd53429">TwoWire</a></li>
 <li>panic_write()&#160;:&#160;<a class="el" href="class_serial.html#a0f30fa58a47b22611c116597f9552158">Serial</a></li>
 <li>Parity&#160;:&#160;<a class="el" href="class_serial.html#aad7cba606351bc3f695774b19383da11">Serial</a></li>
 <li>parse_v4()&#160;:&#160;<a class="el" href="classarduino_1_1_i_p_address.html#ae0b2c4cc6981701dac4bcc3328e9abb7">arduino::IPAddress</a>, <a class="el" href="class_i_p_address.html#ae0b2c4cc6981701dac4bcc3328e9abb7">IPAddress</a></li>
@@ -108,9 +109,11 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 <li>parsePacket()&#160;:&#160;<a class="el" href="classarduino_1_1_u_d_p.html#adab1e167381c58afcec04f40fb1c57e2">arduino::UDP</a>, <a class="el" href="class_ethernet_u_d_p.html#af30ed53e15b60bf7670bbe5f5fa0de52">EthernetUDP</a>, <a class="el" href="class_u_d_p.html#adab1e167381c58afcec04f40fb1c57e2">UDP</a></li>
 <li>pcb&#160;:&#160;<a class="el" href="struct_udp_slot.html#a0951eea394b36f3f0685d5958d39c349">UdpSlot</a></li>
 <li>peek()&#160;:&#160;<a class="el" href="classarduino_1_1_client.html#a86998d50e0b5e0f8957dd1025fb49046">arduino::Client</a>, <a class="el" href="classarduino_1_1_u_d_p.html#a12b62e73ef1c5e343f841014dcd9512e">arduino::UDP</a>, <a class="el" href="class_client.html#a86998d50e0b5e0f8957dd1025fb49046">Client</a>, <a class="el" href="class_ethernet_client.html#aff7f67c668b105ea5525325515c8effd">EthernetClient</a>, <a class="el" href="class_ethernet_u_d_p.html#a930932541439079e511b9ff5cbdc71fc">EthernetUDP</a>, <a class="el" href="class_serial.html#a3332a1a0dadc9bd89a31a1d764975be6">Serial</a>, <a class="el" href="class_serial_class.html#ac6c627115e4472359622922c30c399e9">SerialClass</a>, <a class="el" href="class_stream.html#ae32bb452cfa163b14bde00ce292737f5">Stream</a>, <a class="el" href="class_two_wire.html#a0fb12d1c62bcdecfba6cadef712ebdc0">TwoWire</a>, <a class="el" href="class_u_d_p.html#a12b62e73ef1c5e343f841014dcd9512e">UDP</a></li>
-<li>period()&#160;:&#160;<a class="el" href="class_pwm_out.html#a4c1ff6c634c682e2c18d8ddcee31b0f5">PwmOut</a></li>
+<li>period&#160;:&#160;<a class="el" href="classmcx_ticker.html#adbb59bf34e3e9c222c7f8dd46fd8a474">mcxTicker</a>, <a class="el" href="class_pwm_out.html#a4c1ff6c634c682e2c18d8ddcee31b0f5">PwmOut</a></li>
 <li>period_ms()&#160;:&#160;<a class="el" href="class_pwm_out.html#ab992254dbb79b4cd796707848a90e501">PwmOut</a></li>
 <li>period_us()&#160;:&#160;<a class="el" href="class_pwm_out.html#ad09052cd11bca81702be83beaf751851">PwmOut</a></li>
+<li>periph&#160;:&#160;<a class="el" href="struct_wire_pins.html#a78d9bc394f7b693975e8c9574893e6f1">WirePins</a></li>
+<li>peripheral()&#160;:&#160;<a class="el" href="class_two_wire.html#aa1de0ee99d5b9215ca26d0e3733cf26f">TwoWire</a></li>
 <li>peripheral_mux&#160;:&#160;<a class="el" href="class_s_p_i.html#ad564f82f98c623e23040cf0a94f4c1aa">SPI</a></li>
 <li>PID_LENGTH&#160;:&#160;<a class="el" href="class_i3_c.html#a2fe3725df0ba7782c7b1d9059c75ff17a69640d709ac35ebe09f265bf8551171c">I3C</a></li>
 <li>pin&#160;:&#160;<a class="el" href="struct__gpio__pin.html#a55c8e1eca5a59ff1e20c8e4a823cf637">_gpio_pin</a>, <a class="el" href="class_servo.html#a423cc26aa772ef17e936a855e2f5fe1b">Servo</a></li>
@@ -135,7 +138,7 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 <li>pulsewidth_us()&#160;:&#160;<a class="el" href="class_pwm_out.html#a862bf72b654374398ac730b4940d41ed">PwmOut</a></li>
 <li>put()&#160;:&#160;<a class="el" href="class_e_e_p_r_o_m_class.html#ab2fd36638b7eec722d0d8bbd81a8c3b9">EEPROMClass</a></li>
 <li>putc()&#160;:&#160;<a class="el" href="class_serial.html#a90f987428ac188fb6114b913010206fc">Serial</a></li>
-<li>pwm&#160;:&#160;<a class="el" href="class_servo.html#aefffbacda871da255fcce80dd7eb7f1f">Servo</a></li>
+<li>pwm&#160;:&#160;<a class="el" href="class_servo.html#aefffbacda871da255fcce80dd7eb7f1f">Servo</a>, <a class="el" href="class_timer_one.html#a82eca0f302ecacc3202e60fbc79abce3">TimerOne</a></li>
 <li>PwmOut()&#160;:&#160;<a class="el" href="class_pwm_out.html#ab9e14adc0a7c64520f9c647cdbeabcec">PwmOut</a></li>
 </ul>
 </div><!-- contents -->

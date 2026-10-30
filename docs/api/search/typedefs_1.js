@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['err_5fcb_5fptr_0',['err_cb_ptr',['../class_i2_c.html#a45eb52ae8e28a49879e3ae441b01118f',1,'I2C']]]
+  ['callback_5ft_0',['callback_t',['../classmcx_ticker.html#a9e119d2a8bedf9b6ef652fc1fb5ca372',1,'mcxTicker']]]
 ];

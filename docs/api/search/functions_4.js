@@ -3,8 +3,8 @@ var searchData=
   ['daa_0',['DAA',['../class_i3_c.html#acf74a9fb3d009ce182946c6fe1d042ca',1,'I3C']]],
   ['delay_1',['delay',['../_arduino_8h.html#a6bc5f943544a887f8b23cadfb26a5e30',1,'delay(unsigned long ms):&#160;arduino_main.cpp'],['../arduino__main_8cpp.html#a6bc5f943544a887f8b23cadfb26a5e30',1,'delay(unsigned long ms):&#160;arduino_main.cpp']]],
   ['delaymicroseconds_2',['delayMicroseconds',['../_arduino_8h.html#a62e0a53bc261f9de8700cc5a92307e85',1,'delayMicroseconds(unsigned int us):&#160;arduino_main.cpp'],['../arduino__main_8cpp.html#a62e0a53bc261f9de8700cc5a92307e85',1,'delayMicroseconds(unsigned int us):&#160;arduino_main.cpp']]],
-  ['detach_3',['detach',['../class_servo.html#a0b69ccc5c8b348ebaa84be91d973a362',1,'Servo']]],
-  ['detachinterrupt_4',['detachInterrupt',['../arduino__io_8cpp.html#abbe875f4ad262fe6fd81ba720028daf7',1,'detachInterrupt(int pin_num):&#160;arduino_io.cpp'],['../arduino__io_8h.html#a09693226f6fbf478cd15e47de0c2e84e',1,'detachInterrupt(int int_num):&#160;arduino_io.cpp']]],
+  ['detach_3',['detach',['../class_servo.html#a0b69ccc5c8b348ebaa84be91d973a362',1,'Servo::detach()'],['../classmcx_ticker.html#a1c1807cf4e52b3119493cd2a884c69b8',1,'mcxTicker::detach()']]],
+  ['detachinterrupt_4',['detachInterrupt',['../class_timer_one.html#ab285a795b71c774f8f6cafc0d34b8d08',1,'TimerOne::detachInterrupt()'],['../arduino__io_8cpp.html#abbe875f4ad262fe6fd81ba720028daf7',1,'detachInterrupt(int pin_num):&#160;arduino_io.cpp'],['../arduino__io_8h.html#a09693226f6fbf478cd15e47de0c2e84e',1,'detachInterrupt(int int_num):&#160;arduino_io.cpp']]],
   ['digital_5fpin_5fdrop_5',['digital_pin_drop',['../arduino__analog_8cpp.html#ac1a35c4aaaa895075f45abff357c4dfa',1,'digital_pin_drop(int raw_pin):&#160;arduino_io.cpp'],['../arduino__io_8cpp.html#ac1a35c4aaaa895075f45abff357c4dfa',1,'digital_pin_drop(int raw_pin):&#160;arduino_io.cpp']]],
   ['digitalin_6',['DigitalIn',['../class_digital_in.html#a4c92a94513c5f55fdcc99789ae35d84a',1,'DigitalIn']]],
   ['digitalinout_7',['DigitalInOut',['../class_digital_in_out.html#a020a631fa7eb46952d7a28e80b716931',1,'DigitalInOut']]],
@@ -16,7 +16,8 @@ var searchData=
   ['digitalwrite_13',['digitalWrite',['../arduino__io_8cpp.html#aa1373e51643406f2dd3598f16684e1c6',1,'digitalWrite(int pin_num, bool state):&#160;arduino_io.cpp'],['../arduino__io_8h.html#aa1373e51643406f2dd3598f16684e1c6',1,'digitalWrite(int pin_num, bool state):&#160;arduino_io.cpp']]],
   ['direction_14',['direction',['../class_digital_in_out.html#a1d3cba5d308078cf510100e8085b91f0',1,'DigitalInOut']]],
   ['disable_15',['disable',['../class_interrupt_in.html#a9a4f3948cf4fdec4e8fe23efeedbc184',1,'InterruptIn']]],
-  ['dns_5ffound_16',['dns_found',['../namespacemcx__eth.html#a162977d213dee1d8b2d428b832c3785f',1,'mcx_eth']]],
-  ['dnsserverip_17',['dnsServerIP',['../class_ethernet_class.html#a4ff7df15c4a771dd83a2fd3384449671',1,'EthernetClass']]],
-  ['dtostrf_18',['dtostrf',['../_arduino_8h.html#a6fb2f76a606b21d411331c291e690a15',1,'dtostrf(double val, signed char width, unsigned char prec, char *str):&#160;arduino_stdlib.cpp'],['../arduino__stdlib_8cpp.html#a6fb2f76a606b21d411331c291e690a15',1,'dtostrf(double val, signed char width, unsigned char prec, char *str):&#160;arduino_stdlib.cpp']]]
+  ['disablepwm_16',['disablePwm',['../class_timer_one.html#a1719963c7cc0abd617e6eeffba2f934e',1,'TimerOne']]],
+  ['dns_5ffound_17',['dns_found',['../namespacemcx__eth.html#a162977d213dee1d8b2d428b832c3785f',1,'mcx_eth']]],
+  ['dnsserverip_18',['dnsServerIP',['../class_ethernet_class.html#a4ff7df15c4a771dd83a2fd3384449671',1,'EthernetClass']]],
+  ['dtostrf_19',['dtostrf',['../_arduino_8h.html#a6fb2f76a606b21d411331c291e690a15',1,'dtostrf(double val, signed char width, unsigned char prec, char *str):&#160;arduino_stdlib.cpp'],['../arduino__stdlib_8cpp.html#a6fb2f76a606b21d411331c291e690a15',1,'dtostrf(double val, signed char width, unsigned char prec, char *str):&#160;arduino_stdlib.cpp']]]
 ];
