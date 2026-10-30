@@ -20,7 +20,7 @@ with one setup each:
 |---|--------|--------|----------|
 | 01 | `01_no_wiring_checks` | none (on N947, #11's MB_TX-MB_RX jumper must be off: those pins are `Wire1`'s SDA/SCL there). On C444 the `Wire` target section prints SKIP: its I2C can't address its own target (#24 checks target mode) | automatic (reads "ALL OK"/"N FAILED") |
 | 02 | `02_no_wiring_manual_observe` | none (on C444 the pin walk leaves out D0/D1, which are `Serial` there, and the PWM sections use D3, D9 and D10) | manual (watch/listen -- scope, LA, multimeter, ears) |
-| 03 | `03_sw2_interrupts` | none (press the on-board SW2 button as prompted; on FRDM-MCXA153, SW2 and SW3 sit the other way round from the other boards, so press the one marked SW2) | manual |
+| 03 | `03_sw2_interrupts` | none (press the on-board SW2 button as prompted; on FRDM-MCXA153, SW2 and SW3 sit the other way round from the other boards, so press the one marked SW2; the RGB LED shows what to do: blue toggles with each press, red means hands off, green means press and hold now, all off means done) | manual |
 | 04 | `04_mcxpinstate_audit` | none | manual (no `*** CONFLICT ***` / `*** MISMATCH ***` in the tables) |
 | 05 | `05_wire2_mikrobus_scan_N947` | none (N947 only -- `Wire2` doesn't exist on the other boards) | manual (confirm I2C traffic on a logic analyzer) |
 | 06 | `06_eeprom` | none | automatic, across one reset it does itself ("ALL OK" at the end). Run it again after: the new run checks the previous run's data came through the upload |

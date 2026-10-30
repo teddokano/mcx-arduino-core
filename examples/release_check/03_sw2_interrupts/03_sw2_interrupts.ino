@@ -11,6 +11,10 @@
  *
  *  On FRDM-MCXA153, SW2 and SW3 sit the other way round from the other
  *  boards: press the button marked SW2 on the board.
+ *
+ *  The RGB LED shows what to do: blue toggles with each press in phase 1,
+ *  red means hands off (the 3s after detachInterrupt()), green means press
+ *  and hold SW2 now (phase 2), and all off means done.
  */
 
 #include <Arduino.h>
@@ -22,6 +26,13 @@ bool                    led_state = true;
 void onFalling() { sw_pressed = true; }
 void onLevel()   { levelCount = levelCount + 1; }
 
+// The LEDs are on when LOW
+void showLeds(bool red, bool green, bool blue) {
+  digitalWrite(RED, red ? LOW : HIGH);
+  digitalWrite(GREEN, green ? LOW : HIGH);
+  digitalWrite(BLUE, blue ? LOW : HIGH);
+}
+
 void setup() {
   Serial.begin(115200);
   while (!Serial)
@@ -29,15 +40,17 @@ void setup() {
 
   Serial.println("=== Release check 03: SW2 interactive checks ===");
 
+  pinMode(RED, OUTPUT);
+  pinMode(GREEN, OUTPUT);
   pinMode(BLUE, OUTPUT);
   pinMode(SW2, INPUT_PULLUP);
-  digitalWrite(BLUE, led_state);
+  showLeds(false, false, !led_state);
 
   // ---- Phase 1: FALLING-edge interrupt + detachInterrupt()
   //      (was test_Interrupt_SW2 + test_detachInterrupt) ----
   Serial.println();
   Serial.println("--- Phase 1: FALLING-edge interrupt + detachInterrupt() ---");
-  Serial.println("Press SW2 up to 3 times (LED toggles, count prints each press)");
+  Serial.println("Press SW2 up to 3 times (blue LED toggles, count prints each press)");
   attachInterrupt(digitalPinToInterrupt(SW2), onFalling, FALLING);
 
   int presses = 0;
@@ -46,7 +59,7 @@ void setup() {
     if (sw_pressed) {
       sw_pressed = false;
       led_state = !led_state;
-      digitalWrite(BLUE, led_state);
+      showLeds(false, false, !led_state);
       presses++;
       Serial.print("SW2 pressed: ");
       Serial.println(presses);
@@ -56,8 +69,9 @@ void setup() {
   if (presses < 3)
     Serial.println("(timed out waiting for presses -- moving on)");
 
-  Serial.println("detachInterrupt() -- presses for the next 3s should do nothing");
+  Serial.println("detachInterrupt() -- presses for the next 3s (red LED) should do nothing");
   detachInterrupt(digitalPinToInterrupt(SW2));
+  showLeds(true, false, false);
   sw_pressed = false;
   unsigned long silentStart = millis();
   bool sawSpuriousPress = false;
@@ -74,9 +88,10 @@ void setup() {
   // ---- Phase 2: LOW-level-triggered interrupt (was test_Interrupt_LOW) ----
   Serial.println();
   Serial.println("--- Phase 2: LOW-level-triggered interrupt ---");
-  Serial.println("Press and HOLD SW2 for ~1 second, then release (up to 10s window)");
+  Serial.println("Press and HOLD SW2 for ~1 second, then release (while the green LED is on, 10s)");
   levelCount = 0;
   attachInterrupt(digitalPinToInterrupt(SW2), onLevel, LOW);
+  showLeds(false, true, false);
 
   unsigned long phase2Start = millis();
   unsigned long lastPrinted = 0;
@@ -89,6 +104,7 @@ void setup() {
     delay(100);
   }
   detachInterrupt(digitalPinToInterrupt(SW2));
+  showLeds(false, false, false);
 
   Serial.print("final LOW-mode interrupt count = ");
   Serial.println(levelCount);
