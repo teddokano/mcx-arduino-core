@@ -3507,7 +3507,7 @@ LPI2CはアドレスとデータのNAKを同じコードで返すので、どち
 - **`07`の途中で記録を付け替えたら、A153の判定を取り損ねた**: 1枚ずつの流し方を並行に切り替えるとき、A153の新しい記録に行が届いているかを確かめずに古い記録を止めた。A153はその間に最後の集計を出し終えて止まっていて、新しい記録は0バイトだった。A153だけ流し直した（約6分）。記録を付け替えるときは、新しい記録に行が届いてから古いほうを止める
 - **並行の初回で、前のスケッチの出力を判定に含めかけた**: 書き込む前に記録を始めたので、N947・N236の`13`の記録の頭に、まだ動いていた`12`のFAILが入った。末尾の判定は`13`のものだったが、スクリプトを直し、見出しのあとの出力だけで判定するようにした
 
-## v0.12.0（`0.12.0-dev` ブランチ、2026-10-25に`main`の`29d5b37`から切った。作業中）
+## v0.12.0（`0.12.0-dev` ブランチ、2026-10-25に`main`の`29d5b37`から切った。2026-11-01にリリース）
 
 ### llms.txt（2026-10-26、ユーザーが決定）
 - `docs/llms.txt`を足した（llmstxt.orgの形。Pagesで`https://teddokano.github.io/mcx-arduino-core/llms.txt`）。冒頭に、スケッチを書く前に知っておくこと（Boards ManagerのURLとFQBN、AVRではないこと、`Wire1`などのインスタンス名がボードで違うこと、PWM・ADCのピン、各ボードのEthernet、同梱の`Servo`・`EEPROM`）、続けてDocs・同梱ライブラリ・Optionalのリンク。リンクは`main`のraw（Markdownをそのまま読める）とPagesの絶対URL
@@ -3665,3 +3665,11 @@ LPI2CはアドレスとデータのNAKを同じコードで返すので、どち
 - **本当の原因**: IDEのログ（Linuxは`~/.config/Arduino IDE/`、macOSは`~/Library/Logs/Arduino IDE/`の`discovery-log`）の`matchingBoardsList`に、`arduino:zephyr_contrib`の`frdm_mcxn947`と`frdm_rw612`も入っていた。ArduinoのZephyrのコアの`boards.txt`は`upload_port.0.vid=0x1fc9`・`pid=0x0143`だけで合わせるので、どのMCU-LINKのポートにも当てはまり、ボードが3つになってIDEが選ばない。ユーザーのLinuxとWindowsには入っていて、macOSには入っていなかった。同じログで、抜き挿しのときもIDEが監視を始め直したときも、`mcx-discovery`の`add`が標準のものより後に来ていた（送り直しの前のバイナリで）。順番は原因ではなかった
 - **対処**（ユーザーが決定）: 送り直しは取り消した（`61ca67f`。IDEのログがポートごとに3秒に1行増えるだけだった）。このコアの側では止められないので、TUTORIAL（英日）のトラブルシューティングに項目を足し、README（英日）のArduinoCore-zephyrの節とCHANGELOGから指した。ArduinoCore-zephyrへの提案はしない
 - **踏んだこと**: IDEのログの`matchingBoardsList`を見る前に、コードを読んだだけの見立てで直し、リリースを1回作り直した。ボードの判定の件は、まずIDEのログ（`discovery-log`）で、どのdiscoveryの`add`が何に当てはまったかを見る
+
+### リリース（2026-11-01）
+- CHANGELOGを`[0.12.0] - 2026-11-01`にした（`2d7a214`）。`main`には`3cd720d`（2026-10-27、PWMをtickで持つ案のメモ。0.12.0で実装済みで、メモは採用してゴミ箱へ移していた）が`0.12.0-dev`に無く、fast-forwardできなかった。`git merge -s ours origin/main`で履歴に入れ、木は変えなかった（`2b34b4c`。ユーザーが決定）
+- `0.12.0-dev`の回帰チェックが通ってから、`main`を`2b34b4c`へfast-forward。タグ`0.12.0`（軽量タグ）と`gh release create 0.12.0`（Latest）。zipは`git archive --format=zip --prefix=mcx/ <コミット>:hardware/nxp/mcx`
+- **タグ・zip・ステージングを2回作り直した**。1回目（`2b34b4c`）は、ユーザーのLinux・Windowsでポートにボード名が出なかった件で、標準のserial-discoveryの`add`が後から来て上書きするためと見て、`mcx-discovery`が3秒ごとに`add`を送り直す版（`b666239`）を作った。ユーザーの確認で変わらず、IDEのログでArduinoのZephyrのコアが同じポートに当てはまっていたのが原因と分かり、取り消して（`61ca67f`）、文書だけの対処にした（`68ba2fb`。上の「Linux・WindowsのIDEでポートにボード名が出なかった件」の節）。いまのzipはSHA-256 `4bc86783d5f4aea44647e8f74b53c3f4454cbef1e60960e3d70fae3b4d3ba9ff`、18890777 bytes（783項目）、タグ`0.12.0`は`68ba2fb`。Release のノートはCHANGELOGの0.12.0の節（`docs/`とTUTORIALの相対リンクは絶対URLに）
+- `staging-0.12.0`（`2e886a0`、0.12.0のエントリを末尾に追加。作り直すたびにforce push）で、ユーザーがmacOS・Windows・Linuxのインストールと動作を確かめて問題なし。`main`を`2e886a0`へfast-forwardし、`update_package_index.yml`を`main`に対して流した（値が同じなので書き換えもコミットも無し）。タグのpushで走る`update_package_index.yml`は、索引に0.12.0が無いので`package-index-entry`で失敗した（0.11.0と同じ。想定どおり）
+- 本番の`main`のURLからも、ユーザーが3OSでインストールと動作を確かめて問題なし
+- リリースの画像（`img/release-0.12.0.jpg`）は無し
