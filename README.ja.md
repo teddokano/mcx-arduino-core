@@ -231,3 +231,5 @@ mcx-arduino-coreはこれとは逆のアプローチを取っています。各�
 （Zephyr RTOS自体はFRDM-MCXA153上でも問題なく動作します——LinkServerはmainline
 Zephyrのデフォルトのフラッシュランナーとしても使われています。収まらないのは
 LLEXTベースのArduinoレイヤーに固有の制約であって、Zephyr自体の限界ではありません。）
+
+2つのコアは1つのArduino IDEに一緒に入れられます。ただし、ArduinoCore-zephyrのZephyr Community BoardsのボードはUSBのIDだけでどのMCU-Linkのポートにも当てはまるので、入っているとIDEがボードを自動で選びません。[TUTORIAL.ja.mdのトラブルシューティング](TUTORIAL.ja.md#17-トラブルシューティング)を参照してください。

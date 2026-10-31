@@ -251,3 +251,5 @@ ArduinoCore-zephyr flashes a Zephyr-based "loader" once, then loads each sketch 
 mcx-arduino-core takes the opposite approach: each sketch is compiled and statically linked into one monolithic binary together with the r01lib core — no loader, no dynamic linking, nothing LLEXT-shaped resident in RAM. That's what lets it fit inside FRDM-MCXA153's actual 24KB RAM / 128KB flash budget (of which the build output reports 112KB for the sketch: the top 16KB holds the `EEPROM` library's data).
 
 (Zephyr RTOS itself runs fine on FRDM-MCXA153 — LinkServer is even its default flash runner in mainline Zephyr. It's specifically the LLEXT-based Arduino layer that doesn't fit, not Zephyr as a whole.)
+
+Both cores can be installed in one Arduino IDE, but the boards of ArduinoCore-zephyr's Zephyr Community Boards match every MCU-Link port by its USB ID alone, so with it installed the IDE doesn't select the board by itself. See [TUTORIAL.md's troubleshooting](TUTORIAL.md#17-troubleshooting).

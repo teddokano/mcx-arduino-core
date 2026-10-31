@@ -3657,3 +3657,11 @@ LPI2CはアドレスとデータのNAKを同じコードで返すので、どち
   - 複数のボードのUSBが同時に消えたら、ハブか電源を疑う。1枚ずつつなぐと確かめやすい
   - 2枚の`24`は、書き込みの順に流して通らなければ、両方のRESETを近い時刻に押す
   - `25`の前に、「インターネット共有」の対象にUSB-LANアダプタが入っているかを見る（挿し直すと名前が変わる）
+
+### Linux・WindowsのIDEでポートにボード名が出なかった件（2026-11-01）
+- **症状**（ステージングの0.12.0、ユーザーの報告）: Linuxは前にそのポートで使ったボード名、WindowsはCOMの番号だけが出た。macOSでは出ていた
+- **`mcx-discovery`そのもの**: LinuxとWindowsで`HELLO`・`LIST`を流してもらい、5ポートとも正しいボード名を返すことを確かめた（名前の無い開発用A156は`board`なし。Linuxの1回目はボードをつないでいなかったので`[]`）
+- **最初の見立てと、それが違ったこと**: IDE 2.3.10は同じポート（プロトコルとアドレス）の`add`を後から来たほうで上書きする（IDEの`main.js`の`calculateNewState()`）。標準の`serial-discovery`が後から来ると`board`の無いほうが残る、と見て、`mcx-discovery`が3秒ごとに`add`を送り直す版を作り（`b666239`）、0.12.0のタグ・zip・ステージングを作り直した。ユーザーの確認では何も変わらなかった
+- **本当の原因**: IDEのログ（Linuxは`~/.config/Arduino IDE/`、macOSは`~/Library/Logs/Arduino IDE/`の`discovery-log`）の`matchingBoardsList`に、`arduino:zephyr_contrib`の`frdm_mcxn947`と`frdm_rw612`も入っていた。ArduinoのZephyrのコアの`boards.txt`は`upload_port.0.vid=0x1fc9`・`pid=0x0143`だけで合わせるので、どのMCU-LINKのポートにも当てはまり、ボードが3つになってIDEが選ばない。ユーザーのLinuxとWindowsには入っていて、macOSには入っていなかった。同じログで、抜き挿しのときもIDEが監視を始め直したときも、`mcx-discovery`の`add`が標準のものより後に来ていた（送り直しの前のバイナリで）。順番は原因ではなかった
+- **対処**（ユーザーが決定）: 送り直しは取り消した（`61ca67f`。IDEのログがポートごとに3秒に1行増えるだけだった）。このコアの側では止められないので、TUTORIAL（英日）のトラブルシューティングに項目を足し、README（英日）のArduinoCore-zephyrの節とCHANGELOGから指した。ArduinoCore-zephyrへの提案はしない
+- **踏んだこと**: IDEのログの`matchingBoardsList`を見る前に、コードを読んだだけの見立てで直し、リリースを1回作り直した。ボードの判定の件は、まずIDEのログ（`discovery-log`）で、どのdiscoveryの`add`が何に当てはまったかを見る

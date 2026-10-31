@@ -69,7 +69,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   `tools/mcx-discovery` reads the board's name from the probe's USB product string (`MCU-LINK FRDM-MCXN947 ...`),
   so the IDE shows the board next to its port, selects it, and `arduino-cli board list` names it. A probe that
   stores no board name reports `MCU-LINK on-board ...` (an FRDM-MCXA156 here does): its port shows as `Unknown`,
-  and the board is chosen by hand as before. Checked on macOS with Arduino IDE 2.3.10 and all five boards
+  and the board is chosen by hand as before. Another installed core whose boards match every MCU-LINK port by
+  VID/PID alone (Zephyr Community Boards does, for its FRDM-MCXN947 and FRDM-RW612) makes the port match more
+  than one board, and the IDE then doesn't choose ([TUTORIAL.md](TUTORIAL.md#17-troubleshooting)). Checked on
+  macOS with Arduino IDE 2.3.10 and all five boards; on Linux and Windows, `mcx-discovery` names the five ports as on macOS
 - **A guide to the bundled libraries**, [docs/bundled_libraries.md](docs/bundled_libraries.md) (and
   [in Japanese](docs/bundled_libraries.ja.md)), where the tutorial ends: which of the eight to use for what, a
   short sketch for each, and which timer each feature takes. Linked from the tutorial's "Where to go next" and the

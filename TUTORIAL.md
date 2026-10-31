@@ -191,6 +191,16 @@ garbled text or nothing at all.
 - Close any other program that might be holding the port open (another
   Serial Monitor instance, a terminal program, etc.)
 
+**Tools → Port shows the port without the board's name, or the board isn't selected by itself:**
+- The board package reads the board's name from the MCU-Link and shows it next to the port. If
+  another installed core for NXP boards, such as Zephyr Community Boards, matches every MCU-Link
+  port by its USB ID alone, the port matches more than one board and the IDE doesn't choose: it
+  shows the port alone, or the board last used with it
+- Select the board under **Tools → Board** (the one ending in "(mcx-arduino-core)"); uploading
+  works as usual. If you don't use the other core, removing it in the Boards Manager lets the IDE
+  choose by itself again
+- An MCU-Link that stores no board name shows no name either, and is chosen the same way
+
 **A sketch that built before fails with `zephyr_contrib` or `arm-zephyr-eabi` in the output pane
 (for example "'A2' was not declared in this scope", or `PWM0` being a `PWM_Type *`):**
 - The selected board has changed to another core's board. Every FRDM board's MCU-Link has the
