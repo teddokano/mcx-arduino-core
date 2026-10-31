@@ -16,14 +16,8 @@
 //
 // Only MCU-LINK ports are reported here. platform.txt keeps the builtin
 // serial-discovery for every port, so it reports these ports too, without
-// `board` (it runs anyway if any other core is installed). Arduino IDE 2
-// keeps one entry per port and replaces it with whichever "add" comes last,
-// so whether the board's name showed depended on which discovery answered
-// later (it showed on macOS, and not on Linux or Windows). arduino-cli also replays the "add" events of all discoveries in
-// no set order when the IDE starts watching again. While START_SYNC is on,
-// this program therefore sends "add" again for every port it reports every
-// few seconds, so its entry wins within that time whatever the order. The
-// IDE redraws nothing when the entry it has is the same.
+// `board`. Arduino IDE 2.3.10 on macOS shows the two as one port, with the
+// board's name.
 //
 // The protocol is Arduino's pluggable discovery, version 1: one command per
 // line on stdin, one JSON object per reply on stdout. The serial ports are
@@ -105,7 +99,6 @@ func scan(find func() []probePort) map[string]port {
 type discovery struct {
 	find     func() []probePort
 	interval time.Duration
-	resend   time.Duration // how often "add" is sent again for the ports already reported
 
 	outMu sync.Mutex
 	out   io.Writer
@@ -137,7 +130,6 @@ func (d *discovery) startSync() {
 	go func() {
 		defer close(done)
 		known := map[string]port{}
-		lastResend := time.Now()
 		for {
 			now := scan(d.find)
 			for a, p := range known {
@@ -146,12 +138,8 @@ func (d *discovery) startSync() {
 					delete(known, a)
 				}
 			}
-			resend := time.Since(lastResend) >= d.resend
-			if resend {
-				lastResend = time.Now()
-			}
 			for a, p := range now {
-				if _, ok := known[a]; !ok || resend {
+				if _, ok := known[a]; !ok {
 					d.send(map[string]any{"eventType": "add", "port": p})
 				}
 			}
@@ -213,6 +201,6 @@ func (d *discovery) run(in io.Reader) {
 }
 
 func main() {
-	d := &discovery{find: findProbePorts, interval: time.Second, resend: 3 * time.Second, out: os.Stdout}
+	d := &discovery{find: findProbePorts, interval: time.Second, out: os.Stdout}
 	d.run(os.Stdin)
 }

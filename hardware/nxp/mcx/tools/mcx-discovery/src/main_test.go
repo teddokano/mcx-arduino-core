@@ -72,7 +72,7 @@ func TestProtocol(t *testing.T) {
 		return append([]probePort(nil), present...)
 	}
 	w := &syncWriter{}
-	d := &discovery{find: find, interval: 5 * time.Millisecond, resend: time.Hour, out: w}
+	d := &discovery{find: find, interval: 5 * time.Millisecond, out: w}
 
 	inR, inW := io.Pipe()
 	finished := make(chan struct{})
@@ -102,41 +102,5 @@ func TestProtocol(t *testing.T) {
 	want := "hello start list:FRDM-MCXC444 start_sync add:A remove:A add:B stop command_error quit"
 	if strings.Join(got, " ") != want {
 		t.Errorf("events\n got: %s\nwant: %s", strings.Join(got, " "), want)
-	}
-}
-
-// TestResend checks that a port is announced again every resend while
-// START_SYNC is on, and only then.
-func TestResend(t *testing.T) {
-	find := func() []probePort {
-		return []probePort{{address: "A", serial: "S1", product: "MCU-LINK FRDM-MCXA153 (r0E7) CMSIS-DAP V3.167"}}
-	}
-	w := &syncWriter{}
-	d := &discovery{find: find, interval: 5 * time.Millisecond, resend: 40 * time.Millisecond, out: w}
-
-	inR, inW := io.Pipe()
-	finished := make(chan struct{})
-	go func() { d.run(inR); close(finished) }()
-
-	io.WriteString(inW, "START_SYNC\n")
-	time.Sleep(150 * time.Millisecond)
-	io.WriteString(inW, "QUIT\n")
-	<-finished
-
-	adds := 0
-	for _, e := range w.events(t) {
-		switch e["eventType"] {
-		case "add":
-			adds++
-			if b := e["port"].(map[string]any)["properties"].(map[string]any)["board"]; b != "FRDM-MCXA153" {
-				t.Errorf("add carried board %v", b)
-			}
-		case "remove":
-			t.Errorf("unexpected remove: %v", e)
-		}
-	}
-	// the first add, then one about every 40 ms of the 150 ms
-	if adds < 3 || adds > 5 {
-		t.Errorf("got %d adds, want 3 to 5", adds)
 	}
 }
