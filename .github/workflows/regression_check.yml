@@ -3,8 +3,9 @@ name: Regression check
 # Compile-checks every example sketch against this branch's own
 # hardware/nxp/mcx source (not a released/installed version), for every
 # board. Two speed tiers, chosen after measuring locally what actually
-# moves the needle (see CLAUDE.md's "0.5以降のロードマップ方針" and
-# "0.5: CI" sections for the numbers behind these choices):
+# moves the needle (see the "0.5以降のロードマップ方針" and
+# "0.5: CI" sections in docs/DEVELOPMENT_LOG.md for the numbers behind
+# these choices):
 #   fast - release_check/** + hello_world + mcxPinState examples.
 #          Runs on every push/PR; a few minutes.
 #   full - every example under examples/ and mcxPinState/examples/.

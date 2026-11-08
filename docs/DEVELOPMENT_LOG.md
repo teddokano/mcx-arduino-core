@@ -3673,3 +3673,171 @@ LPI2CはアドレスとデータのNAKを同じコードで返すので、どち
 - `staging-0.12.0`（`2e886a0`、0.12.0のエントリを末尾に追加。作り直すたびにforce push）で、ユーザーがmacOS・Windows・Linuxのインストールと動作を確かめて問題なし。`main`を`2e886a0`へfast-forwardし、`update_package_index.yml`を`main`に対して流した（値が同じなので書き換えもコミットも無し）。タグのpushで走る`update_package_index.yml`は、索引に0.12.0が無いので`package-index-entry`で失敗した（0.11.0と同じ。想定どおり）
 - 本番の`main`のURLからも、ユーザーが3OSでインストールと動作を確かめて問題なし
 - リリースの画像（`img/release-0.12.0.jpg`）は無し
+
+## CLAUDE.mdから移した記述（2026-11-09）
+
+CLAUDE.mdが大きくなったので、今は効かない経緯・確認の記録・解消済みのタスクをここへ移した（ユーザーが決定）。中身は移した時点のまま（過去形・日付・「下の項目」などの参照も元のまま）。CLAUDE.mdには要点と、この節を指す一行を残した。
+
+### v0.12.0の経緯（「プロジェクト概要」の項目）
+
+- **v0.12.0の経緯**（`0.12.0-dev`ブランチ、2026-10-25に`main`の`29d5b37`から切り、2026-11-01にリリース）: **範囲**（2026-10-25に選び、2026-10-30に見直した。ユーザーが決定）: A4/A5の`setPins`（済み、下）、N947の`Wire2`のターゲットモードは既知の制限として確定（API_COMPATIBILITY・PIN_MAPPING_N947・`arduino_i2c.h`に書いてある）、LinkServer 26.9の件の調査（Pendingタスク9。2026-10-31に調べ、コードは変えない。下のPendingタスク9）、複数のインスタンスを持てる`Ticker`の同梱（ライブラリもクラスも`mcxTicker`、ヘッダーは`mcxTicker.h`。2026-10-30、済み。下の項目）、`Servo`をPWMの無いピンへ広げる（2026-10-30、済み。下の項目）、PWMの周期とパルス幅をtickで持つ（2026-10-30、ユーザーが決定。C444も同時に。済み。下の項目）、IDEがポートのボードを見分ける`mcx-discovery`（2026-10-31、ユーザーが決定。下の項目）。**`SoftwareSerial`・USB・r01libの名前空間は0.12.0ではやらない**。入れたものは`docs/llms.txt`（2026-10-26、ユーザーが決定）、`MsTimer2`・`TimerOne`（2026-10-27、ユーザーが決定。下の項目）、r01libの`Ticker`を`Arduino.h`から外すこと（2026-10-27、ユーザーが決定。下の項目）、r01libの`I3C`が受信FIFOに残った1バイトで止まる不具合の修正（2026-10-28、直し方はユーザーが決定。0.11.0からあった。`r01lib_I3C_demo`がN947でIBIのあと止まっていた。`i3c.cpp`の`master_irq_handler()`がSDKの割り込みの処理のあとで捨てる。経緯はDEVELOPMENT_LOG。`test_r01lib_I3C_rx_leftover`がMCXの4ボードでALL OK（2026-10-30。N236はN947のオンボードのP3T1755をD18-`MB_RX`・D19-`MB_TX`でつなぎ、**N236のI3C1のクロックを12.5MHzから25MHzに直してから**（12.5MHzではDAAが1台も見つけなかった。r01libの`I3C`はN236で初めて動いた。直し方はユーザーが決定））、A4/A5の`Wire.setPins()`と`WIRE_HAS_END`（2026-10-30、ユーザーが決定。下のPendingタスク10。`release_check/16`が実機の5ボードでALL OK）、`Servo`のPWMの無いピン（2026-10-30、ユーザーが決定。下の項目）、`mcxTicker`（2026-10-30、ユーザーが決定。下の項目）（1.0までの版の割り振りは[memo/notes_toward_1.0.0.md](memo/notes_toward_1.0.0.md)の§9）
+
+### v0.11.0の経緯・v0.10.0の経緯（「プロジェクト概要」の項目）
+
+- **v0.11.0の経緯**（`0.11.0-dev`ブランチ、2026-10-18に`main`の`49fccaf`から切った）。範囲はN947のEthernet（ENET・lwIP）。同梱ライブラリは`MCXEthernet.h`でクラスの名前は公式`Ethernet`と同じ、MACアドレスは`begin(mac)`と引数なしの`begin()`（チップのIDから）の両方（2026-10-23、ユーザーが決定。memoの§6-4。2026-10-24に、公式の作例が`#include`を替えないとビルドできない件で見直し、このままにした）。
+  **2026-10-23の時点（ビルドだけ）**: `libraries/MCXEthernet/`（lwIP 2.2.1とSDKのENETのport・ドライバを`ref/SDK_2_16_000_FRDM-MCXN947_network.zip`から無改変で取り込み（2026-10-24に、SDKのportの4行に型変換を足した）、自前のコードはlwIPをCTIMER2の1msの割り込みで回す）ができ、公式`Ethernet` 2.0.2の作例13本が`#include`の差し替えだけでビルドできる。
+  文書（LICENSE・ライブラリのREADME・PIN_MAPPING_N947・API_COMPATIBILITY・CHANGELOG・README）と`release_check/25_ethernet_pc_N947`（PC側は`pc_check.py`）も書いた。
+  **実機で確かめた（2026-10-24、N947が1枚、DHCPはMacの「インターネット共有」）**: `release_check/25`がボード側・PC側ともALL OK（1msの割り込みの最長は251µs）。作例4本も動いた（`HttpGet_N947`はMacの共有を通して`example.com`まで）。
+  チップのUUIDからのMACは`02:49:20:7c:08:54`。ケーブルを抜き差ししても（10秒・1分）、挿してから1秒ほどでpingが戻る。**長時間の動作も確かめた**（2026-10-24、2時間、`WebTemperature_N947`）: 2秒ごとの`GET /json`が3491回と、10分ごとに続けて200回の`GET`が11回で、失敗も再起動も無し（200回は約2.8秒のまま遅くならない）。Macの1時間のリースは30分ごとに延長された（4回）。pingは7163回のうち3回が失われた（始めの2回と、途中の1回）。**lwIPの乱数の種はELSのPRNGから、TCPの初期シーケンス番号も乱数**（2026-10-25、ユーザーが決定。前は送り元のポートが起動ごとに同じだった）。**`millis()`・`micros()`は`setup()`の前から数える**（2026-10-25に直した。前は最初の呼び出しから数え、`delay(500)`のあとでも0だった。全ボード。`release_check/09`に項目を足し、`09`・`01`が5ボードでALL OK）。**SysTickが遅れて動いても`micros()`がずれない**（2026-10-25に直した。MCXの4ボード。前は遅れて動いた時点をミリ秒の始まりにして、次の刻みまで`micros()`が遅れた分だけ小さく読めた。lwIPの負荷で1kHzの間隔が873〜1087µsに見えていた。`release_check/09`に項目を足し、`09`・`01`が5ボードでALL OK）。**公式`Ethernet`＋W5500 Lite（モジュール）も動いた**（2026-10-24。A153で公式の作例12本、A156・N236・C444・N947で4本ずつ。配線はどのボードも同じで、RSTは2026-10-25から5ボードとも`D8`（それまではN947だけ`D8`、ほかは`D9`）。memoの§6-4a）。`stop()`を`write()`の直後に呼ぶと約200msかかる（W5500の再送の時間。API_COMPATIBILITYのEthernetの行）。**`release_check/26`（W5500、オプション）**（2026-10-25、ユーザーが決定。どのボードでも、PC側は`25`の`pc_check.py`）が5ボードでALL OK。CIのpushごとのビルドには入れず、third_partyの段でビルドする（`.github/third_party/repo_sketches.txt`）。**通信速度の測定**（`test_ethernet_throughput`と`pc_throughput.py`）、**PubSubClient（MQTT）の作例4本がmosquittoで動いた**（`MCXEthernet`とW5500の両方）、**lwIPのメモリを測って決めた**（ヒープ64KB、受信の窓4×MSS、送信のバッファ12×MSS、ENETの記述子は受信8・送信32、UDPの待ち行列16。RAMは約79KBから約133KB、PC→ボード35〜47 Mbit/s、ボード→PC約70 Mbit/s）、**対応していないもの（TLS・IPv6・Wi-Fi・pingを打つこと）を文書に書いた**（`EthernetUDP::beginPacket()`が0.0.0.0・ポート0・IPv6で0を返すよう直し、`release_check/25`に項目を足した）（いずれも2026-10-25、メモリはユーザーが決定）。**R166は実装されている**（`D5`は`INPUT_PULLDOWN`でもHIGH）。**`print()`をAVRに合わせた**: 16進などの10より上の桁を大文字に（2026-10-24）、10進以外の負の数は2の補数、基数`0`は1バイトを`write()`（2026-10-25、ユーザーが決定）。`String(n, HEX)`は小文字のまま（AVRと同じ）。`String(n, base)`の10進以外の負の数も2の補数にした（ArduinoCore-APIの`ltoa()`と同じ、2026-10-25、ユーザーが決定）。`release_check/09`が5ボードでALL OK。**リリース前の確認（2026-10-25、macOS）**: チェックリストの1〜7が済んだ（1の日付だけはマージの直前）。版は0.11.0、`docs/api/`は作り直し済み、回帰コンパイルは5ボードともfull・third_partyで失敗なし、`release_check`は全部の番号が5ボードで問題なし（流し直しはジャンパ2件とUSBの挿し直し）、IDEで5枚の書き込みとデバッグも問題なし。経緯はDEVELOPMENT_LOGの「リリース前の確認」と「リリース」。
+  `test_enet_bringup_N947`（lwIPなしで、MDIOでPHYのID、リンク、DHCP DISCOVERの生のフレームとOFFER。`MCXEthernet`が動かないときに、ドライバとPHYまでを切り分ける）は、DISCOVERを1回しか送らず、Macが最初のDISCOVERに答えなかったのでFAILした。1秒ごとに送り直す形に直してALL OK。
+  見直しで残した点と、lwIPの乱数にELSのPRNGを使う案はmemoの§6-4。
+  `--warnings all`で取り込んだSDKのportに出ていた符号の比較の警告4件は、2026-10-23には「ファイルに手を入れずに残す」としたが、2026-10-24に4行へ型変換を足して消した（ユーザーが決定。LICENSEとライブラリのREADMEに、無改変の例外として書いた）。ライブラリに自前の短い作例を入れる（フォルダー名は`_N947`で終わる形。公式の作例はコピーしない）（どちらも2026-10-23、ユーザーが決定）。作例は`DhcpAddress_N947`・`WebServerLed_N947`・`UdpEcho_N947`・`HttpGet_N947`・`WebTemperature_N947`・`WebButtonsRgb_N947`の6本（2026-10-24、どれも実機で確認。`test_enet_bringup_N947`を含む7本とも、ユーザーがIDEからも確かめた）。pingを打つ機能（公式の`Ethernet`に無い）は入れない（2026-10-24、ユーザーが決定。pingに答えるのはlwIPがしている）。1.0までの版の割り振りは[memo/notes_toward_1.0.0.md](memo/notes_toward_1.0.0.md)の§9。A4/A5の`setPins`（Pendingタスク10）は0.12.0で入れた
+- **v0.10.0の経緯**（`0.10.0-dev`ブランチ、2026-10-15に`0.9.2-dev`として開始し、2026-10-16に名前を変えた）。範囲は、ネットワーク基底クラス（`Client`/`Server`/`UDP`/`IPAddress`、Pendingタスク8）、
+  `Servo.h`の互換ライブラリ、`<avr/pgmspace.h>`、**FRDM-MCXC444**（2026-10-16、ユーザーが決定）。
+  **A4/A5のI²C（`setPins`、Pendingタスク10）は0.10.0には入れなかった**（2026-10-18、ユーザーが決定。0.12.0で入れた）。
+  機能の追加だけなのでパッチではなくマイナーの版にした。C444は「ビルドが通るだけ」のスパイク（`c444-spike`ブランチ、未push）の結果を見て入れると決めた。結果はmemoの§4-5で、スパイクのスタブは持ち込まず`0.10.0-dev`の上で作り直した。
+  **`Servo`（`libraries/Servo/`）は5つのボードの実機で`test_Servo`がALL PASS（2026-10-18）。作例の`Sweep`と`Knob`（ポテンショメータは`A2`）も、5つのボードで実物のSG90を動かせた（2026-10-18、ユーザーが確認。C444は`D9`、MCXの4ボードは`PWM0`（N236では`D6`と同じピン））**。
+  `test_Servo`をジャンパ1本（A153・A156・N947は`PWM0`-`D8`、N236とC444は`D6`-`D7`）で流す。
+  **`micros()`が呼ばれるたびに割り込みを入れていた**（`__disable_irq()`/`__enable_irq()`で囲んでいたので、`noInterrupts()`の中でも）のを、PRIMASKを戻す形に直した（2026-10-18、全ボード）。
+  `test_micros_noInterrupts`（配線なし）が直す前のC444で2項目FAIL（3msの間に`millis()`が0から4へ進んだ）、直したあと5つのボードでALL OK
+  **リリース前の実機チェック（2026-10-18、macOS）**: 全サンプルの回帰コンパイルは5ボードともexit 0。`release_check`は5ボードで、`01`・`04`・`06`（2回）・`07`・`08`・`09`、`11`〜`14`（A156は`15`も）、`24`（4組、いずれもN947が相手）、`03`・`02`・`21`が問題なし。`test_Servo`・`test_avr_pgmspace`・`test_network_base_classes`・`test_micros_noInterrupts`も5ボードでALL PASS。`22`・`23`は2026-10-18の確認（5ボードとも）を使い、今回は流していない。5枚をつないだままの書き込みはarduino-cliとIDE（macOS）の両方で各ボードに入り、IDE内蔵デバッガ（macOS）も問題なし。流し直したのは2件で、A156の`15`（`Wire1`のジャンパを直して流し直し、ALL OK）とA156-N947の`24`（1回目は相手が答えずFAIL、そのままもう一度流してALL OK。原因は調べていない）。`21`のA153は、D1-D0のジャンパを直して`Serial1`のWARNINGが消えた。確認の間にN236・C444・N947が1回ずつUSBから消え、挿し直して戻った（原因は調べていない）。Windows・Linuxの書き込みとデバッグは、ステージング（`staging-0.10.0`）と本番の`main`のURLの両方で、ユーザーが確認して問題なし。
+
+### 0.5以降のロードマップ方針（v0.4.2開発中に策定）
+
+## 0.5以降のロードマップ方針（v0.4.2開発中に策定）
+ユーザーから「0.5, 0.6, 0.7, 0.8ぐらいまでのプランで、足回りを固めるとかサポートするボードの数を増やすとか、数バージョン先まで手堅く進めるための順番を考えて」と依頼。以下の順序で合意（0.7以降は「まだ先の話なのであとで考える」として保留）:
+
+- **0.5: CI（実機不要の足回り）＋ 0.4.2で予定していた確認ポイントの統合**。現状workflowは`update_package_index.yml`だけで、全サンプル×両ボードの回帰コンパイルは毎回手動（1セッションで5回手で回すこともある）——これをGitHub Actionsで自動化する。あわせて、これまで繰り返し踏んできた機械的ミス（`package_nxp_mcx_index.json`のプレースホルダー追加忘れ＝2回、`*/`によるコメント早期終了＝4〜5回、`platform.txt`の`version`系3行と`Doxyfile`の`PROJECT_NUMBER`の齟齬）もチェック対象にする。**ボードを増やすと検証コストが2倍→3倍→4倍に効くので、増やす前に自動化するという順序**（ユーザーの提案で、0.4.2の残作業＝`Wire2`のクロック実測・拡張した`test_combined_peripherals`の実機確認も0.5に含める方針）
+- **0.6: 先回りの監査＋ポーティング手順の明文化**。`SPI`/`SPI1`/`Wire2`で3回続けて出た「`clock_config.c`が触れていないFlexCommがリセットデフォルトの遅いクロック源のまま残る」を、次のバグ報告を待たずに全ペリフェラル一括で洗う。N947対応の経験を`docs/porting_a_new_board.md`として書き出し、その過程で「ボード追加時に手で直す必要がある箇所」（`arduino_io.h`の`NUM_ANALOG_INPUTS`等のボード分岐、mcxPinStateの`ALIAS_NAMES`/`KNOWN_INSTANCES`、gdb-bridgeのボード別Windows exe）を可視化・削減する
+- **0.7以降: 保留**（ボード追加が有力だが、時期が来てから判断）
+
+### ボード追加候補の実態調査（この検討で判明したこと）
+- **C444は「半分できている」わけではない**: `r01lib`に`CPU_MCXC444VLH`分岐はあるが、(1) `r01lib.h`で`I3C_SUPPORTED`が定義されない＝I3Cペリフェラル自体が無い、(2) `AnalogIn.h`/`PwmOut.h`にはC444分岐が**一切無い**（A153とN947のみ）。しかもC444はKinetis系でLPADC/FlexPWMではなくADC16/TPMという別ペリフェラルのため、移植ではなく新規実装が必要——`analogRead`/`analogWrite`/`analogWriteFrequency`/`tone`が全部未実装。I2Cも`fsl_lpi2c`ではなく`fsl_i2c`、Cortex-M0+でFPU無し。GPIO/Serial/I2C/SPIの骨組みだけがある状態で、単独で1バージョン分の規模（ユーザーも「その通り．手間が大きい」と同意）
+- **オンボードセンサーの違い（ユーザーからの情報）**: C444とN236にはI3Cセンサーが無く、代わりに**加速度センサ**が載っている。したがってこの2ボードでの実機検証は、既存2ボードが使っている「`Wire1`(I3C)経由のP3T1755温度センサー」ではなく、プレーンI2C経由の加速度センサを使う形になる——`test_combined_peripherals`・`release_check/01`等、現状`Wire1`+`P3T1755`前提で書かれているサンプル群の設計に影響するため、0.6のポーティング手順書で扱うべき項目
+- **A156はA153の兄弟、N236はN947の兄弟**で流用が効く。3枚目を足すならA156が最も安い（N236は上記の加速度センサの件が追加で乗る）
+- **回路図が`ref/`に揃っている**（ユーザーが配置。`ref/`は`.gitignore`対象＝リポジトリ管理外なので、この記録が無いと存在に気づけない）: `FRDM-MCXA153.pdf`・`FRDM-MCXA156.pdf`・`FRDM-MCXC444.pdf`・`FRDM-MCXN236.pdf`・`FRDM-MCXN947SH.pdf`。ボード追加時のピン確認で参照する。**注意: NXPの回路図PDFは2カラムレイアウトのため`pdftotext`でのテキスト抽出は信頼できない**（無関係な項目が同じ行に混ざる）——N947のanalogWriteピン特定時に確立した通り、`Read`ツールでページを画像として直接開いて視認する方式を使うこと。あわせて`ref/r01lib_pin_table.xlsx`（各ピンのavailability一覧）も利用可能
+
+
+### FRDM-MCXC444: RMとデータシートで見つけて直した不具合・実機で確かめたこと
+
+- **RMとデータシートで見つけて直した不具合（2026-10-17、ビルドだけ）**: TPMの周期が65536カウントのときMODが`0xFFFF`になり、`analogWrite(pin, 255)`の`CnV`が16ビットに切り詰められて0%になっていた（上限を65535カウントにした）。
+  ADC16のクロックがSDKの既定（非同期クロックの8分周、0.38〜0.91MHz）で16ビットの下限を下回っていた（バスクロックの8分周、3MHzにした）。
+  SPI1にSDKの作例（SPI0用）のバスクロックを渡していて、SCKが要求の2倍になっていた（システムクロックにした）
+- **実機で確かめたこと（2026-10-18）**: `examples/Arduino_compatible_API/test_bringup_C444`（配線なし、立ち上げの順を1本で）がALL OK。
+  `release_check`の`01`・`06`（2回、書き込みをまたいだ保持も）・`09`・`11`（案A: D2-D3のジャンパだけ、`Serial1`の節はSKIP。2026-10-18にユーザーが決定）・`12`（D11-D12）・`13`（D8-D9・D2-D3・D4-D5・D6-D7。データの組をD0-D1から移し、サーボはD6からD7で測る。2026-10-18にユーザーが決定）、`test_Servo`（D6-D7）、`test_avr_pgmspace`（M0+でアドレスのそろっていない読み出しも）、`test_network_base_classes`がALL OK/ALL PASS。
+  `22`（外付けのLM75系）と`23`（`Waveshare_TFT_Touch`の`SDBitmapViewer`）は、ユーザーが5つのボードともIDEで流して問題なし。
+  `08`（配線なし。PWMはTPM0のD10・D5とTPM1のD3、D5/D6/D9の受け渡し。プルダウンはD8（D4はSW3でプルアップ付き）、`analogRead()`のあとの割り込みはA5（A0〜A3のポートBはピン割り込みが無く、A5のR27のプルアップに対しLOWに駆動して離して立ち上がりを作る））がALL OK。
+  元の`test_analogWrite_pairs_and_pinMode`・`test_attachInterrupt_keeps_pinMode`（D8）・`test_digitalRead_after_analogRead`（A5、割り込みの項目のSKIPをやめた）もALL OK。
+  `04`はmcxPinStateをC444に対応させて、配線なしでCONFLICT・MISMATCHなし（2026-10-18）。ライブラリは`Wire1`=`PTE25`/`PTE24`、`SPI1`・`Serial1`・`PWM0`〜`PWM5`なし、`Serial`のピンは`USBTX`/`USBRX`がD1/D0の別名なので付け替え前の値に戻す、
+  GPIOと周辺機能の区別を「ALT0」から`kPORT_MuxAsGpio`（C444はALT1）にした。コアの`pin_registry_pin_name()`はC444で`PTA1`の形で名前を作る。上流（`~/dev/Arduino/mcxPinState`）にも同じ内容をコミットしてpushした（`cc472e4`）。
+  `07`はCOP（ウォッチドッグ）で1000回リセットしてALL OK（約1分半。普通の書き込みは約0.2ms、詰め直しは約37ms）。
+  そのため**COPを止めるのは`SystemInit()`ではなく起動コードの`ResetISR()`にした**（C444だけ`-DDISABLE_WDOG=0`）。スケッチが`mcx_sketch_sets_cop`を定義したときだけ止めずに任せ、スケッチは`SIM_COPC`を自分で1回書くまで、リセット後の既定（LPOで1024ms）のCOPを`SIM_SRVCOP`でリセットし続ける。
+  テストのための内部の口で、**利用者向けの機能としては文書に載せない**（2026-10-18、ユーザーが決定。ウォッチドッグはどのボードでも文書に無い機能で、出すなら`<avr/wdt.h>`の互換などの形をC444の書き込みが1回だけの`SIM_COPC`と合わせて設計し直すことになるので、名前を約束しない。memoの§8）。`07`のCOPはMCGIRCLK（8MHzのLIRCを4分周した2MHz、コアは使っていない）で数え、LPTMRで`micros()`と比べて速さを測る。実機でのリセットの時刻は計算と0.25%以内で合った
+  `21`はN947のオンボードのP3T1755を`Wire`（C444のD18-N947の`MB_RX`、D19-`MB_TX`）で読み、`Serial1`の代わりに`Wire1`の加速度センサーのWHO_AM_Iを毎周読む（D11-D12のジャンパで`SPI`、`analogWrite`はD3、`tone`はD8）。約130周回してWARNINGなし（加速度センサーのCS/WAKEはR40でD11＝MOSIにつながるが、影響は無かった）。
+  `test_fault_report`は8種類のうち7種類で`error: HardFault at PC ...`がクラッシュした行を指す（M0+にはCFSRが無いので種類は出ない。割り込みの中は`in an interrupt`）。
+  スタックあふれ（kind 4）は下の「スタックあふれの扱い」の形で報告される。
+  書き込みはLinkServer 26.6.137で、フラッシュを正しく判定する
+
+### FRDM-MCXC444: 実機で見つけて直した不具合・できているもの・全作例のビルド・analogRead()の電圧の確認
+
+- **実機で見つけて直した不具合（2026-10-18）**: どれもC444の分岐か、MCXでは値の変わらない形で直した。
+  - **ポートのクロック**: SDKのテンプレートの`BOARD_InitBootPins()`はPORTAのクロックしか入れず、`pinMode(RED, OUTPUT)`（PTE31）でHardFaultになった。`mcu.cpp`で5つとも入れる
+  - **GPIOのALT**: KinetisはALT0が「無効（アナログ）」でGPIOはALT1（MCXはALT0がGPIO）。`DigitalInOut`がMUXを設定せず、`pinMode()`と`Serial.end()`は`pin_mux( 0 )`でGPIOに戻していたので、入出力・プル・割り込み・`tone`・`Wire`の内蔵プルアップが全部効かなかった。
+    コンストラクタ（C444の分岐）でALT1にし、GPIOに戻す所は`kPORT_MuxAsGpio`（MCXでは0、C444では1）にした
+  - **ADCの基準電圧**: 上のVREFHの件。`AnalogIn`はVALTHを使う（VDDAを約3.29Vと読む）
+  - **`delayMicroseconds()`**: `wait_us()`の倍精度と64ビットの計算がM0+ではソフトウェアで約45µsかかり、10µsが56µsになった。M0+ではSysTickのカウンタを数える（割り込みを止めていても正しい）
+  - **`delay()`**（2026-10-27に直した、ユーザーが決定）: `wait()`（`SDK_DelayAtLeastUs()`）はサイクルカウンタが無いと自分のループを数えるので、その間の割り込みの時間が上に足された。`micros()`で`delay(500)`が501.2ms、TimerOneの1kHzで502.5ms、10kHzで514.1ms（`test_MsTimer2_TimerOne`の0.5秒で504回のFAILで見つかった）。M0+では`delayMicroseconds()`と同じくSysTickのカウンタを1msずつ数える（3つとも500.005ms）。1msを超えて動く割り込みが2回の読みの間にあると、その分は数えない。MCXの4ボードはDWTを数えるので元から正しい（N947で3つとも500.005ms）
+  - **I2CのSCL**: `I2C_MasterSetBaudRate()`の引数（ボーレートと元のクロック）が逆で、いつも2.4MHzだった（LPI2Cの関数は順番が逆）
+  - **I2Cのリピーテッドスタート**: STOPを付けない書き込みがNAKで失敗したあとも印が残り、次の転送が失敗した（`release_check/01`のStreamの3項目）。失敗したら消す
+  - **SPIのSCK**: `SPI::frequency()`が頼まれた周波数を半分にしていた（以前のバスクロックの誤りを打ち消していたもの）。2026-10-17にクロックを直したので、半分にするのをやめた
+  - **TPMの`CnV`**: カウンタが動いている間、`CnV`への書き込みは周期の終わりまでバッファで待ち、その間の同じチャネルへの書き込みは捨てられる（RMのとおり。読み戻すと書いた値が返るので、読んでも分からない）。
+    1周期に2回の`analogWrite()`の2回目と、D5/D6/D9の取り合いで後から来たピンのデューティが効かなかった。
+    **TOF（オーバーフローのフラグ）は、`STATUS`・`SC`のどちらに書いても実機で消えないことが多く**（消えた回もある。理由は分からない）、使えない。
+    そこで書いた時点の`CNT`・`MOD`・分周比から周期の終わりの時刻を出し、それより前の書き込みは覚えておいてSysTick（`pwm_tpm_service()`）が書く。同じ値は書かない。
+    **その時刻の計算が、読んだ`CNT`が`MOD`より大きいと負になり、約89秒先になっていた**（2026-10-18、`release_check/08`で発見）。その間の書き込みは覚えたまま書かれず、TPM0のチャネルが止まって見えた。
+    `MOD`は読むと書いた値が返るが、効くのは次の周期からなので、周期を短くした直後は古い周期の途中で`CNT`が新しい`MOD`を超える。止めて0にした直後の`CNT`も古い値を返した。
+    いまは上限の見積もりにした（`MOD`を書いた直後の1周期は古い`MOD`も見る。`CNT`が`MOD`を超えていれば0xFFFFまで数えて折り返す分を足す）。
+    **`MOD`も同じバッファで、1周期に2回書くと2回目が捨てられる**ので、`CnV`と同じく覚えてSysTickで書く（`set_mod()`）。`analogWriteFrequency()`を続けて2回呼んで、後の周波数になることを実機で確かめた
+- **できているもの（2026-10-16、ビルドだけ。上の項目以外は実機は未確認）**: `variants/frdm_mcxc444/`（`README.md`に出どころ）、`boards.txt`（デバッグまで）、`gdb-bridge`の`c444.cfg`、
+  `micros()`（SysTick。`__ARM_ARCH_6M__`で分ける）、HardFaultの報告（PCだけ）と`semihost_hardfault.c`（M0+ではスタックしたPCがフラッシュの中のときだけBKPTを見る）、
+  `Serial`（`USBTX`/`USBRX`が`D1`/`D0`なので、ピン番号の付け替えの前に生の値を取る）、`Wire`/`Wire1`、`SPI`（r01libに無かった`bit_order()`を足し、CSは転送ごとに動かさずスケッチに任せる。MCXのボードと同じ）、`analogRead`（ADC16、16ビット、校正）、
+  `analogWrite`/`analogWriteFrequency`（TPM、D5/D6/D9の取り合い）、`tone`（PITのチャネル0）、`EEPROM`（FTFA、16バイト単位、フラッシュの最後の8KB、命令の間は割り込みを止める）、`Servo`。
+  `PIN_MAPPING_C444.md`・README・API_COMPATIBILITY・CHANGELOG・LICENSE（`startup_mcxc444.cpp`のFOPTの変更）・`docs/porting_a_new_board.md`
+- **全作例のビルド（2026-10-18）**: CIと同じ`compile_examples.sh frdm_mcxc444 full`で107本のうち96本が通り、8本は他のボード専用で飛ばす。
+  `#error "This sketch has no settings for this board yet"`が残っている作例は、どれもC444の分岐を持っていて、`#error`は知らないボードの`#else`にあるだけ。
+  落ちたのはmcxRCServoの作例3本（`PWM0`）だけで、C444では`D3`（TPM1を独占できるので、サーボの50Hzがほかのピンの周期とぶつからない）を使う形に直し、READMEにC444のピンの表を足した。
+  上流（`~/dev/Arduino/libraries/mcxRCServo`）と同梱のコピーの両方に入れ、5つのボードでビルドが通る。CIのボードの表（`regression_check.yml`）にC444を足した。
+  実物のサーボで3本ともC444の`D3`から動くことをユーザーが確かめた（2026-10-18。SG90はボードの5V、FS90Rは別の電源）。READMEにも書いた
+  `release_check/02`は波形もユーザーが確かめて問題なし（2026-10-18）
+- **`analogRead()`を既知の電圧で確かめた（2026-10-18）**: `examples/Arduino_compatible_API/test_analogRead_precision_C444`（16ビットで64回の平均・最小・最大と、ADCの内部の入力）。
+  定電圧源の1Vを`A2`へ入れ、テスターで`A2`=0.97V、3.3V（VDDA）=3.27Vのとき、読みは平均19516で、3.27V換算で0.974V（テスターの桁の範囲で一致）。
+  GNDは2カウント、3.3Vは65526（フルスケールより9低い）。内部のVREFLは2.6、VALTHは65514、バンドギャップは19910（3.27V換算で0.994V、データシートは0.97〜1.03V）。
+  外の入力の1回の中のばらつきは約300カウントで、バンドギャップ（約30）の10倍（定電圧源と配線のノイズと見ている。切り分けはしていない）。
+  スケッチの換算の定数を`VREF`にするとビルドが止まる（`MCXC444.h`のVREFペリフェラルのマクロ）
+
+### 動作確認済み（APIごとの表）
+
+| API | 状態 | 備考 |
+|---|---|---|
+| GPIO / digitalWrite / digitalRead | ✅ | |
+| Serial | ✅ | |
+| Serial.flush() | ✅ | v0.2.1で追加。Serial1@9600bpsで実測値と理論値を比較し実機確認済み |
+| Serial.peek() | ✅ | v0.2.1で追加。Serial1ループバックで実機確認済み |
+| Serial Stream系（setTimeout/readBytes/readBytesUntil/parseInt/parseFloat/find） | ✅ | v0.2.1で追加。Serial1ループバックで実機確認済み、タイムアウトパスも実測 |
+| analogReference / analogRead・WriteResolution / yield / ctype.h系 | ✅ | v0.2.1で追加。実機確認済み（A0の10bit/12bit比較、ctype.h系は既知文字で検証） |
+| SPI.end / transfer16 / bitOrderバグ修正 | ✅ | v0.2.1で追加・修正。MOSI-MISOループバックで実機確認済み |
+| Wire.setClock | ✅ | v0.2.1で追加。オンボードP3T1755で実機確認済み |
+| Serial.readString / readStringUntil、String::reserve/getBytes/toCharArray/startsWith(offset) | ✅ | v0.2.1で追加。Serial1ループバック＋純粋ロジック検証で実機確認済み |
+| SPI.setBitOrder/setDataMode/setClockDivider、String 64bit（long long/unsigned long long） | ✅ | v0.2.1で追加。MOSI-MISOループバック＋純粋ロジック検証で実機確認済み |
+| Serial print BIN基数バグ修正（Serial・String両方）、Serial.write全オーバーロード、attachInterrupt LOWモード | ✅ | v0.2.1で修正・追加。全項目実機確認済み（LOWモードは長押しでカウンタ374,533回増加を確認） |
+| PROGMEM/pgm_read系、F()/String対応、ARDUINO/ARDUINO_ARCH_*マクロ | ✅ | v0.2.1で追加。実機確認済み。0.10.0で`<avr/pgmspace.h>`（`_near`/`_far`、`_P`/`_PF`系の関数など）を足し、PROGMEMのマクロは`Arduino.h`からそこへ移した。`test_avr_pgmspace`でA153・N947確認 |
+| Wire.end、Serial.find(len)/findUntil、Serial.availableForWrite、INPUT_PULLDOWN、OUTPUT_OPENDRAIN | ✅ | v0.2.1で追加。実機確認済み（`Wire.end()`はI3C使用時のBusFaultバグを修正後に確認） |
+| String operator+数値版/F()、Printable、NOT_AN_INTERRUPT、digitalPinToPort/BitMask+portOutput/Input/ModeRegister | ✅ | v0.2.1で追加。実機確認済み（fast GPIOレジスタ直接操作がD2-D3ジャンパで正しく動作、Printableカスタムクラスの出力を視覚確認） |
+| Print/Stream抽象基底クラス（新設） | ✅ | v0.2.1で追加。実機確認済み——ハードウェア非依存のPrint派生クラス、Stream&への多態性、print()/println()の実バイト数返却、Printableのn+=p.print(x)イディオムすべて動作確認 |
+| サードパーティライブラリ互換性（ArduinoJson/LiquidCrystal/DHT/NeoPixel/OneWire/Adafruit BusIO/Adafruit Unified Sensor） | ✅ | v0.2.1で最小スケッチのコンパイルを確認。0.7.0で各ライブラリの**同梱サンプル全47本×両ボード**に広げて再確認し、`BitOrder`の本物のenum化とavr-libcの文字列関数・`M_`定数の宣言を追加した。残る失敗8本は、BLE（4本）、ADXL343ドライバ（1本）、Ethernetが要求する`Client.h`（3本、coreにネットワーク基底クラスが無い）。0.10.0でネットワーク基底クラスと`<avr/pgmspace.h>`を足し、公式`Ethernet`の作例13本・ArduinoJsonのEthernet系3本・PubSubClientの4本が4ボードでビルドできることを確かめた（PubSubClientは`pgm_read_byte_near()`で止まっていた。`mqtt_stream`は外部の`SRAM.h`が要るので対象外）。公式のServoはライブラリ側のアーキテクチャ非対応で使えないので、0.10.0で同じAPIの`Servo`を同梱した（公式が入っていても、ビルドは同梱のほうを選ぶことを確認）。ライブラリはスクラッチパッドに`ARDUINO_DIRECTORIES_USER`で入れたので、`~/Documents/Arduino/libraries`には無い |
+| Wire (I2C) | ✅ | |
+| Wire1 (I3C, I2Cモード) | ✅ | オンボードP3T1755で確認、重大バグ修正済み。A156の`Wire1`はI3CではなくMikroBusの`LPI2C3`（0.8.0） |
+| SPI | ✅ | |
+| attachInterrupt | ✅ | |
+| detachInterrupt | ✅ | v0.2.1で追加。SW2を使った実機確認済み |
+| analogRead | ✅ | LPADC。A153は`A0`-`A3`、N947は`A2`-`A5`、A156は`A0`-`A5`（`A4`・`A5`はR75・R76を外したボードで）、N236は`A0`-`A2`・`A4`・`A5`（`A3`は`-1`）。AVRと同じく`0`-`5`も`A0`-`A5`（0.9.1から。`test_analogRead_channel_numbers`と`release_check/08`で4ボード確認。D0-D5はどのボードでも`A`ピンと別のピンでADCも無いので、前に動いていた呼び出しの意味は変わらない） |
+| analogWrite (PWM) | ✅ | A153・A156はFlexPWM0、N947・N236はFlexPWM1。`PWM0`-`PWM5`と、A156・N236の`D3`/`D5`/`D6`/`D9`（A156はFlexPWM1、0.9.0）。組の周期は組ごとに共有（0.9.0で直した） |
+| millis / micros | ✅ | SysTick(1ms) + DWT |
+| delayMicroseconds | ✅ | wait_us()ベース、v0.2.1で追加 |
+| tone / noTone | ✅ | CTIMER0, 任意のデジタルピン |
+| Serial1（A153・A156はD0/D1、N947はMikroBusの`MB_TX`/`MB_RX`）、Serial2（A156だけ、MikroBus、0.8.0） | ✅ | 入力バッファ有効化・RX割り込み・available()の3バグ修正後、実機ループバックで確認 |
+| shiftOut / shiftIn | ✅ | 割り込みベースの相互検証で確認 |
+| pulseIn / pulseInLong | ✅ | |
+| random / randomSeed | ✅ | |
+| UNO R3/R4互換マクロ・定数一式 | ✅ | `release_check/09`の「compat macros」節で実行時に値を確認（0.8.0までは`01`） |
+| String クラス | ✅ | 独自実装（WString移植ではない）。連結・数値変換・検索・置換・大小文字変換・trim等を実機確認、全項目OK |
+| EEPROM（0.7.0） | ✅ | 1KB、内蔵フラッシュの末尾。`release_check/06`（API・書き込み・リセット後と書き込み後の保持）と`07`（ウォッチドッグで書き込み中に1000回リセット）で両ボード確認。CLIの`upload`とgdbの`load`、IDE（macOS）の書き込みボタンとDebugボタンで消えないことも確認 |
+| Wire.setWireTimeout / getWireTimeoutFlag / clearWireTimeoutFlag（0.7.0） | ✅ | LPI2Cのピンlowタイムアウト。`Wire`・N947の`Wire2`・A156の`Wire1`（A153・N947の`Wire1`はI3Cで無効）。`release_check/14`（ジャンパ）で3ボードとも確認。C444（0.10.0）はKinetisのSMBusのSCL low timeoutで、SCLだけを見る。`14`で確認 |
+| I2Cターゲット（スレーブ）モード（0.7.0） | ✅ | `Wire`とA156の`Wire1`（A153・N947の`Wire1`とN947の`Wire2`は`begin(address)`で止まる）。自分自身をターゲットにする形（`release_check/01`）と2枚接続（`release_check/24`）で確認。C444（0.10.0）は自分のターゲットを呼べないので、`24`だけで確認 |
+| Wire: begin()のオーバーロード・内部プルアップ・Stream化・5引数requestFrom・バッファ上限（0.7.0） | ✅ | `test_Wire_begin_address`と`test_Wire_Stream_requestFrom5`で両ボード確認（後者は`release_check/01`に統合） |
+| Serial.begin(baud, config) / end() / serialEvent（0.7.0） | ✅ | 12形式をRXピンからビット単位で読んで確認（`release_check/11`に統合） |
+| AVR互換の補助関数（0.7.0） | ✅ | `itoa`/`dtostrf`/`word`/`_BV`/`analogReference`の定数/`HardwareSerial`/avr-libcの文字列関数/`M_`定数/`SDA`・`SCL`/`BitOrder`のenum化。`test_avr_compat_helpers`（`release_check/09`に統合、0.8.0までは`01`。単体でもA156を含む3ボードでALL PASS） |
+| print(double)・String(double)の丸め（0.7.0） | ✅ | `test_print_float_rounding`で3ボード確認（A156は0.9.0の開発開始時。代表的な項目は`release_check/09`にも入っている） |
+| panic()のメッセージ・HardFaultの報告・スタック上限（0.7.0） | ✅ | `error: ...`をUSBシリアルへ。`test_fault_report`で8種類のクラッシュを3ボード確認（A156は0.9.0の開発開始時。FPUのあるA156でもPCが正しい行を指す）。スタックはヒープの終わりで`MSPLIM`により止まり、IDEの「ローカル変数で使える」表示はその量と一致する |
+| 複数ボード同時接続での書き込み・デバッグ（0.7.0、0.8.0で3枚） | ✅ | macOS（IDEとarduino-cli）、Windows・Linux（IDE、`0.7.0-rc1`のステージング経由）の全てで、2枚つないだままの書き込み（ポートを切り替えてそれぞれ）とデバッグ（1枚ずつ順番に）を確認。0.8.0で、A153・N947・A156の3枚をつないだまま3つのボードを同時にデバッガで動かせることを、macOS・Windows・Linuxの全てで、ステージング（`staging-0.8.0`）と本番の`main`のURLから入れた両方で確認（A156のプローブは`Device`列が空） |
+| 上記全機能の同時使用 | ✅ | `test_combined_peripherals.ino`（Serial1込み）で実機確認済み。WARNINGなし、`serial1`ループバック欠落なし |
+| ボードマネージャーインストール | ✅ | v0.1.5時点で確認済み。v0.2.0リリース後、実際にGitHubの`package_nxp_mcx_index.json`経由でBoards Managerからインストールし直し、macOS/Windows 11双方でビルド・書き込み・実行まで動作確認済み |
+
+（v0.2.0の機能開発・デバッグ自体はmacOS実機で実施。リリース後のBoards Managerインストール検証はmacOS/Windows 11の両方で実施）
+
+### 残りのPendingタスク: 解消済みの項目（1・3・4・5・8・11）
+
+1. ~~Linux対応の実機検証~~ **解消済み（v0.2.2で確定）**: v0.2.1リリース後の実機検証で、ファイル名の大文字小文字ミスマッチ（`arduino.h`/`Arduino.h`、`spi.h`/`SPI.h`）によりLinuxでビルドが失敗することが判明・修正し、v0.2.2としてリリース。Linux実機（Ubuntu系）でBoards Manager経由インストール〜Blinkスケッチのビルド〜書き込み〜実行まで成功を確認済み。README.md/TUTORIAL.md/TUTORIAL.ja.mdの「未検証」表記もすべて「macOS, Windows 11, Linuxで検証済み」に更新済み
+3. ~~`examples/tests/GPIO_NXP_Arduino`の不要なgitlinkエントリの整理~~ **解消済み**: `git ls-files --stage`で`160000`（gitlink）エントリが残っているのに`.gitmodules`が存在しないと判明（外部クローンの誤`git add`の名残）。`git rm --cached`でインデックスから除去し、他4つの外部ライブラリクローンと同様`.gitignore`に追加
+4. ~~v0.3.0リリース~~ **完了**: 2026-08-16リリース。詳細は[docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md)の「リリース前最終チェックとv0.3.0リリース完了」節
+5. ~~SDライブラリビルド時の`-Waddress-of-packed-member`警告~~ **解消済み（v0.3.1で対応）**: `platform.txt`の`compiler.cpp.flags`に`-Wno-address-of-packed-member`を追加して警告クラス自体を抑制。純粋な診断抑制フラグ（`-W`系）でコード生成には一切影響しないため、プリビルド`.a`の再ビルドや実機再検証は不要と判断——両ボードで`SDBitmapViewer`（`SD`ライブラリ使用）をコンパイルし、警告が完全に消えたことを確認
+8. ~~ネットワーク基底クラスの実際の通信~~ **0.11.0のN947のEthernetで確かめた**（2026-10-24、`release_check/25`）。以下はそれまでの記録。
+   **ネットワーク基底クラス（`Client`/`Server`/`UDP`/`IPAddress`）は0.10.0で入れる**（2026-09-26、ユーザー判断で0.7.0は見送り。2026-10-15に0.9.2と決め、2026-10-16に0.10.0へ）。
+   無いため`Ethernet`ライブラリが`Client.h`で止まる（ArduinoJsonのEthernet系サンプル3本もこれで失敗）。
+   **0.10.0-dev（旧0.9.2-dev）で4つのクラスを書いた**（`cores/arduino/arduino_api/`の`Client.h`・`Server.h`・`Udp.h`・`IPAddress.{h,cpp}`）。AVRと同じく`Arduino.h`からは読み込まない。
+   `IPAddress`はArduinoCore-APIと同じくIPv4とIPv6を持つ。`test_network_base_classes`がA153・N947の実機でALL PASS、ライブラリの作例は4ボードでビルドが通る。残りは下の「実際に通信できるまで」
+   入れるときは、ArduinoCore-APIのソースがLGPLなのでコピーせず自前で書く。
+   仮想関数のシグネチャはArduinoCore-APIと完全に一致させる（派生ライブラリがそのままビルドできるように）。
+   W5500系シールドなどで**実際に通信できるまでを確認**すること（コンパイルだけでは対応済みにしない。
+   **0.11.0のN947のEthernetでの確認でこれを満たすとみなし、クラスそのものは0.10.0で出す**（2026-10-18、ユーザーが決定。0.10.0での確認は`test_network_base_classes`の実機と、ライブラリの作例のビルドまで）
+11. ~~リリースzipにライセンスの文書が入っていない~~ **0.12.0で入れた**（2026-10-31、形はユーザーが決定）: `hardware/nxp/mcx/`に`LICENSE`と`THIRD_PARTY_NOTICES.md`の写しを置き、hygieneの`license-copies`が直下と同じ中身で追跡下にあることを毎push見る。`MCXEthernet`のREADMEは写しを指す（`../../LICENSE`）。`THIRD_PARTY_NOTICES.md`に、パスの読み方と、gdb-bridge・mcx-discoveryのバイナリに入るGoの標準ライブラリの条文（BSD-3-Clause）を足した。以下はそれまでの記録。zipは`git archive --prefix=mcx/ HEAD:hardware/nxp/mcx`で作るので、リポジトリの直下の`LICENSE`と`THIRD_PARTY_NOTICES.md`（0.12.0で`LICENSE`から分けた）は入らない（今までの版も同じ）。`MCXEthernet`のREADMEのリンク（`../../../../../LICENSE`）もzipの中では切れる。案は、`hardware/nxp/mcx/`に写しを置き、hygieneで同じ内容かを見張るなど。形はまだ決めていない
