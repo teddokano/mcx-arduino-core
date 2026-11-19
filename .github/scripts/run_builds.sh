@@ -19,6 +19,31 @@
 # ARDUINO_BUILD_CACHE_PATH; that cache, now holding only the core, is then
 # copied for each of the other workers (into <work dir>), so the core is
 # built once, not once per worker.
+#
+# record_size <label>
+#   For the build functions, after a build and before they remove it from
+#   the build cache: appends "<label><TAB><flash><TAB><ram>" to SIZES_OUT,
+#   if set, from the sketch's .elf (sketch_sizes.py measure).
+# check_sizes <board>
+#   Compares SIZES_OUT with .github/sizes/<board>.tsv (sketch_sizes.py
+#   check), or, with SIZE_UPDATE=1, writes the sizes into it. Returns
+#   non-zero if a sketch grew by more than the limit.
+
+record_size() {
+  [[ -n "${SIZES_OUT:-}" ]] || return 0
+  local elf sizes
+  elf="$(ls "${ARDUINO_BUILD_CACHE_PATH}"/sketches/*/*.ino.elf 2>/dev/null | head -1)"
+  [[ -n "$elf" ]] || return 0
+  sizes="$(python3 "${REPO_ROOT}/.github/scripts/sketch_sizes.py" measure "$elf")" || return 0
+  printf '%s\t%s\n' "$1" "$sizes" >> "$SIZES_OUT"
+}
+
+check_sizes() {
+  local update=()
+  [[ "${SIZE_UPDATE:-}" == 1 ]] && update=(--update)
+  echo ""
+  python3 "${REPO_ROOT}/.github/scripts/sketch_sizes.py" check "$1" "$SIZES_OUT" ${update[@]+"${update[@]}"}
+}
 
 run_builds() {
   local list="$1" failed="$2" work="$3" build="$4"

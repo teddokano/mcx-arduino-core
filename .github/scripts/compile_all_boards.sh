@@ -19,6 +19,12 @@
 #
 # Each board's output goes to <board>.log in the log directory printed at the
 # start (SWEEP_LOG_DIR to choose it).
+#
+# Every sketch built is measured and checked against .github/sizes/<board>.tsv
+# (sketch_sizes.py); with --queue here, else by each board's script. With
+# --queue the sketches that moved are in <board>.sizes.log. SIZE_UPDATE=1
+# writes the sizes into the baseline instead: run full and third_party with
+# it when a change to the sizes is meant.
 set -uo pipefail
 
 MODE="${1:-}"
@@ -78,7 +84,7 @@ if [[ -n "$QUEUE" ]]; then
       for c in $(seq 1 "$QUEUE"); do
         mkdir "${WORK}/pool/${board}.${c}.lock" 2>/dev/null && break
       done
-      ARDUINO_BUILD_CACHE_PATH="${WORK}/pool/${board}.${c}" \
+      ARDUINO_BUILD_CACHE_PATH="${WORK}/pool/${board}.${c}" SIZES_OUT="${WORK}/sizes.${board}" \
         "${SCRIPTS}/compile_examples.sh" "$board" one "$dir" > "${LOGS}/jobs/$i.log" 2>&1
       echo "$? $board ${dir#"$REPO_ROOT"/}" > "${WORK}/result/$i"
       rmdir "${WORK}/pool/${board}.${c}.lock"
@@ -116,6 +122,16 @@ if [[ -n "$QUEUE" ]]; then
     echo "$failed" | sort
     status=1
   fi
+
+  # the sizes, as compile_examples.sh checks them at the end of a sweep
+  update=()
+  [[ "${SIZE_UPDATE:-}" == 1 ]] && update=(--update)
+  for b in "${BOARDS[@]}"; do
+    touch "${WORK}/sizes.${b}"
+    echo ""
+    python3 "${SCRIPTS}/sketch_sizes.py" check "$b" "${WORK}/sizes.${b}" ${update[@]+"${update[@]}"} > "${LOGS}/${b}.sizes.log" 2>&1 || status=1
+    grep -v '^  ' "${LOGS}/${b}.sizes.log"
+  done
   echo "Elapsed: $(( $(date +%s) - start ))s"
   [[ -z "${SWEEP_LOG_DIR:-}" ]] && echo "(the logs stay in $LOGS)"
   exit $status

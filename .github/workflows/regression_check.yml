@@ -19,6 +19,14 @@ name: Regression check
 #          (expected_failures.txt); on FRDM-MCXN947 also the Ethernet
 #          examples on the bundled MCXEthernet.
 #
+# Both tiers and the third-party suite also measure each sketch's flash
+# and RAM and fail if one grew by more than 1KB of flash or 512 bytes of
+# RAM against .github/sizes/<board>.tsv (.github/scripts/sketch_sizes.py),
+# and list in the job summary every sketch that moved. A change meant to
+# make sketches larger commits a baseline that says so (SIZE_UPDATE=1).
+# From the first commit to 0.12.0 the core linked the full newlib, 15-55KB
+# a sketch, and no one saw it: nothing looked at the sizes.
+#
 # The toolchain to install and its download URL/checksum are read
 # straight out of package_nxp_mcx_index.json (via its toolsDependencies/
 # tools entries) rather than hardcoded here, so a future toolchain bump

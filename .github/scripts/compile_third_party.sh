@@ -24,6 +24,11 @@
 # This repository's sketches listed in .github/third_party/repo_sketches.txt
 # (which need these libraries) are built too.
 #
+# Every example built is measured and checked against
+# .github/sizes/<board>.tsv, as in compile_examples.sh (the labels are the
+# path under the libraries folder, "MCXEthernet:<example>" and
+# "repo:<path>"). SIZE_UPDATE=1 writes the sizes into it instead.
+#
 # The libraries go into a directory of their own (ARDUINO_DIRECTORIES_USER),
 # not the sketchbook. Set TP_USER_DIR to reuse one between runs.
 set -uo pipefail
@@ -87,6 +92,13 @@ FAILED="${WORK}/failed"
 compile() {  # <sketch dir>
   arduino-cli compile --fqbn "$FQBN" "$1" < /dev/null
   local status=$?
+  if [[ $status -eq 0 ]]; then
+    case "$1" in  # the size's label: a name that is the same in every run
+      "${LIBS}"/*)           record_size "${1#"$LIBS"/}" ;;
+      "${WORK}/mcxethernet"/*) record_size "MCXEthernet:$(basename "$1")" ;;
+      *)                     record_size "repo:${1#"$REPO_ROOT"/}" ;;
+    esac
+  fi
   rm -rf "${ARDUINO_BUILD_CACHE_PATH}/sketches"
   return $status
 }
@@ -106,7 +118,11 @@ grep -v -e '^#' -e '^$' "$REPO_SKETCHES" | while IFS= read -r rel; do
 done >> "$BUILDS"
 total="$(wc -l < "$BUILDS" | tr -d ' ')"
 
+export SIZES_OUT="${WORK}/sizes"
+: > "$SIZES_OUT"
 run_builds "$BUILDS" "$FAILED" "$WORK" compile
+check_sizes "$BOARD"
+size_status=$?
 
 sort -u "$FAILED" -o "$FAILED"
 unexpected="$(comm -23 "$FAILED" "$EXPECTED_HERE")"
@@ -125,5 +141,9 @@ if [[ -n "$now_pass" ]]; then
   status=1
 fi
 [[ $status -eq 0 ]] && echo "All as expected"
+if [[ $size_status -ne 0 ]]; then
+  echo "Some grew past the size limit"
+  status=1
+fi
 rm -rf "$WORK"
 exit $status

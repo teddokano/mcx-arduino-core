@@ -35,6 +35,10 @@
 #
 # SWEEP_JOBS=N builds N sketches at a time (run_builds.sh), with the same
 # output and result as one at a time; CI sets it to the runner's CPUs.
+#
+# Every sketch built is measured, and the run fails if one grew by more
+# than the limit against .github/sizes/<board>.tsv (sketch_sizes.py).
+# SIZE_UPDATE=1 writes the sizes into that file instead.
 set -uo pipefail
 
 BOARD="$1"
@@ -56,10 +60,13 @@ SKETCH_LIST="${WORK}/sketches"
 compile_one() {  # <sketch dir>
   arduino-cli compile --fqbn "$FQBN" --library "$STUB_LIB" --warnings all "$1" < /dev/null
   local status=$?
+  [[ $status -eq 0 ]] && record_size "${1#"$REPO_ROOT"/}"
   rm -rf "${ARDUINO_BUILD_CACHE_PATH}/sketches"
   return $status
 }
 
+# "one" records into the caller's SIZES_OUT, if it set one
+# (compile_all_boards.sh --queue); a sweep, into its own, checked at the end
 if [[ "$MODE" == "one" ]]; then
   compile_one "$OPTION"
   status=$?
@@ -110,7 +117,11 @@ fi
 
 echo "Board: $BOARD  Mode: $MODE  Sketches found: $(wc -l < "$SKETCH_LIST" | tr -d ' ')"
 
+export SIZES_OUT="${WORK}/sizes"
+: > "$SIZES_OUT"
 run_builds "$BUILDS" "$FAILLOG" "$WORK" compile_one
+check_sizes "$BOARD"
+size_status=$?
 
 if [[ -s "$FAILLOG" ]]; then
   echo ""
@@ -122,4 +133,8 @@ fi
 rm -rf "$WORK"
 
 echo ""
+if [[ $size_status -ne 0 ]]; then
+  echo "All sketches compiled, but some grew past the size limit ($BOARD, $MODE)"
+  exit 1
+fi
 echo "All sketches compiled OK ($BOARD, $MODE)"

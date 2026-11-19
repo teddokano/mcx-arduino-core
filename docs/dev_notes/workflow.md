@@ -32,6 +32,10 @@ CLAUDE.mdが大きくなったので、読むときだけ開くようにここ�
 - **サードパーティのライブラリの作例のビルド**（2026-10-23、memoの§9の⑨）: fullの段と同じとき（`main`・タグ・手動実行）に別のジョブで、`.github/scripts/compile_third_party.sh`が`.github/third_party/libraries.txt`のライブラリ（版を固定、依存も並べて`--no-deps`で入れる）の作例を全ボードでビルドする。
   通らないと分かっている作例は`expected_failures.txt`にボードごとに書き、それ以外の失敗と、書いてあるのに通るようになった作例の両方でCIを落とす。N947では公式`Ethernet`の作例を`#include <MCXEthernet.h>`に替えて`MCXEthernet`でもビルドする。
   ローカルでは`TP_USER_DIR=<ディレクトリ>`でライブラリを入れる場所を指定して流せる（スケッチごとにキャッシュの`sketches/`を消すので、ディスクは食わない。5ボードを並列にするのは`compile_all_boards.sh third_party`）。ライブラリの版を上げるときは手で一覧を直す
+- **スケッチのサイズの確認**（2026-11-20、0.13.0）: fast・full・third_partyのどれも、ビルドしたスケッチのフラッシュとRAM（IDEと同じ数え方。`platform.txt`の`recipe.size.regex`・`.data`の節）を測り、`.github/sizes/<ボード>.tsv`と比べる（`.github/scripts/sketch_sizes.py`、呼ぶのは`run_builds.sh`の`record_size`・`check_sizes`）。
+  **1つでもフラッシュが1024バイト、RAMが512バイトを超えて増えたらCIを落とす**。64バイトを超えて動いたスケッチはログとジョブのサマリーに並べ、制限を超えて減ったものは警告だけ出す。基準は自動では更新しないので、小さな増加も積み重なればいずれ落ちる。
+  きっかけは、最初のコミットから0.12.0までリンクがfull newlibで、スケッチが15〜55KB大きかったのに誰も気づかなかったこと（A153でRTC_NXP_Arduinoの作例が入らなくなって分かった）。
+  **サイズを変える変更は、基準の更新を同じコミットに入れる**: `SIZE_UPDATE=1 .github/scripts/compile_all_boards.sh full --queue 10`と`SIZE_UPDATE=1 .github/scripts/compile_all_boards.sh third_party`を流して`.github/sizes/`をコミットする（測った分だけ書き換え、ほかは残す。消したスケッチの行は手で消す）。ツールチェーンが同じなので、macOSで測った値とCIの値は同じになるはず（`__FILE__`を使うライブラリはインストール先のパスの長さで数バイト変わりうる。最初の基準はmacOSで作ったので、CIで初めて流したときに64バイトを超えて動いたものが無いかを見る）
 - **`update_package_index.yml`**: GCCのsizeをHEADリクエストで取得、プラットフォームZIPのchecksum/sizeをダウンロードして計算・更新
 - **既知の制限**: タグpush（`push: tags: '[0-9]+.[0-9]+.[0-9]+'`）で起動した場合、`actions/checkout`がdetached HEADでチェックアウトするため最後の`git push`が失敗する（過去のv0.1.6〜v0.2.0全リリースで再現）。実際のchecksum確定は、リリース後に`gh workflow run update_package_index.yml --ref main`（または Actions UI の "Run workflow"）で`main`ブランチに対し手動実行する必要がある。**リリース時は「タグpush→(失敗を確認)→mainに対してworkflow_dispatchを手動実行」の2段階が必須の手順**
 
