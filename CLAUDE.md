@@ -145,7 +145,8 @@
 ## 決定の要点（詳細は`docs/dev_notes/releases_and_decisions.md`）
 - **1.0までに変えない**: インスタンス名（`Wire1`・`Serial1`・`SPI1`など）は付け替えない。`endTransmission()`の戻り値はAVRの0〜5。公開APIの範囲はAPI_COMPATIBILITYの冒頭の「What stays compatible」。
 - **ADCの無いピンへの`analogRead()`をビルド時に検出する案は入れない**（実行時の`panic()`のまま）。
-- **0.12.0でやらなかった**: `SoftwareSerial`・USB・r01libの名前空間（次の版は未定）。
+- **0.12.0でやらなかった**: `SoftwareSerial`・USB・r01libの名前空間。
+- **0.13.0の範囲（2026-11-20に決めたもの）**: ウォッチドッグのAPIを入れる。r01libの名前空間はやらない（効果が薄い）。ほかの大域インスタンス（`Serial1`・`SPI1`など）を使ったときだけリンクする案はやらない（減るのは100バイト以下）。経緯は`memo/notes_toward_1.0.0.md`の§8・§10。
 - **0.12.0で入れた機能**（`MsTimer2`・`TimerOne`・`mcxTicker`、`Servo`のPWMの無いピン、PWMの周期とパルス幅をtickで持つこと、`mcx-discovery`、デバッガのペリフェラルのレジスタ表示、A4/A5の`Wire.setPins()`）の仕様と決定は、触る前に`releases_and_decisions.md`を読む。
 
 ## ボード別の前提（要点。そのボードを触る前に`docs/dev_notes/board_*.md`を読む）
@@ -163,7 +164,7 @@
 1. CHANGELOGの`[Unreleased]`を補完して確定（冒頭にHighlights）。2. ドキュメント全体の再監査（`docs/llms.txt`も）。3. `docs/api/`（Doxygen）の再生成。4. ライセンスの確認。5. 機械チェック。6. 全サンプル×全ボードの回帰コンパイル。7. `examples/release_check/`を実機で全ボード（書き込み・デバッグも各OSで1回）。
 
 ## Pendingタスク（番号は変えない。全文は`docs/dev_notes/pending_tasks.md`）
-- **6**: 上流`r01lib`（`~/dev/mcuxpresso/r01lib`）には手を入れない。反映は保留（0.10.0でも反映しないと決めた）。
+- **6**: 上流`r01lib`（`~/dev/mcuxpresso/r01lib`）には手を入れない。反映は**1.0の直前にやる**（2026-11-20に決定。それまでは保留）。
 - **7**: GPIO治具は作らない。
 - **9**: LinkServer 26.9.130はA153のフラッシュを32KBと読む。避ける版の一覧は`upload.sh`の`flash_size_bug()`、`upload.bat`の`:consider`、`gdb-bridge`の`flashSizeBug`の3か所。公開リポジトリには症状だけを書く。
 - **10**: A4/A5の`Wire.setPins()`は0.12.0で入れた（解消）。
