@@ -184,23 +184,27 @@ String::String( long long value, unsigned char base )
 		return;
 	}
 
-	char	buf[ 66 ];
-	snprintf( buf, sizeof(buf), "%lld", value );
+	//	Not snprintf()'s %lld: newlib-nano, which the core links, has no long long
+	//	in its printf
+	char				buf[ 66 ];
+	unsigned long long	u	= (unsigned long long)value;
+
+	if ( value < 0 )
+	{
+		buf[ 0 ]	= '-';
+		u			= 0ULL - u;		//	LLONG_MIN too, which -value would overflow
+	}
+	_utoa_radix( u, 10, buf + ( value < 0 ), sizeof(buf) - ( value < 0 ) );
 	_alloc_copy( buf, (unsigned int)strlen( buf ) );
 }
 
 String::String( unsigned long long value, unsigned char base )
 {
 	_init();
+	//	Every base by hand, 10/16/8 too: newlib-nano's printf has no %llu, %llx
+	//	or %llo. _utoa_radix() here writes lower case, as %llx did
 	char	buf[ 66 ];
-	if ( base == 16 )
-		snprintf( buf, sizeof(buf), "%llx", value );
-	else if ( base == 8 )
-		snprintf( buf, sizeof(buf), "%llo", value );
-	else if ( base == 10 )
-		snprintf( buf, sizeof(buf), "%llu", value );
-	else
-		_utoa_radix( value, base, buf, sizeof(buf) );
+	_utoa_radix( value, base, buf, sizeof(buf) );
 	_alloc_copy( buf, (unsigned int)strlen( buf ) );
 }
 

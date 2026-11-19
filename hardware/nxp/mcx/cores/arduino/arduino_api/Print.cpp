@@ -119,8 +119,17 @@ size_t Print::_print_num64( long long n, int base )
 	if ( base != DEC )
 		return	_print_unum64( (unsigned long long)n, base );
 
-	char	buf[ 66 ];
-	snprintf( buf, sizeof(buf), "%lld", n );
+	//	Not snprintf()'s %lld: newlib-nano, which the core links, has no long long
+	//	in its printf
+	char				buf[ 66 ];
+	unsigned long long	u	= (unsigned long long)n;
+
+	if ( n < 0 )
+	{
+		buf[ 0 ]	= '-';
+		u			= 0ULL - u;		//	LLONG_MIN too, which -n would overflow
+	}
+	_utoa_radix( u, DEC, buf + ( n < 0 ), sizeof(buf) - ( n < 0 ) );
 	return	print( buf );
 }
 
@@ -129,15 +138,10 @@ size_t Print::_print_unum64( unsigned long long n, int base )
 	if ( base == 0 )
 		return	write( (uint8_t)n );
 
+	//	Every base by hand, DEC/HEX/OCT too: newlib-nano's printf has no %llu,
+	//	%llX or %llo. _utoa_radix() writes HEX in upper case, as %llX did
 	char	buf[ 66 ];
-	if ( base == DEC )
-		snprintf( buf, sizeof(buf), "%llu", n );
-	else if ( base == HEX )
-		snprintf( buf, sizeof(buf), "%llX", n );
-	else if ( base == OCT )
-		snprintf( buf, sizeof(buf), "%llo", n );
-	else
-		_utoa_radix( n, base, buf, sizeof(buf) );
+	_utoa_radix( n, base, buf, sizeof(buf) );
 	return	print( buf );
 }
 

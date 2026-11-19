@@ -5,6 +5,20 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+- **Sketches take 15–55KB less flash: the core now links newlib-nano, as it always meant to.** The sources were
+  compiled against newlib-nano's headers, but the link step lacked `-specs=nano.specs`, so the full newlib came in:
+  its `printf`/`scanf` and `malloc`, and, through `localtime()`/`mktime()`, multibyte character tables of about
+  28KB. On FRDM-MCXA153 the examples of RTC_NXP_Arduino didn't fit (124KB for its 112KB); they now take about 69KB.
+  `%f` in `printf()`/`sprintf()`/`snprintf()` and `scanf()` still works, but `long long` (`%lld`, `%llu`, `%llx`)
+  and C99's `%zu`/`%jd`/`%td` don't, as in newlib-nano. `Serial.print()`/`println()` and `String` now convert
+  `long long` themselves and print it as before.
+- `__FILE__` in the core's sources is written relative to the platform folder (`mcx/variants/...`), so the SDK
+  drivers' `assert()` messages no longer keep the user's home folder in flash (about 1.2KB less in an I2C sketch on
+  FRDM-MCXA153). The paths in the debug information, which the debugger uses to find the sources, are unchanged.
+
 ## [0.12.0] - 2026-11-01
 
 ### Highlights

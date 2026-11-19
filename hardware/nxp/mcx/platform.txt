@@ -25,7 +25,13 @@ compiler.defines=-DPRINTF_FLOAT_ENABLE=1 -DSCANF_FLOAT_ENABLE=1 -DPRINTF_ADVANCE
 # than as flat absolute pairs, and the two agree again. Verified on both
 # boards: text/data/bss byte-identical, and a session on real N947 hardware
 # runs clean through load, reset, breakpoint, backtrace and stepping.
-compiler.opt_flags={build.opt_flags} -fno-common -g3 -gdwarf-5 -ffunction-sections -fdata-sections -fno-builtin -fmerge-constants -specs=nano.specs
+compiler.opt_flags={build.opt_flags} -fno-common -g3 -gdwarf-5 -ffunction-sections -fdata-sections -fno-builtin -fmerge-constants -specs=nano.specs {compiler.macro_prefix_map}
+# __FILE__ relative to the platform folder: the SDK drivers' assert() keeps it
+# in flash, as an absolute path into the user's home folder of 100 bytes or
+# more each (about 1.2KB in an I2C sketch on FRDM-MCXA153, more on Windows).
+# -fmacro-prefix-map and not -ffile-prefix-map: that one rewrites the paths in
+# the debug info too, and the debugger would no longer find the sources
+compiler.macro_prefix_map="-fmacro-prefix-map={runtime.platform.path}=mcx"
 compiler.warning_flags.none=
 compiler.warning_flags.default=-Wall
 compiler.warning_flags.more=-Wall
@@ -56,7 +62,16 @@ compiler.ar.flags=rcs
 recipe.ar.pattern="{compiler.path}{compiler.ar.cmd}" {compiler.ar.flags} "{archive_file_path}" "{object_file}"
 
 compiler.c.elf.cmd=arm-none-eabi-c++
-compiler.c.elf.flags=-nostdlib -Xlinker --gc-sections -Xlinker -print-memory-usage -Xlinker --sort-section=alignment -u _printf_float -u _scanf_float {compiler.cpu_flags}
+# -specs=nano.specs here too, not only in compiler.opt_flags: at link time it is
+# what turns the -lc below into -lc_nano. Without it the sources were compiled
+# against newlib-nano's headers (_REENT_SMALL, no long long in printf) but
+# linked with the full newlib, whose printf/scanf, malloc and the multibyte
+# tables localtime() pulls in through tzset() took 15-55KB more flash: four of
+# RTC_NXP_Arduino's examples overflowed FRDM-MCXA153. -u _printf_float and
+# -u _scanf_float are newlib-nano's switches for %f, as MCUXpresso's projects
+# link them. newlib-nano's printf has no %lld; the core's Print and String
+# convert 64-bit numbers themselves.
+compiler.c.elf.flags=-nostdlib -specs=nano.specs -Xlinker --gc-sections -Xlinker -print-memory-usage -Xlinker --sort-section=alignment -u _printf_float -u _scanf_float {compiler.cpu_flags}
 recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}" {compiler.c.elf.flags} -T "{build.variant.path}/linker/{build.ldscript}" -o "{build.path}/{build.project_name}.elf" {object_files} -Wl,--whole-archive "{archive_file_path}" -Wl,--no-whole-archive -lc -lm -lgcc
 
 compiler.objcopy.cmd=arm-none-eabi-objcopy

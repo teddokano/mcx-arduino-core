@@ -89,7 +89,7 @@ On FRDM-MCXC444 (see [PIN_MAPPING_C444.md](PIN_MAPPING_C444.md)):
 
 | API | Status | Notes |
 |-----|--------|-------|
-| `Serial.begin` / `print` / `println` / `printf` | ✅ | |
+| `Serial.begin` / `print` / `println` / `printf` | ✅ | `printf()`, like `sprintf()`/`snprintf()`, is newlib-nano's: `%f` works, but `long long` (`%lld`, `%llu`, `%llx`) and C99's `%zu`/`%jd`/`%td` don't. `print()`/`println()` and `String` convert `long long` themselves. Up to v0.12.0 the full newlib was linked by mistake (sketches were compiled against newlib-nano's headers), which supported them and took 15–55KB more flash |
 | `Serial.begin(baud, config)` | ✅ | Added in v0.7.0. `SERIAL_7N1` through `SERIAL_8O2`: 7 or 8 data bits, no/even/odd parity, 1 or 2 stop bits, with the same values as ArduinoCore-API, so the `SERIAL_DATA_`/`SERIAL_PARITY_`/`SERIAL_STOP_BIT_` parts work too. A byte that fails the parity check is dropped, as on AVR. With 7 data bits, bit 7 of what is read is 0. The LPUART can't do 5 or 6 data bits, mark/space parity or 1.5 stop bits, so `SERIAL_5N1` and the rest aren't defined and a sketch using one fails to build, rather than talking to its device in the wrong format. `begin(baud)` alone goes back to `SERIAL_8N1` |
 | `Serial.end` | ✅ | Added in v0.7.0. Waits for pending output, stops receiving, drops what wasn't read, and hands the TX/RX pins back as plain GPIO inputs. `begin()` starts it again |
 | `serialEvent()` / `serialEvent1()` / `serialEvent2()` | ✅ | Added in v0.7.0 (`serialEvent2()` in 0.8.0, FRDM-MCXA156 only). Called after each `loop()` while `Serial`/`Serial1`/`Serial2` has something to read, as on AVR. Before v0.7.0 a sketch could define them, but they were never called |
