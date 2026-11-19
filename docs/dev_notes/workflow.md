@@ -7,12 +7,12 @@ CLAUDE.mdが大きくなったので、読むときだけ開くようにここ�
 - **リポジトリパス**: `~/dev/mcx-arduino-core`
 - **v0.4.0以降のソース構成**: `MCUXpresso_project/`ディレクトリは廃止（削除済み）。ソースの唯一の実体は`hardware/nxp/mcx/cores/arduino/`（全ボード共有）＋`hardware/nxp/mcx/variants/<board>/src/`（ボード固有）で、プリビルド`.a`のビルド・配置手順も不要になった——編集したソースはそのままarduino-cli/Arduino IDEのビルドに反映される（詳細は[docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md)の「`cores/arduino/`一本化・`platform.txt`書き換え完了」節）
 - **xPackツールチェーン**: `~/.xpacktools/xpack-arm-none-eabi-gcc-14.2.1-1.1/`（`package_nxp_mcx_index.json`記載のものと同一バイナリ、チェックサム確認済み）
-- **ローカルArduino IDE連携**: `~/Library/Arduino15/packages/nxp/hardware/mcx/<version>-dev`（今は`0.12.0-dev`。2026-10-25に`0.11.0-dev`から付け替えた。ブランチ名と同じ。パッチリリースのブランチを並行して進める間は、作業ツリーで切り替えたブランチに合わせてこの名前も付け替える）をこのリポジトリの`hardware/nxp/mcx/`へのシンボリックリンクとして設定済み（編集が即座に反映される）。ツールチェーンも`~/.xpacktools/`への symlink。`-dev`サフィックスにより、Boards Manager経由でインストールする実リリース版とはディレクトリ名が衝突せず共存できる（ただし下の項目のとおり、並んでいるとリリース版が選ばれる）
+- **ローカルArduino IDE連携**: `~/Library/Arduino15/packages/nxp/hardware/mcx/<version>-dev`（今は`0.13.0-dev`。2026-11-20に`0.12.0-dev`から付け替えた。ブランチ名と同じ。パッチリリースのブランチを並行して進める間は、作業ツリーで切り替えたブランチに合わせてこの名前も付け替える）をこのリポジトリの`hardware/nxp/mcx/`へのシンボリックリンクとして設定済み（編集が即座に反映される）。ツールチェーンも`~/.xpacktools/`への symlink。`-dev`サフィックスにより、Boards Manager経由でインストールする実リリース版とはディレクトリ名が衝突せず共存できる（ただし下の項目のとおり、並んでいるとリリース版が選ばれる）
 - **リリース版を入れたままだと`-dev`が使われない**（0.7.0で踏んだ）: `packages/nxp/hardware/mcx/`に
   Boards Managerで入れた`0.6.0`と`0.7.0-dev`のsymlinkが並ぶと、**IDEも既定のarduino-cliもインストール済みの`0.6.0`を選ぶ**。
   開発中の修正がIDEで一切効かず、「直したはずの不具合がIDEでは再現する」形で表に出る。
   実機確認の前に`arduino-cli compile -v`の`Using core ... from platform in folder:`が`-dev`を指しているか確かめること。
-  いまの`~/Library/Arduino15/packages/nxp/hardware/mcx/`には`0.12.0-dev`のsymlinkだけがある（開発環境は戻してある。2026-11-09）。
+  いまの`~/Library/Arduino15/packages/nxp/hardware/mcx/`には`0.13.0-dev`のsymlinkだけがある（2026-11-20）。
   Boards Manager検証のために退避した分は、すべてゴミ箱に移した: 0.6.0（`mcx-0.6.0-backup`）、本番の`main`のURLから入れた0.10.0（`nxp-0.10.0-release-installed`）、`dev_env_restore.command`が避けたBoards Manager版の0.10.0・0.11.0・0.12.0（`nxp-boardsmanager-<日時>`）、IDEのダウンロードキャッシュ`Arduino15/staging/`、ビルドのキャッシュ`~/Library/Caches/arduino`（2026-11-09、ユーザーが決定。どの版の確認も済んでいる）。
   それより前の分は、0.10.0のステージングから入れた分と0.9.0・0.9.1の本番の分をゴミ箱に移し（2026-10-19）、0.8.0までのステージングの分と0.8.0の分はユーザーが片付けた（2026-10-12）
 - **注意（Boards Manager経由の実インストール検証時のハマりどころ）**: 上記symlink環境を無効化する際、`~/Library/Arduino15/packages/nxp`を同じ`packages/`直下で別名（例: `nxp.dev-backup`）にリネームしただけでは不十分 — arduino-cliは`packages/*`配下の全ディレクトリ名をpackager IDとして解釈するため、リネーム後も`nxp.dev-backup:mcx`という別パッケージとして「0.1.9-dev installed」表示が残ってしまう（`arduino-cli core list --all`で再現・特定）。無効化する際は`packages/`の外（例: スクラッチパッド等）に完全に退避すること。v0.2.0リリース後、この手順でBoards Manager経由のGitHubからの実インストールを検証済み
