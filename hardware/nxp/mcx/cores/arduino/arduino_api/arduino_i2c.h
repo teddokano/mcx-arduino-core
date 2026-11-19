@@ -70,6 +70,42 @@ public:
 	 */
 	TwoWire( int sda_pin, int scl_pin );
 
+	/** Internal: how a bus that isn't a plain I2C is made and clocked
+	 *  (Wire1 on the I3C peripheral). */
+	struct BusOps
+	{
+		I2C		*(*make)( int sda, int scl );
+		void	(*frequency)( I2C *bus, int baud );
+	};
+
+	/** Internal: a TwoWire's transfer buffers, apart from it so that they
+	 *  stay zero-initialized (.bss) while the TwoWire is filled in at build
+	 *  time (.data, whose initial values take flash). */
+	struct Buffers
+	{
+		uint8_t	tx[ WIRE_BUFFER_SIZE ];
+		uint8_t	rx[ WIRE_BUFFER_SIZE ];	// what requestFrom() read
+	};
+
+	/** Internal: how the core makes Wire, Wire1 and Wire2. constexpr, so
+	 *  each is filled in at build time and linked only if something uses
+	 *  it, and with it what it reaches: its buffers, Wire1's BusOps and the
+	 *  I3C driver.
+	 * @param sda_pin SDA pin, as r01lib's raw pin value
+	 * @param scl_pin SCL pin, as r01lib's raw pin value
+	 * @param name its name, for panic() messages and pins_of()
+	 * @param ops how its bus is made, or nullptr for a plain I2C
+	 * @param bufs its buffers
+	 */
+	constexpr TwoWire( int sda_pin, int scl_pin, const char *name, const BusOps *ops, Buffers *bufs )
+		: own_sda( sda_pin ), own_scl( scl_pin ), _sda( sda_pin ), _scl( scl_pin ),
+		  _name( name ), _ops( ops ), pad_mux( 0xFF ), i2c( nullptr ), targ_addr( 0 ),
+		  baudrate( 0 ), tx_buf( bufs->tx ), tx_size( 0 ), rx_buf( bufs->rx ), rx_data( bufs->rx ), rx_index( 0 ),
+		  rx_size( 0 ), target( nullptr ), user_onReceive( nullptr ), user_onRequest( nullptr ),
+		  timeout_us( 0 ), reset_on_timeout( false ), timed_out( false ), last_status( 0 )
+	{
+	}
+
 	/** Join the bus as the controller (master), at 100kHz; setClock()
 	 *  changes that. Lazily creates the underlying I2C or I3C instance
 	 *  (I3C, in I2C_MODE, if sda_pin/scl_pin are this board's
@@ -292,7 +328,22 @@ public:
 	int		raw_sda( void ) const { return _sda; }
 	int		raw_scl( void ) const { return _scl; }	///< as raw_sda()
 
+	/** Internal, for the mcxPinState library: the pins of the TwoWire of
+	 *  this name ("Wire", "Wire1", "Wire2") once it has been begun or
+	 *  moved (setPins()), as r01lib's raw pin values. Not part of the API.
+	 *  By name and not through the instance: taking &Wire1 would link
+	 *  Wire1, and with it the I3C driver, into every sketch using
+	 *  mcxPinState.
+	 * @param name the instance's name
+	 * @param sda its SDA pin, set if found
+	 * @param scl its SCL pin, set if found
+	 * @return false if it hasn't been begun or moved: it is on its own
+	 *         pins, or isn't linked in at all
+	 */
+	static bool	pins_of( const char *name, int *sda, int *scl );
+
 private:
+	void	enroll( void );
 	void	start( int baud );
 	void	target_arm( void );
 	void	target_stop( void );
@@ -306,13 +357,15 @@ private:
 	const int	own_scl;
 	int			_sda;		// the pins it is on now (setPins())
 	int			_scl;
+	const char		*_name;		// "Wire", "Wire1", ... for panic()
+	const BusOps	*_ops;		// nullptr: a plain I2C
 	uint8_t		pad_mux;	// the pins' ALT once begin() muxed them, 0xFF before
 	I2C			*i2c;
 	uint8_t		targ_addr;
 	int			baudrate;
-	uint8_t		tx_buf[ WIRE_BUFFER_SIZE ];
+	uint8_t		*tx_buf;	// Buffers::tx
 	size_t		tx_size;
-	uint8_t		rx_buf[ WIRE_BUFFER_SIZE ];	// what requestFrom() read
+	uint8_t		*rx_buf;	// Buffers::rx
 	const uint8_t	*rx_data;	// what read() reads: rx_buf, or what a
 								// controller last wrote to this target
 	size_t		rx_index;

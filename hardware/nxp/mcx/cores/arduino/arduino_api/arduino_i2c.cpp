@@ -16,24 +16,96 @@
 // value, which this file speaks, or -1
 int arduino_pin_raw( int pin_num );
 
-TwoWire	Wire(  I2C_SDA, I2C_SCL );
+#if defined( CPU_MCXA153VLH ) || defined( CPU_MCXN947VDF )
+/*
+ *  Wire1's bus: the I3C peripheral, in legacy I2C_MODE. Only Wire1's
+ *  initializer (and a sketch's own TwoWire on the I3C pins) points here, so
+ *  the I3C driver is linked only into sketches that use Wire1.
+ */
+static I2C *make_i3c_bus( int sda, int scl )
+{
+	I3C	*i3c	= new I3C( sda, scl );
+
+#ifdef	CPU_MCXN947VDF
+	/*
+	 *  At least one native-I3C-mode bus operation needs to happen on
+	 *  this bus before switching it down to legacy I2C_MODE -- on
+	 *  FRDM-MCXN947, without this, I2C-mode reads on this bus
+	 *  reliably NAK on the address phase (writes still succeed).
+	 *  Confirmed via a controlled A/B test on real hardware (GDB,
+	 *  then reflashed with/without this line): consistently fails
+	 *  without it, consistently works with it. Root cause not fully
+	 *  understood -- per the I3C spec the master's pull-up assist
+	 *  should already be active during bus-free/START/address-header
+	 *  regardless of prior traffic, so this looks like an SDK/
+	 *  silicon init-ordering quirk (I3C_MasterInit() alone may not
+	 *  be enough to arm the pull-up-assist state machine; one real
+	 *  START/STOP cycle might be needed first) rather than a spec
+	 *  violation we're intentionally working around. This priming
+	 *  broadcast is expected to itself fail (kStatus_I3C_WriteAbort,
+	 *  nothing has a dynamic address yet) -- only the bus activity
+	 *  matters. Matches the flow NXP's own P3T1755_FRDM_MCXN947_demo_DAA
+	 *  reference example always does (RSTDAA before any I2C-mode
+	 *  access).
+	 *
+	 *  Confirmed NOT needed on A153 (its I3C_SDA/I3C_SCL are the
+	 *  same physical pins as the general-purpose Arduino I2C
+	 *  connector, which has real populated pull-up resistors --
+	 *  unlike N947's dedicated onboard-sensor-only I3C bus, whose
+	 *  fixed pull-ups are DNP on the schematic). Scoped to just
+	 *  this chip rather than done unconditionally, so boards that
+	 *  don't need it don't get a mystery extra I2C-bus transaction
+	 *  on every Wire.begin().
+	 */
+	i3c->ccc_broadcast( CCC::BROADCAST_RSTDAA, nullptr, 0 );
+#endif	// CPU_MCXN947VDF
+
+	i3c->mode( I3C::MODE::I2C_MODE );
+	return	i3c;
+}
+
+/*
+ *  I2C(sda, scl, no_hw=true) — the base-class constructor I3C delegates
+ *  to — skips hardware init entirely (`if (no_hw) return;`), leaving
+ *  I2C::unit_base uninitialized. I3C's own
+ *  frequency(uint32_t,uint32_t,uint32_t)/frequency(void) only hide, not
+ *  override, I2C::frequency(uint32_t) (different signature), so calling
+ *  the generic i2c->frequency(baudrate) for an I3C instance would
+ *  dispatch to I2C::frequency() and dereference that uninitialized
+ *  unit_base -> BusFault. Route to I3C's own overload instead.
+ */
+static void i3c_bus_frequency( I2C *bus, int baud )
+{
+	static_cast<I3C *>( bus )->frequency( baud, 0, 0 );
+}
+
+static constexpr TwoWire::BusOps	s_i3c_bus	= { make_i3c_bus, i3c_bus_frequency };
+#endif
+
+// constinit: filled in at build time, not by a constructor at startup, so a
+// sketch that doesn't use one of these doesn't link it, or its buffers (see
+// BusOps and Buffers)
+static TwoWire::Buffers	s_wire_bufs;
+static TwoWire::Buffers	s_wire1_bufs;
+constinit TwoWire	Wire(  I2C_SDA, I2C_SCL, "Wire",  nullptr, &s_wire_bufs );
 #if defined( CPU_MCXA153VLH )
-TwoWire	Wire1( I3C_SDA, I3C_SCL );
+constinit TwoWire	Wire1( I3C_SDA, I3C_SCL, "Wire1", &s_i3c_bus, &s_wire1_bufs );
 #elif defined( CPU_MCXN947VDF )
-TwoWire	Wire1( I3C_SDA, I3C_SCL );
-TwoWire	Wire2( MB_SDA,  MB_SCL );
+static TwoWire::Buffers	s_wire2_bufs;
+constinit TwoWire	Wire1( I3C_SDA, I3C_SCL, "Wire1", &s_i3c_bus, &s_wire1_bufs );
+constinit TwoWire	Wire2( MB_SDA,  MB_SCL,  "Wire2", nullptr, &s_wire2_bufs );
 #elif defined( CPU_MCXA156VLL )
 // The on-board sensor is on Wire's own D18/D19 here (I3C0 reaches it only
 // through those pins), so Wire1 is the MikroBus I2C, on LPI2C3.
-TwoWire	Wire1( MB_SDA,  MB_SCL );
+constinit TwoWire	Wire1( MB_SDA,  MB_SCL,  "Wire1", nullptr, &s_wire1_bufs );
 #elif defined( CPU_MCXN236VDF )
 // No I3C sensor on this board. Wire1 is LPI2C2 (P4_0/P4_1), the bus of the
 // on-board accelerometer and of the MikroBus I2C.
-TwoWire	Wire1( MB_SDA,  MB_SCL );
+constinit TwoWire	Wire1( MB_SDA,  MB_SCL,  "Wire1", nullptr, &s_wire1_bufs );
 #elif defined( CPU_MCXC444VLH )
 // The on-board accelerometer's bus, I2C0, which no header pin reaches. A4/A5
 // are Wire's I2C1, so they can't be a second bus here.
-TwoWire	Wire1( PTE25,  PTE24 );
+constinit TwoWire	Wire1( PTE25,  PTE24,  "Wire1", nullptr, &s_wire1_bufs );
 #else
 #error "arduino_i2c.cpp: say which pins this board's Wire1 is on"
 #endif
@@ -87,19 +159,11 @@ static const char *peripheral_of( int sda, int scl )
 	return	nullptr;
 }
 
-// Every TwoWire made, so begin() can see which are running: Wire, Wire1,
-// Wire2, and room for one more. Filled by the constructors, before setup().
+// Every TwoWire begun or moved (setPins()), so begin() can see which are
+// running and pins_of() where they are: Wire, Wire1, Wire2, and room for
+// one more. Filled by enroll(), not by the constructors, which would keep
+// every TwoWire linked in
 static TwoWire	*s_wires[ 4 ];
-
-static const char *name_of( const TwoWire *w )
-{
-	if ( w == &Wire )	return	"Wire";
-	if ( w == &Wire1 )	return	"Wire1";
-#ifdef	CPU_MCXN947VDF
-	if ( w == &Wire2 )	return	"Wire2";
-#endif
-	return	"a TwoWire";
-}
 
 /*
  *  Target (slave) mode, on the SDK's LPI2C_Slave* transfer API.
@@ -159,18 +223,12 @@ static void target_callback( LPI2C_Type *, lpi2c_slave_transfer_t *xfer, void *s
 #endif
 
 TwoWire::TwoWire( int sda_pin, int scl_pin )
-	: own_sda( sda_pin ), own_scl( scl_pin ), _sda( sda_pin ), _scl( scl_pin ),
-	  pad_mux( 0xFF ), i2c( nullptr ),
-	  tx_size( 0 ), rx_data( rx_buf ), rx_index( 0 ), rx_size( 0 ),
-	  target( nullptr ), user_onReceive( nullptr ), user_onRequest( nullptr ),
-	  timeout_us( 0 ), reset_on_timeout( false ), timed_out( false ), last_status( 0 )
+	: TwoWire( sda_pin, scl_pin, "a TwoWire", nullptr, new Buffers{} )
 {
-	for ( TwoWire *&w : s_wires )
-		if ( !w )
-		{
-			w	= this;
-			break;
-		}
+#if defined( CPU_MCXA153VLH ) || defined( CPU_MCXN947VDF )
+	if ( on_i3c_pins() )
+		_ops	= &s_i3c_bus;
+#endif
 }
 
 const char *TwoWire::peripheral( void ) const
@@ -207,7 +265,7 @@ bool TwoWire::setPins( int sda, int scl )
 	//	Wire1 is the on-board accelerometer's I2C0, on pins with no Arduino
 	//	pin number, so once on A4/A5 it couldn't be moved back; and Wire is
 	//	A4/A5's I2C1 already
-	if ( !own && this == &Wire1 )
+	if ( !own && own_sda == PTE25 && own_scl == PTE24 )	// Wire1, not &Wire1, which would link it in
 		return	false;
 #endif
 
@@ -222,9 +280,33 @@ bool TwoWire::setPins( int sda, int scl )
 		release_pads();
 		_sda	= s;
 		_scl	= c;
+		enroll();	// for pins_of()
 	}
 
 	return	true;
+}
+
+void TwoWire::enroll( void )
+{
+	for ( TwoWire *&w : s_wires )
+		if ( w == this || !w )
+		{
+			w	= this;
+			break;
+		}
+}
+
+bool TwoWire::pins_of( const char *name, int *sda, int *scl )
+{
+	for ( TwoWire *w : s_wires )
+		if ( w && !strcmp( w->_name, name ) )
+		{
+			*sda	= w->_sda;
+			*scl	= w->_scl;
+			return	true;
+		}
+
+	return	false;
 }
 
 //	The pins this bus is leaving go back to GPIO inputs (as at reset), so
@@ -664,8 +746,6 @@ void TwoWire::start( int baud )
 {
 	baudrate	= baud;
 
-	bool	is_i3c	= on_i3c_pins();
-
 	if ( !i2c )
 	{
 		if ( TwoWire *other = running_on( peripheral(), this ) )
@@ -673,7 +753,7 @@ void TwoWire::start( int baud )
 			static char	msg[ 112 ];
 
 			snprintf( msg, sizeof( msg ), "%s: begin() on %s, which %s is running (setPins()). Call %s.end() first",
-				name_of( this ), peripheral(), name_of( other ), name_of( other ) );
+				_name, peripheral(), other->_name, other->_name );
 			panic( msg );
 		}
 
@@ -685,51 +765,11 @@ void TwoWire::start( int baud )
 				&& ( w->_sda != _sda || w->_scl != _scl ) )
 				w->release_pads();
 
-#if !defined( CPU_MCXC444VLH )	// LPI2C and I3C; FRDM-MCXC444 has the Kinetis I2C
-		if ( is_i3c )
-		{
-			I3C	*i3c;
-			i3c	= new I3C( _sda, _scl );
+		enroll();	// known to running_on() and the loop above from now on
 
-#ifdef	CPU_MCXN947VDF
-			/*
-			 *  At least one native-I3C-mode bus operation needs to happen on
-			 *  this bus before switching it down to legacy I2C_MODE -- on
-			 *  FRDM-MCXN947, without this, I2C-mode reads on this bus
-			 *  reliably NAK on the address phase (writes still succeed).
-			 *  Confirmed via a controlled A/B test on real hardware (GDB,
-			 *  then reflashed with/without this line): consistently fails
-			 *  without it, consistently works with it. Root cause not fully
-			 *  understood -- per the I3C spec the master's pull-up assist
-			 *  should already be active during bus-free/START/address-header
-			 *  regardless of prior traffic, so this looks like an SDK/
-			 *  silicon init-ordering quirk (I3C_MasterInit() alone may not
-			 *  be enough to arm the pull-up-assist state machine; one real
-			 *  START/STOP cycle might be needed first) rather than a spec
-			 *  violation we're intentionally working around. This priming
-			 *  broadcast is expected to itself fail (kStatus_I3C_WriteAbort,
-			 *  nothing has a dynamic address yet) -- only the bus activity
-			 *  matters. Matches the flow NXP's own P3T1755_FRDM_MCXN947_demo_DAA
-			 *  reference example always does (RSTDAA before any I2C-mode
-			 *  access).
-			 *
-			 *  Confirmed NOT needed on A153 (its I3C_SDA/I3C_SCL are the
-			 *  same physical pins as the general-purpose Arduino I2C
-			 *  connector, which has real populated pull-up resistors --
-			 *  unlike N947's dedicated onboard-sensor-only I3C bus, whose
-			 *  fixed pull-ups are DNP on the schematic). Scoped to just
-			 *  this chip rather than done unconditionally, so boards that
-			 *  don't need it don't get a mystery extra I2C-bus transaction
-			 *  on every Wire.begin().
-			 */
-			i3c->ccc_broadcast( CCC::BROADCAST_RSTDAA, nullptr, 0 );
-#endif	// CPU_MCXN947VDF
-
-			i3c->mode( I3C::MODE::I2C_MODE );
-			i2c	= i3c;
-		}
+		if ( _ops )			// Wire1 on the I3C peripheral: make_i3c_bus()
+			i2c	= _ops->make( _sda, _scl );
 		else
-#endif
 		{
 			i2c	= new I2C( _sda, _scl );
 
@@ -744,29 +784,13 @@ void TwoWire::start( int baud )
 		}
 	}
 
-	/*
-	 *  I2C(sda, scl, no_hw=true) — the base-class constructor I3C delegates
-	 *  to — skips hardware init entirely (`if (no_hw) return;`), leaving
-	 *  I2C::unit_base uninitialized. I3C's own
-	 *  frequency(uint32_t,uint32_t,uint32_t)/frequency(void) only hide, not
-	 *  override, I2C::frequency(uint32_t) (different signature), so calling
-	 *  the generic i2c->frequency(baudrate) for an I3C instance would
-	 *  dispatch to I2C::frequency() and dereference that uninitialized
-	 *  unit_base -> BusFault. Route to I3C's own overload instead.
-	 */
-#if !defined( CPU_MCXC444VLH )	// LPI2C and I3C; FRDM-MCXC444 has the Kinetis I2C
-	if ( is_i3c )
-		static_cast<I3C *>( i2c )->frequency( baudrate, 0, 0 );
+	if ( _ops )
+		_ops->frequency( i2c, baudrate );	// not i2c->frequency(): see i3c_bus_frequency()
 	else
 	{
-		i2c->pin_low_timeout( timeout_us );
+		i2c->pin_low_timeout( timeout_us );	// the LPI2C's pin-low timeout, the Kinetis I2C's SCL low timeout
 		i2c->frequency( baudrate );
 	}
-#else
-	(void)is_i3c;
-	i2c->pin_low_timeout( timeout_us );	// the Kinetis I2C's SCL low timeout
-	i2c->frequency( baudrate );
-#endif
 
 	i2c->err_callback( nullptr );
 
@@ -792,11 +816,9 @@ void TwoWire::setClock( uint32_t freq )
 
 	baudrate	= (int)freq;
 
-#if !defined( CPU_MCXC444VLH )	// LPI2C and I3C; FRDM-MCXC444 has the Kinetis I2C
-	if ( on_i3c_pins() )
-		static_cast<I3C *>( i2c )->frequency( baudrate, 0, 0 );
+	if ( _ops )
+		_ops->frequency( i2c, baudrate );
 	else
-#endif
 		i2c->frequency( baudrate );
 }
 
@@ -819,7 +841,7 @@ size_t TwoWire::write( uint8_t data )
 		return	1;
 	}
 
-	if ( tx_size >= sizeof( tx_buf ) )
+	if ( tx_size >= WIRE_BUFFER_SIZE )
 	{
 		setWriteError();
 		return	0;
@@ -875,7 +897,7 @@ uint8_t TwoWire::endTransmission( bool stop )
 
 uint8_t	TwoWire::requestFrom( const uint8_t address, const size_t length, bool stop )
 {
-	size_t	n	= ( length < sizeof( rx_buf ) ) ? length : sizeof( rx_buf );
+	size_t	n	= ( length < WIRE_BUFFER_SIZE ) ? length : WIRE_BUFFER_SIZE;
 
 	rx_data		= rx_buf;
 	rx_index	= 0;

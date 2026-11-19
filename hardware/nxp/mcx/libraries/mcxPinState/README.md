@@ -124,9 +124,13 @@ same physical pin as `SPI`'s default SCLK, entirely unrelated to whether
 
 The pins a `Wire`/`Wire1`/`Wire2` row checks are the ones that bus is on
 now: from mcx-arduino-core 0.12.0, `Wire.setPins(A4, A5)` can move a bus
-to A4/A5, and its row then holds A4/A5's pins. This is read from the
-core's internal `TwoWire::raw_sda()`/`raw_scl()`, and with an older core,
-which has neither (nor `setPins()`), the row keeps the bus's fixed pins.
+to A4/A5, and its row then holds A4/A5's pins. From mcx-arduino-core
+0.13.0 this is asked of the core by the bus's name
+(`TwoWire::pins_of()`), not through the instance: taking `&Wire1` would
+link `Wire1`, and with it the I3C driver, into every sketch using this
+library. With 0.12.0's core it is read from the instance's
+`raw_sda()`/`raw_scl()`, and with an older core, which has neither (nor
+`setPins()`), the row keeps the bus's fixed pins.
 
 ## Staying in sync with mcx-arduino-core
 

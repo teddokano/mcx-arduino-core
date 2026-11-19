@@ -18,6 +18,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `__FILE__` in the core's sources is written relative to the platform folder (`mcx/variants/...`), so the SDK
   drivers' `assert()` messages no longer keep the user's home folder in flash (about 1.2KB less in an I2C sketch on
   FRDM-MCXA153). The paths in the debug information, which the debugger uses to find the sources, are unchanged.
+- **A sketch that uses `Wire` but not `Wire1` no longer carries the I3C driver: about 8.5KB less flash on
+  FRDM-MCXA153 and FRDM-MCXN947**, whose `Wire1` runs on I3C. `Wire`, `Wire1` and `Wire2` are now filled in when the
+  sketch is built instead of by a constructor at startup, so each is linked only into sketches that use it, and the
+  I3C driver only with `Wire1`. The mcxPinState library no longer brings `Wire1` (and so the I3C driver) in either.
+
+### Changed
+- `Print` has no virtual destructor any more, as in ArduinoCore-API and AVR. With one, every global object derived
+  from it (`Wire`, `Serial1`, ...) had its destructor registered at startup, which kept it linked into every sketch
+  (about 550 bytes in a sketch that uses none of them). As on those cores, deleting an object of a class derived from
+  `Print` through a `Print *` or `Stream *` no longer runs the derived class's destructor; a class that needs that
+  declares a virtual destructor of its own.
 
 ## [0.12.0] - 2026-11-01
 

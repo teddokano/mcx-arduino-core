@@ -36,7 +36,10 @@
 class Print
 {
 public:
-	virtual ~Print() {}
+	//	No virtual destructor, as in ArduinoCore-API's and AVR's Print: with
+	//	one, every Print-derived global (Wire, Wire1, ...) has a destructor
+	//	registered at startup, which keeps it, and all it reaches, linked in
+	//	whether the sketch uses it or not
 
 	/** Write one byte. The only method a derived class must implement --
 	 *  every print()/println() overload below is built on this (and the
