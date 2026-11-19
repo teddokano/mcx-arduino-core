@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- **The watchdog**: avr-libc's `<avr/wdt.h>` (`wdt_enable(WDTO_15MS` … `WDTO_8S)`, `wdt_reset()`, `wdt_disable()`, and
+  `MCUSR` with `WDRF`/`PORF`/`EXTRF`/`BORF` for the cause of the last reset), and the bundled `WDT` library with the
+  UNO R4's interface (`WDT.begin(ms)`, `refresh()`, `getTimeout()`, `getCounter()`), so sketches written for either
+  build unchanged. The WWDT on the MCX A and N boards, set to the exact time; on FRDM-MCXC444 the core resets the board
+  within 1ms of the time, with the COP (1024ms) for when interrupts stop. No board's watchdog can be stopped once
+  started: `wdt_disable()` stops it resetting the board, and the core feeds it from then on. While it is enabled,
+  `panic()` and a HardFault end in a watchdog reset once their message is out. Example: `WatchdogRefresh`; test:
+  `examples/Arduino_compatible_API/test_watchdog`.
+
 ### Fixed
 - **Sketches take 15–55KB less flash: the core now links newlib-nano, as it always meant to.** The sources were
   compiled against newlib-nano's headers, but the link step lacked `-specs=nano.specs`, so the full newlib came in:

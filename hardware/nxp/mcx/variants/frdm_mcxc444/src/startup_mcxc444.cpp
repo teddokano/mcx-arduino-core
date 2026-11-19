@@ -288,6 +288,21 @@ extern unsigned int __bss_section_table_end;
 extern "C" const int mcx_sketch_sets_cop __attribute__ ((weak));
 
 //*****************************************************************************
+// mcx-arduino-core: the watchdog of <avr/wdt.h> and WDT.h (the core's
+// mcx_watchdog.h), which those headers define this for. With it, the COP
+// stays on at its reset setting (1kHz LPO, 1024ms), fed by the SysTick
+// interrupt; the watchdog resets the board itself with NVIC_SystemReset()
+// when its time is up, leaving mcx_wdt_reset_magic in RAM that the reset
+// doesn't clear, so that this boot can tell that reset from other software
+// resets (MCUSR's WDRF). The mark is read, and cleared, at every boot.
+//*****************************************************************************
+extern "C" void mcx_sketch_wdt_event(int event) __attribute__ ((weak));
+extern "C" {
+__attribute__ ((section(".noinit"))) volatile unsigned int mcx_wdt_reset_magic;
+volatile unsigned int mcx_wdt_reset_at_boot;
+}
+
+//*****************************************************************************
 // Reset entry point for your code.
 // Sets up a simple runtime environment and initializes the C/C++
 // library.
@@ -301,8 +316,8 @@ void ResetISR(void) {
 // If __USE_CMSIS defined, then call CMSIS SystemInit code
     SystemInit();
 
-    // mcx-arduino-core: see mcx_sketch_sets_cop above
-    if (&mcx_sketch_sets_cop == 0)
+    // mcx-arduino-core: see mcx_sketch_sets_cop and mcx_sketch_wdt_event above
+    if ((&mcx_sketch_sets_cop == 0) && (mcx_sketch_wdt_event == 0))
         *((volatile unsigned int *)0x40048100) = 0x00u;   // SIM->COPC: off
 
 #else
@@ -335,6 +350,10 @@ void ResetISR(void) {
         SectionLen = *SectionTableAddr++;
         bss_init(ExeAddr, SectionLen);
     }
+
+    // mcx-arduino-core: see mcx_wdt_reset_magic above
+    mcx_wdt_reset_at_boot = (mcx_wdt_reset_magic == 0x57445452u);   // "WDTR"
+    mcx_wdt_reset_magic = 0;
 
 #if !defined (__USE_CMSIS)
 // Assume that if __USE_CMSIS defined, then CMSIS SystemInit code

@@ -2,14 +2,14 @@
 
 [English](bundled_libraries.md) | 日本語
 
-mcx-arduino-coreには8つのライブラリが付いています。ボードのパッケージと一緒に入るので、
+mcx-arduino-coreには9つのライブラリが付いています。ボードのパッケージと一緒に入るので、
 ライブラリマネージャーで足すものはありません。ヘッダーを`#include`すれば使えます。この
 案内は[チュートリアル](../TUTORIAL.ja.md)の続きです。それぞれのライブラリが何のためのもの
 かと、短いスケッチ、このボードで知っておくことを書きます。APIの全体は
 [API_COMPATIBILITY.md](../API_COMPATIBILITY.md)と各ライブラリのREADMEにあり、作例はどれも
 IDEの**ファイル → スケッチ例**の、ライブラリの名前の下にあります。
 
-`Servo`・`MsTimer2`・`TimerOne`は、UNO向けのスケッチが使っているライブラリと同じ名前・
+`Servo`・`MsTimer2`・`TimerOne`・`WDT`は、UNO R3・R4向けのスケッチが使っているライブラリと同じ名前・
 同じインターフェースなので、そのスケッチはそのままビルドできます。同じ名前のライブラリを
 ライブラリマネージャーで入れていても、ビルドはこのボード向けに書いた同梱のほうを選びます。
 
@@ -24,6 +24,7 @@ IDEの**ファイル → スケッチ例**の、ライブラリの名前の下�
 | SG90や連続回転のFS90Rを、角度や速さで動かす | `mcxRCServo` | `<SG90.h>`、`<FS90R.h>` |
 | 設定や回数を、リセットや書き込みをまたいで残す | `EEPROM` | `<EEPROM.h>` |
 | FRDM-MCXN947のオンボードのEthernetを使う | `MCXEthernet` | `<MCXEthernet.h>` |
+| スケッチが止まったらボードをリセットする（UNO R4のWDTライブラリと同じ） | `WDT` | `<WDT.h>` |
 | 2つの機能が1本のピンを取り合うとき、何がピンを持っているかを調べる | `mcxPinState` | `<PinState.h>` |
 
 ## タイマーで関数を呼ぶ
@@ -217,6 +218,33 @@ FRDM-MCXN947だけです。5つのどのボードでも、公式のEthernetラ�
 Wi-Fiは無い）はライブラリの[README](../hardware/nxp/mcx/libraries/MCXEthernet/README.md)
 （英語）にあります。作例: `DhcpAddress_N947`、`WebServerLed_N947`、`UdpEcho_N947`、
 `HttpGet_N947`、`WebTemperature_N947`、`WebButtonsRgb_N947`。
+
+## `WDT`: スケッチが止まったらボードをリセットする
+
+ウォッチドッグです。UNO R4のWDTライブラリと同じインターフェースで、`WDT.begin(ms)`で始め、
+スケッチはそれより短い間隔で`WDT.refresh()`を呼びます。呼ばれなくなると、ボードがリセット
+されます。UNO R3向けのスケッチが使うavr-libcの`<avr/wdt.h>`（`wdt_enable(WDTO_2S)`、
+`wdt_reset()`、`MCUSR & _BV(WDRF)`）もコアにあり、同じウォッチドッグで動きます。
+
+```cpp
+#include <Arduino.h>
+#include <WDT.h>
+
+void setup() {
+  WDT.begin(2000);  // 2秒
+}
+
+void loop() {
+  WDT.refresh();
+  // ... 2秒かかってはいけない処理 ...
+}
+```
+
+UNO R4と同じく、一度始めると止められません。動いている間は、`panic()`（とHardFault）は
+メッセージを出したあとウォッチドッグのリセットで終わります。デバッガでボードを止めている間は
+数えません。FRDM-MCXC444では、これを使うスケッチが割り込みを1秒以上止めると、リセット
+されます。詳しくは[API_COMPATIBILITY.md](../API_COMPATIBILITY.md#watchdog)にあります。
+作例: `WatchdogRefresh`。
 
 ## `mcxPinState`: このピンを持っているのは何か
 

@@ -2,7 +2,7 @@
 
 English | [日本語](bundled_libraries.ja.md)
 
-mcx-arduino-core comes with eight libraries. They install with the board package, so
+mcx-arduino-core comes with nine libraries. They install with the board package, so
 there is nothing to add in the Library Manager: `#include` the header and use it. This
 guide picks up where the [tutorial](../TUTORIAL.md) ends. It says what each library is
 for, shows a short sketch, and lists what to know on these boards. The full API of
@@ -10,8 +10,8 @@ each is in [API_COMPATIBILITY.md](../API_COMPATIBILITY.md) and the library's own
 and every library's examples are under **File → Examples** in the IDE, in the
 library's name.
 
-`Servo`, `MsTimer2` and `TimerOne` have the same names and interfaces as the
-libraries sketches for UNO already use, so those sketches build unchanged. If one of
+`Servo`, `MsTimer2`, `TimerOne` and `WDT` have the same names and interfaces as the
+libraries sketches for UNO R3 and R4 already use, so those sketches build unchanged. If one of
 those libraries is installed from the Library Manager too, the build picks the
 bundled one, which is the one written for these boards.
 
@@ -26,6 +26,7 @@ bundled one, which is the one written for these boards.
 | Turn an SG90 or a continuous-rotation FS90R, in degrees or speed | `mcxRCServo` | `<SG90.h>`, `<FS90R.h>` |
 | Keep settings or counts across resets and uploads | `EEPROM` | `<EEPROM.h>` |
 | Use FRDM-MCXN947's on-board Ethernet | `MCXEthernet` | `<MCXEthernet.h>` |
+| Reset the board when the sketch stops, as the UNO R4's WDT library does | `WDT` | `<WDT.h>` |
 | Find what holds a pin, when two features fight over one | `mcxPinState` | `<PinState.h>` |
 
 ## Calling a function on a timer
@@ -222,6 +223,34 @@ official Ethernet library works with a WIZnet W5500 module instead. The tutorial
 and what is not (no TLS, IPv6 or Wi-Fi). Examples: `DhcpAddress_N947`,
 `WebServerLed_N947`, `UdpEcho_N947`, `HttpGet_N947`, `WebTemperature_N947`,
 `WebButtonsRgb_N947`.
+
+## `WDT`: reset the board when the sketch stops
+
+The watchdog, with the interface of the UNO R4's WDT library: `WDT.begin(ms)` starts
+it, and the sketch calls `WDT.refresh()` more often than that; if it stops, the
+board resets. avr-libc's `<avr/wdt.h>` (`wdt_enable(WDTO_2S)`, `wdt_reset()`,
+`MCUSR & _BV(WDRF)`) is in the core and runs on the same watchdog, for sketches
+written for UNO R3.
+
+```cpp
+#include <Arduino.h>
+#include <WDT.h>
+
+void setup() {
+  WDT.begin(2000);  // 2 seconds
+}
+
+void loop() {
+  WDT.refresh();
+  // ... work that must never take 2 seconds ...
+}
+```
+
+As on the UNO R4, it can't be stopped once begun. While it runs, a `panic()` (or a
+HardFault) ends in a watchdog reset once its message is out, and a debugger halting
+the board stops it counting. On FRDM-MCXC444, a sketch that uses it is reset by it if
+interrupts stay off for a second or more. The details are in
+[API_COMPATIBILITY.md](../API_COMPATIBILITY.md#watchdog). Example: `WatchdogRefresh`.
 
 ## `mcxPinState`: who holds this pin?
 

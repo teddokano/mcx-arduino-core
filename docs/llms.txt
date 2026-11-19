@@ -8,9 +8,10 @@ Points to keep in mind when writing a sketch for this core:
 - The boards are ARM Cortex-M (Cortex-M33; Cortex-M0+ on FRDM-MCXC444), not AVR. AVR registers and libraries written only for AVR do not work. `<avr/pgmspace.h>` and `PROGMEM` are provided so that code using them builds.
 - Instance names other than `Serial`, `Wire` and `SPI` (`Serial1`, `Serial2`, `Wire1`, `Wire2`, `SPI1`) mean different pins on each board, and some boards do not have them. Check "Instance names by board" in API_COMPATIBILITY.md first.
 - Which pins have PWM (`analogWrite()`) and analog input (`analogRead()`) differs by board. Check the board's pin mapping.
+- `printf()`, `sprintf()` and `Serial.printf()` are newlib-nano's: `%f` works, but `long long` (`%lld`, `%llu`, `%llx`) and `%zu`/`%jd` do not. Print 64-bit values with `Serial.print()` or `String`, which handle `long long`.
 - A shield whose I2C is on `A4`/`A5` (UNO R3 style) needs `Wire.setPins(A4, A5)` before `Wire.begin()`. It works on FRDM-MCXA156, FRDM-MCXN236 and FRDM-MCXC444, and returns `false` on FRDM-MCXA153 and FRDM-MCXN947, whose `A4`/`A5` have no I2C.
 - Ethernet: on FRDM-MCXN947, the bundled `MCXEthernet` library (`#include <MCXEthernet.h>`, with the same classes as the official Ethernet library) uses the on-board port. On any of the boards, the official `Ethernet` library works with a W5500 module.
-- `Servo` and `EEPROM` are bundled, with the same API as the official libraries, and so are `MsTimer2` and `TimerOne`, with the API of the AVR libraries of those names (`TimerOne` without its PWM functions: use `analogWrite()` and `analogWriteFrequency()`). `mcxTicker` has the API of the ESP32/ESP8266 cores' `Ticker` under the class name `mcxTicker` (`#include <mcxTicker.h>`, `mcxTicker t; t.attach_ms(500, f);`), for any number of functions, in whole milliseconds.
+- `Servo` and `EEPROM` are bundled, with the same API as the official libraries, and so are `MsTimer2` and `TimerOne`, with the API of the AVR libraries of those names (`TimerOne` without its PWM functions: use `analogWrite()` and `analogWriteFrequency()`). `mcxTicker` has the API of the ESP32/ESP8266 cores' `Ticker` under the class name `mcxTicker` (`#include <mcxTicker.h>`, `mcxTicker t; t.attach_ms(500, f);`), for any number of functions, in whole milliseconds. The watchdog has avr-libc's `<avr/wdt.h>` (`wdt_enable(WDTO_2S)`, `wdt_reset()`, `MCUSR & _BV(WDRF)`) and the bundled `WDT` library with the UNO R4's API (`WDT.begin(ms)`, `WDT.refresh()`); it can't be stopped once started (`wdt_disable()` only stops it resetting the board).
 
 ## Docs
 
@@ -28,7 +29,7 @@ Points to keep in mind when writing a sketch for this core:
 - [MCXEthernet](https://raw.githubusercontent.com/teddokano/mcx-arduino-core/main/hardware/nxp/mcx/libraries/MCXEthernet/README.md): Ethernet on FRDM-MCXN947's on-board port, with the official Ethernet library's API
 - [mcxPinState](https://raw.githubusercontent.com/teddokano/mcx-arduino-core/main/docs/mcxpinstate_guide.md): shows which peripheral owns each pin, for debugging
 - [mcxRCServo](https://raw.githubusercontent.com/teddokano/mcx-arduino-core/main/hardware/nxp/mcx/libraries/mcxRCServo/README.md): hobby RC servos from the PWM pins
-- [Bundled libraries](https://raw.githubusercontent.com/teddokano/mcx-arduino-core/main/docs/bundled_libraries.md): all eight bundled libraries, what each is for and a short sketch, including `EEPROM`, `Servo`, `MsTimer2`, `TimerOne` and `mcxTicker`, which have no README of their own, and which timer each feature takes
+- [Bundled libraries](https://raw.githubusercontent.com/teddokano/mcx-arduino-core/main/docs/bundled_libraries.md): all nine bundled libraries, what each is for and a short sketch, including `EEPROM`, `Servo`, `MsTimer2`, `TimerOne` and `mcxTicker`, which have no README of their own, and which timer each feature takes
 
 ## Optional
 

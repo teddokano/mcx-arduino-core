@@ -332,6 +332,13 @@ void wait_us( unsigned int microseconds )
  *  UART itself instead. The message is sent again on every round of the
  *  blink, so a Serial Monitor opened after the panic still gets it.
  */
+//	The Arduino core's watchdog (arduino_api/mcx_watchdog.h): defined only in
+//	a sketch that includes <avr/wdt.h> or WDT.h. 1: panic() starts, 2: it
+//	goes on (MCX_WDT_PANIC_ENTER, MCX_WDT_PANIC_LOOP there). While the
+//	watchdog is enabled, it resets the board once the message is out;
+//	after wdt_disable(), it is fed here and panic() stops as it always has
+extern "C" void	mcx_sketch_wdt_event( int event ) __attribute__((weak));
+
 static void panic_message( const char *s )
 {
 #if (defined(SDK_DEBUGCONSOLE) && (SDK_DEBUGCONSOLE == DEBUGCONSOLE_REDIRECT_TO_SDK))
@@ -360,6 +367,9 @@ void panic( const char *s )
 	leds[ 1 ]	= 1;
 	leds[ 2 ]	= 1;
 	
+	if ( mcx_sketch_wdt_event )
+		mcx_sketch_wdt_event( 1 );
+
 	while ( true )
 	{
 		if ( can_print )
@@ -367,6 +377,9 @@ void panic( const char *s )
 
 		for ( unsigned long i = 0; i < sizeof( code ) / sizeof( single_code_t ); i++ )
 		{
+			if ( mcx_sketch_wdt_event )
+				mcx_sketch_wdt_event( 2 );
+
 			leds[ 0 ]	= 0;
 			wait( code[ i ].on  * duration );
 			leds[ 0 ]	= 1;

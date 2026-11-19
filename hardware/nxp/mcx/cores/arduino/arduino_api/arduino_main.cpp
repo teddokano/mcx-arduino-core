@@ -7,6 +7,7 @@
 #include	"r01lib.h"
 #include	"Arduino.h"
 #include	"arduino_timer_hooks.h"
+#include	"mcx_watchdog.h"
 
 extern "C" {
 #include	"fsl_clock.h"
@@ -201,6 +202,10 @@ extern "C" void SysTick_Handler( void )
 
 	if ( hook && n )
 		hook( n );
+
+	//	Defined only if the sketch includes <avr/wdt.h> or WDT.h (mcx_watchdog.h)
+	if ( mcx_sketch_wdt_event )
+		mcx_sketch_wdt_event( MCX_WDT_TICK );
 }
 
 unsigned long millis( void )
