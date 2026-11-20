@@ -333,6 +333,22 @@ def platform_path_references():
         for key, value in sorted(list(platform_props.items()) + list(board_props.items())):
             note(value, props, "%s: %s" % (board, key))
 
+        # A Tools-menu option overrides board properties
+        # (<board>.menu.<menu>.<option>.<property>), such as FRDM-MCXA153's
+        # EEPROM > None naming its own linker script: every option's files
+        # count too, with the platform's recipes expanded under it
+        options = {}
+        for key, value in board_props.items():
+            parts = key.split(".", 3)
+            if len(parts) == 4 and parts[0] == "menu":
+                options.setdefault((parts[1], parts[2]), {})[parts[3]] = value
+        for (menu, option), overrides in sorted(options.items()):
+            option_props = dict(props)
+            option_props.update(overrides)
+            origin = "%s: menu.%s.%s" % (board, menu, option)
+            for key, value in sorted(list(platform_props.items()) + list(overrides.items())):
+                note(value, option_props, "%s (%s)" % (origin, key))
+
         # cortex-debug and arduino-cli both pass the scripts directory and
         # the script name separately (-s DIR -f FILE), so neither property
         # names a complete path on its own.

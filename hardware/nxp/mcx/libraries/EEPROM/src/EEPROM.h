@@ -7,6 +7,11 @@
 #ifndef MCX_EEPROM_H
 #define MCX_EEPROM_H
 
+//	Tools > EEPROM > None (FRDM-MCXA153): the sketch has the flash EEPROM would keep
+#if defined( MCX_EEPROM_NONE )
+#error "EEPROM: Tools > EEPROM is set to None, which gives the sketch the flash the EEPROM library keeps. Set it back to 1KB to use EEPROM"
+#endif
+
 #include <stdint.h>
 #include <stddef.h>
 

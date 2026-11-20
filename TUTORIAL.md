@@ -718,7 +718,10 @@ something changes, not on every pass through `loop()`.
 
 The library's own example, `EEPROM_settings` (under EEPROM in the IDE's
 **File → Examples** menu), keeps a setting you type into the Serial Monitor. On FRDM-MCXA153 the
-storage takes 16KB of flash, which leaves 112KB for the sketch.
+storage takes 16KB of flash, which leaves 112KB for the sketch. A sketch that
+doesn't use EEPROM can have all 128KB: **Tools → EEPROM → None** (from 0.13.0;
+what EEPROM kept is lost then, and `#include <EEPROM.h>` stops the build). **Tools →
+Optimize → Smaller (-Os)** also makes a sketch smaller, by 1-11%.
 
 ### 2.15. Two boards on one I2C bus: target mode
 

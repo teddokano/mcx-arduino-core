@@ -85,6 +85,10 @@ and also as the backend for Arduino IDE 2's built-in debugger (breakpoints,
 stepping, variable inspection) — LinkServer's own gdbserver is used under
 the hood, since upstream OpenOCD has no support for the MCX chip family yet.
 Please install it before using the Upload or Debug buttons in Arduino IDE.
+For debugging, tick **Sketch → Optimize for Debugging** before uploading
+(from 0.13.0): it builds with `-Og`, which keeps variables and the order of
+the source lines for the debugger, where the usual `-O2` (or `-Os`, from
+**Tools → Optimize**) rearranges them.
 
 👉 Download: https://www.nxp.com/linkserver
 

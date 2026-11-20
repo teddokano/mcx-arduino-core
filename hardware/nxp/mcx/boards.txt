@@ -1,6 +1,22 @@
 # NXP FRDM MCX Series
 # boards.txt
 
+# Tools menus (from 0.13.0). The first option of each is the default, and
+# is what a board gets with no option given (arduino-cli, the CI).
+# Optimize: -O2 as before; -Os for a sketch that doesn't fit, smaller by
+# 1-11% (FRDM-MCXA153: hello_world 39.8KB -> 38.7KB, release_check/01
+# 71.7KB -> 64.1KB), a little slower
+menu.opt=Optimize
+# EEPROM (FRDM-MCXA153 only, the board with the least flash): the EEPROM
+# library's 16KB at the top of the flash, or none and all 128KB for the
+# sketch. Switching loses what EEPROM kept: the area is the sketch's then
+menu.eeprom=EEPROM
+# Upload method (the MCX A and N boards, which probe-rs knows): LinkServer,
+# NXP's tool, installed by the user, or probe-rs. The choice is for the
+# Upload button and the Debug button both: the board's gdb-bridge .cfg says
+# which one gdb-bridge runs
+menu.upload_method=Upload method
+
 ##############################################################
 # FRDM-MCXA153
 ##############################################################
@@ -20,8 +36,12 @@ frdm_mcxa153.build.variant=frdm_mcxa153
 # Board-specific preprocessor defines
 frdm_mcxa153.build.board_defines=-DCPU_MCXA153VLH -DCPU_MCXA153VLH_cm33_nodsp -DTARGET_A153 -DFRDM_MCXA153
 
-# Optimization (release build)
+# Optimization: the default, and Tools > Optimize (menu.opt above)
 frdm_mcxa153.build.opt_flags=-O2
+frdm_mcxa153.menu.opt.o2=Faster (-O2)
+frdm_mcxa153.menu.opt.o2.build.opt_flags=-O2
+frdm_mcxa153.menu.opt.os=Smaller (-Os)
+frdm_mcxa153.menu.opt.os.build.opt_flags=-Os
 
 # Flash / RAM
 frdm_mcxa153.upload.maximum_size=114688
@@ -30,6 +50,14 @@ frdm_mcxa153.upload.maximum_data_size=24576
 # Linker script filename (inside variants/frdm_mcxa153/linker/)
 frdm_mcxa153.build.ldscript=MCXA153.ld
 
+# Tools > EEPROM (menu.eeprom at the top): none gives the sketch the 16KB
+# the EEPROM library keeps, and makes #include <EEPROM.h> stop the build
+frdm_mcxa153.menu.eeprom.on=1KB in the top 16KB of flash (sketch: 112KB)
+frdm_mcxa153.menu.eeprom.off=None (sketch: all 128KB)
+frdm_mcxa153.menu.eeprom.off.build.ldscript=MCXA153_noeeprom.ld
+frdm_mcxa153.menu.eeprom.off.upload.maximum_size=131072
+frdm_mcxa153.menu.eeprom.off.build.eeprom_defines=-DMCX_EEPROM_NONE
+
 # Upload
 # build.pyocd_target is currently unused -- no recipe in platform.txt
 # references it (only the LinkServer upload path is implemented).
@@ -37,6 +65,13 @@ frdm_mcxa153.build.ldscript=MCXA153.ld
 frdm_mcxa153.build.pyocd_target=mcxa153
 frdm_mcxa153.build.linkserver_target=MCXA153:FRDM-MCXA153
 frdm_mcxa153.upload.tool=linkserver
+# Tools > Upload method (menu.upload_method at the top)
+frdm_mcxa153.build.probe_rs_chip=MCXA153
+frdm_mcxa153.menu.upload_method.linkserver=LinkServer
+frdm_mcxa153.menu.upload_method.probe_rs=probe-rs
+frdm_mcxa153.menu.upload_method.probe_rs.upload.tool=probe_rs
+frdm_mcxa153.menu.upload_method.probe_rs.upload.tool.default=probe_rs
+frdm_mcxa153.menu.upload_method.probe_rs.debug.server.openocd.script=a153-probe-rs.cfg
 frdm_mcxa153.upload.tool.default=linkserver
 frdm_mcxa153.upload.protocol=
 
@@ -76,8 +111,12 @@ frdm_mcxn947.build.variant=frdm_mcxn947
 # Board-specific preprocessor defines
 frdm_mcxn947.build.board_defines=-DCPU_MCXN947VDF -DCPU_MCXN947VDF_cm33 -DCPU_MCXN947VDF_cm33_core0 -DTARGET_N947 -DFRDM_MCXN947
 
-# Optimization (release build)
+# Optimization: the default, and Tools > Optimize (menu.opt above)
 frdm_mcxn947.build.opt_flags=-O2
+frdm_mcxn947.menu.opt.o2=Faster (-O2)
+frdm_mcxn947.menu.opt.o2.build.opt_flags=-O2
+frdm_mcxn947.menu.opt.os=Smaller (-Os)
+frdm_mcxn947.menu.opt.os.build.opt_flags=-Os
 
 # Flash / RAM
 frdm_mcxn947.upload.maximum_size=2031616
@@ -92,6 +131,13 @@ frdm_mcxn947.build.ldscript=MCXN947.ld
 frdm_mcxn947.build.pyocd_target=mcxn947
 frdm_mcxn947.build.linkserver_target=MCXN947:FRDM-MCXN947
 frdm_mcxn947.upload.tool=linkserver
+# Tools > Upload method (menu.upload_method at the top)
+frdm_mcxn947.build.probe_rs_chip=MCXN947
+frdm_mcxn947.menu.upload_method.linkserver=LinkServer
+frdm_mcxn947.menu.upload_method.probe_rs=probe-rs
+frdm_mcxn947.menu.upload_method.probe_rs.upload.tool=probe_rs
+frdm_mcxn947.menu.upload_method.probe_rs.upload.tool.default=probe_rs
+frdm_mcxn947.menu.upload_method.probe_rs.debug.server.openocd.script=n947-probe-rs.cfg
 frdm_mcxn947.upload.tool.default=linkserver
 frdm_mcxn947.upload.protocol=
 
@@ -132,8 +178,12 @@ frdm_mcxa156.build.variant=frdm_mcxa156
 # Board-specific preprocessor defines
 frdm_mcxa156.build.board_defines=-DCPU_MCXA156VLL -DTARGET_A156 -DFRDM_MCXA156
 
-# Optimization (release build)
+# Optimization: the default, and Tools > Optimize (menu.opt above)
 frdm_mcxa156.build.opt_flags=-O2
+frdm_mcxa156.menu.opt.o2=Faster (-O2)
+frdm_mcxa156.menu.opt.o2.build.opt_flags=-O2
+frdm_mcxa156.menu.opt.os=Smaller (-Os)
+frdm_mcxa156.menu.opt.os.build.opt_flags=-Os
 
 # Flash / RAM
 frdm_mcxa156.upload.maximum_size=1032192
@@ -148,6 +198,13 @@ frdm_mcxa156.build.ldscript=MCXA156.ld
 frdm_mcxa156.build.pyocd_target=mcxa156
 frdm_mcxa156.build.linkserver_target=MCXA156:FRDM-MCXA156
 frdm_mcxa156.upload.tool=linkserver
+# Tools > Upload method (menu.upload_method at the top)
+frdm_mcxa156.build.probe_rs_chip=MCXA156
+frdm_mcxa156.menu.upload_method.linkserver=LinkServer
+frdm_mcxa156.menu.upload_method.probe_rs=probe-rs
+frdm_mcxa156.menu.upload_method.probe_rs.upload.tool=probe_rs
+frdm_mcxa156.menu.upload_method.probe_rs.upload.tool.default=probe_rs
+frdm_mcxa156.menu.upload_method.probe_rs.debug.server.openocd.script=a156-probe-rs.cfg
 frdm_mcxa156.upload.tool.default=linkserver
 frdm_mcxa156.upload.protocol=
 
@@ -185,8 +242,12 @@ frdm_mcxn236.build.variant=frdm_mcxn236
 # Board-specific preprocessor defines
 frdm_mcxn236.build.board_defines=-DCPU_MCXN236VDF -DTARGET_N236 -DFRDM_MCXN236
 
-# Optimization (release build)
+# Optimization: the default, and Tools > Optimize (menu.opt above)
 frdm_mcxn236.build.opt_flags=-O2
+frdm_mcxn236.menu.opt.o2=Faster (-O2)
+frdm_mcxn236.menu.opt.o2.build.opt_flags=-O2
+frdm_mcxn236.menu.opt.os=Smaller (-Os)
+frdm_mcxn236.menu.opt.os.build.opt_flags=-Os
 
 # Flash / RAM
 frdm_mcxn236.upload.maximum_size=983040
@@ -201,6 +262,13 @@ frdm_mcxn236.build.ldscript=MCXN236.ld
 frdm_mcxn236.build.pyocd_target=mcxn236
 frdm_mcxn236.build.linkserver_target=MCXN236:FRDM-MCXN236
 frdm_mcxn236.upload.tool=linkserver
+# Tools > Upload method (menu.upload_method at the top)
+frdm_mcxn236.build.probe_rs_chip=MCXN236VDF
+frdm_mcxn236.menu.upload_method.linkserver=LinkServer
+frdm_mcxn236.menu.upload_method.probe_rs=probe-rs
+frdm_mcxn236.menu.upload_method.probe_rs.upload.tool=probe_rs
+frdm_mcxn236.menu.upload_method.probe_rs.upload.tool.default=probe_rs
+frdm_mcxn236.menu.upload_method.probe_rs.debug.server.openocd.script=n236-probe-rs.cfg
 frdm_mcxn236.upload.tool.default=linkserver
 frdm_mcxn236.upload.protocol=
 
@@ -240,8 +308,12 @@ frdm_mcxc444.build.variant=frdm_mcxc444
 # (startup_mcxc444.cpp)
 frdm_mcxc444.build.board_defines=-DCPU_MCXC444VLH -DTARGET_C444 -DFRDM_MCXC444 -DDISABLE_WDOG=0
 
-# Optimization (release build)
+# Optimization: the default, and Tools > Optimize (menu.opt above)
 frdm_mcxc444.build.opt_flags=-O2
+frdm_mcxc444.menu.opt.o2=Faster (-O2)
+frdm_mcxc444.menu.opt.o2.build.opt_flags=-O2
+frdm_mcxc444.menu.opt.os=Smaller (-Os)
+frdm_mcxc444.menu.opt.os.build.opt_flags=-Os
 
 # Flash / RAM
 frdm_mcxc444.upload.maximum_size=253952

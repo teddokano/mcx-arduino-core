@@ -48,6 +48,41 @@ each board has. They stay as they are from 1.0.0.
 
 `Serial` is the USB serial port and `SPI` is on `D10`-`D13` on every board.
 
+## Known limitations
+
+What most often surprises a sketch written for another board, in one place.
+Each row below has the details.
+
+- **Not available**: `SoftwareSerial` (use a hardware `Serial1`/`Serial2`),
+  USB device classes (keyboard, mouse, MIDI), and AVR's registers (`PORTB`,
+  `DDRD`, `TCCR1A`, ...) and libraries written only for AVR. `portOutputRegister()`
+  and the other pin-register macros work, on this chip's GPIO.
+- **Not on every board**: `Serial1`, `Serial2`, `Wire1`, `Wire2` and `SPI1` mean
+  different buses per board, and some boards lack them (the table above).
+  Which pins do `analogRead()` and `analogWrite()` differs by board (each
+  board's PIN_MAPPING file); `analogRead()` on a pin with no ADC stops the
+  sketch with a message.
+- **`Wire1` on FRDM-MCXA153 and FRDM-MCXN947 runs on I3C**: no
+  `setWireTimeout()` and no target (slave) mode there. FRDM-MCXN947's `Wire2`
+  has no target mode either.
+- **FRDM-MCXC444** is a Cortex-M0+ with Kinetis peripherals: no `Serial1`
+  (`Serial` is the USB port and `D0`/`D1` at once), no `SPI1`, no 7-bit serial
+  formats, and its I2C can't address its own target ([FRDM-MCXC444](#frdm-mcxc444)).
+- **FRDM-MCXA156 and FRDM-MCXN236 need resistor changes** for some pins:
+  `SPI` (`D10`-`D13`) and `A4`/`A5` on FRDM-MCXA156, `A1`/`A2` on FRDM-MCXN236;
+  see their PIN_MAPPING files.
+- **`printf()` has no `long long`** (`%lld`, and C99's `%zu`): newlib-nano's.
+  `Serial.print()` and `String` print 64-bit values.
+- **The watchdog can't be stopped** once started; `wdt_disable()` only stops it
+  resetting the board ([Watchdog](#watchdog)).
+- **Third-party libraries that pick code by chip** may not know this core:
+  Adafruit NeoPixel builds but sends nothing, and OneWire runs in its slower
+  fallback mode ([Third-party libraries](#third-party-libraries)).
+- **Flash on FRDM-MCXA153**: 112KB for the sketch, as the `EEPROM` library
+  keeps the top 16KB. When a sketch doesn't fit, **Tools → EEPROM → None** gives
+  it all 128KB (without `EEPROM`), and **Tools → Optimize → Smaller (-Os)** makes
+  it 1-11% smaller, on every board
+
 ## FRDM-MCXC444
 
 New in 0.10.0. It is a Kinetis chip, a
@@ -163,7 +198,7 @@ On FRDM-MCXC444 (see [PIN_MAPPING_C444.md](PIN_MAPPING_C444.md)):
 
 | API | Status | Notes |
 |-----|--------|-------|
-| `EEPROM.read` / `write` / `update` / `EEPROM[i]` / `get` / `put` / `length` / range-for, `E2END` | ✅ | Added in v0.7.0, as a bundled library with the AVR EEPROM library's interface: `#include <EEPROM.h>`. 1024 bytes, as on UNO R3, kept across resets, power cycles and uploads. They live in the top of the MCU's on-chip flash (16KB on FRDM-MCXA153 and FRDM-MCXA156, 64KB on FRDM-MCXN947 and FRDM-MCXN236), which leaves a sketch 112KB of flash on FRDM-MCXA153. FRDM-MCXA156 writes the flash the same way as FRDM-MCXA153, so the figures below for FRDM-MCXA153 apply to it too; FRDM-MCXN236 runs the same code as FRDM-MCXN947 (124-byte units), but its timings below were not measured. A write takes ~0.1-0.5ms; one every ~440 (FRDM-MCXA153) or ~250 (FRDM-MCXN947) takes up to ~6ms / ~11ms, and serial input arriving at full speed during it can be lost (measured at 115200 baud: ~20 / ~60 bytes). `write()` skips a byte that already holds the value, as `update()` does. A reset in the middle of a write leaves every earlier write intact, and that write either done or not if it is up to 12 bytes (FRDM-MCXA153) or 124 (FRDM-MCXN947); a longer `put()` can be left part old, part new (hardware-tested with 1000 watchdog resets on each of the five boards; power loss is not tested). Not for use from an interrupt handler |
+| `EEPROM.read` / `write` / `update` / `EEPROM[i]` / `get` / `put` / `length` / range-for, `E2END` | ✅ | Added in v0.7.0, as a bundled library with the AVR EEPROM library's interface: `#include <EEPROM.h>`. 1024 bytes, as on UNO R3, kept across resets, power cycles and uploads. They live in the top of the MCU's on-chip flash (16KB on FRDM-MCXA153 and FRDM-MCXA156, 64KB on FRDM-MCXN947 and FRDM-MCXN236), which leaves a sketch 112KB of flash on FRDM-MCXA153 (from v0.13.0, **Tools → EEPROM → None** there gives a sketch that doesn't use EEPROM all 128KB; `#include <EEPROM.h>` then stops the build, and what was kept is lost). FRDM-MCXA156 writes the flash the same way as FRDM-MCXA153, so the figures below for FRDM-MCXA153 apply to it too; FRDM-MCXN236 runs the same code as FRDM-MCXN947 (124-byte units), but its timings below were not measured. A write takes ~0.1-0.5ms; one every ~440 (FRDM-MCXA153) or ~250 (FRDM-MCXN947) takes up to ~6ms / ~11ms, and serial input arriving at full speed during it can be lost (measured at 115200 baud: ~20 / ~60 bytes). `write()` skips a byte that already holds the value, as `update()` does. A reset in the middle of a write leaves every earlier write intact, and that write either done or not if it is up to 12 bytes (FRDM-MCXA153) or 124 (FRDM-MCXN947); a longer `put()` can be left part old, part new (hardware-tested with 1000 watchdog resets on each of the five boards; power loss is not tested). Not for use from an interrupt handler |
 
 ## Servo
 
@@ -219,6 +254,15 @@ Ethernet library either:
 | `<avr/pgmspace.h>`: `pgm_read_*_near`/`_far`, `pgm_read_qword`, `pgm_get_far_address`, `PGM_VOID_P`, the `prog_char` family, and the `_P`/`_PF` functions (`strcpy_P`, `memcpy_P`, `strlen_P`, `sprintf_P`, ...) | ✅ | Added in v0.10.0, as macros, as in avr-libc (so a library's `#ifndef pgm_read_byte_near` sees them). Each is the plain read or the ordinary function, since flash is ordinary memory here. `Arduino.h` includes `<avr/pgmspace.h>`, as AVR's does; as on AVR, a sketch using the `printf_P` family includes `<stdio.h>` itself. The multi-byte reads work at any address, as on AVR, where code reads words from odd offsets of byte tables. `pgm_read_ptr()` now gives `void *`, as in avr-libc (before v0.10.0 it gave `const void *`). Needed by libraries such as PubSubClient. Checked by `examples/Arduino_compatible_API/test_avr_pgmspace` |
 | `F("...")` / `__FlashStringHelper` | ✅ | Works with `Serial.print`/`println` and `String` (construct/concat) |
 | `Client` / `Server` / `UDP` / `IPAddress` (`Client.h`, `Server.h`, `Udp.h`, `IPAddress.h`) | ✅ | Added in v0.10.0. Original implementation of ArduinoCore-API's network base classes (not a port of its LGPL 2.1 source), with the same virtual functions, so libraries built on them compile: the official `Ethernet` library (W5x00 shields) and libraries that take a `Client&` (PubSubClient, ArduinoJson's Ethernet examples). As on AVR, `Arduino.h` doesn't include them; a sketch or library includes the header it uses. `IPAddress` holds IPv4 or IPv6 (`type()`), as in ArduinoCore-API. `toString()` gives the same text as `print()`: for IPv6 that is the RFC 5952 short form (`fe80::1`), where ArduinoCore-API's `toString()` writes all 8 groups. `fromString()` leaves the address unchanged when the text isn't an address. The names are also available as `arduino::IPAddress` and so on, for code written for ArduinoCore-API cores. Checked by `examples/Arduino_compatible_API/test_network_base_classes` (no wiring), which derives in-memory classes from them. From v0.11.0 the bundled `MCXEthernet` builds on them for FRDM-MCXN947's on-board Ethernet (see [Ethernet](#ethernet)) |
+
+## Build options (Tools and Sketch menus)
+
+| Option | Status | Notes |
+|-----|--------|-------|
+| **Tools → Optimize** | ✅ | Added in v0.13.0, on every board. **Faster (-O2)**, the default and what every release before built with, or **Smaller (-Os)**: 1-11% less flash (FRDM-MCXA153: `hello_world` 39.8KB → 38.7KB, `release_check/01` 71.7KB → 64.1KB), a little slower. With arduino-cli: `--fqbn nxp:mcx:frdm_mcxa153:opt=os` |
+| **Tools → EEPROM** | ✅ FRDM-MCXA153 | Added in v0.13.0, on FRDM-MCXA153 only, which has the least flash. **1KB** (the default): the `EEPROM` library keeps the top 16KB, and a sketch has 112KB. **None**: a sketch has all 128KB, and `#include <EEPROM.h>` stops the build. Switching to None and uploading a sketch that grows into the top 16KB loses what EEPROM kept; back on 1KB, `EEPROM` starts empty. With arduino-cli: `:eeprom=off` |
+| **Tools → Upload method** | ✅ A153 / ⚠️ A156, N947, N236 / — C444 | Added in v0.13.0. **LinkServer** (the default) or **probe-rs** ([probe.rs](https://probe.rs), installed separately for now; found on PATH, in `~/.cargo/bin` or Homebrew's directory, or at `MCX_PROBE_RS`), for both Upload and Debug. probe-rs writes sketches of any size on FRDM-MCXA153, where LinkServer 26.9 stops at 32KB. With several boards connected, the selected port picks the board to write; for debugging, the probe whose name has the board's (as with LinkServer). Checked on FRDM-MCXA153 (macOS: upload, and debugging through the IDE's and arduino-cli's paths); not yet on the other three. FRDM-MCXC444 has LinkServer only: probe-rs doesn't know its chip. With arduino-cli: `:upload_method=probe_rs` |
+| **Sketch → Optimize for Debugging** | ✅ | From v0.13.0 it builds with `-Og`, which keeps variables and the order of the source lines for the debugger, in place of Tools → Optimize's choice (before, it changed nothing). Debug information (`-g3`) is in every build either way. With arduino-cli: `--optimize-for-debug` |
 
 ## Third-party libraries
 

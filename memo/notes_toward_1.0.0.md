@@ -79,7 +79,13 @@
   `probe-rs/targets/MCXA.yaml`にMCXA142〜MCXA577があり、MCXA153はフラッシュ`0x0`〜`0x20000`（128KB）で書き込みのアルゴリズムは`mcxa15x_128`、MCXA156は1MBで`mcxa15x_1024`。N947は`MCXN947.yaml`（`mcxn9xx_2048`）、N236は`MCXN236.yaml`。
   2026-10-23に`master`へ入ったPR #4533（Add all remaining MCXA targets）は、これを`MCXA1.yaml`などに分けてMCXA132・MCXA133などを足したもので、v0.32.0のあとの`master`（434コミット）にあり、まだ版になっていない。
   C444（MCXC444）はv0.32.0にも`master`にも無い。
-  分かったのはターゲットの定義があることだけで、MCU-LINKから実際に書き込めるか・デバッグできるかは確かめていない。使えればLinkServer 26.9がA153を32KBと読む件（`CLAUDE.md`のPendingタスク9）を避ける手段の候補になる（C444はLinkServerと併用になる）
+  分かったのはターゲットの定義があることだけで、MCU-LINKから実際に書き込めるか・デバッグできるかは確かめていない。
+  **2026-11-20にA153の実機で試した**（probe-rs 0.32.0を公式のインストーラーで`~/.cargo/bin`に入れた。MCU-LINKのファームウェアはCMSIS-DAP V3.128）:
+  - `probe-rs list`でMCU-LINKが見え、`--chip MCXA153`を付ければ読み書き・リセットできる。`probe-rs info`は`--chip`を無視してチップを自動で見分けようとし、見分けられずに失敗する（この版の制限）
+  - **32KBを超えるスケッチも書ける**: `hello_world`（39.7KB）と`release_check/01`（71.7KB）を`probe-rs download`で書き込み（4.3秒・7.6秒）、`probe-rs verify`も通った。LinkServer 26.9.130が失敗する大きさ（Pendingタスク9）
+  - **probe-rsはリセットのあと切り離すときに`DEMCR`を0に戻す**（TRCENAが消え、DWTの`CYCCNT`が止まる）。Cortex-M33の4ボードの`millis()`・`micros()`・`delay()`は`CYCCNT`で数えるので、`delay()`が終わらなくなった（`release_check/01`が「millis/micros」で止まった。LinkServerで書いた同じバイナリはALL OK）。コアのSysTickの割り込みで毎回TRCENAを入れ直すようにして（`arduino_main.cpp`、0.13.0）、probe-rsで書き込み・リセットしても`01`がALL OKになった
+  - **デバッグ（gdb）も動いた**（同じ日、A153）: `probe-rs gdb --chip MCXA153 --reset-halt`（GDBサーバー、`127.0.0.1:1337`）にツールチェーンの`arm-none-eabi-gdb`（15.2）でつなぎ、Sketch → Optimize for Debugging（`-Og`）でビルドした`hello_world`で、リセット直後で止まる、`setup()`・`loop()`のブレークポイント（フラッシュなので自動でハードウェアのブレークポイント）、`bt`、`next`、`step`で`digitalWrite()`に入って引数が見える、`finish`、`delay(100)`を`next`でまたぐ（`millis()`の元の`ms_ticks`がちょうど100ずつ進んだ）、`detach`のあとリセットして動く、を確かめた。つないだ直後に表示される停止位置の関数名がPCと合わない（PCは`ResetISR`なのに`I3C_MasterTransferBlocking`と出る。`--gc-sections`が残すデバッグ情報の古い行の表示で、動作には影響しない）。gdbからは`DEMCR`などのシステムの領域（`0xE000xxxx`）が読めない（probe-rsのメモリマップの外）
+  - Arduino IDEのデバッガ（cortex-debug）からprobe-rsを使う形と、ほかの3ボード（A156・N947・N236）はまだ試していない使えればLinkServer 26.9がA153を32KBと読む件（`CLAUDE.md`のPendingタスク9）を避ける手段の候補になる（C444はLinkServerと併用になる）
 - **N947の`Wire2`がターゲットとして応答しない**: 原因不明のまま。解決するか、既知の制限として確定させる（A156の同じLPI2C3は応答する、という差が手がかり）
 - ~~**ネットワーク基底クラスが無い**~~ → 0.10.0で入れた（§6の段階A）
 - **OneWireは「フォールバック」で動く**（2026-10-23に調べた。OneWire 2.3.8）: `util/OneWire_direct_gpio.h`はチップやアーキテクチャのマクロで場合分けし、このコアはどれにも当たらないので、
@@ -327,9 +333,9 @@
 - [x] §2-2: `endTransmission()`の戻り値をAVR互換にするか → AVRの0〜5にした、元のコードは`Wire.lastStatus()`（2026-10-23、`CLAUDE.md`）
 - [x] §2-3: A156の出荷状態をメニューで選べるようにするか → 設けない（2026-10-14）
 - [x] §2-4: 互換性ポリシーの文書をどこに置くか → API_COMPATIBILITYの冒頭（2026-10-23、`CLAUDE.md`）
-- [ ] §3: LinkServer 26.9の件の落としどころ（pyOCDは2026-10-14に検討から外した）
-- [ ] §3: probe-rsを検討するか
-- [ ] §3: CIに入れるサードパーティライブラリの選定
+- [x] §3: LinkServer 26.9の件の落としどころ（pyOCDは2026-10-14に検討から外した） → 26.9だけで回避する方法は無く、コードは変えない（2026-10-31、0.12.0で調べた。ユーザーが決定。`CLAUDE.md`のPendingタスク9）
+- [ ] §3: probe-rsを検討するか → 2026-11-20: A153で書き込みと32KB超が動いた（§3）。うまくいけば、書き込みにLinkServerとprobe-rsのどちらを使うかを選べるようにする（v0.32.0にA153・A156・N947・N236のターゲットがある。§3）
+- [x] §3: CIに入れるサードパーティライブラリの選定 → 0.7.0と0.10.0で手で確かめた9つを、2026-10-23にCIへ入れた（`.github/third_party/libraries.txt`。§9の⑨）
 - [x] §4-1: C444のスパイクをどのバージョンでやるか → 2026-10-16にやった（§4-5）。C444そのものを0.10.0で入れる
 - [x] §4-5: C444の`Serial1`をどこに置くか（置かないか） → 置かない。`Serial`はUSBとD0/D1の両方（2026-10-16、`CLAUDE.md`のC444の節）
 - [x] §4-5: `cores/arduino/sdk/`の全ボードでビルドされるファイルを、variantへ移すか、ガードで包むか → MCXの4つのvariantへ移した（2026-10-16）

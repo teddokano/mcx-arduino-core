@@ -16,6 +16,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   started: `wdt_disable()` stops it resetting the board, and the core feeds it from then on. While it is enabled,
   `panic()` and a HardFault end in a watchdog reset once their message is out. Example: `WatchdogRefresh`; test:
   `examples/Arduino_compatible_API/test_watchdog`.
+- **Tools → Optimize**: Faster (-O2), the default as before, or Smaller (-Os), 1-11% less flash, on every board.
+- **Tools → EEPROM** on FRDM-MCXA153: None gives a sketch all 128KB of flash instead of 112KB, without the `EEPROM`
+  library (`#include <EEPROM.h>` then stops the build; what EEPROM kept is lost once a sketch grows into it).
+- **Sketch → Optimize for Debugging** now builds with `-Og` for the debugger; before, it changed nothing.
+- **Tools → Upload method** on FRDM-MCXA153, FRDM-MCXA156, FRDM-MCXN947 and FRDM-MCXN236: LinkServer (the default, as
+  before) or [probe-rs](https://probe.rs), for both the Upload and the Debug buttons. probe-rs writes every size of sketch
+  on FRDM-MCXA153, where LinkServer 26.9 stops at 32KB. It has to be installed for now (from probe.rs); checked on
+  FRDM-MCXA153 only so far, uploading and debugging.
+- `API_COMPATIBILITY.md` starts with a list of the limits that most often surprise a sketch from another board.
 
 ### Fixed
 - **Sketches take 15–55KB less flash: the core now links newlib-nano, as it always meant to.** The sources were
@@ -32,6 +41,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   FRDM-MCXA153 and FRDM-MCXN947**, whose `Wire1` runs on I3C. `Wire`, `Wire1` and `Wire2` are now filled in when the
   sketch is built instead of by a constructor at startup, so each is linked only into sketches that use it, and the
   I3C driver only with `Wire1`. The mcxPinState library no longer brings `Wire1` (and so the I3C driver) in either.
+
+- On the MCX A and N boards, `millis()`, `micros()` and `delay()` no longer stop for good after a debugger that clears
+  `DEMCR` as it lets go of the board (probe-rs does, after a reset): they count with the cycle counter, which that
+  stopped, and the core now turns it back on every millisecond.
 
 ### Changed
 - `Print` has no virtual destructor any more, as in ArduinoCore-API and AVR. With one, every global object derived

@@ -12,7 +12,9 @@ version.patch=0
 
 compiler.path={runtime.tools.arm-none-eabi-gcc.path}/bin/
 compiler.cpu_flags=-mcpu={build.mcu} {build.fpu_flags} -mthumb
-compiler.defines=-DPRINTF_FLOAT_ENABLE=1 -DSCANF_FLOAT_ENABLE=1 -DPRINTF_ADVANCED_ENABLE=1 -DSCANF_ADVANCED_ENABLE=1 -D__NEWLIB__ -DSDK_OS_BAREMETAL -DSERIAL_PORT_TYPE_UART=1 -DSDK_DEBUGCONSOLE=0 -D__USE_CMSIS -DARDUINO=10819 -DARDUINO_ARCH_MCX -DARDUINO_{build.board} -DF_CPU={build.f_cpu} -DMCX_ARDUINO_CORE_VERSION_MAJOR={version.major} -DMCX_ARDUINO_CORE_VERSION_MINOR={version.minor} -DMCX_ARDUINO_CORE_VERSION_PATCH={version.patch} -DSDK_DELAY_USE_DWT {build.board_defines}
+compiler.defines=-DPRINTF_FLOAT_ENABLE=1 -DSCANF_FLOAT_ENABLE=1 -DPRINTF_ADVANCED_ENABLE=1 -DSCANF_ADVANCED_ENABLE=1 -D__NEWLIB__ -DSDK_OS_BAREMETAL -DSERIAL_PORT_TYPE_UART=1 -DSDK_DEBUGCONSOLE=0 -D__USE_CMSIS -DARDUINO=10819 -DARDUINO_ARCH_MCX -DARDUINO_{build.board} -DF_CPU={build.f_cpu} -DMCX_ARDUINO_CORE_VERSION_MAJOR={version.major} -DMCX_ARDUINO_CORE_VERSION_MINOR={version.minor} -DMCX_ARDUINO_CORE_VERSION_PATCH={version.patch} -DSDK_DELAY_USE_DWT {build.board_defines} {build.eeprom_defines}
+# Set by a board's Tools > EEPROM menu (FRDM-MCXA153's): empty unless it is None
+build.eeprom_defines=
 # -gdwarf-5 (GCC 14's own default; the -gdwarf-4 here came from the initial
 # commit, inherited from an MCUXpresso project template with no reason
 # recorded). Under DWARF 4 the debugger printed
@@ -25,7 +27,16 @@ compiler.defines=-DPRINTF_FLOAT_ENABLE=1 -DSCANF_FLOAT_ENABLE=1 -DPRINTF_ADVANCE
 # than as flat absolute pairs, and the two agree again. Verified on both
 # boards: text/data/bss byte-identical, and a session on real N947 hardware
 # runs clean through load, reset, breakpoint, backtrace and stepping.
-compiler.opt_flags={build.opt_flags} -fno-common -g3 -gdwarf-5 -ffunction-sections -fdata-sections -fno-builtin -fmerge-constants -specs=nano.specs {compiler.macro_prefix_map}
+#
+# Sketch > Optimize for Debugging (arduino-cli --optimize-for-debug) sets
+# compiler.optimization_flags to the .debug value: -Og, which keeps
+# variables and the order of the source lines for the debugger. Without
+# it, .release: Tools > Optimize's choice (build.opt_flags, -O2 or -Os).
+# Before 0.13.0 the platform had neither, and the menu item changed nothing
+compiler.optimization_flags.release={build.opt_flags}
+compiler.optimization_flags.debug=-Og
+compiler.optimization_flags={compiler.optimization_flags.release}
+compiler.opt_flags={compiler.optimization_flags} -fno-common -g3 -gdwarf-5 -ffunction-sections -fdata-sections -fno-builtin -fmerge-constants -specs=nano.specs {compiler.macro_prefix_map}
 # __FILE__ relative to the platform folder: the SDK drivers' assert() keeps it
 # in flash, as an absolute path into the user's home folder of 100 bytes or
 # more each (about 1.2KB in an I2C sketch on FRDM-MCXA153, more on Windows).
@@ -110,6 +121,15 @@ tools.linkserver.upload.pattern.windows={runtime.platform.path}/tools/upload.bat
 
 upload.tool=linkserver
 upload.tool.default=linkserver
+
+# probe-rs, for Tools > Upload method > probe-rs (boards.txt; the FRDM-MCXA153,
+# FRDM-MCXA156, FRDM-MCXN947 and FRDM-MCXN236, which probe-rs 0.32.0 knows).
+# The port's serial number, VID and PID make the VID:PID:SERIAL probe-rs
+# takes for the board to write, as the serial number does for LinkServer
+tools.probe_rs.upload.params.verbose=
+tools.probe_rs.upload.params.quiet=
+tools.probe_rs.upload.pattern={runtime.platform.path}/tools/upload_probe-rs.sh "{build.path}/{build.project_name}.elf" "{build.probe_rs_chip}" "{upload.port.properties.serialNumber}" "{upload.port.properties.vid}" "{upload.port.properties.pid}"
+tools.probe_rs.upload.pattern.windows={runtime.platform.path}/tools/upload_probe-rs.bat "{build.path}/{build.project_name}.elf" "{build.probe_rs_chip}" "{upload.port.properties.serialNumber}" "{upload.port.properties.vid}" "{upload.port.properties.pid}"
 
 # Debug
 # arduino-cli's debug support only knows how to drive something it calls

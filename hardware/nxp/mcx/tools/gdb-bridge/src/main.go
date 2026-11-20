@@ -150,6 +150,11 @@ func main() {
 		device = toolArgs[0]
 		toolArgs = toolArgs[1:]
 	} else {
+		// Tools > Upload method > probe-rs: its .cfg names the chip for it
+		if chip := scriptDirective(toolArgs, probeRsChipDirective); chip != "" {
+			runProbeRs(chip, scriptDirective(toolArgs, boardDirective), toolArgs)
+			return
+		}
 		var err error
 		device, err = deviceFromScripts(toolArgs)
 		if err != nil {
@@ -207,7 +212,7 @@ func main() {
 	defer killProcess(cmd)
 	setupSignalCleanup(cmd)
 
-	ready := watchForReady(stdout, os.Stderr)
+	ready := watchForReady(stdout, os.Stderr, "GDB server listening")
 	select {
 	case ok := <-ready:
 		if !ok {
@@ -219,24 +224,74 @@ func main() {
 		os.Exit(1)
 	}
 
+	serve(lsPort, toolArgs)
+}
+
+// serve relays gdb to the gdbserver listening on serverPort (LinkServer's
+// or probe-rs's) for as long as the session lasts.
+func serve(serverPort int, toolArgs []string) {
 	if idePort, ok := findGdbPortArg(toolArgs); ok {
 		// Arduino IDE 2 / cortex-debug mode: it's waiting for us to listen
 		// on idePort and announce it; each accepted client connection dials
-		// LinkServer fresh.
-		runServerMode(idePort, lsPort)
+		// the gdbserver fresh.
+		runServerMode(idePort, serverPort)
 		return
 	}
 
 	// arduino-cli `debug` CLI mode: gdb is piping directly to our own
-	// stdin/stdout. Dial LinkServer once and hold that single connection
-	// for the whole session.
-	lsConn, err := net.Dial("tcp", fmt.Sprintf("127.0.0.1:%d", lsPort))
+	// stdin/stdout. Dial the gdbserver once and hold that single
+	// connection for the whole session.
+	conn, err := net.Dial("tcp", fmt.Sprintf("127.0.0.1:%d", serverPort))
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "gdb-bridge: could not reach LinkServer's gdbserver:", err)
+		fmt.Fprintln(os.Stderr, "gdb-bridge: could not reach the gdbserver:", err)
 		os.Exit(1)
 	}
-	defer lsConn.Close()
-	relay(os.Stdin, os.Stdout, lsConn)
+	defer conn.Close()
+	relay(os.Stdin, os.Stdout, conn)
+}
+
+// runProbeRs is main() for the probe-rs backend (probers.go).
+func runProbeRs(chip, board string, toolArgs []string) {
+	probeRs, err := findProbeRs()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "gdb-bridge: probe-rs not found. Install it from https://probe.rs, "+
+			"or choose Tools > Upload method > LinkServer")
+		os.Exit(1)
+	}
+	out, _ := exec.Command(probeRs, "list").CombinedOutput()
+	selector, err := pickRsProbe(parseRsProbes(string(out)), board)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "gdb-bridge:", err)
+		os.Exit(1)
+	}
+
+	port, listener, err := reserveFreePort()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "gdb-bridge: could not reserve a local TCP port:", err)
+		os.Exit(1)
+	}
+	listener.Close() // released for probe-rs to bind, as for LinkServer
+
+	cmd, ready, err := startProbeRs(probeRs, chip, selector, port)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "gdb-bridge: failed to start probe-rs:", err)
+		os.Exit(1)
+	}
+	defer killProcess(cmd)
+	setupSignalCleanup(cmd)
+
+	select {
+	case ok := <-ready:
+		if !ok {
+			fmt.Fprintln(os.Stderr, "gdb-bridge: probe-rs's gdb server exited before becoming ready")
+			os.Exit(1)
+		}
+	case <-time.After(15 * time.Second):
+		fmt.Fprintln(os.Stderr, "gdb-bridge: probe-rs's gdb server never came up")
+		os.Exit(1)
+	}
+
+	serve(port, toolArgs)
 }
 
 // probeFor picks the debug probe to hand LinkServer when more than one is
@@ -360,7 +415,7 @@ func listProbes(linkserver string) []linkProbe {
 // channel once a line containing "GDB server listening" is seen (LinkServer's
 // own readiness message, confirmed against its real output), or false if r
 // hit EOF first without ever seeing one.
-func watchForReady(r io.Reader, echo io.Writer) <-chan bool {
+func watchForReady(r io.Reader, echo io.Writer, marker string) <-chan bool {
 	result := make(chan bool, 1)
 	go func() {
 		scanner := bufio.NewScanner(r)
@@ -368,7 +423,7 @@ func watchForReady(r io.Reader, echo io.Writer) <-chan bool {
 		for scanner.Scan() {
 			line := scanner.Text()
 			fmt.Fprintln(echo, line)
-			if !found && strings.Contains(line, "GDB server listening") {
+			if !found && strings.Contains(line, marker) {
 				found = true
 				result <- true
 			}
