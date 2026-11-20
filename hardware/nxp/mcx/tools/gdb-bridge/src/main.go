@@ -258,6 +258,7 @@ func runProbeRs(chip, board string, toolArgs []string) {
 			"or choose Tools > Upload method > LinkServer")
 		os.Exit(1)
 	}
+	fmt.Fprintln(os.Stderr, "gdb-bridge: using", probeRs)
 	out, _ := exec.Command(probeRs, "list").CombinedOutput()
 	selector, err := pickRsProbe(parseRsProbes(string(out)), board)
 	if err != nil {

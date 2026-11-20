@@ -773,6 +773,47 @@
               "size": "297871203"
             }
           ]
+        },
+        {
+          "name": "probe-rs",
+          "version": "0.32.0",
+          "systems": [
+            {
+              "host": "arm64-apple-darwin",
+              "url": "https://github.com/probe-rs/probe-rs/releases/download/v0.32.0/probe-rs-tools-aarch64-apple-darwin.tar.xz",
+              "archiveFileName": "probe-rs-tools-aarch64-apple-darwin.tar.xz",
+              "checksum": "SHA-256:c39631679b83d0c94dc442d05cc4ca974a87c02907a6ddbfce46746ed503152c",
+              "size": "6987164"
+            },
+            {
+              "host": "x86_64-apple-darwin",
+              "url": "https://github.com/probe-rs/probe-rs/releases/download/v0.32.0/probe-rs-tools-x86_64-apple-darwin.tar.xz",
+              "archiveFileName": "probe-rs-tools-x86_64-apple-darwin.tar.xz",
+              "checksum": "SHA-256:e23d117a29909a389c92234ac3ebafcc5ec24d8969d1ec5d70eece622827f778",
+              "size": "7463860"
+            },
+            {
+              "host": "x86_64-linux-gnu",
+              "url": "https://github.com/probe-rs/probe-rs/releases/download/v0.32.0/probe-rs-tools-x86_64-unknown-linux-gnu.tar.xz",
+              "archiveFileName": "probe-rs-tools-x86_64-unknown-linux-gnu.tar.xz",
+              "checksum": "SHA-256:c2ccc46049e52a5d403ef212078cd637ecda55b662708327960558f83e851ff5",
+              "size": "22506272"
+            },
+            {
+              "host": "aarch64-linux-gnu",
+              "url": "https://github.com/probe-rs/probe-rs/releases/download/v0.32.0/probe-rs-tools-aarch64-unknown-linux-gnu.tar.xz",
+              "archiveFileName": "probe-rs-tools-aarch64-unknown-linux-gnu.tar.xz",
+              "checksum": "SHA-256:7c818cfd77808e806bf8f4d108c9137910b4fb28e0fe5c464d39782dbbc8af31",
+              "size": "21444944"
+            },
+            {
+              "host": "i686-mingw32",
+              "url": "https://github.com/teddokano/mcx-arduino-core/releases/download/0.13.0/probe-rs-tools-0.32.0-x86_64-pc-windows-msvc.zip",
+              "archiveFileName": "probe-rs-tools-0.32.0-x86_64-pc-windows-msvc.zip",
+              "checksum": "SHA-256:f85e9350b8b842e84a1cd9712f7a15f626eef12485a920b859a0b66e913154b0",
+              "size": "11024371"
+            }
+          ]
         }
       ]
     }

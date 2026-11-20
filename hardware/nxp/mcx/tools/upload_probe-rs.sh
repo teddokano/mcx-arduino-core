@@ -2,17 +2,24 @@
 # Upload with probe-rs: Tools > Upload method > probe-rs (boards.txt).
 # The counterpart of upload.sh, which uses LinkServer.
 #
-# Usage: upload_probe-rs.sh <elf> <probe-rs chip> <port serial number> <port vid> <port pid>
+# Usage: upload_probe-rs.sh <elf> <probe-rs chip> <port serial number> <port vid> <port pid> <bundled probe-rs's folder>
 ELF="$1"
 CHIP="$2"
 PORT_SERIAL="$3"
 PORT_VID="$4"
 PORT_PID="$5"
+BUNDLED="$6"
 
-# probe-rs: MCX_PROBE_RS if set, then PATH, then where its own installer
-# and Homebrew put it (gdb-bridge's findProbeRs() looks in the same places)
+# probe-rs: MCX_PROBE_RS if set, then the one that came with the package
+# ({runtime.tools.probe-rs.path}, which arrives unexpanded, in braces, when
+# it isn't installed), then PATH, then where its own installer and Homebrew
+# put it (gdb-bridge's findProbeRs() looks in the same places)
+case "$BUNDLED" in
+    ""|"{"*) BUNDLED="" ;;
+    *) BUNDLED="$BUNDLED/probe-rs" ;;
+esac
 PROBE_RS=""
-for CANDIDATE in "$MCX_PROBE_RS" "$(command -v probe-rs 2>/dev/null)" \
+for CANDIDATE in "$MCX_PROBE_RS" "$BUNDLED" "$(command -v probe-rs 2>/dev/null)" \
                  "$HOME/.cargo/bin/probe-rs" /opt/homebrew/bin/probe-rs /usr/local/bin/probe-rs; do
     if [ -n "$CANDIDATE" ] && [ -x "$CANDIDATE" ]; then
         PROBE_RS=$CANDIDATE
@@ -21,9 +28,9 @@ for CANDIDATE in "$MCX_PROBE_RS" "$(command -v probe-rs 2>/dev/null)" \
 done
 if [ -z "$PROBE_RS" ]; then
     echo "============================================"
-    echo "ERROR: probe-rs not found."
-    echo "Install it from https://probe.rs, or choose"
-    echo "Tools > Upload method > LinkServer."
+    echo "ERROR: probe-rs not found. It comes with the board package:"
+    echo "reinstall the package in Boards Manager, install probe-rs"
+    echo "from https://probe.rs, or choose Tools > Upload method > LinkServer."
     echo "============================================"
     exit 1
 fi

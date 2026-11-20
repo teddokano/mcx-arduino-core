@@ -154,6 +154,16 @@ taken from that tool's output. No source code was copied from either.
 - Arduino pluggable discovery specification — https://arduino.github.io/arduino-cli/latest/pluggable-discovery-specification/
 - serial-discovery — https://github.com/arduino/serial-discovery (GNU GPL v3)
 
+probe-rs, which Tools > Upload method > probe-rs uses to write and debug (from 0.13.0), is not in this
+repository or in the package's zip: Boards Manager downloads it as a tool of its own, listed in
+`package_nxp_mcx_index.json`, from probe-rs's own releases for macOS and Linux. For Windows, whose
+archive holds its files without the folder Boards Manager requires, the same files are packed again
+into one folder, unchanged, and attached to this repository's release
+(`.github/scripts/probe_rs_tool.py`). Each archive carries probe-rs's license files (`LICENSE-MIT`,
+`LICENSE-APACHE`). `upload_probe-rs.sh`/`.bat` and `gdb-bridge` only run it.
+
+- probe-rs — https://probe.rs/, https://github.com/probe-rs/probe-rs (MIT License or Apache License 2.0, at your option)
+
 The executables of `hardware/nxp/mcx/tools/gdb-bridge` and
 `hardware/nxp/mcx/tools/mcx-discovery` are built with the Go toolchain and
 contain parts of Go's standard library and runtime, which are under this license:

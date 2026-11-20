@@ -48,6 +48,12 @@ v0.4.0の`main`マージ直前、ユーザーから「今回のリリース準�
 
 ## package_nxp_mcx_index.json の現在の構成
 
+**probe-rs（0.13.0から、Tools → Upload method → probe-rs）もツールとして載せている**（`probe-rs` 0.32.0）。macOS・Linuxはprobe-rsの公式リリースの`.tar.xz`をそのURLで、Windowsは公式の`.zip`に直下のフォルダーが無く（arduino-cliが「files in archive must be placed in a subdirectory」で断る）、中身をそのままフォルダーに入れ直したものをこのリポジトリのリリースに添付して使う。リリースのたびに:
+1. `python3 .github/scripts/probe_rs_tool.py <probe-rsの版> <このリリースのタグ> --out <フォルダー>`で、索引の`probe-rs`のエントリを書き、Windows用の`probe-rs-tools-<版>-x86_64-pc-windows-msvc.zip`を作る（チェックサムはGitHubのダイジェストと照合する）
+2. そのzipを**このリリースに添付する**（索引のURLはリリースのタグを指す。probe-rsの版を変えないときも、URLが前のリリースを指したままでよいなら作り直さなくてよい）
+3. そのリリースの`platforms[]`のエントリの`toolsDependencies`に`{"packager": "nxp", "name": "probe-rs", "version": "<版>"}`を足す（これが無いとBoards Managerはprobe-rsを入れない）
+
+
 | OS | ツール | URL |
 |---|---|---|
 | macOS arm64 | xPack 14.2.1-1.1 | `xpack-arm-none-eabi-gcc-14.2.1-1.1-darwin-arm64.tar.gz` |

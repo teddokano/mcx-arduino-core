@@ -12,6 +12,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -64,7 +65,9 @@ func scriptDirective(args []string, directive string) string {
 }
 
 // findProbeRs looks for the probe-rs executable: MCX_PROBE_RS if set, then
-// PATH, then where its own installer and Homebrew put it.
+// the one that came with the package (bundledProbeRs()), then PATH, then
+// where its own installer and Homebrew put it. The upload scripts look in
+// the same order.
 func findProbeRs() (string, error) {
 	name := "probe-rs"
 	if runtime.GOOS == "windows" {
@@ -72,6 +75,11 @@ func findProbeRs() (string, error) {
 	}
 	if p := os.Getenv("MCX_PROBE_RS"); p != "" && isExecutable(p) {
 		return p, nil
+	}
+	for _, p := range bundledProbeRs(name) {
+		if isExecutable(p) {
+			return p, nil
+		}
 	}
 	if p, err := exec.LookPath(name); err == nil {
 		return p, nil
@@ -87,6 +95,34 @@ func findProbeRs() (string, error) {
 		}
 	}
 	return "", fmt.Errorf("probe-rs not found")
+}
+
+// bundledProbeRs lists where Boards Manager puts the probe-rs tool of
+// package_nxp_mcx_index.json, newest version first. This binary sits in
+// <packages>/nxp/hardware/mcx/<version>/tools/gdb-bridge, and the tool in
+// <packages>/nxp/tools/probe-rs/<version>/. The folder is taken from
+// MCX_GDB_BRIDGE_DIR (launch.sh: the path as reached, through the
+// development symlink to the repository if there is one) and from this
+// executable's own path, as started and with symlinks resolved.
+func bundledProbeRs(name string) []string {
+	var dirs []string
+	if d := os.Getenv("MCX_GDB_BRIDGE_DIR"); d != "" {
+		dirs = append(dirs, d)
+	}
+	if exe, err := os.Executable(); err == nil {
+		dirs = append(dirs, filepath.Dir(exe))
+		if resolved, err := filepath.EvalSymlinks(exe); err == nil {
+			dirs = append(dirs, filepath.Dir(resolved))
+		}
+	}
+	var found []string
+	for _, d := range dirs {
+		packager := filepath.Join(d, "..", "..", "..", "..", "..")
+		matches, _ := filepath.Glob(filepath.Join(packager, "tools", "probe-rs", "*", name))
+		sort.Sort(sort.Reverse(sort.StringSlice(matches)))
+		found = append(found, matches...)
+	}
+	return found
 }
 
 type rsProbe struct {

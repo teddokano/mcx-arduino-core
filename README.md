@@ -85,6 +85,9 @@ and also as the backend for Arduino IDE 2's built-in debugger (breakpoints,
 stepping, variable inspection) — LinkServer's own gdbserver is used under
 the hood, since upstream OpenOCD has no support for the MCX chip family yet.
 Please install it before using the Upload or Debug buttons in Arduino IDE.
+On FRDM-MCXA153, FRDM-MCXA156, FRDM-MCXN947 and FRDM-MCXN236, **Tools → Upload method →
+probe-rs** (from 0.13.0) uploads and debugs with [probe-rs](https://probe.rs) instead, which
+comes with the board package: nothing else to install.
 For debugging, tick **Sketch → Optimize for Debugging** before uploading
 (from 0.13.0): it builds with `-Og`, which keeps variables and the order of
 the source lines for the debugger, where the usual `-O2` (or `-Os`, from

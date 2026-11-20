@@ -125,11 +125,13 @@ upload.tool.default=linkserver
 # probe-rs, for Tools > Upload method > probe-rs (boards.txt; the FRDM-MCXA153,
 # FRDM-MCXA156, FRDM-MCXN947 and FRDM-MCXN236, which probe-rs 0.32.0 knows).
 # The port's serial number, VID and PID make the VID:PID:SERIAL probe-rs
-# takes for the board to write, as the serial number does for LinkServer
+# takes for the board to write, as the serial number does for LinkServer.
+# probe-rs comes with the package (package_nxp_mcx_index.json's tool, which
+# Boards Manager installs); its folder is the last argument
 tools.probe_rs.upload.params.verbose=
 tools.probe_rs.upload.params.quiet=
-tools.probe_rs.upload.pattern={runtime.platform.path}/tools/upload_probe-rs.sh "{build.path}/{build.project_name}.elf" "{build.probe_rs_chip}" "{upload.port.properties.serialNumber}" "{upload.port.properties.vid}" "{upload.port.properties.pid}"
-tools.probe_rs.upload.pattern.windows={runtime.platform.path}/tools/upload_probe-rs.bat "{build.path}/{build.project_name}.elf" "{build.probe_rs_chip}" "{upload.port.properties.serialNumber}" "{upload.port.properties.vid}" "{upload.port.properties.pid}"
+tools.probe_rs.upload.pattern={runtime.platform.path}/tools/upload_probe-rs.sh "{build.path}/{build.project_name}.elf" "{build.probe_rs_chip}" "{upload.port.properties.serialNumber}" "{upload.port.properties.vid}" "{upload.port.properties.pid}" "{runtime.tools.probe-rs.path}"
+tools.probe_rs.upload.pattern.windows={runtime.platform.path}/tools/upload_probe-rs.bat "{build.path}/{build.project_name}.elf" "{build.probe_rs_chip}" "{upload.port.properties.serialNumber}" "{upload.port.properties.vid}" "{upload.port.properties.pid}" "{runtime.tools.probe-rs.path}"
 
 # Debug
 # arduino-cli's debug support only knows how to drive something it calls

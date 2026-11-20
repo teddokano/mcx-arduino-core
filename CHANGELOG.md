@@ -22,8 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - **Sketch → Optimize for Debugging** now builds with `-Og` for the debugger; before, it changed nothing.
 - **Tools → Upload method** on FRDM-MCXA153, FRDM-MCXA156, FRDM-MCXN947 and FRDM-MCXN236: LinkServer (the default, as
   before) or [probe-rs](https://probe.rs), for both the Upload and the Debug buttons. probe-rs writes every size of sketch
-  on FRDM-MCXA153, where LinkServer 26.9 stops at 32KB. It has to be installed for now (from probe.rs); checked on
-  FRDM-MCXA153 only so far, uploading and debugging.
+  on FRDM-MCXA153, where LinkServer 26.9 stops at 32KB. Boards Manager installs probe-rs with the package (for
+  Windows from this repository's release, packed again into a folder). Checked on FRDM-MCXA153 only so far (macOS),
+  uploading and debugging.
 - `API_COMPATIBILITY.md` starts with a list of the limits that most often surprise a sketch from another board.
 
 ### Fixed

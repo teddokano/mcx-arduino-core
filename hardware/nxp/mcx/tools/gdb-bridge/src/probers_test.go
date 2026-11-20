@@ -1,6 +1,10 @@
 package main
 
-import "testing"
+import (
+	"os"
+	"path/filepath"
+	"testing"
+)
 
 // From `probe-rs list` (0.32.0) with an FRDM-MCXA153 connected, plus made-up
 // lines in the same form for the other boards
@@ -44,5 +48,29 @@ func TestPickRsProbe(t *testing.T) {
 		if (err != nil) != c.wantErr || got != c.want {
 			t.Errorf("case %d: got %q, %v; want %q, error %v", i, got, err, c.want, c.wantErr)
 		}
+	}
+}
+
+// Boards Manager's layout: the tool beside the platform, under the packager
+func TestBundledProbeRs(t *testing.T) {
+	root := t.TempDir()
+	bridge := filepath.Join(root, "nxp", "hardware", "mcx", "0.13.0", "tools", "gdb-bridge")
+	if err := os.MkdirAll(bridge, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	for _, v := range []string{"0.31.0", "0.32.0"} {
+		dir := filepath.Join(root, "nxp", "tools", "probe-rs", v)
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(dir, "probe-rs"), nil, 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	t.Setenv("MCX_GDB_BRIDGE_DIR", bridge)
+	got := bundledProbeRs("probe-rs")
+	want := filepath.Join(bridge, "..", "..", "..", "..", "..", "tools", "probe-rs", "0.32.0", "probe-rs")
+	if len(got) == 0 || filepath.Clean(got[0]) != filepath.Clean(want) {
+		t.Errorf("got %v, want %s first", got, want)
 	}
 }

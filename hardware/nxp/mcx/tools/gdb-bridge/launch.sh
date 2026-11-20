@@ -24,4 +24,8 @@ case "$(uname -s)" in
         ;;
 esac
 
+# This folder as reached, through the development symlink if there is one,
+# for gdb-bridge to find the probe-rs that came with the package beside it
+# (findProbeRs()); the binary itself only sees the symlink's target
+export MCX_GDB_BRIDGE_DIR="$DIR"
 exec "$BIN" "$@"
