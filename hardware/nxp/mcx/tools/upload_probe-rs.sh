@@ -60,12 +60,18 @@ case "$PORT_SERIAL" in
         ;;
 esac
 
-# Written and checked, then reset to run. PROBE_ARGS unquoted on purpose:
-# empty must vanish, not become "".
-"$PROBE_RS" download --chip "$CHIP" $PROBE_ARGS --verify --disable-progressbars "$ELF"
+# Written, checked and reset to run. PROBE_ARGS unquoted on purpose: empty
+# must vanish, not become "".
+# Reset in the same session (--reset): a separate `probe-rs reset` right
+# after could reach the chip while it was still starting, and get a FAULT.
+# Once more if it fails: on an FRDM-MCXN947 running a sketch, probe-rs
+# 0.32.0's reset-and-halt before writing fails every time, and the next
+# one, right after, succeeds
+"$PROBE_RS" download --chip "$CHIP" $PROBE_ARGS --verify --reset --disable-progressbars "$ELF"
 STATUS=$?
-if [ $STATUS -eq 0 ]; then
-    "$PROBE_RS" reset --chip "$CHIP" $PROBE_ARGS
+if [ $STATUS -ne 0 ]; then
+    echo "(once more)"
+    "$PROBE_RS" download --chip "$CHIP" $PROBE_ARGS --verify --reset --disable-progressbars "$ELF"
     STATUS=$?
 fi
 

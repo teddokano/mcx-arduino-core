@@ -51,9 +51,12 @@ set "PROBE_ARGS=--probe 1fc9:%PID%:%PORT_SERIAL%"
 echo Probe: 1fc9:%PID%:%PORT_SERIAL%
 :probe_done
 
-"%PROBE_RS%" download --chip %CHIP% %PROBE_ARGS% --verify --disable-progressbars "%ELF%"
-if errorlevel 1 goto :failed
-"%PROBE_RS%" reset --chip %CHIP% %PROBE_ARGS%
+rem Reset in the same session (--reset), and once more if it fails: see
+rem upload_probe-rs.sh
+"%PROBE_RS%" download --chip %CHIP% %PROBE_ARGS% --verify --reset --disable-progressbars "%ELF%"
+if not errorlevel 1 exit /b 0
+echo (once more)
+"%PROBE_RS%" download --chip %CHIP% %PROBE_ARGS% --verify --reset --disable-progressbars "%ELF%"
 if errorlevel 1 goto :failed
 exit /b 0
 

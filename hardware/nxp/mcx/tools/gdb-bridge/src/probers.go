@@ -185,7 +185,8 @@ func pickRsProbe(probes []rsProbe, board string) (string, error) {
 // with a channel that says whether it came up. Its output, both streams,
 // goes on to stderr.
 func startProbeRs(probeRs, chip, selector string, port int) (*exec.Cmd, <-chan bool, error) {
-	args := []string{"gdb", "--chip", chip, "--non-interactive",
+	// --reset-halt: see runProbeRs()
+	args := []string{"gdb", "--chip", chip, "--reset-halt", "--non-interactive",
 		"--gdb-connection-string", "127.0.0.1:" + strconv.Itoa(port)}
 	if selector != "" {
 		args = append(args, "--probe", selector)

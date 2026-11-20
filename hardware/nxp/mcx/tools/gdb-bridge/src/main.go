@@ -273,24 +273,37 @@ func runProbeRs(chip, board string, toolArgs []string) {
 	}
 	listener.Close() // released for probe-rs to bind, as for LinkServer
 
-	cmd, ready, err := startProbeRs(probeRs, chip, selector, port)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "gdb-bridge: failed to start probe-rs:", err)
-		os.Exit(1)
+	// The server resets and halts the chip as it starts (--reset-halt), and
+	// is started once more if that fails. On an FRDM-MCXN947 running a
+	// sketch, probe-rs 0.32.0's reset-and-halt fails every time (its read
+	// of AIRCR gets a FAULT), and the next one, right after, succeeds:
+	// without this, every other debug session failed to start. A halted
+	// chip suits cortex-debug, which resets it and loads the sketch itself
+	var cmd *exec.Cmd
+	for attempt := 1; ; attempt++ {
+		var ready <-chan bool
+		cmd, ready, err = startProbeRs(probeRs, chip, selector, port)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "gdb-bridge: failed to start probe-rs:", err)
+			os.Exit(1)
+		}
+		up := false
+		select {
+		case up = <-ready:
+		case <-time.After(15 * time.Second):
+		}
+		if up {
+			break
+		}
+		killProcess(cmd)
+		if attempt == 2 {
+			fmt.Fprintln(os.Stderr, "gdb-bridge: probe-rs's gdb server did not come up")
+			os.Exit(1)
+		}
+		fmt.Fprintln(os.Stderr, "gdb-bridge: probe-rs's gdb server did not come up; starting it again")
 	}
 	defer killProcess(cmd)
 	setupSignalCleanup(cmd)
-
-	select {
-	case ok := <-ready:
-		if !ok {
-			fmt.Fprintln(os.Stderr, "gdb-bridge: probe-rs's gdb server exited before becoming ready")
-			os.Exit(1)
-		}
-	case <-time.After(15 * time.Second):
-		fmt.Fprintln(os.Stderr, "gdb-bridge: probe-rs's gdb server never came up")
-		os.Exit(1)
-	}
 
 	serve(port, toolArgs)
 }

@@ -85,7 +85,13 @@
   - **32KBを超えるスケッチも書ける**: `hello_world`（39.7KB）と`release_check/01`（71.7KB）を`probe-rs download`で書き込み（4.3秒・7.6秒）、`probe-rs verify`も通った。LinkServer 26.9.130が失敗する大きさ（Pendingタスク9）
   - **probe-rsはリセットのあと切り離すときに`DEMCR`を0に戻す**（TRCENAが消え、DWTの`CYCCNT`が止まる）。Cortex-M33の4ボードの`millis()`・`micros()`・`delay()`は`CYCCNT`で数えるので、`delay()`が終わらなくなった（`release_check/01`が「millis/micros」で止まった。LinkServerで書いた同じバイナリはALL OK）。コアのSysTickの割り込みで毎回TRCENAを入れ直すようにして（`arduino_main.cpp`、0.13.0）、probe-rsで書き込み・リセットしても`01`がALL OKになった
   - **デバッグ（gdb）も動いた**（同じ日、A153）: `probe-rs gdb --chip MCXA153 --reset-halt`（GDBサーバー、`127.0.0.1:1337`）にツールチェーンの`arm-none-eabi-gdb`（15.2）でつなぎ、Sketch → Optimize for Debugging（`-Og`）でビルドした`hello_world`で、リセット直後で止まる、`setup()`・`loop()`のブレークポイント（フラッシュなので自動でハードウェアのブレークポイント）、`bt`、`next`、`step`で`digitalWrite()`に入って引数が見える、`finish`、`delay(100)`を`next`でまたぐ（`millis()`の元の`ms_ticks`がちょうど100ずつ進んだ）、`detach`のあとリセットして動く、を確かめた。つないだ直後に表示される停止位置の関数名がPCと合わない（PCは`ResetISR`なのに`I3C_MasterTransferBlocking`と出る。`--gc-sections`が残すデバッグ情報の古い行の表示で、動作には影響しない）。gdbからは`DEMCR`などのシステムの領域（`0xE000xxxx`）が読めない（probe-rsのメモリマップの外）
-  - Arduino IDEのデバッガ（cortex-debug）からprobe-rsを使う形と、ほかの3ボード（A156・N947・N236）はまだ試していない使えればLinkServer 26.9がA153を32KBと読む件（`CLAUDE.md`のPendingタスク9）を避ける手段の候補になる（C444はLinkServerと併用になる）
+  - **4ボードで試した**（2026-11-20、macOS、4枚を同時につないで。C444はUSBに出てこず未確認、probe-rsの対象外）。0.32.0では:
+    - A153・A156は、arduino-cliの書き込み（`upload_method=probe_rs`、ポートのシリアル番号でプローブを選ぶ）とgdb-bridge経由のデバッグ（`monitor reset halt`・`load`・ブレークポイント）が安定して動く
+    - **N947は、スケッチが動いている状態からの「リセットして止める」が毎回失敗し、その直後は必ず成功する**（10回で成功と失敗が交互。AIRCRの読み出しにFAULT）。`DEMCR`の修正を外しても、先に`DHCSR`でコアを止めても同じで、`--connect-under-reset`は毎回つながらない。やり直しで書けても、そのあとコアが止まったまま残ることがあった
+    - **N236は、`probe-rs download`は通るが、gdbからの`load`が失敗する**（毎回「unknown variant」の警告）
+    - 0.32.0向けの回避として、書き込みは`download --reset`（同じ接続でリセット。別の`reset`は起動中のチップに当たってFAULTになった）で、失敗したら1回やり直す。gdb-bridgeはGDBサーバーを`--reset-halt`で立ち上げ、立ち上がらなければ1回立ち上げ直す。これでN947も書き込みとデバッグが通るが、N236のデバッグは直らない
+  - **probe-rsの`master`（`187f19a8c`、2026-11-19。ソースからスクラッチパッドにビルド）ではN947・N236とも直っている**: N947は書き込み10回中9回続けて成功（失敗は最初の1回、0.32.0で残した状態から）、デバッグも立ち上げ直しなしで続けて通る。N236は`load`が通り、書き込みも6回続けて成功。A153・A156は書き込み・デバッグとも変わらず通る。効いたとみられるのは「Add support for all MCX N variants」（#4628）とMCX Nのリセットの処理の作り直し
+  - **次のprobe-rsの版で同梱を上げるときに要る変更**: `download`の`--reset`が無くなり`--start`になった（`upload_probe-rs.sh`/`.bat`）。N236の名前が`MCXN236VDF`から`MCXN236`になった（`boards.txt`の`build.probe_rs_chip`と`n236-probe-rs.cfg`）。0.32.0向けのやり直しは要らなくなる見込み。そのうえで既定をprobe-rsに切り替えるかを決める使えればLinkServer 26.9がA153を32KBと読む件（`CLAUDE.md`のPendingタスク9）を避ける手段の候補になる（C444はLinkServerと併用になる）
 - **N947の`Wire2`がターゲットとして応答しない**: 原因不明のまま。解決するか、既知の制限として確定させる（A156の同じLPI2C3は応答する、という差が手がかり）
 - ~~**ネットワーク基底クラスが無い**~~ → 0.10.0で入れた（§6の段階A）
 - **OneWireは「フォールバック」で動く**（2026-10-23に調べた。OneWire 2.3.8）: `util/OneWire_direct_gpio.h`はチップやアーキテクチャのマクロで場合分けし、このコアはどれにも当たらないので、
