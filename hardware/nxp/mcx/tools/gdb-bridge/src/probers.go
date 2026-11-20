@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"sort"
 	"strconv"
@@ -23,9 +24,37 @@ const (
 	// the board's name as its on-board probe reports it ("FRDM-MCXA153"),
 	// to pick the probe when more than one is connected
 	boardDirective = "gdb-bridge-board:"
+	// the newest probe-rs version that can't debug the board: gdb-bridge
+	// stops with a message there in place of a session that ends at once
+	probeRsDebugBrokenDirective = "gdb-bridge-probe-rs-debug-broken-up-to:"
 	// what `probe-rs gdb` prints once it listens
 	probeRsReadyLine = "Firing up GDB stub"
 )
+
+var probeRsVersionRe = regexp.MustCompile(`probe-rs (\d+(?:\.\d+)+)`)
+
+// probeRsVersion returns probe-rs's version ("probe-rs 0.32.0 (git commit:
+// 48f5e4d)" -> "0.32.0"), or "" if it can't be read.
+func probeRsVersion(probeRs string) string {
+	out, err := exec.Command(probeRs, "--version").CombinedOutput()
+	if err != nil {
+		return ""
+	}
+	if m := probeRsVersionRe.FindSubmatch(out); m != nil {
+		return string(m[1])
+	}
+	return ""
+}
+
+// debugBroken says whether probe-rs version can't debug a board whose .cfg
+// says it can't up to brokenUpTo. An unknown version, or no such line, is
+// let through: probe-rs then shows what goes wrong itself.
+func debugBroken(version, brokenUpTo string) bool {
+	if version == "" || brokenUpTo == "" {
+		return false
+	}
+	return !versionLess(brokenUpTo, version)
+}
 
 // scriptDirective returns the value of the first `directive` line in the
 // scripts the invoking tool named (-f/--file), or "" if there is none.

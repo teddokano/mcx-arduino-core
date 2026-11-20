@@ -25,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   on FRDM-MCXA153, where LinkServer 26.9 stops at 32KB. Boards Manager installs probe-rs with the package (for
   Windows from this repository's release, packed again into a folder). Checked on macOS: FRDM-MCXA153 and FRDM-MCXA156 upload and
   debug; with probe-rs 0.32.0, FRDM-MCXN947 needs a second try now and then (made by itself), and FRDM-MCXN236
-  uploads but doesn't debug. Both work with probe-rs's development version.
+  uploads but doesn't debug (the Debug button says so, and to choose LinkServer). Both work with probe-rs's development version.
 - `API_COMPATIBILITY.md` starts with a list of the limits that most often surprise a sketch from another board.
 
 ### Fixed

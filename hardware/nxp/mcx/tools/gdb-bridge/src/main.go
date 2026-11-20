@@ -259,6 +259,16 @@ func runProbeRs(chip, board string, toolArgs []string) {
 		os.Exit(1)
 	}
 	fmt.Fprintln(os.Stderr, "gdb-bridge: using", probeRs)
+	// probe-rs 0.32.0 starts its gdb server for the FRDM-MCXN236, but gdb's
+	// `load` then fails and the session ends with nothing said about why
+	// (uploading works). Say so, and how to debug it, instead
+	if upTo := scriptDirective(toolArgs, probeRsDebugBrokenDirective); upTo != "" {
+		if v := probeRsVersion(probeRs); debugBroken(v, upTo) {
+			fmt.Fprintf(os.Stderr, "gdb-bridge: probe-rs %s can't debug the %s (uploading works). "+
+				"To debug it, choose Tools > Upload method > LinkServer\n", v, board)
+			os.Exit(1)
+		}
+	}
 	out, _ := exec.Command(probeRs, "list").CombinedOutput()
 	selector, err := pickRsProbe(parseRsProbes(string(out)), board)
 	if err != nil {

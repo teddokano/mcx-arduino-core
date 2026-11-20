@@ -74,3 +74,25 @@ func TestBundledProbeRs(t *testing.T) {
 		t.Errorf("got %v, want %s first", got, want)
 	}
 }
+
+func TestDebugBroken(t *testing.T) {
+	cases := []struct {
+		version, upTo string
+		want          bool
+	}{
+		{"0.32.0", "0.32.0", true},
+		{"0.31.0", "0.32.0", true},
+		{"0.32.1", "0.32.0", false},
+		{"0.33.0", "0.32.0", false},
+		{"", "0.32.0", false},
+		{"0.32.0", "", false},
+	}
+	for _, c := range cases {
+		if got := debugBroken(c.version, c.upTo); got != c.want {
+			t.Errorf("debugBroken(%q, %q) = %v, want %v", c.version, c.upTo, got, c.want)
+		}
+	}
+	if m := probeRsVersionRe.FindStringSubmatch("probe-rs 0.32.0 (git commit: 48f5e4d)\n"); m == nil || m[1] != "0.32.0" {
+		t.Errorf("version from probe-rs --version: %v", m)
+	}
+}
