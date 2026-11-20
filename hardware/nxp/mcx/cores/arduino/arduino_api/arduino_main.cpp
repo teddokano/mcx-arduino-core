@@ -179,7 +179,14 @@ extern "C" void SysTick_Handler( void )
 	// MCXEthernet's tick, for one), and the time it runs mustn't become the
 	// start of the millisecond, or micros() reads short until the next tick.
 	// Ticks missed while interrupts were off for over 1 ms come back, and a
-	// tick that comes in while this one counts it adds 0 when it runs
+	// tick that comes in while this one counts it adds 0 when it runs.
+	//
+	// The cycle counter counts only while DEMCR.TRCENA is set, and a
+	// debugger can clear it as it lets go of the board: probe-rs does, after
+	// a reset it makes (LinkServer doesn't). From then on millis(), micros()
+	// and delay() stood still, delay() for good. Setting it again every tick
+	// costs the time it was off, under a millisecond, once
+	CoreDebug->DEMCR	|= CoreDebug_DEMCR_TRCENA_Msk;
 	uint32_t	n	= ( DWT->CYCCNT - ms_tick_dwt ) / cycles_per_ms;
 
 	ms_ticks	= ms_ticks + n;
