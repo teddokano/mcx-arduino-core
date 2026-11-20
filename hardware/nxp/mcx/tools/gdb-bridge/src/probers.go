@@ -27,6 +27,8 @@ const (
 	// the newest probe-rs version that can't debug the board: gdb-bridge
 	// stops with a message there in place of a session that ends at once
 	probeRsDebugBrokenDirective = "gdb-bridge-probe-rs-debug-broken-up-to:"
+	// the SWD clock, in kHz, unless PROBE_RS_SPEED is set
+	probeRsSpeedKHz = "4000"
 	// what `probe-rs gdb` prints once it listens
 	probeRsReadyLine = "Firing up GDB stub"
 )
@@ -221,6 +223,14 @@ func startProbeRs(probeRs, chip, selector string, port int) (*exec.Cmd, <-chan b
 		args = append(args, "--probe", selector)
 	}
 	cmd := exec.Command(probeRs, args...)
+	// The SWD clock, as the upload scripts set it: 4MHz unless
+	// PROBE_RS_SPEED (kHz, which probe-rs reads itself) says otherwise.
+	// probe-rs's own 1MHz made a load twice as slow, and an FRDM-MCXN947's
+	// reset-and-halt fail every other time
+	cmd.Env = os.Environ()
+	if os.Getenv("PROBE_RS_SPEED") == "" {
+		cmd.Env = append(cmd.Env, "PROBE_RS_SPEED="+probeRsSpeedKHz)
+	}
 	// It has been seen to print the ready line on either stream, so both
 	// are watched. The pipes close when the process ends (killProcess's
 	// Wait), which ends the watchers

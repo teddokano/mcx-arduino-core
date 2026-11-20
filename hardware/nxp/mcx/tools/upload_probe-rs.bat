@@ -51,16 +51,42 @@ set "PROBE_ARGS=--probe 1fc9:%PID%:%PORT_SERIAL%"
 echo Probe: 1fc9:%PID%:%PORT_SERIAL%
 :probe_done
 
-rem Reset in the same session (--reset), and once more if it fails: see
+rem Reset in the same session (--reset), and tried up to three times, a
+rem second apart, with what a failed try says kept back and shown only if
+rem every try fails: see upload_probe-rs.sh.
+rem All it says goes to stdout: it writes it to stderr, which Arduino IDE
+rem shows as an error. NO_COLOR takes out its color codes, though not its
+rem bold ones; a failure is said on stderr below
+set NO_COLOR=1
+rem The SWD clock: 4MHz unless PROBE_RS_SPEED (kHz) says otherwise, see
 rem upload_probe-rs.sh
-"%PROBE_RS%" download --chip %CHIP% %PROBE_ARGS% --verify --reset --disable-progressbars "%ELF%"
-if not errorlevel 1 exit /b 0
-echo (once more)
-"%PROBE_RS%" download --chip %CHIP% %PROBE_ARGS% --verify --reset --disable-progressbars "%ELF%"
-if errorlevel 1 goto :failed
+if not defined PROBE_RS_SPEED set PROBE_RS_SPEED=4000
+set "TRY_LOG=%TEMP%\mcx_probe-rs_%RANDOM%.txt"
+set "FAILED_LOG=%TRY_LOG%.failed"
+type nul > "%FAILED_LOG%"
+set ATTEMPT=1
+:try
+"%PROBE_RS%" download --chip %CHIP% %PROBE_ARGS% --verify --reset --disable-progressbars "%ELF%" > "%TRY_LOG%" 2>&1
+if not errorlevel 1 goto :written
+>> "%FAILED_LOG%" echo --- try %ATTEMPT% of 3 ---
+type "%TRY_LOG%" >> "%FAILED_LOG%"
+if %ATTEMPT% GEQ 3 goto :failed
+set /a ATTEMPT+=1
+rem a second's wait; timeout fails without a console, ping doesn't
+ping -n 2 127.0.0.1 >nul
+goto :try
+
+:written
+if %ATTEMPT% EQU 2 echo Written on try 2 of 3 ^(the first try failed; what it said is left out^)
+if %ATTEMPT% EQU 3 echo Written on try 3 of 3 ^(the tries before it failed; what they said is left out^)
+type "%TRY_LOG%"
+del "%TRY_LOG%" "%FAILED_LOG%" 2>nul
 exit /b 0
 
 :failed
+type "%FAILED_LOG%"
+del "%TRY_LOG%" "%FAILED_LOG%" 2>nul
+echo ERROR: probe-rs could not write the board in 3 tries ^(above: what it said each time^) 1>&2
 if not defined PROBE_ARGS (
     echo ============================================
     echo If more than one board is connected, select the port of the board
