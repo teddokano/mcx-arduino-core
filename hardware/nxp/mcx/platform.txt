@@ -127,11 +127,15 @@ upload.tool.default=linkserver
 # The port's serial number, VID and PID make the VID:PID:SERIAL probe-rs
 # takes for the board to write, as the serial number does for LinkServer.
 # probe-rs comes with the package (package_nxp_mcx_index.json's tool, which
-# Boards Manager installs); its folder is the last argument
+# Boards Manager installs); its folder is the sixth argument. The seventh
+# is Arduino IDE's "Verify code after upload" (off by default; arduino-cli
+# upload --verify): verify or noverify
 tools.probe_rs.upload.params.verbose=
 tools.probe_rs.upload.params.quiet=
-tools.probe_rs.upload.pattern={runtime.platform.path}/tools/upload_probe-rs.sh "{build.path}/{build.project_name}.elf" "{build.probe_rs_chip}" "{upload.port.properties.serialNumber}" "{upload.port.properties.vid}" "{upload.port.properties.pid}" "{runtime.tools.probe-rs.path}"
-tools.probe_rs.upload.pattern.windows={runtime.platform.path}/tools/upload_probe-rs.bat "{build.path}/{build.project_name}.elf" "{build.probe_rs_chip}" "{upload.port.properties.serialNumber}" "{upload.port.properties.vid}" "{upload.port.properties.pid}" "{runtime.tools.probe-rs.path}"
+tools.probe_rs.upload.params.verify=verify
+tools.probe_rs.upload.params.noverify=noverify
+tools.probe_rs.upload.pattern={runtime.platform.path}/tools/upload_probe-rs.sh "{build.path}/{build.project_name}.elf" "{build.probe_rs_chip}" "{upload.port.properties.serialNumber}" "{upload.port.properties.vid}" "{upload.port.properties.pid}" "{runtime.tools.probe-rs.path}" "{upload.verify}"
+tools.probe_rs.upload.pattern.windows={runtime.platform.path}/tools/upload_probe-rs.bat "{build.path}/{build.project_name}.elf" "{build.probe_rs_chip}" "{upload.port.properties.serialNumber}" "{upload.port.properties.vid}" "{upload.port.properties.pid}" "{runtime.tools.probe-rs.path}" "{upload.verify}"
 
 # Debug
 # arduino-cli's debug support only knows how to drive something it calls

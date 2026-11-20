@@ -3,13 +3,18 @@ rem Upload with probe-rs: Tools > Upload method > probe-rs (boards.txt).
 rem The counterpart of upload.bat, which uses LinkServer; same logic as
 rem upload_probe-rs.sh.
 rem
-rem Usage: upload_probe-rs.bat <elf> <probe-rs chip> <port serial number> <port vid> <port pid> <bundled probe-rs's folder>
+rem Usage: upload_probe-rs.bat <elf> <probe-rs chip> <port serial number> <port vid> <port pid> <bundled probe-rs's folder> [verify|noverify]
 set "ELF=%~1"
 set "CHIP=%~2"
 set "PORT_SERIAL=%~3"
 set "PORT_VID=%~4"
 set "PORT_PID=%~5"
 set "BUNDLED=%~6"
+
+rem Read back and check what was written unless Arduino IDE's "Verify code
+rem after upload" is off (noverify): see upload_probe-rs.sh
+set "VERIFY_ARG=--verify"
+if /i "%~7"=="noverify" set "VERIFY_ARG="
 
 rem probe-rs: MCX_PROBE_RS if set, then the one that came with the package
 rem ({runtime.tools.probe-rs.path}, unexpanded in braces when it isn't
@@ -56,7 +61,8 @@ rem second apart, with what a failed try says kept back and shown only if
 rem every try fails: see upload_probe-rs.sh.
 rem All it says goes to stdout: it writes it to stderr, which Arduino IDE
 rem shows as an error. NO_COLOR takes out its color codes, though not its
-rem bold ones; a failure is said on stderr below
+rem bold ones; a failure is said on stderr below. stdin is closed (<nul),
+rem so that probe-rs doesn't wait to be told which probe to use
 set NO_COLOR=1
 rem The SWD clock: 4MHz unless PROBE_RS_SPEED (kHz) says otherwise, see
 rem upload_probe-rs.sh
@@ -66,7 +72,7 @@ set "FAILED_LOG=%TRY_LOG%.failed"
 type nul > "%FAILED_LOG%"
 set ATTEMPT=1
 :try
-"%PROBE_RS%" download --chip %CHIP% %PROBE_ARGS% --verify --reset --disable-progressbars "%ELF%" > "%TRY_LOG%" 2>&1
+"%PROBE_RS%" download --chip %CHIP% %PROBE_ARGS% %VERIFY_ARG% --reset --disable-progressbars "%ELF%" < nul > "%TRY_LOG%" 2>&1
 if not errorlevel 1 goto :written
 >> "%FAILED_LOG%" echo --- try %ATTEMPT% of 3 ---
 type "%TRY_LOG%" >> "%FAILED_LOG%"

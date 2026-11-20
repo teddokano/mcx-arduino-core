@@ -2,13 +2,22 @@
 # Upload with probe-rs: Tools > Upload method > probe-rs (boards.txt).
 # The counterpart of upload.sh, which uses LinkServer.
 #
-# Usage: upload_probe-rs.sh <elf> <probe-rs chip> <port serial number> <port vid> <port pid> <bundled probe-rs's folder>
+# Usage: upload_probe-rs.sh <elf> <probe-rs chip> <port serial number> <port vid> <port pid> <bundled probe-rs's folder> [verify|noverify]
 ELF="$1"
 CHIP="$2"
 PORT_SERIAL="$3"
 PORT_VID="$4"
 PORT_PID="$5"
 BUNDLED="$6"
+
+# Read back and check what was written: as Arduino IDE's "Verify code
+# after upload" says (platform.txt; off by default), and when run by hand
+# with no seventh argument. It takes about 1.8 of the 4s on the
+# FRDM-MCXA153 and FRDM-MCXA156 (at 4MHz, below)
+case "${7-verify}" in
+    noverify) VERIFY_ARG="" ;;
+    *) VERIFY_ARG="--verify" ;;
+esac
 
 # probe-rs: MCX_PROBE_RS if set, then the one that came with the package
 # ({runtime.tools.probe-rs.path}, which arrives unexpanded, in braces, when
@@ -69,8 +78,8 @@ esac
 : "${PROBE_RS_SPEED:=4000}"
 export PROBE_RS_SPEED
 
-# Written, checked and reset to run. PROBE_ARGS unquoted on purpose: empty
-# must vanish, not become "".
+# Written, checked (VERIFY_ARG) and reset to run. PROBE_ARGS and VERIFY_ARG
+# unquoted on purpose: empty must vanish, not become "".
 # Reset in the same session (--reset): a separate `probe-rs reset` right
 # after could reach the chip while it was still starting, and get a FAULT.
 # Tried up to three times, a second apart: on an FRDM-MCXN947 running a
@@ -87,12 +96,16 @@ export PROBE_RS_SPEED
 # probe-rs writes all it says to stderr, which Arduino IDE shows as an
 # error, and with color and bold codes even when it isn't a terminal
 # ("[m[1mFinished[0m in 8.26s" in the IDE). It comes here on stdout,
-# with the codes taken out; a failure is said on stderr below
+# with the codes taken out; a failure is said on stderr below.
+#
+# stdin is closed (</dev/null): with more than one probe connected and no
+# --probe, probe-rs asks which one to use and waits for the answer, even
+# with --non-interactive (0.32.0); with nothing to read it stops at once
 ESC=$(printf '\033')
 FAILED_TRIES=""
 ATTEMPT=1
 while :; do
-    OUTPUT=$("$PROBE_RS" download --chip "$CHIP" $PROBE_ARGS --verify --reset --disable-progressbars "$ELF" 2>&1)
+    OUTPUT=$("$PROBE_RS" download --chip "$CHIP" $PROBE_ARGS $VERIFY_ARG --reset --disable-progressbars "$ELF" </dev/null 2>&1)
     STATUS=$?
     OUTPUT=$(printf '%s\n' "$OUTPUT" | sed "s/${ESC}\[[0-9;]*m//g")
     if [ $STATUS -eq 0 ]; then

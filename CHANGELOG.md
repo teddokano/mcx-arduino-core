@@ -26,7 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   Windows from this repository's release, packed again into a folder). Checked on macOS: FRDM-MCXA153 and FRDM-MCXA156 upload and
   debug; with probe-rs 0.32.0, FRDM-MCXN947 needs a second try (made by itself, up to three tries for an upload), and FRDM-MCXN236
   uploads but doesn't debug (the Debug button says so, and to choose LinkServer). The SWD clock is 4MHz (probe-rs's own
-  default is 1MHz, which took twice as long), or `PROBE_RS_SPEED` in kHz. Both work with probe-rs's development version.
+  default is 1MHz, which took twice as long), or `PROBE_RS_SPEED` in kHz. probe-rs checks what it wrote when
+  **Verify code after upload** is on in Arduino IDE's preferences (off by default; `arduino-cli upload --verify`). Both work with probe-rs's development version.
 - `API_COMPATIBILITY.md` starts with a list of the limits that most often surprise a sketch from another board.
 
 ### Fixed
