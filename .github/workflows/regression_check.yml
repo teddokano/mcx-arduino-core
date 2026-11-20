@@ -105,6 +105,12 @@ jobs:
             python3 .github/scripts/check_repo_hygiene.py
           fi
 
+      # The core's Print and String, built with the runner's own g++ and
+      # checked against what the boards print (.github/host_tests/run.sh):
+      # catches a change in what they print, which a compile check can't
+      - name: Host tests (Print, String)
+        run: .github/host_tests/run.sh
+
   compile:
     strategy:
       fail-fast: false
