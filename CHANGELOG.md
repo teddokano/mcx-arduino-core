@@ -5,7 +5,7 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.13.0] - 2026-11-22
 
 ### Highlights
 - Sketches take 15-55KB less flash: the core now links newlib-nano, as it always meant to (`long long` in `printf()` is the one thing that no longer works there)
