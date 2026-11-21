@@ -29,7 +29,8 @@ signatures, default values and constant values (for example
 `Wire.setWireTimeout()` and its defaults, I2C target mode's `onReceive()`/
 `onRequest()`, the `SERIAL_8N1` family, `BitOrder`, `SDA`/`SCL`, the
 network base classes `Client`/`Server`/`UDP`/`IPAddress`, the AVR EEPROM
-library's API, the official Servo library's API, the MsTimer2 and
+library's API, avr-libc's `<avr/wdt.h>` and the UNO R4 core's `WDT` library's
+APIs (the watchdog, 0.13.0), the official Servo library's API, the MsTimer2 and
 TimerOne libraries' APIs, the API of the Ticker in the ESP32 and
 ESP8266 Arduino cores, which mcxTicker takes under its own class name, and
 the ESP32 core's `Wire.setPins()`, whose signature `TwoWire::setPins()` takes),
