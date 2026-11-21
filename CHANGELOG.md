@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Highlights
+- Sketches take 15-55KB less flash: the core now links newlib-nano, as it always meant to (`long long` in `printf()` is the one thing that no longer works there)
+- Tools → Upload method: **probe-rs** comes with the package and is the default on FRDM-MCXA153, FRDM-MCXA156 and FRDM-MCXN947, so uploading and debugging need no LinkServer
+- The watchdog: `<avr/wdt.h>` and the UNO R4's `WDT` library
+- New Tools menus: Optimize (`-O2`/`-Os`) and, on FRDM-MCXA153, EEPROM (1KB / None)
+- Fixed: `millis()`, `micros()` and `delay()` stopping after a debugger lets go of a running sketch, and I3C's driver being linked into every sketch that uses `Wire`
+
 ### Added
 - **The watchdog**: avr-libc's `<avr/wdt.h>` (`wdt_enable(WDTO_15MS` … `WDTO_8S)`, `wdt_reset()`, `wdt_disable()`, and
   `MCUSR` with `WDRF`/`PORF`/`EXTRF`/`BORF` for the cause of the last reset), and the bundled `WDT` library with the
@@ -41,6 +48,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
     sketch starts (probe-rs halts the core then, as part of its reset), and `millis()`/`micros()` stay that much
     behind. Not after power-on, the RESET button or a LinkServer upload, nor on the other boards.
 - `API_COMPATIBILITY.md` starts with a list of the limits that most often surprise a sketch from another board.
+- `examples/Arduino_compatible_API/test_Servo_all_pins` (no wiring): the bundled `Servo` on every pin without hardware PWM, read back through the
+  pad's own input register; passes on all five boards. `release_check/03` now blinks the green LED three times when it starts taking
+  presses and tells a press that was not counted while detached from no press at all.
 
 ### Fixed
 - **Sketches take 15–55KB less flash: the core now links newlib-nano, as it always meant to.** The sources were
