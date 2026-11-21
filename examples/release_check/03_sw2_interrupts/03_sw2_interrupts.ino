@@ -12,9 +12,12 @@
  *  On FRDM-MCXA153, SW2 and SW3 sit the other way round from the other
  *  boards: press the button marked SW2 on the board.
  *
- *  The RGB LED shows what to do: blue toggles with each press in phase 1,
- *  red means hands off (the 3s after detachInterrupt()), green means press
- *  and hold SW2 now (phase 2), and all off means done.
+ *  The RGB LED shows what to do: green blinking three times means the
+ *  sketch is about to take presses (it starts again with the RESET button);
+ *  then blue toggles with each press in phase 1, red means presses are not
+ *  taken now (the 3s after detachInterrupt(): press SW2 anyway, nothing
+ *  should be counted), green lit steadily means press and hold SW2
+ *  now (phase 2), and all off means done.
  */
 
 #include <Arduino.h>
@@ -44,6 +47,15 @@ void setup() {
   pinMode(GREEN, OUTPUT);
   pinMode(BLUE, OUTPUT);
   pinMode(SW2, INPUT_PULLUP);
+
+  // Three green blinks: presses count from the blue LED on
+  Serial.println("Starting: green LED blinks three times, then press SW2");
+  for (int i = 0; i < 3; i++) {
+    showLeds(false, true, false);
+    delay(250);
+    showLeds(false, false, false);
+    delay(250);
+  }
   showLeds(false, false, !led_state);
 
   // ---- Phase 1: FALLING-edge interrupt + detachInterrupt()
@@ -78,33 +90,39 @@ void setup() {
   if (presses < 3)
     Serial.println("(timed out waiting for presses -- moving on)");
 
-  Serial.println("detachInterrupt() -- presses for the next 3s (red LED) should do nothing");
+  Serial.println("detachInterrupt() -- press SW2 now (red LED, 3s): nothing should be counted");
   detachInterrupt(digitalPinToInterrupt(SW2));
   showLeds(true, false, false);
   sw_pressed = false;
   unsigned long silentStart = millis();
   bool sawSpuriousPress = false;
+  bool wasPressed = false;
   while (millis() - silentStart < 3000) {
+    if (digitalRead(SW2) == LOW)
+      wasPressed = true;
     if (sw_pressed) {
       sawSpuriousPress = true;
       sw_pressed = false;
     }
   }
-  Serial.println(sawSpuriousPress
-                    ? "  (unexpected: a press registered while detached!)"
-                    : "  no presses registered while detached, as expected");
+  if (sawSpuriousPress)
+    Serial.println("  (unexpected: a press registered while detached!)");
+  else if (wasPressed)
+    Serial.println("  SW2 was pressed and no press was registered while detached, as expected");
+  else
+    Serial.println("  (SW2 was not pressed in these 3s, so detachInterrupt() was not checked)");
 
   // ---- Phase 2: LOW-level-triggered interrupt (was test_Interrupt_LOW) ----
   Serial.println();
   Serial.println("--- Phase 2: LOW-level-triggered interrupt ---");
-  Serial.println("Press and HOLD SW2 for ~1 second, then release (while the green LED is on, 10s)");
+  Serial.println("Press and HOLD SW2 for ~1 second, then release (while the green LED is on, 5s)");
   levelCount = 0;
   attachInterrupt(digitalPinToInterrupt(SW2), onLevel, LOW);
   showLeds(false, true, false);
 
   unsigned long phase2Start = millis();
   unsigned long lastPrinted = 0;
-  while (millis() - phase2Start < 10000) {
+  while (millis() - phase2Start < 5000) {
     if (levelCount != lastPrinted) {
       lastPrinted = levelCount;
       Serial.print("count = ");
