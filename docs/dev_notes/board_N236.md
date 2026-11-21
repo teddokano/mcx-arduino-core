@@ -4,7 +4,7 @@ CLAUDE.mdが大きくなったので、読むときだけ開くようにここ�
 
 ## FRDM-MCXN236の前提と決定事項（0.9.0）
 0.9.0（2026-10-09リリース）で対応した。回路図は`ref/FRDM-MCXN236.pdf`（Rev C）。いまも効いている決定と、回路図・SDKで確かめた事実だけをここに置く。
-実機確認とPWMの修正、リリース準備の経緯は[docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md)のv0.9.0の節、実機確認の結果はvariantのREADME。
+実機確認とPWMの修正、リリース準備の経緯は[docs/DEVELOPMENT_LOG.md](../DEVELOPMENT_LOG.md)のv0.9.0の節、実機確認の結果はvariantのREADME。
 
 - **基板はRev C**（2026-10-05、ユーザーがシルクで確認）。Rev BでD18/D19が`P4_0`/`P4_1`から`P1_16`/`P1_17`に変わった。
   コア同梱の`r01lib`のN236分岐は、`io.h`が`I2C_SDA`/`I2C_SCL`を`A4`/`A5`とし、`i2c.cpp`が「D18/D19だけ」とするなど、新旧の版が混ざっているので、そのまま信用しない

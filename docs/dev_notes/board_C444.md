@@ -4,7 +4,7 @@ CLAUDE.mdが大きくなったので、読むときだけ開くようにここ�
 
 ## FRDM-MCXC444の前提と決定事項（0.10.0）
 0.10.0（2026-10-18リリース）で対応した（2026-10-16に決定）。回路図は`ref/FRDM-MCXC444.pdf`（SCH-93440 Rev A）、SDKは`ref/SDK_2_16_000_FRDM-MCXC444.zip`。
-「ビルドが通るだけ」のスパイクの結果は[memo/notes_toward_1.0.0.md](memo/notes_toward_1.0.0.md)の§4-5（`c444-spike`ブランチ、未push）。スパイクのスタブは持ち込まず、`0.10.0-dev`の上で作り直した。
+「ビルドが通るだけ」のスパイクの結果は[memo/notes_toward_1.0.0.md](../../memo/notes_toward_1.0.0.md)の§4-5（`c444-spike`ブランチ、未push）。スパイクのスタブは持ち込まず、`0.10.0-dev`の上で作り直した。
 
 - **Kinetis系でCortex-M0+（ARMv6-M、FPU無し）**、48MHz。DWTのサイクルカウンタ・CFSR/HFSR・`MSPLIM`が無い。周辺回路はLPUART/UART・`fsl_i2c`・`fsl_spi`・ADC16・TPM・PIT/LPTMRで、CTIMER・UTICK・I3C・FlexPWM・LPADCは無い
 - **ピンは回路図とZephyrの`MCXC444VLH-pinctrl.h`で確かめた**（2026-10-16）。r01libの`io.h`のC444の表（D0〜D19・A0〜A5）は回路図と一致する。
@@ -51,4 +51,4 @@ CLAUDE.mdが大きくなったので、読むときだけ開くようにここ�
   HardFaultの処理で新しいスタックに移る判定は、C444では`_vStackBase`+1KBより下
 
 ## 動作確認済み
-（APIごとの確認の表は、DEVELOPMENT_LOGの「CLAUDE.mdから移した記述」に移した。対応しているAPI・していないAPIは[API_COMPATIBILITY.md](API_COMPATIBILITY.md)。）
+（APIごとの確認の表は、DEVELOPMENT_LOGの「CLAUDE.mdから移した記述」に移した。対応しているAPI・していないAPIは[API_COMPATIBILITY.md](../../API_COMPATIBILITY.md)。）
