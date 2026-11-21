@@ -81,6 +81,8 @@ void delayMicroseconds( unsigned int us )
  *  to use directly. SysTick is set to a 1ms tick to extend the range to the
  *  full 32bit millisecond count (~49 days, matching classic Arduino millis()).
  *  DWT->CYCCNT is kept only for sub-millisecond resolution inside micros().
+ *  It is read only through MSDK_GetCpuCycleCount() (fsl_common_arm.c), which
+ *  sets DEMCR.TRCENA again when a debugger has cleared it.
  */
 
 namespace {
@@ -107,7 +109,7 @@ void millis_init( void )
 	// raw since-boot cycle count before the first SysTick tick has fired.
 	// Taken just before SysTick starts, so each tick comes a few cycles
 	// after a whole number of milliseconds from it (SysTick_Handler())
-	ms_tick_dwt		= DWT->CYCCNT;
+	ms_tick_dwt		= MSDK_GetCpuCycleCount();
 #endif
 
 	millis_ready	= true;
@@ -182,12 +184,11 @@ extern "C" void SysTick_Handler( void )
 	// tick that comes in while this one counts it adds 0 when it runs.
 	//
 	// The cycle counter counts only while DEMCR.TRCENA is set, and a
-	// debugger can clear it as it lets go of the board: probe-rs does, after
-	// a reset it makes (LinkServer doesn't). From then on millis(), micros()
-	// and delay() stood still, delay() for good. Setting it again every tick
+	// debugger clears it as it lets go of a running sketch (probe-rs does).
+	// Without it set again, millis(), micros() and delay() stood still,
+	// delay() for good. MSDK_GetCpuCycleCount() sets it again, so each tick
 	// costs the time it was off, under a millisecond, once
-	CoreDebug->DEMCR	|= CoreDebug_DEMCR_TRCENA_Msk;
-	uint32_t	n	= ( DWT->CYCCNT - ms_tick_dwt ) / cycles_per_ms;
+	uint32_t	n	= ( MSDK_GetCpuCycleCount() - ms_tick_dwt ) / cycles_per_ms;
 
 	ms_ticks	= ms_ticks + n;
 	ms_tick_dwt	= ms_tick_dwt + n * cycles_per_ms;
@@ -255,7 +256,7 @@ unsigned long micros( void )
 	base	= ms_tick_dwt;
 	__set_PRIMASK( primask );
 
-	uint32_t	delta_us	= (uint32_t)( DWT->CYCCNT - base ) / cycles_per_us;
+	uint32_t	delta_us	= (uint32_t)( MSDK_GetCpuCycleCount() - base ) / cycles_per_us;
 #endif
 
 	return	(unsigned long)( (uint64_t)ms * 1000u + delta_us );

@@ -6,6 +6,11 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+/*
+ * mcx-arduino-core: modified from the SDK's copy where marked
+ * (MSDK_GetCpuCycleCount() keeps the cycle counter running).
+ */
+
 #include "fsl_common.h"
 
 /* Component ID definition, used by tools. */
@@ -138,6 +143,21 @@ void MSDK_EnableCpuCycleCounter(void)
 
 uint32_t MSDK_GetCpuCycleCount(void)
 {
+    /*
+     * mcx-arduino-core: set DEMCR.TRCENA again if it has been cleared, then
+     * read. CYCCNT counts only while TRCENA is set, and a debugger clears it
+     * as it lets go of the core (the CMSIS-Pack default DebugCoreStop writes
+     * 0 to DEMCR; probe-rs and others do this). A waiting loop that reads
+     * CYCCNT with interrupts off then never got to its end: every read of
+     * the cycle counter in the core and the SDK goes through here, so the
+     * count stops for no longer than between two reads. It's written only
+     * when cleared, so as not to overwrite what a debugger writes to DEMCR's
+     * other bits.
+     */
+    if (0U == (CoreDebug->DEMCR & CoreDebug_DEMCR_TRCENA_Msk))
+    {
+        CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+    }
     return DWT->CYCCNT;
 }
 #endif /* defined(DWT) */

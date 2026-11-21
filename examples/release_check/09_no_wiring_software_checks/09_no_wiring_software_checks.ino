@@ -228,6 +228,8 @@ void setup() {
 
   // ---- millis() counts from before setup(), as on AVR (0.11.0) ----
   Serial.println("--- millis from boot ---");
+  Serial.print("first millis() after delay(200): ");
+  Serial.println(first_millis);
   check("first millis() after delay(200) is 200 or more", first_millis >= 200);
 
   // ---- micros() stays right when SysTick runs late (0.11.0) ----

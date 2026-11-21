@@ -12,6 +12,15 @@
  *  before and after. Then micros() has to keep counting normally with
  *  interrupts on.
  *
+ *  Then the cycle counter that micros(), delay() and delayMicroseconds()
+ *  count with on the Cortex-M33 boards: a debugger clears DEMCR.TRCENA,
+ *  which stops it, as it lets go of a running sketch (probe-rs does, and
+ *  right after an upload to FRDM-MCXA153 or FRDM-MCXA156 that lands about
+ *  100ms after the sketch starts). SysTick can't set it again while
+ *  interrupts are off, so until 0.13.0 micros() stood still there and a
+ *  wait on it never ended. The sketch clears it itself, as the debugger
+ *  would.
+ *
  *  Wiring: none.
  *
  *  Automatic: reads "ALL OK" or "N FAILED" at the end.
@@ -91,7 +100,32 @@ void setup() {
   }
   check("micros() never runs backwards over 200ms", monotonic);
 
-  //  5: interrupts on again after all of it
+  //  5: with interrupts off, micros() keeps counting after DEMCR.TRCENA is
+  //     cleared, as a debugger does when it lets go. (delay() and
+  //     delayMicroseconds() set TRCENA as they start, so they got stuck only
+  //     when it was cleared during the wait, which a sketch can't stage.
+  //     They read the counter the same way as micros().)
+#if defined(__ARM_ARCH_6M__)
+  Serial.println("        (FRDM-MCXC444 counts with SysTick, not the cycle counter)");
+#else
+  noInterrupts();
+  CoreDebug->DEMCR = 0;
+  unsigned long t0 = micros();
+  unsigned long spins = 0;
+  while (micros() - t0 < 500 && spins < 10000000UL)
+    spins++;
+  unsigned long waited = micros() - t0;
+  interrupts();
+  Serial.print("        micros() counted ");
+  Serial.print(waited);
+  Serial.print("us in ");
+  Serial.print(spins);
+  Serial.println(" reads");
+  check("micros() keeps counting after DEMCR is cleared, interrupts off",
+        waited >= 500 && spins < 10000000UL);
+#endif
+
+  //  6: interrupts on again after all of it
   check("interrupts are on at the end", (__get_PRIMASK() & 1) == 0);
 
   Serial.println();

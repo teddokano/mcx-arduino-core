@@ -58,9 +58,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   sketch is built instead of by a constructor at startup, so each is linked only into sketches that use it, and the
   I3C driver only with `Wire1`. The mcxPinState library no longer brings `Wire1` (and so the I3C driver) in either.
 
-- On the MCX A and N boards, `millis()`, `micros()` and `delay()` no longer stop for good after a debugger that clears
-  `DEMCR` as it lets go of the board (probe-rs does, after a reset): they count with the cycle counter, which that
-  stopped, and the core now turns it back on every millisecond.
+- On the MCX A and N boards, `millis()`, `micros()`, `delay()` and `delayMicroseconds()` no longer stop after a
+  debugger clears `DEMCR` as it lets go of a running sketch (probe-rs does; right after a probe-rs upload to
+  FRDM-MCXA153 or FRDM-MCXA156 that comes about 100ms after the sketch starts). They count with the CPU's cycle
+  counter, which that stops, and the core now turns it back on whenever it reads it, so with interrupts off
+  (`noInterrupts()`) too: there, `micros()` stood still and a wait on it never ended.
 
 ### Changed
 - `Print` has no virtual destructor any more, as in ArduinoCore-API and AVR. With one, every global object derived
