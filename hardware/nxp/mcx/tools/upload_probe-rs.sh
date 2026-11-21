@@ -80,6 +80,14 @@ export PROBE_RS_SPEED
 
 # Written, checked (VERIFY_ARG) and reset to run. PROBE_ARGS and VERIFY_ARG
 # unquoted on purpose: empty must vanish, not become "".
+# On the FRDM-MCXA153 and FRDM-MCXA156, probe-rs's reset (0.32.0, and its
+# development version) sets a watchpoint to stop the core at the boot
+# ROM's exit, which it doesn't, waits 100ms, and then halts the core to
+# take the watchpoint away: the sketch, running by then, stands still for
+# 4 to 8ms (SysTick too). Left as it is: without --reset the sketch starts
+# from a LOCKUP reset (CMC SRS 0x8010), and resetting it afterwards
+# through AIRCR (`probe-rs write`) starts it twice, and probe-rs halts the
+# core for about 6ms each time it attaches anyway (2026-11-21).
 # Reset in the same session (--reset): a separate `probe-rs reset` right
 # after could reach the chip while it was still starting, and get a FAULT.
 # Tried up to three times, a second apart: on an FRDM-MCXN947 running a

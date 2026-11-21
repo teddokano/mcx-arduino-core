@@ -37,6 +37,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   - Checked on macOS. With the bundled probe-rs 0.32.0, FRDM-MCXN947's first try now and then fails, and an upload tries
     up to three times by itself; FRDM-MCXN236 uploads but doesn't debug (the Debug button says so, and to choose
     LinkServer). Both work with probe-rs's development version.
+  - Right after an upload with probe-rs, FRDM-MCXA153 and FRDM-MCXA156 stand still for 4 to 8ms about 100ms after the
+    sketch starts (probe-rs halts the core then, as part of its reset), and `millis()`/`micros()` stay that much
+    behind. Not after power-on, the RESET button or a LinkServer upload, nor on the other boards.
 - `API_COMPATIBILITY.md` starts with a list of the limits that most often surprise a sketch from another board.
 
 ### Fixed

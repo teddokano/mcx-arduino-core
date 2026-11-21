@@ -11,13 +11,11 @@
 - **現在のリリース**: **v0.12.0**（2026-11-01）。リリースzipはSHA-256 `4bc86783d5f4aea44647e8f74b53c3f4454cbef1e60960e3d70fae3b4d3ba9ff`、18890777 bytes。タグ`0.12.0`は`68ba2fb`。前の版は0.11.0（2026-10-25）、0.10.0（2026-10-18）、0.10.1（Fritzingの部品だけ）。
 - **開発中**: `0.13.0-dev`（2026-11-20に`0.12.0-dev`から切った）。リンクをnewlib-nanoにした（それまでfull newlibがリンクされ、スケッチが15〜55KB大きく、A153でRTC_NXP_Arduinoのサンプルが入らなかった）。`Print`・`String`の64ビットは`%lld`を使わず自前で変換し、`__FILE__`は`-fmacro-prefix-map`で短くした。CIでスケッチのサイズを基準（`.github/sizes/`）と比べるようにした。`Wire1`のI3Cは`Wire1`を使うスケッチにだけリンクする（`Wire`・`Wire1`・`Wire2`は`constinit`、`Print`のvirtualデストラクタを外した）。ウォッチドッグ（`<avr/wdt.h>`と同梱の`WDT`）を入れた。
   Toolsメニューに「Optimize」（`-O2`/`-Os`）・A153の「EEPROM」（1KB/None）・「Upload method」（probe-rs/LinkServer。C444以外の4ボード。既定はA153・A156・N947がprobe-rs、N236がLinkServer）を足し、「Optimize for Debugging」を`-Og`にした。probe-rs 0.32.0はパッケージに同梱する（索引の`tools`、Windowsはリリースに添付するzip。`.github/scripts/probe_rs_tool.py`）。README・TUTORIALは「C444とN236のデバッグ以外はLinkServerなしでよい」と案内する。probe-rsの経緯・回避策・オプションの決定は`memo/notes_toward_1.0.0.md`の§3
-  **実機での確認はまだ（ボードを用意できたら、5ボードで）**:
-  - newlib-nano: `test_String_64bit`・`test_print_float_rounding`・`test_Serial_print_time_t`、A153でRTC_NXP_Arduinoの`PCF2131_interrupt_based_operation`、`String`を多く使う`test_String`（mallocがnano版になった）
-  - `__FILE__`: デバッガでブレークポイントからソースに飛べること（デバッグ情報のパスは変えていない）。Windowsで`-fmacro-prefix-map`が効くか（ステージングで）
-  - I3C: A153・N947で`Wire1`のセンサー（`test_Wire1_onboard_sensor_raw`）、`release_check/16`（`setPins()`・`end()`）、mcxPinStateの`Wire`の行（`release_check/04`）
-  - ウォッチドッグ: `release_check/0A_watchdog`（配線なし。2回わざとリセットしてALL OKまで。`test_watchdog`も同じ確認）と`WDT`の`WatchdogRefresh`。C444はソフトウェアリセットでも`MCUSR`の`WDRF`が付くこと
-  - 0.12.0のあとに入った`test_Servo_all_pins`（N947以外の4ボード）
-  - probe-rs: Windows（`upload_probe-rs.bat`は一度も動かしていない）とLinux（udevのルール）での書き込み・デバッグ（ステージングで）。macOSでは4ボードともIDEとarduino-cliで確かめた
+  **実機での確認**（2026-11-21に5ボードで、配線なしのものを流した。結果はarduino-cliで書き込み、シリアルの出力で見た）:
+  - 済み: newlib-nanoの`test_String_64bit`・`test_print_float_rounding`・`test_Serial_print_time_t`・`test_String`（5ボードとも同じ出力）。I3Cの`test_Wire1_onboard_sensor_raw`・`release_check/16`・`04`（A153・N947）。ウォッチドッグの`0A_watchdog`・`test_watchdog`・`WatchdogRefresh`（5ボード。C444はpanic()のソフトウェアリセットでもWDRFが付いた）。`test_Servo_all_pins`（4ボードともALL PASS。A153・A156は下のprobe-rsの件でD0の1周期が落ちたので、始めに300ms待つようにした）
+  - **probe-rsで書き込んだ（リセットした）A153・A156は、起動から約100msでCPUが4〜8ms止まる**（SysTickも止まるので`micros()`が飛ぶ）。probe-rsのMCX Aのリセットの手順（`reset_system`がROMの出口にウォッチポイントを置いてリセットし、100ms待ってから`C_HALT`で止めて後始末する）のためで、0.32.0も開発版も同じ。LinkServer、N947・N236、電源投入・RESETボタンでは起きない。probe-rsはA15xにつなぐたびにも（`read`だけでも）CPUを約6msずつ止める。`--reset`を外すと書き込みのあとロックアップのリセット（SRS=0x8010）で起動し、そのあと`probe-rs write`でAIRCRを書くとスケッチが2回起動するので、0.32.0のCLIでは避けられない（2026-11-21に試した）。このまま残し、CHANGELOG・API_COMPATIBILITY・`upload_probe-rs.sh`・memoの§3に書いた（ユーザーが決定）
+  - まだ: A153でRTC_NXP_Arduinoの`PCF2131_interrupt_based_operation`（PCF2131の基板が要る）。`__FILE__`: デバッガでブレークポイントからソースに飛べること（デバッグ情報のパスは変えていない）。Windowsで`-fmacro-prefix-map`が効くか（ステージングで）
+  - まだ: probe-rs: Windows（`upload_probe-rs.bat`は一度も動かしていない）とLinux（udevのルール）での書き込み・デバッグ（ステージングで）。macOSでは4ボードともIDEとarduino-cliで確かめた
 - **リリースごとの変更点**: [CHANGELOG.md](CHANGELOG.md)
 - **各リリースで何をやり、どこで詰まったかの詳細**: [docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md)
   （v0.1.5〜v0.12.0の全作業記録と、CLAUDE.mdから移した記述。自動では読み込まれないので、経緯が必要なときだけ開く）
@@ -154,7 +152,7 @@
 - **1.0までに変えない**: インスタンス名（`Wire1`・`Serial1`・`SPI1`など）は付け替えない。`endTransmission()`の戻り値はAVRの0〜5。公開APIの範囲はAPI_COMPATIBILITYの冒頭の「What stays compatible」。
 - **ADCの無いピンへの`analogRead()`をビルド時に検出する案は入れない**（実行時の`panic()`のまま）。
 - **0.12.0でやらなかった**: `SoftwareSerial`・USB・r01libの名前空間。
-- **0.13.0の範囲（2026-11-20に決めたもの）**: ウォッチドッグのAPIを入れる（`<avr/wdt.h>`と同梱の`WDT`で入れた。仕様は`memo/notes_toward_1.0.0.md`の§11。**実機での確認はまだ**: `test_watchdog`と`WatchdogRefresh`を5ボードで）。r01libの名前空間はやらない（効果が薄い）。ほかの大域インスタンス（`Serial1`・`SPI1`など）を使ったときだけリンクする案はやらない（減るのは100バイト以下）。経緯は`memo/notes_toward_1.0.0.md`の§8・§10。
+- **0.13.0の範囲（2026-11-20に決めたもの）**: ウォッチドッグのAPIを入れる（`<avr/wdt.h>`と同梱の`WDT`で入れた。仕様は`memo/notes_toward_1.0.0.md`の§11。2026-11-21に5ボードで実機で確かめた）。r01libの名前空間はやらない（効果が薄い）。ほかの大域インスタンス（`Serial1`・`SPI1`など）を使ったときだけリンクする案はやらない（減るのは100バイト以下）。経緯は`memo/notes_toward_1.0.0.md`の§8・§10。
 - **0.12.0で入れた機能**（`MsTimer2`・`TimerOne`・`mcxTicker`、`Servo`のPWMの無いピン、PWMの周期とパルス幅をtickで持つこと、`mcx-discovery`、デバッガのペリフェラルのレジスタ表示、A4/A5の`Wire.setPins()`）の仕様と決定は、触る前に`releases_and_decisions.md`を読む。
 
 ## ボード別の前提（要点。そのボードを触る前に`docs/dev_notes/board_*.md`を読む）

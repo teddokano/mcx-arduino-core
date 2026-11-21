@@ -289,6 +289,15 @@ void setup() {
     ;
 
   Serial.println("Servo on every pin without PWM (no wiring)");
+
+  // Right after an upload with probe-rs (0.32.0), FRDM-MCXA153 and
+  // FRDM-MCXA156 stand still for 4 to 8ms about 100ms after they start:
+  // probe-rs halts the core then. micros() stops with it and the servo's
+  // timer doesn't, so a period timed across it comes out that much short.
+  // Started from power-on, the RESET button or LinkServer, the wait does
+  // nothing.
+  delay(300);
+
   Serial.println("--- one pin at a time ---");
 
   for (int i = 0; i < PIN_COUNT; i++)
