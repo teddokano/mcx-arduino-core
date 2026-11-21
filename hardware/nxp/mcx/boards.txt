@@ -65,13 +65,15 @@ frdm_mcxa153.menu.eeprom.off.build.eeprom_defines=-DMCX_EEPROM_NONE
 frdm_mcxa153.build.pyocd_target=mcxa153
 frdm_mcxa153.build.linkserver_target=MCXA153:FRDM-MCXA153
 frdm_mcxa153.upload.tool=linkserver
-# Tools > Upload method (menu.upload_method at the top)
+# Tools > Upload method (menu.upload_method at the top). The first option
+# listed is the menu's default: probe-rs, which comes with this package, so
+# nothing else needs installing to upload and debug this board.
 frdm_mcxa153.build.probe_rs_chip=MCXA153
-frdm_mcxa153.menu.upload_method.linkserver=LinkServer
 frdm_mcxa153.menu.upload_method.probe_rs=probe-rs
 frdm_mcxa153.menu.upload_method.probe_rs.upload.tool=probe_rs
 frdm_mcxa153.menu.upload_method.probe_rs.upload.tool.default=probe_rs
 frdm_mcxa153.menu.upload_method.probe_rs.debug.server.openocd.script=a153-probe-rs.cfg
+frdm_mcxa153.menu.upload_method.linkserver=LinkServer
 frdm_mcxa153.upload.tool.default=linkserver
 frdm_mcxa153.upload.protocol=
 
@@ -131,13 +133,15 @@ frdm_mcxn947.build.ldscript=MCXN947.ld
 frdm_mcxn947.build.pyocd_target=mcxn947
 frdm_mcxn947.build.linkserver_target=MCXN947:FRDM-MCXN947
 frdm_mcxn947.upload.tool=linkserver
-# Tools > Upload method (menu.upload_method at the top)
+# Tools > Upload method (menu.upload_method at the top). The first option
+# listed is the menu's default: probe-rs, which comes with this package, so
+# nothing else needs installing to upload and debug this board.
 frdm_mcxn947.build.probe_rs_chip=MCXN947
-frdm_mcxn947.menu.upload_method.linkserver=LinkServer
 frdm_mcxn947.menu.upload_method.probe_rs=probe-rs
 frdm_mcxn947.menu.upload_method.probe_rs.upload.tool=probe_rs
 frdm_mcxn947.menu.upload_method.probe_rs.upload.tool.default=probe_rs
 frdm_mcxn947.menu.upload_method.probe_rs.debug.server.openocd.script=n947-probe-rs.cfg
+frdm_mcxn947.menu.upload_method.linkserver=LinkServer
 frdm_mcxn947.upload.tool.default=linkserver
 frdm_mcxn947.upload.protocol=
 
@@ -198,13 +202,15 @@ frdm_mcxa156.build.ldscript=MCXA156.ld
 frdm_mcxa156.build.pyocd_target=mcxa156
 frdm_mcxa156.build.linkserver_target=MCXA156:FRDM-MCXA156
 frdm_mcxa156.upload.tool=linkserver
-# Tools > Upload method (menu.upload_method at the top)
+# Tools > Upload method (menu.upload_method at the top). The first option
+# listed is the menu's default: probe-rs, which comes with this package, so
+# nothing else needs installing to upload and debug this board.
 frdm_mcxa156.build.probe_rs_chip=MCXA156
-frdm_mcxa156.menu.upload_method.linkserver=LinkServer
 frdm_mcxa156.menu.upload_method.probe_rs=probe-rs
 frdm_mcxa156.menu.upload_method.probe_rs.upload.tool=probe_rs
 frdm_mcxa156.menu.upload_method.probe_rs.upload.tool.default=probe_rs
 frdm_mcxa156.menu.upload_method.probe_rs.debug.server.openocd.script=a156-probe-rs.cfg
+frdm_mcxa156.menu.upload_method.linkserver=LinkServer
 frdm_mcxa156.upload.tool.default=linkserver
 frdm_mcxa156.upload.protocol=
 
@@ -262,7 +268,8 @@ frdm_mcxn236.build.ldscript=MCXN236.ld
 frdm_mcxn236.build.pyocd_target=mcxn236
 frdm_mcxn236.build.linkserver_target=MCXN236:FRDM-MCXN236
 frdm_mcxn236.upload.tool=linkserver
-# Tools > Upload method (menu.upload_method at the top)
+# Tools > Upload method (menu.upload_method at the top). LinkServer stays the
+# default here: probe-rs 0.32.0 uploads to this board but can't debug it.
 frdm_mcxn236.build.probe_rs_chip=MCXN236VDF
 frdm_mcxn236.menu.upload_method.linkserver=LinkServer
 frdm_mcxn236.menu.upload_method.probe_rs=probe-rs

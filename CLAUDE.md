@@ -10,12 +10,14 @@
   `EEPROM`はこのリポジトリが本体（フラッシュの配置がリンカスクリプトと一体なので）。`Servo`もこのリポジトリが本体で、コアの`analog_pwm_out()`（`arduino_analog.h`）でピンの`PwmOut`を受け取り、マイクロ秒でパルス幅を設定する（`analogWriteResolution()`に触らない）。PWMの無いピンはタイマーの割り込みでGPIOを上げ下げする（下の`Servo`の項目）
 - **現在のリリース**: **v0.12.0**（2026-11-01）。リリースzipはSHA-256 `4bc86783d5f4aea44647e8f74b53c3f4454cbef1e60960e3d70fae3b4d3ba9ff`、18890777 bytes。タグ`0.12.0`は`68ba2fb`。前の版は0.11.0（2026-10-25）、0.10.0（2026-10-18）、0.10.1（Fritzingの部品だけ）。
 - **開発中**: `0.13.0-dev`（2026-11-20に`0.12.0-dev`から切った）。リンクをnewlib-nanoにした（それまでfull newlibがリンクされ、スケッチが15〜55KB大きく、A153でRTC_NXP_Arduinoのサンプルが入らなかった）。`Print`・`String`の64ビットは`%lld`を使わず自前で変換し、`__FILE__`は`-fmacro-prefix-map`で短くした。CIでスケッチのサイズを基準（`.github/sizes/`）と比べるようにした。`Wire1`のI3Cは`Wire1`を使うスケッチにだけリンクする（`Wire`・`Wire1`・`Wire2`は`constinit`、`Print`のvirtualデストラクタを外した）。ウォッチドッグ（`<avr/wdt.h>`と同梱の`WDT`）を入れた。
+  Toolsメニューに「Optimize」（`-O2`/`-Os`）・A153の「EEPROM」（1KB/None）・「Upload method」（probe-rs/LinkServer。C444以外の4ボード。既定はA153・A156・N947がprobe-rs、N236がLinkServer）を足し、「Optimize for Debugging」を`-Og`にした。probe-rs 0.32.0はパッケージに同梱する（索引の`tools`、Windowsはリリースに添付するzip。`.github/scripts/probe_rs_tool.py`）。README・TUTORIALは「C444とN236のデバッグ以外はLinkServerなしでよい」と案内する。probe-rsの経緯・回避策・オプションの決定は`memo/notes_toward_1.0.0.md`の§3
   **実機での確認はまだ（ボードを用意できたら、5ボードで）**:
   - newlib-nano: `test_String_64bit`・`test_print_float_rounding`・`test_Serial_print_time_t`、A153でRTC_NXP_Arduinoの`PCF2131_interrupt_based_operation`、`String`を多く使う`test_String`（mallocがnano版になった）
   - `__FILE__`: デバッガでブレークポイントからソースに飛べること（デバッグ情報のパスは変えていない）。Windowsで`-fmacro-prefix-map`が効くか（ステージングで）
   - I3C: A153・N947で`Wire1`のセンサー（`test_Wire1_onboard_sensor_raw`）、`release_check/16`（`setPins()`・`end()`）、mcxPinStateの`Wire`の行（`release_check/04`）
   - ウォッチドッグ: `release_check/0A_watchdog`（配線なし。2回わざとリセットしてALL OKまで。`test_watchdog`も同じ確認）と`WDT`の`WatchdogRefresh`。C444はソフトウェアリセットでも`MCUSR`の`WDRF`が付くこと
   - 0.12.0のあとに入った`test_Servo_all_pins`（N947以外の4ボード）
+  - probe-rs: Windows（`upload_probe-rs.bat`は一度も動かしていない）とLinux（udevのルール）での書き込み・デバッグ（ステージングで）。macOSでは4ボードともIDEとarduino-cliで確かめた
 - **リリースごとの変更点**: [CHANGELOG.md](CHANGELOG.md)
 - **各リリースで何をやり、どこで詰まったかの詳細**: [docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md)
   （v0.1.5〜v0.12.0の全作業記録と、CLAUDE.mdから移した記述。自動では読み込まれないので、経緯が必要なときだけ開く）
@@ -172,5 +174,5 @@
 ## Pendingタスク（番号は変えない。全文は`docs/dev_notes/pending_tasks.md`）
 - **6**: 上流`r01lib`（`~/dev/mcuxpresso/r01lib`）には手を入れない。反映は**1.0の直前にやる**（2026-11-20に決定。それまでは保留）。
 - **7**: GPIO治具は作らない。
-- **9**: LinkServer 26.9.130はA153のフラッシュを32KBと読む。避ける版の一覧は`upload.sh`の`flash_size_bug()`、`upload.bat`の`:consider`、`gdb-bridge`の`flashSizeBug`の3か所。公開リポジトリには症状だけを書く。
+- **9**: LinkServer 26.9.130はA153のフラッシュを32KBと読む。避ける版の一覧は`upload.sh`の`flash_size_bug()`、`upload.bat`の`:consider`、`gdb-bridge`の`flashSizeBug`の3か所。公開リポジトリには症状だけを書く。0.13.0からは、Upload method → probe-rsならこの件に当たらない。
 - **10**: A4/A5の`Wire.setPins()`は0.12.0で入れた（解消）。

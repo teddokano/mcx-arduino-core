@@ -167,6 +167,12 @@ func main() {
 	linkserver, err := findLinkServer(device)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "gdb-bridge: LinkServer not found. Install it from https://www.nxp.com/linkserver")
+		// probe-rs, which comes with the package, debugs these boards
+		// (the FRDM-MCXN236 needs a probe-rs newer than 0.32.0)
+		switch chipOf(device) {
+		case "MCXA153", "MCXA156", "MCXN947":
+			fmt.Fprintln(os.Stderr, "gdb-bridge: or debug without it: Tools > Upload method > probe-rs (probe-rs comes with this board package)")
+		}
 		os.Exit(1)
 	}
 

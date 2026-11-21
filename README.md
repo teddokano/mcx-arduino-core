@@ -78,20 +78,60 @@ it, and has its own guide:
 
 ## Requirements
 
-### NXP LinkServer (Required for uploading and debugging)
+### Uploading and debugging: probe-rs or NXP LinkServer
 
-This package uses **NXP LinkServer** for uploading sketches to the board,
-and also as the backend for Arduino IDE 2's built-in debugger (breakpoints,
-stepping, variable inspection) — LinkServer's own gdbserver is used under
-the hood, since upstream OpenOCD has no support for the MCX chip family yet.
-Please install it before using the Upload or Debug buttons in Arduino IDE.
-On FRDM-MCXA153, FRDM-MCXA156, FRDM-MCXN947 and FRDM-MCXN236, **Tools → Upload method →
-probe-rs** (from 0.13.0) uploads and debugs with [probe-rs](https://probe.rs) instead, which
-comes with the board package: nothing else to install.
-For debugging, tick **Sketch → Optimize for Debugging** before uploading
-(from 0.13.0): it builds with `-Og`, which keeps variables and the order of
-the source lines for the debugger, where the usual `-O2` (or `-Os`, from
-**Tools → Optimize**) rearranges them.
+Two tools can upload sketches and run Arduino IDE 2's built-in debugger
+(breakpoints, stepping, variable inspection). From 0.13.0, each board picks
+one under **Tools → Upload method**:
+
+- **[probe-rs](https://probe.rs)** comes with the board package: there is
+  nothing else to install. It is the menu's default on FRDM-MCXA153,
+  FRDM-MCXA156 and FRDM-MCXN947
+- **NXP LinkServer** is installed separately. It is the menu's default on
+  FRDM-MCXN236, and the only choice on FRDM-MCXC444
+
+| Board | probe-rs | NXP LinkServer |
+|-------|----------|----------------|
+| FRDM-MCXA153 | Uploads and debugs | Optional |
+| FRDM-MCXA156 | Uploads and debugs | Optional |
+| FRDM-MCXN947 | Uploads and debugs | Optional |
+| FRDM-MCXN236 | Uploads only: the bundled probe-rs 0.32.0 can't debug it | Optional for uploading, **required for debugging** |
+| FRDM-MCXC444 | — (probe-rs doesn't know this chip) | **Required** |
+
+#### Without LinkServer: Tools → Upload method → probe-rs
+
+On FRDM-MCXA153, FRDM-MCXA156 and FRDM-MCXN947, **Tools → Upload method**
+starts at **probe-rs**, so the Upload and Debug buttons work as soon as the
+package is installed, with the probe-rs that Boards Manager installed with
+it. On FRDM-MCXN236, choose **probe-rs** in the menu to upload without
+LinkServer. On FRDM-MCXA153, probe-rs also writes sketches of any size,
+where LinkServer 26.9 stops at 32KB (below). If an upload says "LinkServer
+not found", the menu is set to LinkServer.
+
+On Linux, probe-rs needs permission to open the board's MCU-Link. Install
+probe-rs's udev rules once, then unplug and replug the board (LinkServer's
+installer sets up its own rules, so this is only for going without it):
+
+```bash
+curl -fsSL https://probe.rs/files/69-probe-rs.rules | sudo tee /etc/udev/rules.d/69-probe-rs.rules > /dev/null
+```
+
+```bash
+sudo udevadm control --reload && sudo udevadm trigger
+```
+
+probe-rs has been checked on macOS so far, with Arduino IDE 2 and
+arduino-cli (`-b nxp:mcx:frdm_mcxa153`, or
+`-b nxp:mcx:frdm_mcxn236:upload_method=probe_rs` on FRDM-MCXN236).
+
+#### With LinkServer (FRDM-MCXC444, and debugging FRDM-MCXN236)
+
+LinkServer uploads sketches, and its own gdbserver runs the debugger, since
+upstream OpenOCD has no support for the MCX chip family yet. Install it
+before using the Upload or Debug buttons with **Tools → Upload method →
+LinkServer** (the menu's default on FRDM-MCXN236; on FRDM-MCXA153,
+FRDM-MCXA156 and FRDM-MCXN947, choose it in the menu, or add
+`:upload_method=linkserver` to arduino-cli's `-b`).
 
 👉 Download: https://www.nxp.com/linkserver
 
@@ -121,7 +161,14 @@ After installation, the upload script will automatically detect LinkServer — n
 >
 > As with the download page, downloading LinkServer means accepting NXP's software license agreement.
 
-The install → build → upload flow has been verified on **macOS, Windows 11, and Linux**.
+#### Debugging
+
+Tick **Sketch → Optimize for Debugging** before uploading (from 0.13.0): it
+builds with `-Og`, which keeps variables and the order of the source lines
+for the debugger, where the usual `-O2` (or `-Os`, from **Tools →
+Optimize**) rearranges them.
+
+The install → build → upload flow has been verified on **macOS, Windows 11, and Linux** (with LinkServer).
 
 ## Installation
 
@@ -134,6 +181,10 @@ https://raw.githubusercontent.com/teddokano/mcx-arduino-core/main/package_nxp_mc
 
 4. Go to **Tools → Board → Boards Manager**
 5. Search for `NXP MCX` and click **Install**
+6. Choose the board under **Tools → Board**. **Tools → Upload method**
+   starts at probe-rs on FRDM-MCXA153, FRDM-MCXA156 and FRDM-MCXN947, and
+   at LinkServer on FRDM-MCXN236 and FRDM-MCXC444
+   (see [Requirements](#requirements))
 
 ## Architecture
 
@@ -163,8 +214,9 @@ mcx-arduino-core/
 │   │   └── mcxRCServo/        #   RC servo driver for the PWM pins; likewise synced
 │   ├── tools/
 │   │   ├── upload.sh         # Upload script (auto-detects LinkServer), upload.bat for Windows
+│   │   ├── upload_probe-rs.sh # Upload with probe-rs (Tools → Upload method), .bat for Windows
 │   │   ├── gdb-bridge/       # Bridges Arduino IDE 2's cortex-debug (expects OpenOCD) to
-│   │   │                     #   LinkServer's own gdbserver, for in-IDE debugging
+│   │   │                     #   LinkServer's or probe-rs's gdbserver, for in-IDE debugging
 │   │   └── mcx-discovery/    # Tells the IDE which board is on a port, from the name
 │   │                         #   in the MCU-LINK probe's USB product string
 │   └── variants/

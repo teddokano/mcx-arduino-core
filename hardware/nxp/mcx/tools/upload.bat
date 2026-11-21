@@ -44,6 +44,12 @@ echo ============================================
 echo ERROR: LinkServer not found.
 echo Please install LinkServer from:
 echo https://www.nxp.com/linkserver
+rem probe-rs, which comes with the package, writes every board but the
+rem FRDM-MCXC444 (boards.txt's Upload method menu)
+if /i not "%BOARD_DEVICE:~0,7%"=="MCXC444" (
+    echo or upload without it: Tools ^> Upload method ^> probe-rs
+    echo ^(probe-rs comes with this board package^).
+)
 echo ============================================
 exit /b 1
 

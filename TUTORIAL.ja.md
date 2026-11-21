@@ -11,7 +11,7 @@ English version → [TUTORIAL.md](TUTORIAL.md)
 - [1. インストール](#1-インストール)
   - [1.1. 用意するもの](#11-用意するもの)
   - [1.2. Arduino IDEの入手](#12-arduino-ideの入手)
-  - [1.3. NXP LinkServerのインストール](#13-nxp-linkserverのインストール)
+  - [1.3. 書き込みの道具を選ぶ: probe-rsかNXP LinkServer](#13-書き込みの道具を選ぶ-probe-rsかnxp-linkserver)
   - [1.4. どちらのUSBコネクタを使うか](#14-どちらのusbコネクタを使うか)
   - [1.5. ボードパッケージのインストール](#15-ボードパッケージのインストール)
   - [1.6. Arduino IDEツールバーの基本](#16-arduino-ideツールバーの基本)
@@ -41,8 +41,7 @@ English version → [TUTORIAL.md](TUTORIAL.md)
 
 - **macOS、Windows、またはLinux**のコンピュータ
 - [FRDM-MCXA153](https://www.nxp.com/design/design-center/development-boards-and-designs/FRDM-MCXA153)ボード
-- Arduino IDE 2.x
-- NXP LinkServer
+- Arduino IDE 2.x（書き込みに使う[probe-rs](https://probe.rs)はボードパッケージに同梱されています。このボードではNXP LinkServerはなくてもかまいません。[1.3](#13-書き込みの道具を選ぶ-probe-rsかnxp-linkserver)参照）
 - USB-Cの**データ通信対応**ケーブル（充電専用ケーブルは不可）。安価なUSB-Cケーブルには電源線しかなくデータ線が入っていないものが多く、**Tools → Port**にボードが表示されない場合、まずこれを疑って別のケーブルに交換してみてください
 
 このチュートリアルのほとんどの内容は外部部品なしで試せます。ボード上にLED・ボタン・温度センサーが搭載されているためです。
@@ -51,11 +50,24 @@ English version → [TUTORIAL.md](TUTORIAL.md)
 
 **[arduino.cc/en/software](https://www.arduino.cc/en/software)**からお使いのOS用インストーラをダウンロードしてインストールしてください。**2.x系**の最新版であれば問題ありません（本ガイドは旧版の1.8.x系IDEには対応していません）。
 
-### 1.3. NXP LinkServerのインストール
+### 1.3. 書き込みの道具を選ぶ: probe-rsかNXP LinkServer
 
-このボードへの書き込みにはArduino標準の書き込みツールではなく**NXP LinkServer**を使用するため、書き込みを試す*前に*別途インストールしておく必要があります。
+ボードへのスケッチの書き込みと、Arduino IDEのデバッガには、2つの道具のどちらかを使います。**Tools → Upload method**で選びます（0.13.0から）。
 
-👉 ダウンロード: [nxp.com/linkserver](https://www.nxp.com/linkserver)
+- **[probe-rs](https://probe.rs)**はボードパッケージに同梱されています。FRDM-MCXA153では書き込みもデバッグもでき、**ほかに入れるものはありません**。このボードではメニューの既定で、このチュートリアルではこちらを使います（[1.5](#15-ボードパッケージのインストール)で確かめます）
+- **NXP LinkServer**は別にインストールします。このボードではなくてもかまいません。ほかのボードでは要ることがあります。FRDM-MCXC444はLinkServerでしか書き込めず、FRDM-MCXN236はデバッグにLinkServerが要ります（[README.ja.md](README.ja.md#必要なもの)参照）
+
+**Linuxでは**、probe-rsがボードのMCU-Linkを開けるようにする必要があります。probe-rsのudevのルールを一度入れ、ボードを挿し直してください（LinkServerのインストーラーは自分のルールを入れるので、LinkServerを使わないときだけ要ります）。
+
+```bash
+curl -fsSL https://probe.rs/files/69-probe-rs.rules | sudo tee /etc/udev/rules.d/69-probe-rs.rules > /dev/null
+```
+
+```bash
+sudo udevadm control --reload && sudo udevadm trigger
+```
+
+**LinkServerを使う場合**（すでに入っている、または上のボードで使う）は、[nxp.com/linkserver](https://www.nxp.com/linkserver)からダウンロードしてください。
 
 | OS | インストーラ |
 |----|-----------|
@@ -63,11 +75,11 @@ English version → [TUTORIAL.md](TUTORIAL.md)
 | Windows | `.exe`インストーラ |
 | Linux | `.deb.bin`ファイル |
 
-本チュートリアルのインストール〜ビルド〜書き込みの流れは**macOS、Windows 11、Linuxで検証済み**です。
-
 インストール後は、ボードパッケージの書き込みスクリプトが自動的にLinkServerを検出します — パス設定は不要です。
 
-> **注意: LinkServer 26.9について**
+本チュートリアルのインストール〜ビルド〜書き込みの流れは、LinkServerで**macOS、Windows 11、Linux**、probe-rsでmacOSで検証済みです。
+
+> **注意: LinkServer 26.9について**（LinkServerで書き込むときだけ）
 >
 > LinkServer 26.9.130はFRDM-MCXA153のフラッシュを32KBと読むため、それより大きいスケッチは書き込めません
 > （出力ペインに「Attempt to load into missing flash area」と出ます）。NXPのLinkServerのページには最新版しか載っていないので、
@@ -85,7 +97,7 @@ English version → [TUTORIAL.md](TUTORIAL.md)
 
 ### 1.4. どちらのUSBコネクタを使うか
 
-このボードには**2つ**のUSB-Cコネクタがあり、間違った方に挿すとIDEに何も表示されません。**"MCU-Link USB"**とシルク印刷されたコネクタ（**J15**）を使ってください。このポートがオンボードのデバッグプローブで、LinkServerでの書き込み・ボードへの給電・`Serial`（USB経由のシリアルポート）の出力先すべてを兼ねています。
+このボードには**2つ**のUSB-Cコネクタがあり、間違った方に挿すとIDEに何も表示されません。**"MCU-Link USB"**とシルク印刷されたコネクタ（**J15**）を使ってください。このポートがオンボードのデバッグプローブで、probe-rsやLinkServerでの書き込み・ボードへの給電・`Serial`（USB経由のシリアルポート）の出力先すべてを兼ねています。
 
 ![tutorial_usb](img/tutorial_usb.png)
 
@@ -115,7 +127,8 @@ English version → [TUTORIAL.md](TUTORIAL.md)
 
    ![tutorial_selecting_board](img/tutorial_selecting_board.png)
 
-5. ボードを**MCU-Link USB（J15）**コネクタに接続し、**Tools → Port**でポートを選択。下図はmacOSでの例（`/dev/cu.usbmodem...`）。Windowsでは`COM3`のようなCOMポート、Linuxでは`/dev/ttyACM0`のような名前で表示されるので、それを選択
+5. **Tools → Upload method**が、このボードの既定の**probe-rs**になっていることを確かめる（LinkServerを入れていて、そちらを使いたいときは**LinkServer**を選びます。選んだものはボードごとに覚えられます）
+6. ボードを**MCU-Link USB（J15）**コネクタに接続し、**Tools → Port**でポートを選択。下図はmacOSでの例（`/dev/cu.usbmodem...`）。Windowsでは`COM3`のようなCOMポート、Linuxでは`/dev/ttyACM0`のような名前で表示されるので、それを選択
 
    ![tutorial_selecting_port](img/tutorial_selecting_port.png)
 
@@ -128,7 +141,7 @@ English version → [TUTORIAL.md](TUTORIAL.md)
 | アイコン | 機能 |
 |---|---|
 | ✔（チェックマーク） | **Verify（検証）** — 書き込みせずにコンパイルのみ行う。エラーを素早く確認するのに便利 |
-| →（右向き矢印） | **Upload（アップロード）** — コンパイル**して**ボードへ書き込む（LinkServer経由、MCU-Link USBコネクタ越し） |
+| →（右向き矢印） | **Upload（アップロード）** — コンパイル**して**ボードへ書き込む（**Tools → Upload method**で選んだ道具で、MCU-Link USBコネクタ越し） |
 | 🔍（虫眼鏡アイコン、右上） | **Serial Monitor（シリアルモニタ）** — スケッチが`Serial.print`/`println`で送った内容を表示するパネルを開く |
 
 ![buttons](img/buttons.png)
@@ -142,12 +155,18 @@ English version → [TUTORIAL.md](TUTORIAL.md)
 **Tools → Portに何も表示されない場合:**
 - 別のUSB-Cケーブルを試す — データ通信対応のケーブルであることを確認（[1.1](#11-用意するもの)参照）
 - **MCU-Link USB（J15）**に接続しているか確認、**MCU USB（J8）**ではない（[1.4](#14-どちらのusbコネクタを使うか)参照）
-- NXP LinkServerがインストールされているか確認（[1.3](#13-nxp-linkserverのインストール)参照）
 - ボードを抜き差しする、またはPC側の別のUSBポートを試す
 
-**アップロードに失敗する、または出力ペインにLinkServer関連のエラーが出る場合:**
-- LinkServerが実際にインストールされているか確認 — 書き込みスクリプトは自動検出しますが、インストールされていないと見つけられません
-- 「Attempt to load into missing flash area」と出る場合は、LinkServer 26.9がFRDM-MCXA153のフラッシュを32KBと読んでいます。26.6.137もインストールしてください（26.9と両方あっても問題ありません。ダウンロードのURLは[1.3](#13-nxp-linkserverのインストール)）。書き込みは自動でそちらを使います
+**アップロードが「LinkServer not found」で失敗する場合:**
+- **Tools → Upload method**がLinkServerになっていて、LinkServerが入っていません。**probe-rs**を選ぶ（[1.3](#13-書き込みの道具を選ぶ-probe-rsかnxp-linkserver)参照）か、LinkServerをインストールしてください
+
+**probe-rsでのアップロードに失敗する場合:**
+- Linuxでは、probe-rsのudevのルールを入れる（[1.3](#13-書き込みの道具を選ぶ-probe-rsかnxp-linkserver)参照）
+- ボードを2枚以上つないでいるときは、**Tools → Port**でこのボードのポートを選ぶ。probe-rsはそのポートのボードに書き込みます
+- 「Written on try 2 of 3」のような行はエラーではありません。最初の試みが失敗し、次の試みで書き込めたという意味です（ボードによって起きます）
+
+**出力ペインにLinkServer関連のエラーが出る場合:**
+- 「Attempt to load into missing flash area」と出る場合は、LinkServer 26.9がFRDM-MCXA153のフラッシュを32KBと読んでいます。26.6.137もインストールしてください（26.9と両方あっても問題ありません。ダウンロードのURLは[1.3](#13-書き込みの道具を選ぶ-probe-rsかnxp-linkserver)）。書き込みは自動でそちらを使います。または**Tools → Upload method**で**probe-rs**を選べば、大きさにかかわらず書き込めます
 - Windowsでは**デバイスマネージャー**でボードのエントリに黄色い警告アイコン（ドライバの問題）が出ていないか確認
 - ポートを掴んだままの他のプログラム（別のシリアルモニタ、ターミナルソフト等）を閉じる
 

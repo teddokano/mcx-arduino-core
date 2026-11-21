@@ -14,7 +14,7 @@ runnable sketch. See [API_COMPATIBILITY.md](API_COMPATIBILITY.md) for the full A
 - [1. Installation](#1-installation)
   - [1.1. What you need](#11-what-you-need)
   - [1.2. Get the Arduino IDE](#12-get-the-arduino-ide)
-  - [1.3. Install NXP LinkServer](#13-install-nxp-linkserver)
+  - [1.3. Choose an upload tool: probe-rs or NXP LinkServer](#13-choose-an-upload-tool-probe-rs-or-nxp-linkserver)
   - [1.4. Which USB connector to use](#14-which-usb-connector-to-use)
   - [1.5. Install the board package](#15-install-the-board-package)
   - [1.6. A quick tour of the Arduino IDE toolbar](#16-a-quick-tour-of-the-arduino-ide-toolbar)
@@ -44,8 +44,9 @@ runnable sketch. See [API_COMPATIBILITY.md](API_COMPATIBILITY.md) for the full A
 
 - A **macOS, Windows, or Linux** computer
 - An [FRDM-MCXA153](https://www.nxp.com/design/design-center/development-boards-and-designs/FRDM-MCXA153) board
-- Arduino IDE 2.x
-- NXP LinkServer
+- Arduino IDE 2.x (the board package brings [probe-rs](https://probe.rs)
+  to upload with; NXP LinkServer is optional on this board, see
+  [1.3](#13-choose-an-upload-tool-probe-rs-or-nxp-linkserver))
 - A USB-C **data** cable — not a charge-only one. Many cheap USB-C cables
   only carry power and no data lines; if the board never shows up under
   **Tools → Port**, this is the first thing to try swapping
@@ -60,12 +61,34 @@ Download the installer for your OS from
 it. Any recent Arduino IDE **2.x** works (this guide doesn't cover the
 legacy 1.8.x IDE).
 
-### 1.3. Install NXP LinkServer
+### 1.3. Choose an upload tool: probe-rs or NXP LinkServer
 
-This board is programmed with **NXP LinkServer**, not Arduino's own upload
-tool, so it needs to be installed separately *before* you upload anything.
+Sketches are written to the board, and the Arduino IDE's debugger runs, with
+one of two tools, chosen under **Tools → Upload method** (from 0.13.0):
 
-👉 Download: [nxp.com/linkserver](https://www.nxp.com/linkserver)
+- **[probe-rs](https://probe.rs)** comes with the board package. On the
+  FRDM-MCXA153 it uploads and debugs, and **there is nothing else to
+  install**. It is the menu's default on this board, and this tutorial
+  uses it (you see it in [1.5](#15-install-the-board-package))
+- **NXP LinkServer** is installed separately. It is optional on this board. Other boards may need it: FRDM-MCXC444
+  uploads only with LinkServer, and FRDM-MCXN236 needs it for debugging
+  (see [README.md](README.md#requirements))
+
+**On Linux**, probe-rs needs permission to open the board's MCU-Link.
+Install probe-rs's udev rules once, then unplug and replug the board
+(LinkServer's installer sets up its own, so this is only needed without
+it):
+
+```bash
+curl -fsSL https://probe.rs/files/69-probe-rs.rules | sudo tee /etc/udev/rules.d/69-probe-rs.rules > /dev/null
+```
+
+```bash
+sudo udevadm control --reload && sudo udevadm trigger
+```
+
+**If you use LinkServer** (already installed, or for the boards above),
+download it from [nxp.com/linkserver](https://www.nxp.com/linkserver):
 
 | OS | Installer |
 |----|-----------|
@@ -73,13 +96,14 @@ tool, so it needs to be installed separately *before* you upload anything.
 | Windows | `.exe` installer |
 | Linux | `.deb.bin` file |
 
-This tutorial's full install → build → upload flow has been verified on
-**macOS, Windows 11, and Linux**.
-
 Once installed, the board package's upload script finds LinkServer
 automatically — no path configuration needed.
 
-> **Note: LinkServer 26.9**
+This tutorial's full install → build → upload flow has been verified on
+**macOS, Windows 11, and Linux** with LinkServer, and on macOS with
+probe-rs.
+
+> **Note: LinkServer 26.9** (only when uploading with LinkServer)
 >
 > LinkServer 26.9.130 reads the FRDM-MCXA153's flash as 32KB, so a sketch
 > larger than that fails to upload (the output pane says "Attempt to load
@@ -103,7 +127,7 @@ automatically — no path configuration needed.
 The board has **two** USB-C connectors — plugging into the wrong one means
 nothing will show up in the IDE. Use the one silkscreened **"MCU-Link
 USB"** (connector **J15**). That port is the on-board debug probe: it's what
-LinkServer uploads through, it powers the board, and it's what `Serial`
+probe-rs or LinkServer uploads through, it powers the board, and it's what `Serial`
 (the USB-bridged serial port) comes out of.
 
 ![tutorial_usb](img/tutorial_usb.png)
@@ -137,7 +161,10 @@ package doesn't use for anything in this tutorial.
 
    ![tutorial_selecting_board](img/tutorial_selecting_board.png)
 
-5. Plug the board into the **MCU-Link USB (J15)** connector and select its
+5. **Tools → Upload method** shows **probe-rs**, this board's default:
+   leave it there. (To use LinkServer instead, if you installed it, select
+   **LinkServer**. Each board keeps its own choice)
+6. Plug the board into the **MCU-Link USB (J15)** connector and select its
    port under **Tools → Port**. The picture below is from macOS
    (`/dev/cu.usbmodem...`); on Windows the port shows up as a COM port such
    as `COM3`, and on Linux as a name such as `/dev/ttyACM0`
@@ -154,7 +181,7 @@ constantly:
 | Icon | What it does |
 |---|---|
 | ✔ (checkmark) | **Verify** — compiles the sketch without uploading, useful to catch errors quickly |
-| → (right arrow) | **Upload** — compiles *and* uploads to the board (via LinkServer, over the MCU-Link USB connector) |
+| → (right arrow) | **Upload** — compiles *and* uploads to the board (with the tool chosen under **Tools → Upload method**, over the MCU-Link USB connector) |
 | 🔍 (magnifying glass), top right | **Serial Monitor** — opens a panel showing whatever the sketch sends with `Serial.print`/`println` |
 
 ![buttons](img/buttons.png)
@@ -175,17 +202,27 @@ garbled text or nothing at all.
   charge-only (see [1.1](#11-what-you-need))
 - Make sure you're plugged into **MCU-Link USB (J15)**, not **MCU USB
   (J8)** (see [1.4](#14-which-usb-connector-to-use))
-- Make sure NXP LinkServer is installed (see [1.3](#13-install-nxp-linkserver))
 - Unplug and replug the board, or try a different USB port on your
   computer
 
-**Upload fails, or the output pane shows a LinkServer error:**
-- Confirm LinkServer is actually installed — the upload script looks for
-  it automatically, but only finds it if it's installed
+**Upload fails with "LinkServer not found":**
+- **Tools → Upload method** is set to LinkServer, which isn't
+  installed. Select **probe-rs** (see [1.3](#13-choose-an-upload-tool-probe-rs-or-nxp-linkserver)),
+  or install LinkServer
+
+**Upload fails with probe-rs:**
+- On Linux, install probe-rs's udev rules (see [1.3](#13-choose-an-upload-tool-probe-rs-or-nxp-linkserver))
+- With more than one board connected, select this board's port under
+  **Tools → Port**: probe-rs writes to the board on that port
+- A line such as "Written on try 2 of 3" is not an error: the first try
+  failed and the next one wrote the sketch (this happens on some boards)
+
+**Upload fails with a LinkServer error:**
 - If it says "Attempt to load into missing flash area", you have LinkServer
   26.9, which reads the FRDM-MCXA153's flash as 32KB. Also install
-  26.6.137 (having both installed is fine; download links in [1.3](#13-install-nxp-linkserver));
-  uploads then use that one by themselves
+  26.6.137 (having both installed is fine; download links in [1.3](#13-choose-an-upload-tool-probe-rs-or-nxp-linkserver));
+  uploads then use that one by themselves. Or select **probe-rs** under
+  **Tools → Upload method**, which writes sketches of any size
 - On Windows, check **Device Manager** for a driver problem (a yellow
   warning icon) on the board's entry
 - Close any other program that might be holding the port open (another

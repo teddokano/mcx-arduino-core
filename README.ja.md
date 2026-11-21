@@ -59,12 +59,48 @@ LLMやAIのコーディングツール向けには、これらの文書と、こ
 
 ## 必要なもの
 
-### NXP LinkServer（アップロード・デバッグに必須）
+### 書き込みとデバッグ: probe-rsかNXP LinkServer
 
-このパッケージはスケッチをボードへアップロードする際に**NXP LinkServer**を使用します。
-また、Arduino IDE 2の内蔵デバッガ（ブレークポイント、ステップ実行、変数参照）のバックエンドとしても
-LinkServer自身のgdbserverを使用します——本家OpenOCDはMCXチップファミリにまだ対応していないためです。
-**Arduino IDEのUpload/Debugボタンを使う前にインストールしておいて**ください。
+スケッチの書き込みと、Arduino IDE 2の内蔵デバッガ（ブレークポイント、ステップ実行、変数参照）には、
+2つの道具が使えます。0.13.0から、ボードごとに**Tools → Upload method**でどちらかを選びます。
+
+- **[probe-rs](https://probe.rs)**はボードパッケージに同梱されています。ほかに入れるものはありません。FRDM-MCXA153・FRDM-MCXA156・FRDM-MCXN947ではメニューの既定です
+- **NXP LinkServer**は別にインストールします。FRDM-MCXN236ではメニューの既定で、FRDM-MCXC444ではこれしか選べません
+
+| ボード | probe-rs | NXP LinkServer |
+|-------|----------|----------------|
+| FRDM-MCXA153 | 書き込み・デバッグ | なくてもよい |
+| FRDM-MCXA156 | 書き込み・デバッグ | なくてもよい |
+| FRDM-MCXN947 | 書き込み・デバッグ | なくてもよい |
+| FRDM-MCXN236 | 書き込みだけ（同梱のprobe-rs 0.32.0ではデバッグできない） | 書き込みにはなくてもよい。**デバッグには必要** |
+| FRDM-MCXC444 | —（probe-rsがこのチップを知らない） | **必要** |
+
+#### LinkServerなしで: Tools → Upload method → probe-rs
+
+FRDM-MCXA153・FRDM-MCXA156・FRDM-MCXN947では、**Tools → Upload method**は最初から**probe-rs**になっています。
+パッケージを入れればすぐ、UploadボタンとDebugボタンが、Boards Managerがパッケージと一緒に入れたprobe-rsで動きます。
+FRDM-MCXN236でLinkServerなしに書き込むときは、メニューで**probe-rs**を選びます。
+FRDM-MCXA153では、LinkServer 26.9が32KBで止まるスケッチ（下記）も、大きさにかかわらず書き込めます。
+書き込みで「LinkServer not found」と出たら、このメニューがLinkServerになっています。
+
+Linuxでは、probe-rsがボードのMCU-Linkを開けるようにする必要があります。probe-rsのudevのルールを一度入れ、
+ボードを挿し直してください（LinkServerのインストーラーは自分のルールを入れるので、LinkServerを使わないときだけ要ります）。
+
+```bash
+curl -fsSL https://probe.rs/files/69-probe-rs.rules | sudo tee /etc/udev/rules.d/69-probe-rs.rules > /dev/null
+```
+
+```bash
+sudo udevadm control --reload && sudo udevadm trigger
+```
+
+probe-rsは、いまのところmacOSで、Arduino IDE 2とarduino-cli（`-b nxp:mcx:frdm_mcxa153`、FRDM-MCXN236では`-b nxp:mcx:frdm_mcxn236:upload_method=probe_rs`）で確かめています。
+
+#### LinkServerで（FRDM-MCXC444と、FRDM-MCXN236のデバッグ）
+
+LinkServerはスケッチを書き込み、デバッガにはLinkServer自身のgdbserverを使います——本家OpenOCDはMCXチップファミリにまだ対応していないためです。
+**Tools → Upload method → LinkServer**でUpload/Debugボタンを使う前に、インストールしておいてください
+（FRDM-MCXN236ではメニューの既定です。FRDM-MCXA153・FRDM-MCXA156・FRDM-MCXN947では、メニューで選ぶか、arduino-cliの`-b`に`:upload_method=linkserver`を付けます）。
 
 👉 ダウンロード: https://www.nxp.com/linkserver
 
@@ -94,7 +130,12 @@ LinkServer自身のgdbserverを使用します——本家OpenOCDはMCXチップ
 >
 > ダウンロードページから入手する場合と同じく、ダウンロードするとNXPのソフトウェア使用許諾に同意したことになります。
 
-インストール→ビルド→アップロードの一連の流れは**macOS・Windows 11・Linux**で検証済みです。
+#### デバッグ
+
+書き込む前に**Sketch → Optimize for Debugging**にチェックを入れてください（0.13.0から）。`-Og`でビルドされ、
+変数やソースの行の順番がデバッガから見えるまま残ります。ふだんの`-O2`（**Tools → Optimize**で選べる`-Os`も）では、これらが入れ替わります。
+
+インストール→ビルド→アップロードの一連の流れは**macOS・Windows 11・Linux**で（LinkServerで）検証済みです。
 
 ## インストール
 
@@ -107,6 +148,8 @@ https://raw.githubusercontent.com/teddokano/mcx-arduino-core/main/package_nxp_mc
 
 4. **Tools → Board → Boards Manager**を開く
 5. `NXP MCX`を検索して**Install**をクリック
+6. **Tools → Board**でボードを選ぶ。**Tools → Upload method**は、FRDM-MCXA153・FRDM-MCXA156・FRDM-MCXN947ではprobe-rs、
+   FRDM-MCXN236・FRDM-MCXC444ではLinkServerが最初から選ばれています（[必要なもの](#必要なもの)を参照）
 
 ## アーキテクチャ
 
@@ -135,8 +178,9 @@ mcx-arduino-core/
 │   │   └── mcxRCServo/        #   PWMのピンからRCサーボを駆動。同じく同期
 │   ├── tools/
 │   │   ├── upload.sh         # アップロードスクリプト（LinkServer自動検出）、Windows用はupload.bat
-│   │   ├── gdb-bridge/       # Arduino IDE 2のcortex-debug（OpenOCDを想定）をLinkServer自身の
-│   │   │                     #   gdbserverへ橋渡しし、IDE内デバッグを実現
+│   │   ├── upload_probe-rs.sh # probe-rsで書き込む（Tools → Upload method）、Windows用は.bat
+│   │   ├── gdb-bridge/       # Arduino IDE 2のcortex-debug（OpenOCDを想定）をLinkServerか
+│   │   │                     #   probe-rsのgdbserverへ橋渡しし、IDE内デバッグを実現
 │   │   └── mcx-discovery/    # MCU-LINKのUSBの製品名にあるボード名から、ポートのボードを
 │   │                         #   IDEに知らせる
 │   └── variants/

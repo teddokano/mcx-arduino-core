@@ -20,14 +20,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - **Tools → EEPROM** on FRDM-MCXA153: None gives a sketch all 128KB of flash instead of 112KB, without the `EEPROM`
   library (`#include <EEPROM.h>` then stops the build; what EEPROM kept is lost once a sketch grows into it).
 - **Sketch → Optimize for Debugging** now builds with `-Og` for the debugger; before, it changed nothing.
-- **Tools → Upload method** on FRDM-MCXA153, FRDM-MCXA156, FRDM-MCXN947 and FRDM-MCXN236: LinkServer (the default, as
-  before) or [probe-rs](https://probe.rs), for both the Upload and the Debug buttons. probe-rs writes every size of sketch
-  on FRDM-MCXA153, where LinkServer 26.9 stops at 32KB. Boards Manager installs probe-rs with the package (for
-  Windows from this repository's release, packed again into a folder). Checked on macOS: FRDM-MCXA153 and FRDM-MCXA156 upload and
-  debug; with probe-rs 0.32.0, FRDM-MCXN947 needs a second try (made by itself, up to three tries for an upload), and FRDM-MCXN236
-  uploads but doesn't debug (the Debug button says so, and to choose LinkServer). The SWD clock is 4MHz (probe-rs's own
-  default is 1MHz, which took twice as long), or `PROBE_RS_SPEED` in kHz. probe-rs checks what it wrote when
-  **Verify code after upload** is on in Arduino IDE's preferences (off by default; `arduino-cli upload --verify`). Both work with probe-rs's development version.
+- **Tools → Upload method** on FRDM-MCXA153, FRDM-MCXA156, FRDM-MCXN947 and FRDM-MCXN236: [probe-rs](https://probe.rs)
+  or LinkServer, for both the Upload and the Debug buttons. Boards Manager installs probe-rs with the package (for
+  Windows from this repository's release, packed again into a folder), so **LinkServer is now optional** on
+  FRDM-MCXA153, FRDM-MCXA156 and FRDM-MCXN947, and for uploading to FRDM-MCXN236.
+  - **probe-rs is the default on FRDM-MCXA153, FRDM-MCXA156 and FRDM-MCXN947**: uploads there no longer use LinkServer
+    unless the menu (or `:upload_method=linkserver` in arduino-cli's FQBN) chooses it. FRDM-MCXN236 stays on
+    LinkServer, since the bundled probe-rs can't debug it. FRDM-MCXC444 has LinkServer only: probe-rs doesn't know its
+    chip.
+  - README and the tutorial start with probe-rs, and an upload or debug session set to LinkServer that finds no
+    LinkServer says to choose probe-rs (on Linux, probe-rs needs its udev rules, which README gives).
+  - probe-rs writes every size of sketch on FRDM-MCXA153, where LinkServer 26.9 stops at 32KB.
+  - The SWD clock is 4MHz (probe-rs's own default is 1MHz, which took twice as long), or `PROBE_RS_SPEED` in kHz.
+  - probe-rs checks what it wrote when **Verify code after upload** is on in Arduino IDE's preferences (off by
+    default; `arduino-cli upload --verify`).
+  - Checked on macOS. With the bundled probe-rs 0.32.0, FRDM-MCXN947's first try now and then fails, and an upload tries
+    up to three times by itself; FRDM-MCXN236 uploads but doesn't debug (the Debug button says so, and to choose
+    LinkServer). Both work with probe-rs's development version.
 - `API_COMPATIBILITY.md` starts with a list of the limits that most often surprise a sketch from another board.
 
 ### Fixed
