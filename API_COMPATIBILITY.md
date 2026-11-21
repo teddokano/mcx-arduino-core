@@ -173,7 +173,7 @@ On FRDM-MCXC444 (see [PIN_MAPPING_C444.md](PIN_MAPPING_C444.md)):
 |-----|--------|-------|
 | `delay` | ✅ | On FRDM-MCXC444, which has no cycle counter, it counts SysTick's counter since v0.12.0, so time spent in interrupts during it no longer adds to it (`delay(500)` took 501 ms, and 514 ms under a 10 kHz `TimerOne`; now 500.005 ms by `micros()`) |
 | `delayMicroseconds` | ✅ | |
-| `millis` / `micros` | ✅ | SysTick(1ms) + DWT cycle counter. They count from before `setup()`, as on AVR (since v0.11.0; before, from their first call). On the Cortex-M33 boards the tick counts whole milliseconds from the cycle counter, so a tick held back (by interrupts off, or by `MCXEthernet`'s tick, which shares its lowest priority) doesn't shift `micros()`, and ticks missed while interrupts were off for over 1 ms come back (since v0.11.0) |
+| `millis` / `micros` | ✅ | SysTick(1ms) + DWT cycle counter. They count from before `setup()`, as on AVR (since v0.11.0; before, from their first call). On the Cortex-M33 boards the tick counts whole milliseconds from the cycle counter, so a tick held back (by interrupts off, or by `MCXEthernet`'s tick, which shares its lowest priority) doesn't shift `micros()`, and ticks missed while interrupts were off for over 1 ms come back (since v0.11.0). A debugger that lets go of a running sketch (probe-rs does) clears the cycle counter's enable bit `DEMCR.TRCENA`; since v0.13.0 the core sets it again whenever it reads the counter, so `millis()`, `micros()`, `delay()` and `delayMicroseconds()` keep going, with interrupts off too |
 | `tone` / `noTone` | ✅ | CTIMER0, any digital pin, 1 tone at a time |
 
 ## Analog I/O
