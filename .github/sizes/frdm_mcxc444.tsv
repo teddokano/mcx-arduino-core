@@ -94,7 +94,7 @@ examples/Arduino_compatible_API/test_Serial_BIN_and_write	44900	10176
 examples/Arduino_compatible_API/test_Serial_print_time_t	43808	10176
 examples/Arduino_compatible_API/test_Serial_stream_helpers	44272	10184
 examples/Arduino_compatible_API/test_Servo	52528	11792
-examples/Arduino_compatible_API/test_Servo_all_pins	53412	12760
+examples/Arduino_compatible_API/test_Servo_all_pins	53420	12760
 examples/Arduino_compatible_API/test_String	47532	10176
 examples/Arduino_compatible_API/test_String_64bit	44936	10176
 examples/Arduino_compatible_API/test_String_plus_numeric_Printable_fastGPIO	47624	11456
@@ -131,7 +131,7 @@ examples/Arduino_compatible_API/test_fault_report	43836	10184
 examples/Arduino_compatible_API/test_function_local_static	44860	10216
 examples/Arduino_compatible_API/test_math_constants	50028	10176
 examples/Arduino_compatible_API/test_mcxTicker	53548	10384
-examples/Arduino_compatible_API/test_micros_noInterrupts	44980	10184
+examples/Arduino_compatible_API/test_micros_noInterrupts	45056	10184
 examples/Arduino_compatible_API/test_millis_micros	43892	10176
 examples/Arduino_compatible_API/test_network_base_classes	55152	10184
 examples/Arduino_compatible_API/test_print_float_rounding	47244	10256
@@ -147,12 +147,12 @@ examples/Arduino_incompatible_API/r01lib_I3C_demo	43112	10176
 examples/Arduino_incompatible_API/test_r01lib_I3C_rx_leftover	43112	10176
 examples/release_check/01_no_wiring_checks	65244	12464
 examples/release_check/02_no_wiring_manual_observe	51148	11472
-examples/release_check/03_sw2_interrupts	46880	11976
+examples/release_check/03_sw2_interrupts	47180	11976
 examples/release_check/04_mcxpinstate_audit	58892	13344
 examples/release_check/06_eeprom	50264	11520
 examples/release_check/07_eeprom_reset	52048	11568
 examples/release_check/08_pin_modes_with_interrupts_and_analog	64096	17224
-examples/release_check/09_no_wiring_software_checks	80656	11760
+examples/release_check/09_no_wiring_software_checks	80732	11760
 examples/release_check/0A_watchdog	45684	10208
 examples/release_check/11_serial1_and_gpio_loopback	49920	11464
 examples/release_check/12_spi_loopback	48248	11848
