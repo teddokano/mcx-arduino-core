@@ -107,6 +107,7 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 <div class="textblock"><code>#include &quot;<a class="el" href="r01lib_8h_source.html">r01lib.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="_arduino_8h_source.html">Arduino.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="arduino__timer__hooks_8h_source.html">arduino_timer_hooks.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="mcx__watchdog_8h_source.html">mcx_watchdog.h</a>&quot;</code><br />
 <code>#include &quot;fsl_clock.h&quot;</code><br />
 </div>
 <p><a href="arduino__main_8cpp_source.html">Go to the source code of this file.</a></p>
@@ -149,7 +150,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__main_8cpp_source.html#l00064">64</a> of file <a class="el" href="arduino__main_8cpp_source.html">arduino_main.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__main_8cpp_source.html#l00065">65</a> of file <a class="el" href="arduino__main_8cpp_source.html">arduino_main.cpp</a>.</p>
 
 </div>
 </div>
@@ -174,7 +175,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__main_8cpp_source.html#l00069">69</a> of file <a class="el" href="arduino__main_8cpp_source.html">arduino_main.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__main_8cpp_source.html#l00070">70</a> of file <a class="el" href="arduino__main_8cpp_source.html">arduino_main.cpp</a>.</p>
 
 </div>
 </div>
@@ -193,7 +194,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__main_8cpp_source.html#l00034">34</a> of file <a class="el" href="arduino__main_8cpp_source.html">arduino_main.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__main_8cpp_source.html#l00035">35</a> of file <a class="el" href="arduino__main_8cpp_source.html">arduino_main.cpp</a>.</p>
 
 </div>
 </div>
@@ -213,7 +214,7 @@ Variables</h2></td></tr>
 </div><div class="memdoc">
 <dl class="section return"><dt>Returns</dt><dd>microseconds since boot (DWT cycle-count based) </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__main_8cpp_source.html#l00214">214</a> of file <a class="el" href="arduino__main_8cpp_source.html">arduino_main.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__main_8cpp_source.html#l00227">227</a> of file <a class="el" href="arduino__main_8cpp_source.html">arduino_main.cpp</a>.</p>
 
 </div>
 </div>
@@ -233,7 +234,7 @@ Variables</h2></td></tr>
 </div><div class="memdoc">
 <dl class="section return"><dt>Returns</dt><dd>milliseconds since boot (SysTick-driven, wraps after ~49 days like classic Arduino) </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="arduino__main_8cpp_source.html#l00206">206</a> of file <a class="el" href="arduino__main_8cpp_source.html">arduino_main.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__main_8cpp_source.html#l00219">219</a> of file <a class="el" href="arduino__main_8cpp_source.html">arduino_main.cpp</a>.</p>
 
 </div>
 </div>
@@ -286,7 +287,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="arduino__main_8cpp_source.html#l00173">173</a> of file <a class="el" href="arduino__main_8cpp_source.html">arduino_main.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__main_8cpp_source.html#l00176">176</a> of file <a class="el" href="arduino__main_8cpp_source.html">arduino_main.cpp</a>.</p>
 
 </div>
 </div>
@@ -307,7 +308,7 @@ Variables</h2></td></tr>
 </div><div class="memdoc">
 <p>Called from <a class="el" href="#ab5e09814056d617c521549e542639b7e">SysTick_Handler()</a> (the lowest interrupt priority) with the milliseconds this tick counted: 1, or more after interrupts were off for over 1 ms (never 0). nullptr when nothing is hooked (<a class="el" href="namespace_ms_timer2.html">MsTimer2</a>). </p>
 
-<p class="definition">Definition at line <a class="el" href="arduino__main_8cpp_source.html#l00015">15</a> of file <a class="el" href="arduino__main_8cpp_source.html">arduino_main.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__main_8cpp_source.html#l00016">16</a> of file <a class="el" href="arduino__main_8cpp_source.html">arduino_main.cpp</a>.</p>
 
 </div>
 </div>
@@ -327,7 +328,7 @@ Variables</h2></td></tr>
 </div><div class="memdoc">
 <p>The same, for <a class="el" href="classmcx_ticker.html">mcxTicker</a>, called after systick_hook. nullptr until the first <a class="el" href="classmcx_ticker.html">mcxTicker</a> is attached. </p>
 
-<p class="definition">Definition at line <a class="el" href="arduino__main_8cpp_source.html#l00016">16</a> of file <a class="el" href="arduino__main_8cpp_source.html">arduino_main.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="arduino__main_8cpp_source.html#l00017">17</a> of file <a class="el" href="arduino__main_8cpp_source.html">arduino_main.cpp</a>.</p>
 
 </div>
 </div>

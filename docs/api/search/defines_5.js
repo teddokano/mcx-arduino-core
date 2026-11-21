@@ -12,5 +12,6 @@ var searchData=
   ['example_5flpspi_5fmb_5fpcs_5ffor_5finit_9',['EXAMPLE_LPSPI_MB_PCS_FOR_INIT',['../r01lib__spi_8cpp.html#a64e3e63b04372710a1875394975af86b',1,'r01lib_spi.cpp']]],
   ['example_5flpspi_5fmb_5fpcs_5ffor_5ftransfer_10',['EXAMPLE_LPSPI_MB_PCS_FOR_TRANSFER',['../r01lib__spi_8cpp.html#addbf5081a3efa0ea5d717fa8c6266896',1,'r01lib_spi.cpp']]],
   ['example_5fmaster_11',['EXAMPLE_MASTER',['../i3c_8cpp.html#a30612a5f6e47af8a081afa4ef7e81a01',1,'i3c.cpp']]],
-  ['external_12',['EXTERNAL',['../arduino__analog_8h.html#af3fe37c1cda80aa7202b5a3bb7557dc9',1,'arduino_analog.h']]]
+  ['external_12',['EXTERNAL',['../arduino__analog_8h.html#af3fe37c1cda80aa7202b5a3bb7557dc9',1,'arduino_analog.h']]],
+  ['extrf_13',['EXTRF',['../cores_2arduino_2arduino__api_2avr_2wdt_8h.html#adbe30bf41168db58e7466f97b1844fab',1,'wdt.h']]]
 ];

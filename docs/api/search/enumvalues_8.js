@@ -12,5 +12,8 @@ var searchData=
   ['mb_5fscl_9',['MB_SCL',['../arduino__io_8h.html#a7f517ff2a7a6c1f234a98d161a2ca748a2b03f01fc543184f2e27f78915b9a90d',1,'arduino_io.h']]],
   ['mb_5fsda_10',['MB_SDA',['../arduino__io_8h.html#a7f517ff2a7a6c1f234a98d161a2ca748abef920eadac379ae3fd7aae6c1a935a8',1,'arduino_io.h']]],
   ['mb_5ftx_11',['MB_TX',['../arduino__io_8h.html#a7f517ff2a7a6c1f234a98d161a2ca748a69b5cee70dca174bd5636d4d3fab96d2',1,'arduino_io.h']]],
-  ['msbfirst_12',['MSBFIRST',['../arduino__spi_8h.html#a045d07d899642c93c7e9d9f2b23af156aa26e82a37f5fad5934c3fdfa6dbc5ffc',1,'arduino_spi.h']]]
+  ['mcx_5fwdt_5fpanic_5fenter_12',['MCX_WDT_PANIC_ENTER',['../mcx__watchdog_8h.html#a293c5c76434c146e5762f675e6b5e541a4b254b59bc25ceb2b13481177d3b5cc0',1,'mcx_watchdog.h']]],
+  ['mcx_5fwdt_5fpanic_5floop_13',['MCX_WDT_PANIC_LOOP',['../mcx__watchdog_8h.html#a293c5c76434c146e5762f675e6b5e541aaa234f2ed551c16958645d23dbc40da1',1,'mcx_watchdog.h']]],
+  ['mcx_5fwdt_5ftick_14',['MCX_WDT_TICK',['../mcx__watchdog_8h.html#a293c5c76434c146e5762f675e6b5e541a60b42f0d117061b72554d4b3dd3808c4',1,'mcx_watchdog.h']]],
+  ['msbfirst_15',['MSBFIRST',['../arduino__spi_8h.html#a045d07d899642c93c7e9d9f2b23af156aa26e82a37f5fad5934c3fdfa6dbc5ffc',1,'arduino_spi.h']]]
 ];

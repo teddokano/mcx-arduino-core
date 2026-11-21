@@ -21,7 +21,7 @@ var searchData=
   ['transfer16_18',['transfer16',['../class_s_p_i_class.html#a63e9fd74eedb86531b0bcbfaff75fe81',1,'SPIClass']]],
   ['transfer_5fbyte_19',['transfer_byte',['../class_s_p_i.html#a03d2468616f48e53ee705fd865f68988',1,'SPI']]],
   ['trim_20',['trim',['../class_string.html#aeeb67e7811444d0f394eea7d99382501',1,'String']]],
-  ['twowire_21',['TwoWire',['../class_two_wire.html#a5fa75b7b2ac33b8a92a7fb0d4b8d4f41',1,'TwoWire']]],
+  ['twowire_21',['TwoWire',['../class_two_wire.html#a5fa75b7b2ac33b8a92a7fb0d4b8d4f41',1,'TwoWire::TwoWire(int sda_pin, int scl_pin)'],['../class_two_wire.html#ab709131dafb019e05d1c3d14320e4640',1,'TwoWire::TwoWire(int sda_pin, int scl_pin, const char *name, const BusOps *ops, Buffers *bufs)']]],
   ['tx_5fenqueue_22',['tx_enqueue',['../class_serial.html#ada6af39c5b14b76893b36c8a9f4e18bb',1,'Serial']]],
   ['txrx_23',['txrx',['../class_s_p_i_class.html#a087424b12239fa3eb35346334d316a6f',1,'SPIClass']]],
   ['type_24',['type',['../class_i_p_address.html#a608a18ae065c7de067fa42fd3cae325a',1,'IPAddress::type()'],['../classarduino_1_1_i_p_address.html#a608a18ae065c7de067fa42fd3cae325a',1,'arduino::IPAddress::type()']]]
