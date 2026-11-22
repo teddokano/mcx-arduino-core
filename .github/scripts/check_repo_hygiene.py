@@ -30,6 +30,7 @@ CHANGELOG = os.path.join(REPO, "CHANGELOG.md")
 PACKAGE_INDEX = os.path.join(REPO, "package_nxp_mcx_index.json")
 ARDUINO_IO_H = os.path.join(REPO, "hardware/nxp/mcx/cores/arduino/arduino_api/arduino_io.h")
 PIN_STATE_CPP = os.path.join(REPO, "hardware/nxp/mcx/libraries/mcxPinState/src/PinState.cpp")
+CLAUDE_MD = os.path.join(REPO, "CLAUDE.md")
 
 # Sources to scan for the comment-termination bug. Vendor SDK files are
 # excluded: they are imported unmodified, so a finding there would be
@@ -175,13 +176,109 @@ def check_package_index_entry():
     if version not in versions:
         # Entries aren't kept in order (0.6.0 went on the end), so the
         # newest is the highest version, not the first entry.
-        def key(v):
-            return tuple(int(x) for x in re.findall(r"\d+", v or ""))
         fail(
             "package-index-entry",
             "package_nxp_mcx_index.json has no platforms[] entry for %s "
             "(newest is %s) -- add a placeholder entry before running "
-            "update_package_index.yml" % (version, max(versions, key=key) if versions else "none"),
+            "update_package_index.yml" % (version, package_index_newest() or "none"),
+        )
+
+
+def version_key(v):
+    """Sort key for "x.y.z": numbers, not strings (0.13.0 after 0.9.2)."""
+    return tuple(int(x) for x in re.findall(r"\d+", v or ""))
+
+
+def package_index_newest():
+    """Return the newest version among package_nxp_mcx_index.json's platforms[]."""
+    data = json.loads(read(PACKAGE_INDEX))
+    versions = [p.get("version") for p in data["packages"][0]["platforms"]]
+    return max(versions, key=version_key) if versions else None
+
+
+def check_claude_md_versions():
+    """CLAUDE.md's "current release" and "in development" lines must name real versions.
+
+    CLAUDE.md keeps only the state that holds now, but the lines are
+    edited by hand and fell behind after releases (0.13.0). What they may
+    say depends on where in the cycle the branch is, so this checks only
+    what holds at every point of it:
+
+    - the current release is the package index's newest entry, or
+      platform.txt's version (between the release inventory and the
+      staging-<version> branch's entry reaching main, the index on main
+      and on the tag still lacks it);
+    - the version in development is newer than the current release, and
+      platform.txt names either of the two (it is bumped some time after
+      the -dev branch is cut);
+    - or "in development" says none (from the release until the next
+      -dev branch is cut).
+
+    Tags aren't used: CI's checkout doesn't fetch them, and the release
+    inventory names the version before its tag exists.
+    """
+    text = read(CLAUDE_MD)
+    m = re.search(r"^- \*\*現在のリリース\*\*: \*\*v(\d+\.\d+\.\d+)\*\*", text, re.MULTILINE)
+    if not m:
+        fail("claude-md-versions", 'CLAUDE.md has no "- **現在のリリース**: **vX.Y.Z**" line')
+        return
+    current = m.group(1)
+    newest = package_index_newest()
+    version = platform_version()[0]
+    if current not in (newest, version):
+        fail(
+            "claude-md-versions",
+            "CLAUDE.md's current release is v%s, but the package index's newest entry is %s "
+            "and platform.txt says %s" % (current, newest, version),
+        )
+
+    m = re.search(r"^- \*\*開発中\*\*: (?:`(\d+\.\d+\.\d+)-dev`|(なし))", text, re.MULTILINE)
+    if not m:
+        fail(
+            "claude-md-versions",
+            'CLAUDE.md has no "- **開発中**: `X.Y.Z-dev`" (or "なし") line',
+        )
+        return
+    developing = m.group(1)
+    if developing is None:
+        notes.append("claude-md-versions: current release v%s, nothing in development" % current)
+        return
+    if version_key(developing) <= version_key(current):
+        fail(
+            "claude-md-versions",
+            "CLAUDE.md's version in development (%s) is not newer than its current release (v%s)"
+            % (developing, current),
+        )
+    if version not in (developing, current):
+        fail(
+            "claude-md-versions",
+            "platform.txt says %s, but CLAUDE.md's current release is v%s and %s is in development"
+            % (version, current, developing),
+        )
+    notes.append(
+        "claude-md-versions: current release v%s, %s in development, platform.txt %s"
+        % (current, developing, version)
+    )
+
+
+def check_claude_md_pending():
+    """No "まだ:" (still to do) item may be left in CLAUDE.md at release.
+
+    Only with --release. Each one has to be done (and removed), moved to
+    the next version's items, or put among the pending tasks or known
+    limits: the release inventory (release_checklist.md, item 8). Left in
+    place, they outlive the release and the state they describe.
+    """
+    pending = [
+        "%d: %s" % (n, line.strip()[:60])
+        for n, line in enumerate(read(CLAUDE_MD).splitlines(), 1)
+        if re.match(r"^\s*-\s*(?:\*\*)?まだ[^:：\n]{0,30}[:：]", line)
+    ]
+    for item in pending:
+        fail(
+            "claude-md-pending",
+            'CLAUDE.md still has a "まだ:" item at line %s -- sort it out before releasing '
+            "(release_checklist.md, item 8)" % item,
         )
 
 
@@ -714,11 +811,13 @@ def main():
     check_comment_terminators()
     check_board_fallbacks()
     check_mcxpinstate_aliases()
+    check_claude_md_versions()
 
     if args.release:
         check_changelog_heading()
         check_doxygen_freshness()
         check_mcxpinstate_verified_against()
+        check_claude_md_pending()
     if args.package_index:
         check_package_index_entry()
 
