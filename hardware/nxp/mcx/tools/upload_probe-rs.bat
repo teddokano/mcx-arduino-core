@@ -61,8 +61,9 @@ rem second apart, with what a failed try says kept back and shown only if
 rem every try fails: see upload_probe-rs.sh.
 rem All it says goes to stdout: it writes it to stderr, which Arduino IDE
 rem shows as an error. NO_COLOR takes out its color codes, though not its
-rem bold ones; a failure is said on stderr below. stdin is closed (<nul),
-rem so that probe-rs doesn't wait to be told which probe to use
+rem bold ones, which :show takes out; a failure is said on stderr below.
+rem stdin is closed (<nul), so that probe-rs doesn't wait to be told which
+rem probe to use
 set NO_COLOR=1
 rem The SWD clock: 4MHz unless PROBE_RS_SPEED (kHz) says otherwise, see
 rem upload_probe-rs.sh
@@ -85,12 +86,12 @@ goto :try
 :written
 if %ATTEMPT% EQU 2 echo Written on try 2 of 3 ^(the first try failed; what it said is left out^)
 if %ATTEMPT% EQU 3 echo Written on try 3 of 3 ^(the tries before it failed; what they said is left out^)
-type "%TRY_LOG%"
+call :show "%TRY_LOG%"
 del "%TRY_LOG%" "%FAILED_LOG%" 2>nul
 exit /b 0
 
 :failed
-type "%FAILED_LOG%"
+call :show "%FAILED_LOG%"
 del "%TRY_LOG%" "%FAILED_LOG%" 2>nul
 echo ERROR: probe-rs could not write the board in 3 tries ^(above: what it said each time^) 1>&2
 if not defined PROBE_ARGS (
@@ -100,3 +101,12 @@ if not defined PROBE_ARGS (
     echo ============================================
 )
 exit /b 1
+
+rem Show a file with probe-rs's escape codes (ESC[1m, ESC[0m, cursor moves)
+rem and CRs taken out: Arduino IDE's Output shows them as "[1mFinished[0m".
+rem The file's name is passed in an environment variable, to keep PowerShell
+rem clear of quoting; if PowerShell fails, the file is shown as it is
+:show
+set "SHOW_FILE=%~1"
+powershell -NoProfile -Command "[Console]::Out.Write(([IO.File]::ReadAllText($env:SHOW_FILE) -replace '\x1b\[[0-9;?]*[A-Za-z]', '' -replace '\r', ''))" || type "%~1"
+exit /b 0
