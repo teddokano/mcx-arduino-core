@@ -3674,6 +3674,37 @@ LPI2CはアドレスとデータのNAKを同じコードで返すので、どち
 - 本番の`main`のURLからも、ユーザーが3OSでインストールと動作を確かめて問題なし
 - リリースの画像（`img/release-0.12.0.jpg`）は無し
 
+## v0.14.0（`0.14.0-dev` ブランチ、2026-11-22に`0.13.0-dev`から切った。開発中）
+
+### FRDM-MCXC444の復旧: 他のボード向けのイメージが書かれてロックアップを繰り返した（2026-11-23）
+
+ユーザーから「C444が故障」と言われた1枚（MCU-Linkのシリアル`AHS4V4DHURB4T`）を調べた。**ハードの故障ではなかった**。フラッシュにN947向けとみられるイメージが入っていて、起動するとすぐロックアップし、リセットを繰り返していた。普通の書き込みでは直らず、MDM-APからマスイレースしてから書き直して直した。
+
+- **症状**: MCUXpresso IDEでSDKの`gpio_led_output`をデバッグすると、`16: Target error from status-poll`・`Hardware Transfer Error`で切れるか、再開から約35msで`SIGNAL`で止まる（`main`のブレークポイントで止まったのは6回中1回）。LinkServerは1回目の接続で`Wire ACK Fault in DAP access`になり、2回目でつながるが、コアのROMテーブル（`0xE00FF000`）は`couldn't read device/ROM content - powered down?`になる
+- **切り分けの前に**: MCUXpresso IDEを閉じたあとも、LinkServer 26.6.137の`crt_emu_cm_redlink`と`redlinkserv`が残り、プローブを掴んだままだった（IDEのログは`Terminate failed`）。そのあいだは`LinkServer probe '#1' dapinfo`も`Probe not open`になる。まず`ps`でこれらが残っていないかを見る。probe-rs（0.32.0）にはKL系（MCXC444）の定義が無いので、C444の切り分けはpyOCD（Homebrewの0.43.1）とLinkServerで行った
+- **切り分け**: DPとMEM-APは応答するので、pyOCDでコアの初期化を飛ばし（`-N`）、MDM-AP（APSEL 1）を直接読んだ:
+  ```
+  pyocd commander -t cortex_m -N -u <プローブのシリアル> -c initdp -c "readap 0x01000000" -c "readap 0x01000004"
+  ```
+  `0x01000000`がMDM-APのStatus、`0x01000004`がControl（RMの9.3）。
+  - Statusを300回読むと、96%が「System Reset=0（リセット中）」、その大半はFlash Ready=0で、リセットが外れていた（`0x1ba`）のは約4%だった。Controlは0なので、デバッガはリセットを要求していない
+  - **ControlのCore Hold Reset（bit4、`writeap 0x01000004 0x10`）でコアを止めると、200回とも`0x1ba`で安定した**。電源やRESETピンが原因なら、コアを止めてもリセットは続く。止まったので、原因はコアが走ることにある（フラッシュの中身）
+  - コアを止めたまま、AHB-AP（APSEL 0）のTAR（`0x04`）とDRW（`0x0C`）でメモリを読んだ（`writeap 0x00000000 0x03000002`でCSWを32ビット・アドレスの自動増加なしにしてから`writeap 0x00000004 <アドレス>`・`readap 0x0000000c`）。RCM_SRS1が`0x02`（LOCKUP）。`0x0`の初期SPが`0x20060000`（N947の`SRAM`の上端。C444のRAMは`0x1FFFE000`〜`0x20006000`）。ベクタテーブルがC444の大きさ（`0xC0`）を超えて続く。`0x400`〜`0x40F`（フラッシュ設定フィールド）にもコードが入り、FSEC=`0x12`・FOPT=`0x4D`。同じ範囲を2回読んで同じ値で、読み出しの誤りではない
+  - 初期SPがRAMの外なので、リセットのあと最初のスタック操作でフォルトし、そのままロックアップしてリセット、を繰り返していた
+- **普通の書き込みで直らなかった理由**: hello_world（C444向けにビルドし直した`.elf`）を`LinkServer flash --probe <シリアル> MCXC444:FRDM-MCXC444 load <elf>`で書くと「Sectors written: 43」「Finished writing Flash successfully」と出て終了コードも0だったが、ベクタテーブルとフラッシュ設定は古いままで、ループも続いた。**FPROTはリセットのたびにフラッシュ設定フィールドの`0x408`〜`0x40B`から読み込まれる**（RMの46.3.3.6）。古いイメージのコードがそこに入っていたので、FPROTが`0x23322201`になり、フラッシュの大部分が書き込み・消去から保護されていた（PROTのビットは0が保護）。通常のモードでは、ソフトから保護を外せない（1→0しか受け付けない）。LinkServerの表示は保護で書けなかったセクタがあっても成功のままだった
+- **復旧の手順**（RMの8.1.2.1: デバッガからのマスイレースは、保護された領域があっても実行できる。FSECのMEENが`10`のときだけ止められる。今回は`0x12`でMEEN=`01`）:
+  1. システムをリセットに保持してから、マスイレースを要求する:
+     ```
+     pyocd commander -t cortex_m -N -u <シリアル> -c initdp -c "writeap 0x01000004 0x08" -c "writeap 0x01000004 0x09"
+     ```
+     StatusのMass Erase Acknowledge（bit0）が立ち（`0x1b3`）、終わるとControlのbit0が落ちる（`0x09`→`0x08`）。`readap 0x01000004`で確かめる
+  2. `writeap 0x01000004 0x10`でリセットの保持を外し（コアは止めたまま）、`0x0`が`0xFFFFFFFF`（消えている）なのを確かめてから`writeap 0x01000004 0x0`
+  3. `LinkServer flash --probe <シリアル> MCXC444:FRDM-MCXC444 load <C444向けの.elf>`。消したあとの書き込みは、セキュアで止まることなくそのまま通った（2.の時点でStatusのSystem Security=0。書き込み後のFSECはイメージの`0xFE`）
+- **確かめたこと**: Statusは200回とも`0x3b`（リセット解除のまま）、RCM_SRS1は`0x04`（LinkServerのソフトウェアリセットだけ）、初期SPは`0x20003340`、FSEC=`0xFE`・FOPT=`0x3B`、FPROTは全部`0xFF`。pyOCDでコアを5回止めてPCを読むと、どれも`delay()`の中（`loop()`が回っている）。シリアルの出力は、Arduino IDEのシリアルモニタがポートを開いていて、このときは読めなかった（`Resource busy`）
+- **分からなかったこと**: 誰がいつN947向けのイメージを書いたか。05:31にMCUXpressoが書いた`gpio_led_output`は`main`まで動いていたので、それより後に書かれたはず。だが、Arduino IDEのログ（05:32が最後）にもシェルの履歴にも記録が無く、同じ先頭を持つバイナリはビルドキャッシュにも`~/dev`にも無かった
+- **踏んだこと**: pyOCDの出力を`grep 'AP register'`で拾って値を並べると、リセット中に読んで失敗した行が抜けて、アドレスと値が1つずれる。セクタごとの照合で一度この形で全部「不一致」と見誤った。読む前にStatusが`0x1ba`（リセット解除・コア保持）になったのを確かめるか、LinkServerのGDBサーバーと`arm-none-eabi-gdb`の`x`で読む（読めないときは`Cannot access memory`と出る）
+- **注意**: 他のチップ向けのイメージが`0x400`〜`0x40F`に入ると、FSECとFPROTはそのイメージのたまたまの値になる。SEC（FSECのbit1:0）が`10`以外ならセキュア（デバッガからメモリが読めない）になり、MEEN（bit5:4）が`10`ならマスイレースもできず、**戻せなくなる**。今回の`0x12`は運が良かっただけ。C444に書くイメージが本当にC444向けかを、書く前に確かめる（arduino-cliのビルドキャッシュはボードを区別しない件は、`CLAUDE.md`の「検証するとき」）
+
 ## CLAUDE.mdから移した記述（2026-11-09）
 
 CLAUDE.mdが大きくなったので、今は効かない経緯・確認の記録・解消済みのタスクをここへ移した（ユーザーが決定）。中身は移した時点のまま（過去形・日付・「下の項目」などの参照も元のまま）。CLAUDE.mdには要点と、この節を指す一行を残した。
