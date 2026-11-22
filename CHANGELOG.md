@@ -41,9 +41,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   - The SWD clock is 4MHz (probe-rs's own default is 1MHz, which took twice as long), or `PROBE_RS_SPEED` in kHz.
   - probe-rs checks what it wrote when **Verify code after upload** is on in Arduino IDE's preferences (off by
     default; `arduino-cli upload --verify`).
-  - Checked on macOS. With the bundled probe-rs 0.32.0, FRDM-MCXN947's first try now and then fails, and an upload tries
-    up to three times by itself; FRDM-MCXN236 uploads but doesn't debug (the Debug button says so, and to choose
-    LinkServer). Both work with probe-rs's development version.
+  - Uploading and debugging with probe-rs checked on FRDM-MCXA153, FRDM-MCXA156 and FRDM-MCXN947, with the package
+    installed from Boards Manager on macOS, Windows and Linux (on macOS also with no LinkServer installed). With the
+    bundled probe-rs 0.32.0, FRDM-MCXN947's first try now and then fails, and an upload tries up to three times by
+    itself; FRDM-MCXN236 uploads but doesn't debug (the Debug button says so, and to choose LinkServer). Both work with
+    probe-rs's development version.
   - Right after an upload with probe-rs, FRDM-MCXA153 and FRDM-MCXA156 stand still for 4 to 8ms about 100ms after the
     sketch starts (probe-rs halts the core then, as part of its reset), and `millis()`/`micros()` stay that much
     behind. Not after power-on, the RESET button or a LinkServer upload, nor on the other boards.
