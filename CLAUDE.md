@@ -1,5 +1,7 @@
 # mcx-arduino-core 開発引き継ぎドキュメント
 
+> **`main`でこのファイルを読んでいるなら**: `main`の`CLAUDE.md`には、リリースのときにまとめて入るだけで、リリースのあとの記録はまだ届いていない。最新の状態は、一番新しい`<version>-dev`ブランチ（`git branch -r --list 'origin/*-dev'`）の`CLAUDE.md`にある。作業はそのブランチで始め、そちらを読む。
+
 ## プロジェクト概要
 - **リポジトリ**: https://github.com/teddokano/mcx-arduino-core
 - **内容**: NXP FRDM-MCXA153 / FRDM-MCXN947 / FRDM-MCXA156（0.8.0から）/ FRDM-MCXN236（0.9.0から。ここまではCortex-M33）/ FRDM-MCXC444（0.10.0から。Cortex-M0+）向けのArduino IDEボードサポートパッケージ。
@@ -8,20 +10,13 @@
 - **同梱ライブラリ**: `mcxPinState`（ピン所有状況のデバッグ表示）、`mcxRCServo`（RCサーボ）、`EEPROM`（0.7.0で追加）、`Servo`（0.10.0で追加、公式のServoライブラリと同じAPI。0.12.0からPWMの無いピンもタイマーの割り込みで）、`MsTimer2`と`TimerOne`（0.12.0で追加、AVR向けの同じ名前のライブラリと同じAPI。TimerOneのPWMの関数は無い）、`mcxTicker`（0.12.0で追加、ESP32・ESP8266のコアの`Ticker`と同じAPI）、`WDT`（0.13.0で追加、UNO R4の同じ名前のライブラリと同じAPI。コアの`<avr/wdt.h>`と同じウォッチドッグ`mcx_watchdog.*`の上にある）。
   前の2つは別リポジトリが開発の本拠地で、`hardware/nxp/mcx/libraries/`配下はリリース時に同期する取り込みコピー。
   `EEPROM`はこのリポジトリが本体（フラッシュの配置がリンカスクリプトと一体なので）。`Servo`もこのリポジトリが本体で、コアの`analog_pwm_out()`（`arduino_analog.h`）でピンの`PwmOut`を受け取り、マイクロ秒でパルス幅を設定する（`analogWriteResolution()`に触らない）。PWMの無いピンはタイマーの割り込みでGPIOを上げ下げする（下の`Servo`の項目）
-- **現在のリリース**: **v0.13.0**（2026-11-22）。リリースzipはSHA-256 `94bb6612a08dde503aee4487e630ee8d01697eb636a7869b13506cf57f931f27`、19022371 bytes。タグ`0.13.0`は`f66e1e5`、`main`の索引のエントリは`8635995`。前の版は0.12.0（2026-11-01）、0.11.0（2026-10-25）、0.10.0（2026-10-18）、0.10.1（Fritzingの部品だけ）。
-- **開発中**: `0.14.0-dev`（2026-11-22に`0.13.0-dev`から切り、`main`の索引のコミット`8635995`をマージした）。まだ変更は無い（`platform.txt`の版も0.13.0のまま）。
-- **0.13.0の開発の記録**: `0.13.0-dev`（2026-11-20に`0.12.0-dev`から切った）。リンクをnewlib-nanoにした（それまでfull newlibがリンクされ、スケッチが15〜55KB大きく、A153でRTC_NXP_Arduinoのサンプルが入らなかった）。`Print`・`String`の64ビットは`%lld`を使わず自前で変換し、`__FILE__`は`-fmacro-prefix-map`で短くした。CIでスケッチのサイズを基準（`.github/sizes/`）と比べるようにした。`Wire1`のI3Cは`Wire1`を使うスケッチにだけリンクする（`Wire`・`Wire1`・`Wire2`は`constinit`、`Print`のvirtualデストラクタを外した）。ウォッチドッグ（`<avr/wdt.h>`と同梱の`WDT`）を入れた。
-  Toolsメニューに「Optimize」（`-O2`/`-Os`）・A153の「EEPROM」（1KB/None）・「Upload method」（probe-rs/LinkServer。C444以外の4ボード。既定はA153・A156・N947がprobe-rs、N236がLinkServer）を足し、「Optimize for Debugging」を`-Og`にした。probe-rs 0.32.0はパッケージに同梱する（索引の`tools`、Windowsはリリースに添付するzip。`.github/scripts/probe_rs_tool.py`）。README・TUTORIALは「C444とN236のデバッグ以外はLinkServerなしでよい」と案内する。probe-rsの経緯・回避策・オプションの決定は`memo/notes_toward_1.0.0.md`の§3
-  **実機での確認**（2026-11-21に5ボードで、配線なしのものを流した。結果はarduino-cliで書き込み、シリアルの出力で見た）:
-  - 済み: newlib-nanoの`test_String_64bit`・`test_print_float_rounding`・`test_Serial_print_time_t`・`test_String`（5ボードとも同じ出力）。I3Cの`test_Wire1_onboard_sensor_raw`・`release_check/16`・`04`（A153・N947）。ウォッチドッグの`0A_watchdog`・`test_watchdog`・`WatchdogRefresh`（5ボード。C444はpanic()のソフトウェアリセットでもWDRFが付いた）。`test_Servo_all_pins`（4ボードともALL PASS。A153・A156は下のprobe-rsの件でD0の1周期が落ちたので、始めに300ms待つようにした）
-  - **probe-rsで書き込んだ（リセットした）A153・A156は、起動から約100msでCPUが4〜8ms止まる**（SysTickも止まるので`micros()`が飛ぶ）。probe-rsのMCX Aのリセットの手順（`reset_system`がROMの出口にウォッチポイントを置いてリセットし、100ms待ってから`C_HALT`で止めて後始末する）のためで、0.32.0も開発版も同じ。LinkServer、N947・N236、電源投入・RESETボタンでは起きない。probe-rsはA15xにつなぐたびにも（`read`だけでも）CPUを約6msずつ止める。`--reset`を外すと書き込みのあとロックアップのリセット（SRS=0x8010）で起動し、そのあと`probe-rs write`でAIRCRを書くとスケッチが2回起動するので、0.32.0のCLIでは避けられない（2026-11-21に試した）。このまま残し、CHANGELOG・API_COMPATIBILITY・`upload_probe-rs.sh`・memoの§3に書いた（ユーザーが決定）
-    このとき（手を離すときに）`DEMCR`も0になり、割り込みを切った`delayMicroseconds()`が永久に止まった（A153で19回中5回）。CYCCNTを読むのを`MSDK_GetCpuCycleCount()`（`fsl_common_arm.c`、`mcx-arduino-core:`の印）の1か所にまとめ、TRCENAが落ちていたら入れ直すようにした（2026-11-22）。原因はprobe-rsのMCX Aのウォッチポイントの設定で、probe-rs/probe-rs#4757で報告した。M33の時間の元をOSTIMERなどに移すかは1.0に向けて決める（memoの§3）
-  - release_check（2026-11-21）: 配線なしの`01`・`04`・`08`・`09`と`test_avr_pgmspace`・`test_network_base_classes`・`test_micros_noInterrupts`は5ボードともALL OK（上の修正のあと）。`06`（2回）・`07`も5ボードともALL OK（07は1000回のリセットで失敗0）。手で見る`02`は5ボードともOK、`03`は5ボードとも通った（SW2の押しの数・赤の間の押し・レベル割り込み。2026-11-22に、開始の合図の緑の点滅・赤の間に押したかの判定・緑5秒を足した）、`05`（N947のWire2をロジアナで）もOK。ジャンパだけの`11`〜`16`も5ボードとも通った（`15`はA156、`16`は配線のある3ボードとなしのA153・N947。落ちたのはジャンパのせいだけ: A156の`16`のA4-D18・A5-D19、C444の`13`のD8-D9、N947の`11`のMB_TX-MB_RX。挿し直して通った）。`test_Servo`も5ボードともALL PASS（C444は最初にD6-D7が効いておらず全項目0us、挿し直して通った）。`24`（2枚でWireのターゲット）もN947を相手にA153・A156・C444・N236の4組ともALL OK。`25`（N947のEthernetとPC。PCのインターネット共有を有効にして、ボードがDHCPで取った後にpc_check.pyでALL OK、1msのlwIP割り込みの最長395us）も通った。`21`（外付けの`P3T1755.h`。arduino-cliのライブラリのフォルダに無いので`--library ~/dev/Arduino/libraries/TempSensor_NXP_Arduino`と`--library ~/dev/Arduino/libraries/I2C_device_Arduino`をパスで渡した）も5ボードとも45秒でWARNINGが0行（N236は最初にN947のセンサーの配線が効かず毎周WARNING、挿し直して通った）。`22`（P3T1035xUK-ARD、0x72、D18/D19）も5ボードとも`stop=false`・`stop=true`の読みがOK（温度は23.0〜23.75℃。ロジアナでのSr確認は私からは見られず未実施）。`23`（`Waveshare_TFT_Touch` 1.4.0-devの`SDBitmapViewer`。`--library ~/dev/Arduino/libraries/Waveshare_TFT_Touch`をパスで渡した）もLCDとSDで5ボードとも画像がきれいに出て、タッチで次に変わった（目視）。まだ: `26`（W5500 Lite。任意）
-  - まだ: A153でRTC_NXP_Arduinoの`PCF2131_interrupt_based_operation`（PCF2131の基板が要る）。`__FILE__`: デバッガでブレークポイントからソースに飛べること（デバッグ情報のパスは変えていない）。Windowsで`-fmacro-prefix-map`が効くか（ステージングで）
-  - **0.13.0のリリース（2026-11-22）**: `main`を`dbf4128`へfast-forwardし、タグ`0.13.0`とGitHub Release（zipとWindows用probe-rsのzip）を作った。Windowsで`upload_probe-rs.bat`がprobe-rsの太字のエスケープコード（`ESC[1mFinishedESC[0m`）をIDEのOutputにそのまま出したので、PowerShellで取り除くようにし（`f66e1e5`。Windowsで確かめた）、`main`とタグ（注釈なしのまま）を`f66e1e5`に移してzipを作り直した（SHA-256 `94bb6612a08dde503aee4487e630ee8d01697eb636a7869b13506cf57f931f27`、19022371 bytes。前の`9dd7a43e…`とは`.bat`だけが違う）。`staging-0.13.0`も`f66e1e5`の上に載せ直した（`8635995`）。`staging-0.13.0`に索引のエントリを入れ、**macOSは隔離した`ARDUINO_DIRECTORIES_DATA`でステージングの索引から`core install nxp:mcx@0.13.0`**（probe-rsも入る）して、5ボードの書き込みとデバッグ（`gdb-bridge`と`arm-none-eabi-gdb`で`setup()`のブレークポイント・`bt`・`next`）を確かめた。A153・A156・N947はprobe-rs、N236・C444はLinkServer（N236は`load`してからでないと`monitor reset halt`が「No image address available for soft reset」で失敗する）。ソースのパス（`__FILE__`を短くしたあとも、デバッグ情報のパスは実際の場所のまま）でブレークポイントからソースに飛べることも確かめた。作り直したzipで、WindowsとLinuxもステージングの索引から入れて書き込みとデバッグを確かめ、LinkServerを入れていない古いmacOSのマシンでもA153・N947の書き込みとデバッグ（probe-rs）を確かめた（2026-11-22、ユーザーが確認）。`main`を`staging-0.13.0`（`8635995`）へfast-forwardし、`update_package_index.yml`を`main`で流して索引を確定した（値は同じで、ワークフローのコミットは無し。タグのpushで起きた実行は、いつものdetached HEADで失敗）。Boards Managerに0.13.0が出ている。本番の索引（`main`）からも、macOS・Windows・Linuxでインストールから動作まで確かめた（2026-11-22、ユーザーが確認）。probe-rsでの書き込みとデバッグは、ステージングと本番の両方で、A153・A156・N947とも確かめた（ユーザーが確認）
+- **現在のリリース**: **v0.13.0**（2026-11-22）。リリースzipはSHA-256 `94bb6612a08dde503aee4487e630ee8d01697eb636a7869b13506cf57f931f27`、19022371 bytes。タグ`0.13.0`は`f66e1e5`、`main`の索引のエントリは`8635995`。macOS・Windows・LinuxでBoards Managerから入れて、書き込みとデバッグまで確かめた。前の版は0.12.0（2026-11-01）、0.11.0（2026-10-25）、0.10.0（2026-10-18）、0.10.1（Fritzingの部品だけ）。
+- **開発中**: `0.14.0-dev`（2026-11-22に`0.13.0-dev`から切り、`main`の索引のコミット`8635995`をマージした）。コードの変更はまだ無い（`platform.txt`の版も0.13.0のまま）。
+- **0.13.0の記録**: 入れたもの・実機での確認・リリースの経緯は、[docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md)の「v0.13.0」の節に移した（2026-11-23）。
+  - まだ（0.13.0から持ち越し）: A153でRTC_NXP_Arduinoの`PCF2131_interrupt_based_operation`（PCF2131の基板が要る）。Windowsで`-fmacro-prefix-map`が効くか（`__FILE__`が短くなるか）
 - **リリースごとの変更点**: [CHANGELOG.md](CHANGELOG.md)
 - **各リリースで何をやり、どこで詰まったかの詳細**: [docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md)
-  （v0.1.5〜v0.12.0の全作業記録と、CLAUDE.mdから移した記述。自動では読み込まれないので、経緯が必要なときだけ開く）
+  （v0.1.5〜v0.13.0の全作業記録と、CLAUDE.mdから移した記述。自動では読み込まれないので、経緯が必要なときだけ開く）
 
 ---
 
@@ -44,7 +39,7 @@
 | ボード別の前提・決定（A156 / N236 / C444） | [docs/dev_notes/board_A156.md](docs/dev_notes/board_A156.md) / [board_N236.md](docs/dev_notes/board_N236.md) / [board_C444.md](docs/dev_notes/board_C444.md)（そのボードの分岐を触る前に読む） |
 | 各版の経緯、0.12.0の機能（タイマー・`Servo`・`mcxTicker`・`mcx-discovery`など）の仕様と決定、1.0で固定すること | [docs/dev_notes/releases_and_decisions.md](docs/dev_notes/releases_and_decisions.md)（その機能を触る前に読む） |
 | ローカル開発環境、GitHub Actions、ステージング方式、ブランチ運用 | [docs/dev_notes/workflow.md](docs/dev_notes/workflow.md) |
-| リリース準備チェックリスト（7項目）、索引の構成 | [docs/dev_notes/release_checklist.md](docs/dev_notes/release_checklist.md)（リリース準備に入るとき、全文を読む） |
+| リリース準備チェックリスト（8項目）、索引の構成 | [docs/dev_notes/release_checklist.md](docs/dev_notes/release_checklist.md)（リリース準備に入るとき、全文を読む） |
 | Pendingタスクの全文 | [docs/dev_notes/pending_tasks.md](docs/dev_notes/pending_tasks.md) |
 |リリース1.0.0にむけてやっておくべきこと|[memo/notes_toward_1.0.0.md](memo/notes_toward_1.0.0.md)|
 | チップのレジスタ・ペリフェラルの仕様 | NXPのドキュメントのMCPサーバー**ChipDocs**（2026-10-14に接続）。RMはA153=`MCXAP64M96FS3RM`、A156=`MCXAP100M96FS6RM`、N947=`MCXNP184M150F70RM`（MCX NのRM。N23xは対象外）。N236はデータシート`MCXN23x`とセキュリティRMだけ。C444はChipDocsに無く、ユーザーが`ref/MCXC444-RM.pdf`（RM Rev.1）と`ref/MCXC444-DS.pdf`（データシート Rev.4）を置いた（2026-10-17。RMは1段組みなので`pdftotext -layout`で読める）。ボードの回路図は`ref/`（ページを画像で読む）、ピンのALTはZephyrのpinctrlヘッダで確かめる |
@@ -156,6 +151,7 @@
 - **ADCの無いピンへの`analogRead()`をビルド時に検出する案は入れない**（実行時の`panic()`のまま）。
 - **0.12.0でやらなかった**: `SoftwareSerial`・USB・r01libの名前空間。
 - **0.13.0の範囲（2026-11-20に決めたもの）**: ウォッチドッグのAPIを入れる（`<avr/wdt.h>`と同梱の`WDT`で入れた。仕様は`memo/notes_toward_1.0.0.md`の§11。2026-11-21に5ボードで実機で確かめた）。r01libの名前空間はやらない（効果が薄い）。ほかの大域インスタンス（`Serial1`・`SPI1`など）を使ったときだけリンクする案はやらない（減るのは100バイト以下）。経緯は`memo/notes_toward_1.0.0.md`の§8・§10。
+- **probe-rsで書き込んだA153・A156が起動から約100msで4〜8ms止まる件は、そのまま残す**（probe-rs 0.32.0のMCX Aのリセットの手順のため。probe-rs/probe-rs#4757で報告済み）。CYCCNTは`MSDK_GetCpuCycleCount()`の1か所だけで読み、`DEMCR.TRCENA`が落ちていたら入れ直す。M33の時間の元をOSTIMERなどに移すかは1.0に向けて決める（`memo/notes_toward_1.0.0.md`の§3）。
 - **0.12.0で入れた機能**（`MsTimer2`・`TimerOne`・`mcxTicker`、`Servo`のPWMの無いピン、PWMの周期とパルス幅をtickで持つこと、`mcx-discovery`、デバッガのペリフェラルのレジスタ表示、A4/A5の`Wire.setPins()`）の仕様と決定は、触る前に`releases_and_decisions.md`を読む。
 
 ## ボード別の前提（要点。そのボードを触る前に`docs/dev_notes/board_*.md`を読む）
@@ -170,7 +166,7 @@
 - リリース前は`staging-<version>`ブランチで3OSのインストールと動作を確かめてから、`main`に索引のエントリを入れる。
 
 ## リリース準備（`docs/dev_notes/release_checklist.md`に全文。入るときは全部読む）
-1. CHANGELOGの`[Unreleased]`を補完して確定（冒頭にHighlights）。2. ドキュメント全体の再監査（`docs/llms.txt`も）。3. `docs/api/`（Doxygen）の再生成。4. ライセンスの確認。5. 機械チェック。6. 全サンプル×全ボードの回帰コンパイル。7. `examples/release_check/`を実機で全ボード（書き込み・デバッグも各OSで1回）。
+1. CHANGELOGの`[Unreleased]`を補完して確定（冒頭にHighlights）。2. ドキュメント全体の再監査（`docs/llms.txt`も）。3. `docs/api/`（Doxygen）の再生成。4. ライセンスの確認。5. 機械チェック。6. 全サンプル×全ボードの回帰コンパイル。7. `examples/release_check/`を実機で全ボード（書き込み・デバッグも各OSで1回）。8. `CLAUDE.md`の棚卸し（経緯を`DEVELOPMENT_LOG.md`へ移し、「まだ:」を0にする）。
 
 ## Pendingタスク（番号は変えない。全文は`docs/dev_notes/pending_tasks.md`）
 - **6**: 上流`r01lib`（`~/dev/mcuxpresso/r01lib`）には手を入れない。反映は**1.0の直前にやる**（2026-11-20に決定。それまでは保留）。
