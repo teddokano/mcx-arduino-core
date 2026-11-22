@@ -9,7 +9,8 @@
   前の2つは別リポジトリが開発の本拠地で、`hardware/nxp/mcx/libraries/`配下はリリース時に同期する取り込みコピー。
   `EEPROM`はこのリポジトリが本体（フラッシュの配置がリンカスクリプトと一体なので）。`Servo`もこのリポジトリが本体で、コアの`analog_pwm_out()`（`arduino_analog.h`）でピンの`PwmOut`を受け取り、マイクロ秒でパルス幅を設定する（`analogWriteResolution()`に触らない）。PWMの無いピンはタイマーの割り込みでGPIOを上げ下げする（下の`Servo`の項目）
 - **現在のリリース**: **v0.13.0**（2026-11-22）。リリースzipはSHA-256 `94bb6612a08dde503aee4487e630ee8d01697eb636a7869b13506cf57f931f27`、19022371 bytes。タグ`0.13.0`は`f66e1e5`、`main`の索引のエントリは`8635995`。前の版は0.12.0（2026-11-01）、0.11.0（2026-10-25）、0.10.0（2026-10-18）、0.10.1（Fritzingの部品だけ）。
-- **0.13.0の開発の記録**: `0.13.0-dev`（2026-11-20に`0.12.0-dev`から切った。次の`-dev`ブランチはまだ切っていない）。リンクをnewlib-nanoにした（それまでfull newlibがリンクされ、スケッチが15〜55KB大きく、A153でRTC_NXP_Arduinoのサンプルが入らなかった）。`Print`・`String`の64ビットは`%lld`を使わず自前で変換し、`__FILE__`は`-fmacro-prefix-map`で短くした。CIでスケッチのサイズを基準（`.github/sizes/`）と比べるようにした。`Wire1`のI3Cは`Wire1`を使うスケッチにだけリンクする（`Wire`・`Wire1`・`Wire2`は`constinit`、`Print`のvirtualデストラクタを外した）。ウォッチドッグ（`<avr/wdt.h>`と同梱の`WDT`）を入れた。
+- **開発中**: `0.14.0-dev`（2026-11-22に`0.13.0-dev`から切り、`main`の索引のコミット`8635995`をマージした）。まだ変更は無い（`platform.txt`の版も0.13.0のまま）。
+- **0.13.0の開発の記録**: `0.13.0-dev`（2026-11-20に`0.12.0-dev`から切った）。リンクをnewlib-nanoにした（それまでfull newlibがリンクされ、スケッチが15〜55KB大きく、A153でRTC_NXP_Arduinoのサンプルが入らなかった）。`Print`・`String`の64ビットは`%lld`を使わず自前で変換し、`__FILE__`は`-fmacro-prefix-map`で短くした。CIでスケッチのサイズを基準（`.github/sizes/`）と比べるようにした。`Wire1`のI3Cは`Wire1`を使うスケッチにだけリンクする（`Wire`・`Wire1`・`Wire2`は`constinit`、`Print`のvirtualデストラクタを外した）。ウォッチドッグ（`<avr/wdt.h>`と同梱の`WDT`）を入れた。
   Toolsメニューに「Optimize」（`-O2`/`-Os`）・A153の「EEPROM」（1KB/None）・「Upload method」（probe-rs/LinkServer。C444以外の4ボード。既定はA153・A156・N947がprobe-rs、N236がLinkServer）を足し、「Optimize for Debugging」を`-Og`にした。probe-rs 0.32.0はパッケージに同梱する（索引の`tools`、Windowsはリリースに添付するzip。`.github/scripts/probe_rs_tool.py`）。README・TUTORIALは「C444とN236のデバッグ以外はLinkServerなしでよい」と案内する。probe-rsの経緯・回避策・オプションの決定は`memo/notes_toward_1.0.0.md`の§3
   **実機での確認**（2026-11-21に5ボードで、配線なしのものを流した。結果はarduino-cliで書き込み、シリアルの出力で見た）:
   - 済み: newlib-nanoの`test_String_64bit`・`test_print_float_rounding`・`test_Serial_print_time_t`・`test_String`（5ボードとも同じ出力）。I3Cの`test_Wire1_onboard_sensor_raw`・`release_check/16`・`04`（A153・N947）。ウォッチドッグの`0A_watchdog`・`test_watchdog`・`WatchdogRefresh`（5ボード。C444はpanic()のソフトウェアリセットでもWDRFが付いた）。`test_Servo_all_pins`（4ボードともALL PASS。A153・A156は下のprobe-rsの件でD0の1周期が落ちたので、始めに300ms待つようにした）
@@ -165,7 +166,7 @@
 
 ## 開発の進め方（要点。詳細は`docs/dev_notes/workflow.md`）
 - 開発は`<version>-dev`ブランチで行い、ドキュメントとCLAUDE.mdもそのブランチに入れる。`main`にはリリース時にまとめてマージする。
-- IDEとの連携は`~/Library/Arduino15/packages/nxp/hardware/mcx/<version>-dev`（symlink、今は`0.13.0-dev`）。Boards Managerで入れたリリース版が並ぶとそちらが選ばれるので、実機確認の前に`arduino-cli compile -v`の`Using core ... from platform in folder:`を見る。退避と復帰は`script/dev_env_*.command`。
+- IDEとの連携は`~/Library/Arduino15/packages/nxp/hardware/mcx/<version>-dev`（symlink、今は`0.14.0-dev`）。Boards Managerで入れたリリース版が並ぶとそちらが選ばれるので、実機確認の前に`arduino-cli compile -v`の`Using core ... from platform in folder:`を見る。退避と復帰は`script/dev_env_*.command`。
 - リリース前は`staging-<version>`ブランチで3OSのインストールと動作を確かめてから、`main`に索引のエントリを入れる。
 
 ## リリース準備（`docs/dev_notes/release_checklist.md`に全文。入るときは全部読む）
