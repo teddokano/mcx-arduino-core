@@ -3691,6 +3691,7 @@ Toolsメニューに「Optimize」（`-O2`/`-Os`）・A153の「EEPROM」（1KB/
   このとき（手を離すときに）`DEMCR`も0になり、割り込みを切った`delayMicroseconds()`が永久に止まった（A153で19回中5回）。CYCCNTを読むのを`MSDK_GetCpuCycleCount()`（`fsl_common_arm.c`、`mcx-arduino-core:`の印）の1か所にまとめ、TRCENAが落ちていたら入れ直すようにした（2026-11-22）。原因はprobe-rsのMCX Aのウォッチポイントの設定で、probe-rs/probe-rs#4757で報告した。M33の時間の元をOSTIMERなどに移すかは1.0に向けて決める（memoの§3）
 - release_check（2026-11-21）: 配線なしの`01`・`04`・`08`・`09`と`test_avr_pgmspace`・`test_network_base_classes`・`test_micros_noInterrupts`は5ボードともALL OK（上の修正のあと）。`06`（2回）・`07`も5ボードともALL OK（07は1000回のリセットで失敗0）。手で見る`02`は5ボードともOK、`03`は5ボードとも通った（SW2の押しの数・赤の間の押し・レベル割り込み。2026-11-22に、開始の合図の緑の点滅・赤の間に押したかの判定・緑5秒を足した）、`05`（N947のWire2をロジアナで）もOK。ジャンパだけの`11`〜`16`も5ボードとも通った（`15`はA156、`16`は配線のある3ボードとなしのA153・N947。落ちたのはジャンパのせいだけ: A156の`16`のA4-D18・A5-D19、C444の`13`のD8-D9、N947の`11`のMB_TX-MB_RX。挿し直して通った）。`test_Servo`も5ボードともALL PASS（C444は最初にD6-D7が効いておらず全項目0us、挿し直して通った）。`24`（2枚でWireのターゲット）もN947を相手にA153・A156・C444・N236の4組ともALL OK。`25`（N947のEthernetとPC。PCのインターネット共有を有効にして、ボードがDHCPで取った後にpc_check.pyでALL OK、1msのlwIP割り込みの最長395us）も通った。`21`（外付けの`P3T1755.h`。arduino-cliのライブラリのフォルダに無いので`--library ~/dev/Arduino/libraries/TempSensor_NXP_Arduino`と`--library ~/dev/Arduino/libraries/I2C_device_Arduino`をパスで渡した）も5ボードとも45秒でWARNINGが0行（N236は最初にN947のセンサーの配線が効かず毎周WARNING、挿し直して通った）。`22`（P3T1035xUK-ARD、0x72、D18/D19）も5ボードとも`stop=false`・`stop=true`の読みがOK（温度は23.0〜23.75℃。ロジアナでのSr確認は私からは見られず未実施）。`23`（`Waveshare_TFT_Touch` 1.4.0-devの`SDBitmapViewer`。`--library ~/dev/Arduino/libraries/Waveshare_TFT_Touch`をパスで渡した）もLCDとSDで5ボードとも画像がきれいに出て、タッチで次に変わった（目視）。まだ: `26`（W5500 Lite。任意）
 - まだ: A153でRTC_NXP_Arduinoの`PCF2131_interrupt_based_operation`（PCF2131の基板が要る）。`__FILE__`: デバッガでブレークポイントからソースに飛べること（デバッグ情報のパスは変えていない）。Windowsで`-fmacro-prefix-map`が効くか（ステージングで）
+  → どれも済んだ。`__FILE__`のブレークポイントからソースに飛べることはmacOSのステージングで（下の「リリース」）、残りの2つは2026-11-23に確かめた（v0.14.0の節の「0.13.0から持ち越した確認」）
 
 ### リリース
 
@@ -3701,6 +3702,7 @@ Toolsメニューに「Optimize」（`-O2`/`-Os`）・A153の「EEPROM」（1KB/
 ### 0.13.0から持ち越した確認
 
 - A153でRTC_NXP_Arduinoの`PCF2131_interrupt_based_operation`が動くことを、ユーザーがPCF2131の基板で確かめた（2026-11-23）。0.13.0でnewlib-nanoにして、このサンプルがA153のフラッシュに入るようになったので、その確認
+- Windowsでも`-fmacro-prefix-map`が効くことを、ユーザーが確かめた（2026-11-23、Boards Managerから入れた0.13.0、FRDM-MCXA153で`Wire`を使うスケッチ）。IDE 2のビルドのフォルダー（Windowsは`%LOCALAPPDATA%\arduino\sketches`）の`.ino.bin`からソースのファイル名を拾うと、コアのものは11個とも`mcx\cores\...`・`mcx\variants\...`で、`C:`や`AppData`を含むものは無かった。残る`/__w/arm-none-eabi-gcc-xpack/...`の3つは、xPackのビルド済みのnewlibのもので、この設定とは関係ない
 
 ### FRDM-MCXC444の復旧: 他のボード向けのイメージが書かれてロックアップを繰り返した（2026-11-23）
 
