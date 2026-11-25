@@ -61,34 +61,26 @@ int main( void )
 	return 0;
 }
 
-#if !defined( __ARM_ARCH_6M__ )	// Cortex-M0+: below, after millis_init()
-void delay( unsigned long ms )
-{
-	wait( (float)ms / 1000.0f );
-}
-
-void delayMicroseconds( unsigned int us )
-{
-	wait_us( us );
-}
-#endif
-
 /*
  *  millis() / micros()
  *
- *  DWT->CYCCNT already runs free (enabled by SDK_DelayAtLeastUs() for wait()),
- *  but as a bare 32bit cycle counter it wraps every ~45s at 96MHz — too short
- *  to use directly. SysTick is set to a 1ms tick to extend the range to the
- *  full 32bit millisecond count (~49 days, matching classic Arduino millis()).
- *  DWT->CYCCNT is kept only for sub-millisecond resolution inside micros().
- *  It is read only through MSDK_GetCpuCycleCount() (fsl_common_arm.c), which
- *  sets DEMCR.TRCENA again when a debugger has cleared it.
+ *  SysTick counts the core clock down from one millisecond's worth, and its
+ *  interrupt counts the milliseconds (32 bits, ~49 days, as on AVR).
+ *  micros() adds how far SysTick has counted into the millisecond, and
+ *  delay() and delayMicroseconds() count it down as well. The same on all
+ *  five boards: until 0.14.0 the Cortex-M33 boards counted the part of the
+ *  millisecond with the DWT's cycle counter (CYCCNT), which belongs to the
+ *  debugger: a debugger letting go of a running sketch stops it (it clears
+ *  DEMCR.TRCENA), and one that writes it back makes millis() jump by tens
+ *  of seconds. SysTick isn't the debugger's, and stands still, as the core
+ *  does, at a breakpoint.
+ *  Ticks taken more than a millisecond late, with interrupts off for that
+ *  long, are lost, as on AVR: the cycle counter brought them back.
  */
 
 namespace {
 
 volatile uint32_t	ms_ticks		= 0;
-volatile uint32_t	ms_tick_dwt		= 0;
 uint32_t			cycles_per_us	= 1;
 uint32_t			cycles_per_ms	= 1000;
 bool				millis_ready	= false;
@@ -100,18 +92,6 @@ void millis_init( void )
 	cycles_per_us	= core_hz / 1000000u;
 	cycles_per_ms	= core_hz / 1000u;
 
-#if !defined( __ARM_ARCH_6M__ )	// Cortex-M0+ has no cycle counter: micros() reads SysTick there
-	CoreDebug->DEMCR	|= CoreDebug_DEMCR_TRCENA_Msk;
-	DWT->CTRL			|= DWT_CTRL_CYCCNTENA_Msk;
-
-	// DWT->CYCCNT has been free-running since boot (wait()/delay() enabled
-	// it). Snapshot "now" as the baseline so micros() doesn't report the
-	// raw since-boot cycle count before the first SysTick tick has fired.
-	// Taken just before SysTick starts, so each tick comes a few cycles
-	// after a whole number of milliseconds from it (SysTick_Handler())
-	ms_tick_dwt		= MSDK_GetCpuCycleCount();
-#endif
-
 	millis_ready	= true;
 
 	SysTick_Config( cycles_per_ms );
@@ -119,10 +99,10 @@ void millis_init( void )
 
 }	// namespace
 
-#if defined( __ARM_ARCH_6M__ )
-// wait_us() goes through double and 64-bit arithmetic, done in software on
-// a Cortex-M0+: about 45us before it starts to wait. Count SysTick's own
-// down-counter instead, which runs with interrupts off too
+// wait_us() goes through double and 64-bit arithmetic: about 45us on a
+// Cortex-M0+ before it starts to wait, and about 14us too long on the
+// FRDM-MCXA153 and FRDM-MCXA156. Count SysTick's own down-counter instead,
+// which runs with interrupts off too
 void delayMicroseconds( unsigned int us )
 {
 	if ( !millis_ready )
@@ -142,9 +122,10 @@ void delayMicroseconds( unsigned int us )
 	}
 }
 
-// wait() has no cycle counter to read here either: SDK_DelayAtLeastUs()
-// counts its own loop, so every interrupt taken during it added its time on
-// top (delay( 500 ) took 501 ms, and 514 ms under a 10 kHz TimerOne).
+// Not wait() either: on the Cortex-M0+, SDK_DelayAtLeastUs() counts its own
+// loop, so every interrupt taken during it added its time on top
+// (delay( 500 ) took 501 ms, and 514 ms under a 10 kHz TimerOne), and on
+// the Cortex-M33 it counts the debugger's cycle counter (see above).
 // Count SysTick's down-counter, as delayMicroseconds() does, a whole
 // millisecond at a time so that a long delay doesn't overflow. Only an
 // interrupt running for over 1 ms between two reads would go uncounted
@@ -171,45 +152,27 @@ void delay( unsigned long ms )
 		}
 	}
 }
-#endif
 
 extern "C" void SysTick_Handler( void )
 {
-#if !defined( __ARM_ARCH_6M__ )
-	// The whole milliseconds since the last tick, by the cycle counter. This
-	// handler can run late (SysTick has the lowest priority, and waits behind
-	// MCXEthernet's tick, for one), and the time it runs mustn't become the
-	// start of the millisecond, or micros() reads short until the next tick.
-	// Ticks missed while interrupts were off for over 1 ms come back, and a
-	// tick that comes in while this one counts it adds 0 when it runs.
-	//
-	// The cycle counter counts only while DEMCR.TRCENA is set, and a
-	// debugger clears it as it lets go of a running sketch (probe-rs does).
-	// Without it set again, millis(), micros() and delay() stood still,
-	// delay() for good. MSDK_GetCpuCycleCount() sets it again, so each tick
-	// costs the time it was off, under a millisecond, once
-	uint32_t	n	= ( MSDK_GetCpuCycleCount() - ms_tick_dwt ) / cycles_per_ms;
-
-	ms_ticks	= ms_ticks + n;
-	ms_tick_dwt	= ms_tick_dwt + n * cycles_per_ms;
-#else
-	uint32_t	n	= 1;
-
+	// One millisecond, however late this handler runs (SysTick has the
+	// lowest priority, and waits behind MCXEthernet's tick, for one):
+	// SysTick reloads by itself, so the next millisecond has already
+	// started on time, and micros() reads it from SysTick->VAL
 	ms_ticks	= ms_ticks + 1;
-#endif
 #if defined( CPU_MCXC444VLH )
 	pwm_tpm_service( ms_ticks * 1000u );	// micros() at this tick
 #endif
 
 	void	( *hook )( uint32_t )	= systick_hook;
 
-	if ( hook && n )
-		hook( n );
+	if ( hook )
+		hook( 1 );
 
 	hook	= systick_ticker_hook;
 
-	if ( hook && n )
-		hook( n );
+	if ( hook )
+		hook( 1 );
 
 	//	Defined only if the sketch includes <avr/wdt.h> or WDT.h (mcx_watchdog.h)
 	if ( mcx_sketch_wdt_event )
@@ -229,10 +192,13 @@ unsigned long micros( void )
 	if ( !millis_ready )
 		millis_init();
 
-#if defined( __ARM_ARCH_6M__ )
-	// No cycle counter on a Cortex-M0+: how far SysTick has counted down in
-	// this millisecond gives the rest. A tick pending but not yet taken
-	// (interrupts are off here) means the count has wrapped: one more ms.
+	// How far SysTick has counted down in this millisecond gives the rest.
+	// A tick pending but not yet taken (interrupts are off here, or the
+	// handler waits behind another) means SysTick has wrapped since the last
+	// count: one more millisecond, and SysTick->VAL read again, since the
+	// first read may have come just before the wrap. Before 0.14.0 a tick
+	// pending counted only while VAL was in the top half, and micros() read
+	// a millisecond short once the handler was over half a millisecond late
 	uint32_t	ms;
 	uint32_t	val;
 	uint32_t	load	= SysTick->LOAD;
@@ -241,23 +207,14 @@ unsigned long micros( void )
 	__disable_irq();
 	ms	= ms_ticks;
 	val	= SysTick->VAL;
-	if ( ( SCB->ICSR & SCB_ICSR_PENDSTSET_Msk ) && val > load / 2 )
+	if ( SCB->ICSR & SCB_ICSR_PENDSTSET_Msk )
+	{
 		ms++;
+		val	= SysTick->VAL;
+	}
 	__set_PRIMASK( primask );
 
 	uint32_t	delta_us	= ( load - val ) / cycles_per_us;
-#else
-	uint32_t	ms;
-	uint32_t	base;
-	uint32_t	primask	= __get_PRIMASK();	// called with interrupts off, leave them off
-
-	__disable_irq();
-	ms		= ms_ticks;
-	base	= ms_tick_dwt;
-	__set_PRIMASK( primask );
-
-	uint32_t	delta_us	= (uint32_t)( MSDK_GetCpuCycleCount() - base ) / cycles_per_us;
-#endif
 
 	return	(unsigned long)( (uint64_t)ms * 1000u + delta_us );
 }

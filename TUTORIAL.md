@@ -472,8 +472,8 @@ void loop() {
 
 ### 2.7. Timing: `millis` / `micros`
 
-Standard Arduino timing functions, backed by SysTick (1ms tick) + the DWT
-cycle counter (SysTick's own count on FRDM-MCXC444, which has no DWT). `millis()` doesn't roll over for about 49 days, just like a
+Standard Arduino timing functions, backed by SysTick: a 1ms tick, plus
+SysTick's own count within the millisecond for `micros()`. `millis()` doesn't roll over for about 49 days, just like a
 classic Arduino.
 
 ```cpp

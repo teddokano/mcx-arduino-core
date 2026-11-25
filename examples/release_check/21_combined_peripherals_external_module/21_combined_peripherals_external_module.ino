@@ -11,7 +11,7 @@
  *    - LPADC      : analogRead()
  *    - FlexPWM    : analogWrite(PWM0) with a changing duty cycle every loop
  *    - CTIMER0    : tone()/noTone() burst, interrupting on top of everything else
- *    - SysTick/DWT: millis()/micros(), printed every loop (runs continuously
+ *    - SysTick    : millis()/micros(), printed every loop (runs continuously
  *                   throughout regardless of what else is happening)
  *    - SPI1       : MikroBus SPI loopback (requires a MB_MOSI->MB_MISO
  *                   jumper wire) -- own peripheral, independent of

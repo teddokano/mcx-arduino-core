@@ -12,14 +12,21 @@
  *  before and after. Then micros() has to keep counting normally with
  *  interrupts on.
  *
- *  Then the cycle counter that micros(), delay() and delayMicroseconds()
- *  count with on the Cortex-M33 boards: a debugger clears DEMCR.TRCENA,
- *  which stops it, as it lets go of a running sketch (probe-rs does, and
- *  right after an upload to FRDM-MCXA153 or FRDM-MCXA156 that lands about
- *  100ms after the sketch starts). SysTick can't set it again while
- *  interrupts are off, so until 0.13.0 micros() stood still there and a
- *  wait on it never ended. The sketch clears it itself, as the debugger
- *  would.
+ *  Then the debugger's cycle counter (DWT CYCCNT), which micros(), delay()
+ *  and delayMicroseconds() counted with on the Cortex-M33 boards until
+ *  0.14.0: a debugger clears DEMCR.TRCENA, which stops it, as it lets go of
+ *  a running sketch (probe-rs does, and right after an upload to
+ *  FRDM-MCXA153 or FRDM-MCXA156 that lands about 100ms after the sketch
+ *  starts), and one that measures cycles writes it back. Until 0.13.0
+ *  micros() stood still with interrupts off then, and a wait on it never
+ *  ended; until 0.14.0 a counter written back made millis() jump by tens
+ *  of seconds. They now count SysTick on every board. The sketch does to
+ *  the counter what the debugger would.
+ *
+ *  And a SysTick tick held back by up to 0.9ms with interrupts off: until
+ *  0.14.0 micros() then read a millisecond short once the tick was over
+ *  half a millisecond late (on FRDM-MCXC444; from 0.14.0 every board
+ *  reads micros() the same way).
  *
  *  Wiring: none.
  *
@@ -102,9 +109,7 @@ void setup() {
 
   //  5: with interrupts off, micros() keeps counting after DEMCR.TRCENA is
   //     cleared, as a debugger does when it lets go. (delay() and
-  //     delayMicroseconds() set TRCENA as they start, so they got stuck only
-  //     when it was cleared during the wait, which a sketch can't stage.
-  //     They read the counter the same way as micros().)
+  //     delayMicroseconds() count SysTick as micros() does.)
 #if defined(__ARM_ARCH_6M__)
   Serial.println("        (FRDM-MCXC444 counts with SysTick, not the cycle counter)");
 #else
@@ -125,7 +130,52 @@ void setup() {
         waited >= 500 && spins < 10000000UL);
 #endif
 
-  //  6: interrupts on again after all of it
+  //  6: a tick held back by interrupts for up to 0.9ms, at 40 different
+  //     places in the millisecond: micros() reads the 900us right
+  unsigned long late_min = 0xFFFFFFFFUL, late_max = 0;
+  for (int i = 0; i < 40; i++) {
+    delayMicroseconds((i * 37) % 1000);
+    noInterrupts();
+    unsigned long t0 = micros();
+    delayMicroseconds(900);
+    unsigned long t1 = micros();
+    interrupts();
+    unsigned long d = t1 - t0;
+    if (d < late_min)
+      late_min = d;
+    if (d > late_max)
+      late_max = d;
+  }
+  Serial.print("        900us with the tick held back: ");
+  Serial.print(late_min);
+  Serial.print(" - ");
+  Serial.print(late_max);
+  Serial.println("us");
+  check("micros() reads 900us as 895 - 960us with the tick held back",
+        late_min >= 895 && late_max <= 960);
+
+  //  7: the cycle counter written back, as a debugger that measures cycles
+  //     does: millis() takes no notice
+#if defined(__ARM_ARCH_6M__)
+  Serial.println("        (FRDM-MCXC444 has no cycle counter)");
+#else
+  CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+  unsigned long m0 = millis();
+  DWT->CYCCNT = 0;
+  delay(20);
+  unsigned long m1 = millis();
+  DWT->CYCCNT = 0x80000000UL;
+  delay(20);
+  unsigned long m2 = millis();
+  Serial.print("        millis() over delay(20) with the counter written back: ");
+  Serial.print(m1 - m0);
+  Serial.print(", ");
+  Serial.println(m2 - m1);
+  check("millis() counts 19 - 22ms over delay(20) with the cycle counter written back",
+        m1 - m0 >= 19 && m1 - m0 <= 22 && m2 - m1 >= 19 && m2 - m1 <= 22);
+#endif
+
+  //  8: interrupts on again after all of it
   check("interrupts are on at the end", (__get_PRIMASK() & 1) == 0);
 
   Serial.println();

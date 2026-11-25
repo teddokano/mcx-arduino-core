@@ -360,7 +360,7 @@ void loop() {
 
 ### 2.7. 時間計測: `millis` / `micros`
 
-標準的なArduinoのタイミング関数で、SysTick（1msティック）+ DWTサイクルカウンタで実装されています（DWTの無いFRDM-MCXC444ではSysTickのカウンタ）。`millis()`は従来のArduinoと同様、約49日でオーバーフローします。
+標準的なArduinoのタイミング関数で、SysTickで実装されています（1msティックと、`micros()`ではミリ秒の中のSysTickのカウント）。`millis()`は従来のArduinoと同様、約49日でオーバーフローします。
 
 ```cpp
 #include <Arduino.h>

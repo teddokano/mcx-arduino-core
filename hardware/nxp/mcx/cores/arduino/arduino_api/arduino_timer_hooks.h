@@ -14,8 +14,10 @@
 #include	<stdint.h>
 
 /** Called from SysTick_Handler() (the lowest interrupt priority) with the
- *  milliseconds this tick counted: 1, or more after interrupts were off
- *  for over 1 ms (never 0). nullptr when nothing is hooked (MsTimer2).
+ *  milliseconds this tick counted: always 1 from 0.14.0 (before, on the
+ *  Cortex-M33 boards, more after interrupts were off for over 1 ms). Kept
+ *  as an argument for the libraries that add it up. nullptr when nothing
+ *  is hooked (MsTimer2).
  */
 extern void	(* volatile systick_hook)( uint32_t ms );
 
