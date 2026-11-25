@@ -28,6 +28,46 @@ extern "C" {
 #include "io.h"
 #include "Serial.h"
 
+#if	defined( CPU_MCXA153VLH ) || defined( CPU_MCXA156VLL )
+/*
+ *  Wait for probe-rs to let go before the sketch runs (FRDM-MCXA153 and
+ *  FRDM-MCXA156). After an upload, probe-rs 0.32.0 resets the board and,
+ *  about 100ms later, halts the core and lets it go again (the watchpoint
+ *  its MCX A reset sequence sets never hits: probe-rs/probe-rs#4757).
+ *  Letting it go loses the IT state in xPSR, so a halt inside an IT block
+ *  ran the rest of the block unconditionally: up to four instructions
+ *  that should have been skipped, once, wherever the sketch was then.
+ *  delay(200) once came back after 90ms that way (2026-11-26).
+ *
+ *  So while a debugger is attached at start (DHCSR.C_DEBUGEN, which probe-rs
+ *  clears as it lets go), spin here, for 250ms at most, in a loop with no
+ *  IT block in it. Power-on and the RESET button start with C_DEBUGEN
+ *  clear, and a LinkServer upload clears it at once; a debug session keeps
+ *  it set, and waits the 250ms once.
+ *  The loop is in assembly so that the compiler can't put an IT block in
+ *  it. A turn (a load from DHCSR, a test, a subtract and two branches)
+ *  took 7 cycles on both boards at 96MHz, timed by OSTIMER0: 250ms at
+ *  most. After a probe-rs upload it waited 100-118ms, after a LinkServer
+ *  upload 1-2ms (2026-11-26).
+ */
+static void wait_for_debugger_release( void )
+{
+	uint32_t	turns	= SystemCoreClock / 28u;	//	250ms at 7 cycles a turn
+
+	__asm volatile(
+		"1:\n"
+		"	ldr		r1, [%1]\n"			//	DHCSR
+		"	tst		r1, #1\n"				//	C_DEBUGEN
+		"	beq		2f\n"
+		"	subs	%0, %0, #1\n"
+		"	bne		1b\n"
+		"2:\n"
+		: "+r" ( turns )
+		: "r" ( &CoreDebug->DHCSR )
+		: "r1", "cc", "memory" );
+}
+#endif
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wprio-ctor-dtor"
 __attribute__((constructor(0)))
@@ -43,6 +83,10 @@ void start_mcu()
 #endif
 
 	Obj	o( false );
+
+#if	defined( CPU_MCXA153VLH ) || defined( CPU_MCXA156VLL )
+	wait_for_debugger_release();
+#endif
 
 #if defined(__ARM_ARCH_6M__)
 	//	The M0+ has no MSPLIM. The stack sits at the bottom of the SRAM

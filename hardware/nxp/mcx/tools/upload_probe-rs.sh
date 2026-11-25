@@ -83,8 +83,11 @@ export PROBE_RS_SPEED
 # On the FRDM-MCXA153 and FRDM-MCXA156, probe-rs's reset (0.32.0, and its
 # development version) sets a watchpoint to stop the core at the boot
 # ROM's exit, which it doesn't, waits 100ms, and then halts the core to
-# take the watchpoint away: the sketch, running by then, stands still for
-# 4 to 8ms (SysTick too). Left as it is: without --reset the sketch starts
+# take the watchpoint away, losing the IT state in xPSR as it lets the
+# core go. The core waits for that before the sketch runs (start_mcu() in
+# mcu.cpp, from 0.14.0); before, the sketch stood still for 4 to 8ms then,
+# and could run instructions an IT block should have skipped. The reset is
+# left as it is: without --reset the sketch starts
 # from a LOCKUP reset (CMC SRS 0x8010), and resetting it afterwards
 # through AIRCR (`probe-rs write`) starts it twice, and probe-rs halts the
 # core for about 6ms each time it attaches anyway (2026-11-21).

@@ -5,6 +5,31 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+- **`millis()`, `micros()`, `delay()` and `delayMicroseconds()` count SysTick on every board**, as on FRDM-MCXC444:
+  the Cortex-M33 boards (FRDM-MCXA153, FRDM-MCXA156, FRDM-MCXN947, FRDM-MCXN236) counted with the DWT cycle counter,
+  which belongs to the debugger. A debugger letting go of a running sketch stops it (0.13.0 set it going again), and
+  one that writes it back, to measure cycles, made `millis()` jump by tens of seconds. SysTick is the core's own, and
+  stands still at a breakpoint, as the core does. What changes: ticks missed while interrupts are off for over 1 ms
+  are lost, as on AVR, where the cycle counter brought them back (since v0.11.0); `EEPROM` writes keep interrupts off
+  while flash is erased. `delayMicroseconds()` no longer waits about 14us too long on FRDM-MCXA153 and FRDM-MCXA156.
+  Checked by `examples/Arduino_compatible_API/test_micros_noInterrupts`, which also writes the cycle counter back now
+
+### Fixed
+- **Right after an upload with probe-rs, a sketch on FRDM-MCXA153 or FRDM-MCXA156 could run up to four instructions it
+  should have skipped**, once, about 100ms after it started. probe-rs 0.32.0's reset halts the core then (its
+  watchpoint at the boot ROM's exit never hits), and letting it go again loses the state of an IT block, so the
+  instructions left in one ran whatever their condition. `delay(200)` came back after 90ms in 3 of 8 runs of
+  `release_check/01`, and an IT block that should never run ran in 7 of 10. The core now waits, before anything of the
+  sketch runs, until probe-rs has let go (DHCSR.C_DEBUGEN clear, 100-118ms), in a loop with no IT block, for 250ms at
+  most: power-on and the RESET button don't wait, a LinkServer upload 1-2ms, and a debug session 250ms once. The
+  sketch no longer stands still for 4 to 8ms then either
+- **`micros()` read a millisecond short when the 1 ms tick was over half a millisecond late** (FRDM-MCXC444, and every
+  board from now on): a tick pending counted only while SysTick was in the top half of the millisecond. It now always
+  counts, and SysTick is read again after it
+
 ## [0.13.0] - 2026-11-22
 
 ### Highlights

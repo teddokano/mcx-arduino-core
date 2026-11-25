@@ -11,7 +11,7 @@
   前の2つは別リポジトリが開発の本拠地で、`hardware/nxp/mcx/libraries/`配下はリリース時に同期する取り込みコピー。
   `EEPROM`はこのリポジトリが本体（フラッシュの配置がリンカスクリプトと一体なので）。`Servo`もこのリポジトリが本体で、コアの`analog_pwm_out()`（`arduino_analog.h`）でピンの`PwmOut`を受け取り、マイクロ秒でパルス幅を設定する（`analogWriteResolution()`に触らない）。PWMの無いピンはタイマーの割り込みでGPIOを上げ下げする（下の`Servo`の項目）
 - **現在のリリース**: **v0.13.0**（2026-11-22）。リリースzipはSHA-256 `94bb6612a08dde503aee4487e630ee8d01697eb636a7869b13506cf57f931f27`、19022371 bytes。タグ`0.13.0`は`f66e1e5`、`main`の索引のエントリは`8635995`。macOS・Windows・LinuxでBoards Managerから入れて、書き込みとデバッグまで確かめた。前の版は0.12.0（2026-11-01）、0.11.0（2026-10-25）、0.10.0（2026-10-18）、0.10.1（Fritzingの部品だけ）。
-- **開発中**: `0.14.0-dev`（2026-11-22に`0.13.0-dev`から切り、`main`の索引のコミット`8635995`をマージした）。コードの変更はまだ無い（`platform.txt`の版も0.13.0のまま）。
+- **開発中**: `0.14.0-dev`（2026-11-22に`0.13.0-dev`から切り、`main`の索引のコミット`8635995`をマージした）。M33の時間の元をSysTickにし、A153・A156は起動でprobe-rsが離すのを待つようにした（5ボードで確かめた）。`platform.txt`の版は0.13.0のまま。
 - **0.13.0の記録**: 入れたもの・実機での確認・リリースの経緯は、[docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md)の「v0.13.0」の節に移した（2026-11-23）。
 - **リリースごとの変更点**: [CHANGELOG.md](CHANGELOG.md)
 - **各リリースで何をやり、どこで詰まったかの詳細**: [docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md)
@@ -150,7 +150,7 @@
 - **ADCの無いピンへの`analogRead()`をビルド時に検出する案は入れない**（実行時の`panic()`のまま）。
 - **0.12.0でやらなかった**: `SoftwareSerial`・USB・r01libの名前空間。
 - **0.13.0の範囲（2026-11-20に決めたもの）**: ウォッチドッグのAPIを入れる（`<avr/wdt.h>`と同梱の`WDT`で入れた。仕様は`memo/notes_toward_1.0.0.md`の§11。2026-11-21に5ボードで実機で確かめた）。r01libの名前空間はやらない（効果が薄い）。ほかの大域インスタンス（`Serial1`・`SPI1`など）を使ったときだけリンクする案はやらない（減るのは100バイト以下）。経緯は`memo/notes_toward_1.0.0.md`の§8・§10。
-- **probe-rsで書き込んだA153・A156が起動から約100msで4〜8ms止まる件は、そのまま残す**（probe-rs 0.32.0のMCX Aのリセットの手順のため。probe-rs/probe-rs#4757で報告済み）。CYCCNTは`MSDK_GetCpuCycleCount()`の1か所だけで読み、`DEMCR.TRCENA`が落ちていたら入れ直す。M33の時間の元をOSTIMERなどに移すかは1.0に向けて決める（`memo/notes_toward_1.0.0.md`の§3）。
+- **probe-rsで書き込んだA153・A156は、起動から約100msでprobe-rsがコアを止めて離し、そのときxPSRのITの状態が消える**（ITブロックの残りの命令が条件に関係なく最大4つ実行される。2026-11-26に見つけた。probe-rs 0.32.0のMCX Aのリセットの手順のため。probe-rs/probe-rs#4757）。**0.14.0から、`start_mcu()`（`mcu.cpp`）が、スケッチより前に、`DHCSR.C_DEBUGEN`が消えるまでITブロックの無いループで待つ**（最長250ms。probe-rsの書き込みのあとは100〜118ms、LinkServerは1〜2ms、デバッグでは250ms。ユーザーが決定）。**`millis()`・`micros()`・`delay()`・`delayMicroseconds()`は、0.14.0から5ボードともSysTickで数える**（2026-11-26、ユーザーが決定。それまでM33はDWTのCYCCNTで、デバッガに止められたり書き戻されたりした。OSTIMER0の案はやめた。割り込みを1ms以上切ると、その間の刻みはAVRと同じく取りこぼす。比べた3案は`memo/notes_toward_1.0.0.md`の§3）。SDKのドライバーが使う`SDK_DelayAtLeastUs()`はCYCCNTのままで、`MSDK_GetCpuCycleCount()`が`DEMCR.TRCENA`を入れ直す。
 - **0.12.0で入れた機能**（`MsTimer2`・`TimerOne`・`mcxTicker`、`Servo`のPWMの無いピン、PWMの周期とパルス幅をtickで持つこと、`mcx-discovery`、デバッガのペリフェラルのレジスタ表示、A4/A5の`Wire.setPins()`）の仕様と決定は、触る前に`releases_and_decisions.md`を読む。
 
 ## ボード別の前提（要点。そのボードを触る前に`docs/dev_notes/board_*.md`を読む）
