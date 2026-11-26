@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   and does on UNO R4. Using them now warns (`'RED' is deprecated: use LEDR`), with the IDE's compiler warnings on
 
 ### Changed
+- **`analogRead()` of a number that is no pin at all stops the sketch** (`analogRead: no such pin`), as a pin with
+  no ADC does; it read 0, which hid the mistake. `analogRead(0)`-`analogRead(5)` still read `A0`-`A5`
+- **What stays compatible from 1.0** says that a 1.x release may lift a limit the file describes (make something work
+  that didn't, or add a pin, a board or an option), which isn't a break
 - **What stays compatible from 1.0** (`API_COMPATIBILITY.md`) now also covers the bundled `mcxRCServo` and
   `mcxPinState`'s `PinState` (its printed tables still aside), the macros the file lists, and for arduino-cli the
   board names in the FQBN and the Tools menus' option names (`opt`, `eeprom`, `upload_method`). Which option a menu

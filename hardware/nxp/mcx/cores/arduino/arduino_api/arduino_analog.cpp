@@ -117,8 +117,10 @@ int analogRead( int pin_num )
 
 	int	pin	= raw_pin( pin_num );
 
+	//	A number that is no pin at all stops the sketch, as a pin with no
+	//	ADC does (AnalogIn). Before 0.14.0 it read 0, which hid the mistake
 	if ( pin < 0 || pin >= MAX_ANALOG_PINS )
-		return	0;
+		panic( "analogRead: no such pin" );
 
 #if	defined( FRDM_MCXN236 )
 	//	A3 is also the blue LED's pin, which cannot be cut off, so the core
