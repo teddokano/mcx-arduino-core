@@ -13,14 +13,18 @@ From 1.0.0 this core follows [Semantic Versioning](https://semver.org/): a
 Anything else can change in any release.
 
 Covered:
-- The Arduino functions and classes in this file, with the behavior it
-  describes, limits included
+- The Arduino functions, classes and macros in this file, with the
+  behavior it describes, limits included
 - The pin names: `D0`-`D19`, `A0`-`A5`, `PWM0`-`PWM5`, the MikroBus names
   (`MB_*`), and the on-board LEDs' and buttons' names (`RED`, `GREEN`,
   `BLUE`, `SW2`, `SW3`), on the pins each board's PIN_MAPPING file gives
 - The board macros: `ARDUINO_FRDM_*` and `FRDM_*`
 - The instance names and what each is on, per board (below)
-- The bundled libraries' interfaces: `EEPROM`, `Servo`, `MsTimer2`, `TimerOne`, `mcxTicker`, `WDT` and `MCXEthernet`, and `<avr/wdt.h>`
+- The bundled libraries' interfaces: `EEPROM`, `Servo`, `MsTimer2`, `TimerOne`, `mcxTicker`, `WDT`, `MCXEthernet`,
+  `mcxRCServo` and `mcxPinState`'s `PinState` (its tables aside, below), and `<avr/wdt.h>`
+- The board names in the FQBN (`nxp:mcx:frdm_mcxa153`, `frdm_mcxn947`, `frdm_mcxa156`, `frdm_mcxn236`,
+  `frdm_mcxc444`) and the Tools menus' option names for arduino-cli: `opt=o2`/`os`, `eeprom=on`/`off`
+  (FRDM-MCXA153) and `upload_method=probe_rs`/`linkserver` ([Build options](#build-options-tools-and-sketch-menus))
 - This core's additions to the Arduino API that this file lists, such as
   `analogWriteFrequency()` and `Wire.lastStatus()`
 
@@ -30,6 +34,11 @@ Not covered:
 - The numbers behind the pin names: use the names
 - The values `Wire.lastStatus()` returns, which are the SDK's
 - `mcxPinState`'s printed tables, which are for people to read
+- Which option a Tools menu starts at (the Upload method on each board, for
+  one), and the tools behind the menus: the versions of probe-rs, LinkServer
+  and the compiler
+- How much flash and RAM the core takes, and how long a function takes
+  where this file doesn't say
 - Anything a source file marks as internal or for testing
 
 ### Instance names by board
@@ -204,6 +213,18 @@ On FRDM-MCXC444 (see [PIN_MAPPING_C444.md](PIN_MAPPING_C444.md)):
 | API | Status | Notes |
 |-----|--------|-------|
 | `Servo.attach` / `detach` / `write` / `writeMicroseconds` / `read` / `readMicroseconds` / `attached`, `MIN_PULSE_WIDTH` and the other constants | ⚠️ | Added in v0.10.0, as a bundled library with the official Servo library's interface: `#include <Servo.h>`. Original implementation, not a port of the official library (LGPL 2.1); the build picks it over an installed official Servo, which has no build for this core. **Any digital pin** (since v0.12.0; before, PWM pins only, and `attach()` on another pin stopped the sketch with `panic()`). On a pin with PWM -- `PWM0`-`PWM5`, `D3`/`D5`/`D6`/`D9` on FRDM-MCXA156 and FRDM-MCXN236, and `D3`, `D5`, `D6`, `D9` and `D10` on FRDM-MCXC444, which has no `PWM0`-`PWM5` -- the pulses come from FlexPWM (the TPM on FRDM-MCXC444) at 50Hz, so they don't jitter. On FRDM-MCXC444, `D5`, `D6` and `D9` share one channel, so one of them at a time. On any other pin a timer interrupt raises and lowers the pin, as the official library does on AVR: the servos on such pins get their pulses one after another, every 20ms, or longer when the pulses add up to more (12 servos at 2400us take about 29ms), and other interrupts can make a pulse a few microseconds longer or shorter. A pulse there is at most 20000us. The timer is CTIMER2 (CTIMER3 on FRDM-MCXN947, where `MCXEthernet` has CTIMER2), and TPM2 on FRDM-MCXC444, and runs only while such a servo is attached. `attach()` stops the sketch with `panic()` only for a pin that doesn't exist, and returns `INVALID_SERVO` for an object beyond `MAX_SERVOS`, as in the official library. `MAX_SERVOS` is 12, as on UNO R3, for PWM pins and others together (it was the number of PWM pins). The two pins of a FlexPWM submodule share the 50Hz period, as with `analogWriteFrequency()`. Leaves `analogWriteResolution()` alone. Checked by `examples/Arduino_compatible_API/test_Servo` (a PWM pin; one jumper; the board measures its own pulses) and `release_check/13` (`D2` and `D4`, measured on `D3` and `D5`, on all five boards). In v0.10.0 the examples `Sweep` and `Knob` also turned a real SG90 on all five boards, from `PWM0` (`D9` on FRDM-MCXC444); since v0.12.0 they use `D9` on every board, as the official ones do |
+
+## mcxRCServo
+
+| API | Status | Notes |
+|-----|--------|-------|
+| `SG90` / `FS90R` (`#include <SG90.h>`, `<FS90R.h>`), `position()`, `speed()`, `stop()`, `range()` | ✅ | A bundled library for hobby RC servos on a PWM pin (`analogWrite()`'s pins), developed at [mcxRCServo](https://github.com/teddokano/mcxRCServo). `SG90` (positional) takes `position()`, `FS90R` (continuous rotation) `speed()` and `stop()`; `range()` sets the units: 0.0 to 1.0 for `SG90` and -1.0 to 1.0 for `FS90R` unless changed. Other servos derive from `PositionServo` or `RotationServo` with their pulse timing (constructor: pin, shortest and longest pulse in ms, frequency in Hz, PWM resolution in bits). Examples: `SG90_basic`, `SG90_moves`, `FS90R_rotate` |
+
+## mcxPinState
+
+| API | Status | Notes |
+|-----|--------|-------|
+| `PinState` (`#include <PinState.h>`), `print(Print &out = Serial)` | ✅ | A bundled debugging aid: a `PinState` object in a sketch records which object holds each pin, and `print()` lists them, with the peripheral each runs on. The printed tables are for people to read and can change in any release. Costs nothing unless a `PinState` is made. See [docs/mcxpinstate_guide.md](docs/mcxpinstate_guide.md) |
 
 ## Timer interrupts
 

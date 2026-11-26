@@ -146,7 +146,7 @@
 ---
 
 ## 決定の要点（詳細は`docs/dev_notes/releases_and_decisions.md`）
-- **1.0までに変えない**: インスタンス名（`Wire1`・`Serial1`・`SPI1`など）は付け替えない。`endTransmission()`の戻り値はAVRの0〜5。公開APIの範囲はAPI_COMPATIBILITYの冒頭の「What stays compatible」。
+- **1.0までに変えない**: インスタンス名（`Wire1`・`Serial1`・`SPI1`など）は付け替えない。`endTransmission()`の戻り値はAVRの0〜5。公開APIの範囲はAPI_COMPATIBILITYの冒頭の「What stays compatible」（2026-11-26に見直し、ユーザーが決定: `mcxRCServo`と`mcxPinState`の`PinState`（表は除く）、FQBNのボード名とToolsメニューの選択肢の名前、この文書のマクロを足した。メニューの既定、probe-rs・LinkServer・コンパイラの版、フラッシュ・RAMの量、書いていない時間は含めない）。
 - **ADCの無いピンへの`analogRead()`をビルド時に検出する案は入れない**（実行時の`panic()`のまま）。
 - **0.12.0でやらなかった**: `SoftwareSerial`・USB・r01libの名前空間。
 - **0.13.0の範囲（2026-11-20に決めたもの）**: ウォッチドッグのAPIを入れる（`<avr/wdt.h>`と同梱の`WDT`で入れた。仕様は`memo/notes_toward_1.0.0.md`の§11。2026-11-21に5ボードで実機で確かめた）。r01libの名前空間はやらない（効果が薄い）。ほかの大域インスタンス（`Serial1`・`SPI1`など）を使ったときだけリンクする案はやらない（減るのは100バイト以下）。経緯は`memo/notes_toward_1.0.0.md`の§8・§10。

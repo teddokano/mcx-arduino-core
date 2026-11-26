@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Changed
+- **What stays compatible from 1.0** (`API_COMPATIBILITY.md`) now also covers the bundled `mcxRCServo` and
+  `mcxPinState`'s `PinState` (its printed tables still aside), the macros the file lists, and for arduino-cli the
+  board names in the FQBN and the Tools menus' option names (`opt`, `eeprom`, `upload_method`). Which option a menu
+  starts at, the versions of the tools behind it, and how much flash, RAM and time things take are not covered.
+  `mcxRCServo` and `mcxPinState` get a section each
 - **`millis()`, `micros()`, `delay()` and `delayMicroseconds()` count SysTick on every board**, as on FRDM-MCXC444:
   the Cortex-M33 boards (FRDM-MCXA153, FRDM-MCXA156, FRDM-MCXN947, FRDM-MCXN236) counted with the DWT cycle counter,
   which belongs to the debugger. A debugger letting go of a running sketch stops it (0.13.0 set it going again), and
