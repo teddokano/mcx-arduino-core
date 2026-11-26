@@ -17,7 +17,7 @@ CLAUDE.mdが大きくなったので、読むときだけ開くようにここ�
    `r01lib_prj_generator`のブランチ`sync-mcx-arduino-core`（`c6ed093`）で、5つのライブラリのプロジェクトにドライバー（A156 lpadc・pwm、N947・N236 lpadc・vref、C444 adc16・tpm）を足し、ひな形の`_r01lib_irq/irq.c`・`irq.h`を新しくし、サブモジュールを`cf21946`にした。
    MCUXpresso IDE 25.6のコマンドラインで5ボードのライブラリと`general_tests`（80本中74本。残りの6本は作例が意図して止める）をビルドし、実機で`Hello_world`・`I3C`・`DigitalInOut_pin_mode`・`AnalogIn`・`PwmOut`・`Ticker`・`LED_blink`・`InterruptIn`（SW2）・`SPI`（D11-D12のループバック）を確かめた。`I2C`（センサー無し）は上流の`main`と同じふるまい。
    Arduinoのコアのバイナリの違いは、C444の`PwmOut`（フック）と、`semihost_hardfault.c`を`sdk/`から`r01lib/`に移したことによるリンクの順番だけ（代表のスケッチ9本×5ボードで確かめた）。
-   **まだ: 上流`main`と`r01lib_prj_generator`の`main`へのマージ、r01libの版の番号、GitHubへのpush**（どれもユーザーの判断待ち）。どちらのブランチもpushしていない。サブモジュールの`cf21946`はローカルにだけある
+   どちらのブランチも2026-11-26にGitHubへpushした（r01libを先に。サブモジュールの`cf21946`が見えるように）。**まだ: 上流`main`と`r01lib_prj_generator`の`main`へのマージ、r01libの版の番号**（ユーザーの判断待ち）
    メモ: デバッガを外した状態（`LinkServer flash`で書いただけ）で、semihostingの`printf`を使う作例は最初の`printf`で止まる（`LinkServer flash`のあともDHCSRのC_DEBUGENが立ったまま）。r01libとは関係ない、もともとのふるまい
 7. **GPIO治具は作らない**（2026-10-02、ユーザー判断）。0.7.0で保留にしていたが、0.8.0の検討で
    「リリース作業の自動化が大きく進んでいて、治具による改善は手間の削減にそれほど効かない」として見送った。

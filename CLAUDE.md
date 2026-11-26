@@ -168,7 +168,7 @@
 1. CHANGELOGの`[Unreleased]`を補完して確定（冒頭にHighlights）。2. ドキュメント全体の再監査（`docs/llms.txt`も）。3. `docs/api/`（Doxygen）の再生成。4. ライセンスの確認。5. 機械チェック。6. 全サンプル×全ボードの回帰コンパイル。7. `examples/release_check/`を実機で全ボード（書き込み・デバッグも各OSで1回）。8. `CLAUDE.md`の棚卸し（経緯を`DEVELOPMENT_LOG.md`へ移し、「まだ:」を0にする）。
 
 ## Pendingタスク（番号は変えない。全文は`docs/dev_notes/pending_tasks.md`）
-- **6**: **コアの`cores/arduino/r01lib/`と上流`r01lib`（`~/dev/mcuxpresso/r01lib`）の`r01lib/`は1つの実体**（2026-11-26から。違ってよいのはSPIのファイル名`r01lib_spi.*`/`spi.*`だけ）。コアのr01libを直したら、上流にも同じファイルを入れる（Arduinoだけのことは`ARDUINO_ARCH_MCX`かweakのフックで分ける）。上流の`sync-mcx-arduino-core`（r01lib `cf21946`、`r01lib_prj_generator` `c6ed093`）は、`main`へのマージとpushがまだ（ユーザーの判断待ち）。全文は`pending_tasks.md`
+- **6**: **コアの`cores/arduino/r01lib/`と上流`r01lib`（`~/dev/mcuxpresso/r01lib`）の`r01lib/`は1つの実体**（2026-11-26から。違ってよいのはSPIのファイル名`r01lib_spi.*`/`spi.*`だけ）。コアのr01libを直したら、上流にも同じファイルを入れる（Arduinoだけのことは`ARDUINO_ARCH_MCX`かweakのフックで分ける）。上流の`sync-mcx-arduino-core`（r01lib `cf21946`、`r01lib_prj_generator` `c6ed093`）はGitHubにpush済みで、`main`へのマージと版の番号がまだ（ユーザーの判断待ち）。全文は`pending_tasks.md`
 - **7**: GPIO治具は作らない。
 - **9**: LinkServer 26.9.130はA153のフラッシュを32KBと読む。避ける版の一覧は`upload.sh`の`flash_size_bug()`、`upload.bat`の`:consider`、`gdb-bridge`の`flashSizeBug`の3か所。公開リポジトリには症状だけを書く。0.13.0からは、Upload method → probe-rsならこの件に当たらない。
 - **10**: A4/A5の`Wire.setPins()`は0.12.0で入れた（解消）。
