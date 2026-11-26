@@ -532,7 +532,18 @@ PwmOut::operator float()
 #include "mcu.h"
 #include "pin_registry.h"
 
-unsigned long micros( void );   // arduino_main.cpp
+// The time in microseconds, for the TPM's buffered MOD and CnV (below):
+// mcx-arduino-core defines it (micros()), and calls pwm_tpm_service()
+// every millisecond from SysTick. Without it, as in an MCUXpresso project
+// with r01lib alone, a new period or pulse is written at once, and one
+// written again within the same PWM period can be lost: the last value
+// written while the TPM's buffer was still taken doesn't get there.
+extern "C" uint32_t r01lib_micros( void ) __attribute__((weak));
+
+static inline bool pwm_clocked( void )
+{
+    return r01lib_micros != nullptr;
+}
 
 namespace {
 
@@ -706,7 +717,7 @@ void set_mod( int t, uint32_t value, uint32_t now )
     {
         // already there, or on its way
     }
-    else if ( (int32_t)( now - st.mod_free_at ) < 0 )
+    else if ( pwm_clocked() && (int32_t)( now - st.mod_free_at ) < 0 )
     {
         st.mod_later    = value;
         st.waiting      |= MOD_BIT;
@@ -753,7 +764,7 @@ void set_cnv( int t, int ch, uint16_t value, uint32_t now )
     {
         // already there, or on its way
     }
-    else if ( (int32_t)( now - st.free_at[ ch ] ) < 0 )
+    else if ( pwm_clocked() && (int32_t)( now - st.free_at[ ch ] ) < 0 )
     {
         st.later[ ch ]  = value;
         st.waiting      |= bit;
@@ -928,7 +939,7 @@ void PwmOut::apply( void )
 
     TPM_Type    *base   = s_tpm[ _tpm ];
     TpmState    &st     = s_state[ _tpm ];
-    uint32_t    now     = (uint32_t)micros();
+    uint32_t    now     = pwm_clocked() ? r01lib_micros() : 0u;
 
     // The smallest prescaler (highest resolution) for which the period
     // still fits the 16-bit counter. At most 0xFFFF ticks, so MOD stays

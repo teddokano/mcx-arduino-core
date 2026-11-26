@@ -70,10 +70,13 @@ peripheral-register descriptor under
 `hardware/nxp/mcx/variants/<board>/svd/` (used for Arduino IDE's debugger
 peripheral register view), are sourced from the NXP MCUXpresso SDK for the
 corresponding chip, unmodified aside from being extracted from the SDK
-package, with two exceptions: the HardFault handler in
-`hardware/nxp/mcx/cores/arduino/sdk/semihost_hardfault.c` is changed,
-where marked in the file, to report a crash on the serial port instead
-of stopping silently; and FRDM-MCXC444's
+package, with these exceptions, each changed where marked in the file:
+`hardware/nxp/mcx/cores/arduino/sdk/fsl_common_arm.c`, whose
+`MSDK_GetCpuCycleCount()` sets the cycle counter going again when a
+debugger has stopped it; the HardFault handler in
+`hardware/nxp/mcx/cores/arduino/r01lib/semihost_hardfault.c` (with r01lib,
+as in the upstream r01lib), which reports a crash on the serial port
+instead of stopping silently; and FRDM-MCXC444's
 `hardware/nxp/mcx/variants/frdm_mcxc444/src/startup_mcxc444.cpp` has its
 flash option byte changed, where marked, so a low NMI pin at reset does
 not stop the board, and turns the watchdog (COP) off itself, where

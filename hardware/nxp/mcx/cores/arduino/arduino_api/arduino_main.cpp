@@ -179,6 +179,15 @@ extern "C" void SysTick_Handler( void )
 		mcx_sketch_wdt_event( MCX_WDT_TICK );
 }
 
+#if defined( CPU_MCXC444VLH )
+// For r01lib's PwmOut on the TPM (PwmOut.cpp), which times writes to the
+// TPM's buffered registers by it
+extern "C" uint32_t r01lib_micros( void )
+{
+	return (uint32_t)micros();
+}
+#endif
+
 unsigned long millis( void )
 {
 	if ( !millis_ready )

@@ -12,6 +12,13 @@ CLAUDE.mdが大きくなったので、読むときだけ開くようにここ�
    **このコアで他のボード（A156等）の対応が揃った時点でまとめて反映する**。それまで上流リポジトリには手を入れない。
    **0.10.0（C444まで5ボードが揃う版）でも反映しない**（2026-10-18、ユーザーが決定）
    **1.0の直前に反映する**（2026-11-20、ユーザーが決定。r01libを名前空間に入れる案（memoの§10）はやらないと決めたので、それとは揃えなくてよい）
+   **2026-11-26に、上流とコアのr01libを1つの実体にした**（ユーザーが決定: 1つの実体にする、上流のSPIは`spi.*`のまま、ブランチでビルドと実機で確かめる。C444の`PwmOut`の時間はweakのフック`r01lib_micros()`）。
+   上流`r01lib`のブランチ`sync-mcx-arduino-core`（`cf21946`）の`r01lib/`は、コアの`cores/arduino/r01lib/`とバイト単位で同じ（違うのはSPIのファイル名だけ。`r01lib.h`・`spi.cpp`が`__has_include`で選び、`Ticker.h`はArduinoのビルド（`ARDUINO_ARCH_MCX`）だけ外す）。
+   `r01lib_prj_generator`のブランチ`sync-mcx-arduino-core`（`c6ed093`）で、5つのライブラリのプロジェクトにドライバー（A156 lpadc・pwm、N947・N236 lpadc・vref、C444 adc16・tpm）を足し、ひな形の`_r01lib_irq/irq.c`・`irq.h`を新しくし、サブモジュールを`cf21946`にした。
+   MCUXpresso IDE 25.6のコマンドラインで5ボードのライブラリと`general_tests`（80本中74本。残りの6本は作例が意図して止める）をビルドし、実機で`Hello_world`・`I3C`・`DigitalInOut_pin_mode`・`AnalogIn`・`PwmOut`・`Ticker`・`LED_blink`・`InterruptIn`（SW2）・`SPI`（D11-D12のループバック）を確かめた。`I2C`（センサー無し）は上流の`main`と同じふるまい。
+   Arduinoのコアのバイナリの違いは、C444の`PwmOut`（フック）と、`semihost_hardfault.c`を`sdk/`から`r01lib/`に移したことによるリンクの順番だけ（代表のスケッチ9本×5ボードで確かめた）。
+   **まだ: 上流`main`と`r01lib_prj_generator`の`main`へのマージ、r01libの版の番号、GitHubへのpush**（どれもユーザーの判断待ち）。どちらのブランチもpushしていない。サブモジュールの`cf21946`はローカルにだけある
+   メモ: デバッガを外した状態（`LinkServer flash`で書いただけ）で、semihostingの`printf`を使う作例は最初の`printf`で止まる（`LinkServer flash`のあともDHCSRのC_DEBUGENが立ったまま）。r01libとは関係ない、もともとのふるまい
 7. **GPIO治具は作らない**（2026-10-02、ユーザー判断）。0.7.0で保留にしていたが、0.8.0の検討で
    「リリース作業の自動化が大きく進んでいて、治具による改善は手間の削減にそれほど効かない」として見送った。
    組み合わせを設計した`.github/scripts/check_jig_pairing.py`は残っている

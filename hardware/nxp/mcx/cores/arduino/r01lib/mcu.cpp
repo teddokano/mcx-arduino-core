@@ -331,13 +331,13 @@ void init_mcu( void )
 #if (defined(SDK_DEBUGCONSOLE) && (SDK_DEBUGCONSOLE == DEBUGCONSOLE_REDIRECT_TO_SDK))	
 	/* PORTA1 (pin 23) is configured as LPUART0_RX */
 	/* PORTA2 (pin 24) is configured as LPUART0_TX */
-	PORT_SetPinMux( BOARD_INITDEBUG_UARTPINS_DEBUG_UART_RX_PORT, BOARD_INITDEBUG_UARTPINS_DEBUG_UART_RX_PIN, kPORT_MuxAlt2 );
-	PORT_SetPinMux( BOARD_INITDEBUG_UARTPINS_DEBUG_UART_TX_PORT, BOARD_INITDEBUG_UARTPINS_DEBUG_UART_TX_PIN, kPORT_MuxAlt2 );
+	PORT_SetPinMux( PORTA, 1U, kPORT_MuxAlt2 );
+	PORT_SetPinMux( PORTA, 2U, kPORT_MuxAlt2 );
 #else
 	/* PORTA1 (pin 23) is configured as LPUART0_RX */
 	/* PORTA2 (pin 24) is configured as LPUART0_TX */
-	PORT_SetPinMux( BOARD_INITDEBUG_UARTPINS_DEBUG_UART_RX_PORT, BOARD_INITDEBUG_UARTPINS_DEBUG_UART_RX_PIN, kPORT_MuxAsGpio );
-	PORT_SetPinMux( BOARD_INITDEBUG_UARTPINS_DEBUG_UART_TX_PORT, BOARD_INITDEBUG_UARTPINS_DEBUG_UART_TX_PIN, kPORT_MuxAsGpio );
+	PORT_SetPinMux( PORTA, 1U, kPORT_MuxAsGpio );
+	PORT_SetPinMux( PORTA, 2U, kPORT_MuxAsGpio );
 #endif // (defined(SDK_DEBUGCONSOLE) && (SDK_DEBUGCONSOLE == DEBUGCONSOLE_REDIRECT_TO_SDK))
 
 
@@ -433,7 +433,7 @@ void panic( const char *s )
 }
 
 /*
- *  HardFault_Handler (sdk/semihost_hardfault.c) branches here for every
+ *  HardFault_Handler (semihost_hardfault.c) branches here for every
  *  fault except semihosting. MemManage, BusFault and UsageFault are not
  *  enabled, so they escalate to HardFault and come here too; CFSR still
  *  tells them apart. This runs in the HardFault handler: interrupts are

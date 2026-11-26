@@ -19,7 +19,11 @@ extern "C" {
 }
 
 #include	"io.h"
+#if __has_include( "r01lib_spi.h" )	//	mcx-arduino-core's name for it (see r01lib.h)
 #include	"r01lib_spi.h"
+#else
+#include	"spi.h"
+#endif
 #include	"mcu.h"
 #include	"pin_registry.h"
 
