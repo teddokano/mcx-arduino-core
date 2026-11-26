@@ -18,11 +18,11 @@ for the full verification status and per-feature notes this table summarizes.
 | `D3` | `P1_23` | |
 | `D4` | `P0_30` | |
 | `D5` | `P1_21` | also wired to the Ethernet PHY's MDIO through R166 (see Ethernet below) |
-| `D6` | `P1_2` | on-board Blue LED (`BLUE`) |
+| `D6` | `P1_2` | on-board Blue LED (`LEDB`) |
 | `D7` | `P0_31` | |
 | `D8` | `P0_28` | |
-| `D9` | `P0_10` | on-board Red LED (`RED`) |
-| `D10` | `P0_27` | on-board Green LED (`GREEN`); also `SPI` CS |
+| `D9` | `P0_10` | on-board Red LED (`LEDR`) |
+| `D10` | `P0_27` | on-board Green LED (`LEDG`); also `SPI` CS |
 | `D11` | `P0_24` | `SPI` MOSI |
 | `D12` | `P0_26` | `SPI` MISO |
 | `D13` | `P0_25` | `SPI` SCLK |

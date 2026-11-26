@@ -57,7 +57,7 @@ SJ1 and SJ2 are left at their factory 1-2 position, which puts `SPI` on
 | `D19` | `P1_17` | `Wire` (I2C) SCL |
 | `A0` | `P4_6` | `analogRead` (LPADC/ADC0), 10bit |
 | `A1`, `A2` | `P4_15`, `P4_16` | `analogRead` (LPADC/ADC0), 10bit — **remove R25/R67 first** (see above) |
-| `A3` | `P4_17` | digital only, on-board blue LED (`BLUE`); `analogRead` returns `-1` |
+| `A3` | `P4_17` | digital only, on-board blue LED (`LEDB`); `analogRead` returns `-1` |
 | `A4`, `A5` | `P4_12`, `P4_13` | `analogRead` (LPADC/ADC0), 10bit. Also an I2C: `Wire1`'s LPI2C2, which `Wire.setPins(A4, A5)` or `Wire1.setPins(A4, A5)` moves there (0.12.0; `Wire` on `A4`/`A5` and `Wire1` can't run at once). No pull-up resistors on the board (R298/R299 not fitted) |
 
 `NUM_ANALOG_INPUTS` is 5.
@@ -94,7 +94,7 @@ too:
 | Name | MCU pin(s) | Used by |
 |---|---|---|
 | `USBTX` / `USBRX` | `P1_9` / `P1_8` | `Serial` (USB-bridged UART) |
-| `RED` / `GREEN` / `BLUE` | `P4_18` / `P4_19` / `P4_17` | on-board RGB LED (on when LOW). `RED` is also `MB_PWM`, `BLUE` is also `A3` |
+| `LEDR` / `LEDG` / `LEDB` | `P4_18` / `P4_19` / `P4_17` | on-board RGB LED (on when LOW). `LEDR` is also `MB_PWM`, `LEDB` is also `A3` |
 | `SW2` / `SW3` | `P0_20` / `P0_6` | on-board push buttons |
 
 > **There is no temperature sensor on this board, and no I3C.** The on-board
@@ -115,7 +115,7 @@ Plain `digitalWrite`/`digitalRead` GPIO on all of these:
 | `MB_SCK` | `P1_1` | the same pin as `D13` |
 | `MB_MISO` | `P1_2` | the same pin as `D12` |
 | `MB_MOSI` | `P1_0` | the same pin as `D11` |
-| `MB_PWM` | `P4_18` | the same pin as `RED` |
+| `MB_PWM` | `P4_18` | the same pin as `LEDR` |
 | `MB_INT` | `P5_6` | |
 | `MB_RX` | `P4_3` | the same pin as `D0` (`Serial1` RX) |
 | `MB_TX` | `P4_2` | the same pin as `D1` (`Serial1` TX) |

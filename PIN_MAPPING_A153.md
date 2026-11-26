@@ -16,10 +16,10 @@ physical MCU port pin.
 | `D0` | `P1_4` | `Serial1` RX |
 | `D1` | `P1_5` | `Serial1` TX |
 | `D2` | `P2_4` | |
-| `D3` | `P3_0` | on-board Blue LED (`BLUE`) |
+| `D3` | `P3_0` | on-board Blue LED (`LEDB`) |
 | `D4` | `P2_5` | |
-| `D5` | `P3_12` | on-board Red LED (`RED`) |
-| `D6` | `P3_13` | on-board Green LED (`GREEN`) |
+| `D5` | `P3_12` | on-board Red LED (`LEDR`) |
+| `D6` | `P3_13` | on-board Green LED (`LEDG`) |
 | `D7` | `P3_1` | |
 | `D8` | `P3_15` | |
 | `D9` | `P3_14` | |
@@ -72,7 +72,7 @@ these, verified on real hardware:
 | `MB_SCK` | `P1_1` | `SPI1` SCK |
 | `MB_MISO` | `P1_2` | `SPI1` MISO |
 | `MB_MOSI` | `P1_0` | `SPI1` MOSI |
-| `MB_PWM` | `P3_12` | same pin as `D5`/`RED` |
+| `MB_PWM` | `P3_12` | same pin as `D5`/`LEDR` |
 | `MB_INT` | `P2_5` | same pin as `D4` |
 | `MB_RX` | `P3_14` | same pin as `D9` |
 | `MB_TX` | `P3_15` | same pin as `D8` |

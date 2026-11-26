@@ -74,7 +74,7 @@ void loop() {
 
 コアの1msの刻み（`millis()`が数えるもの）で動くので、タイマーもピンも使わず、時間は
 ミリ秒単位です。`detach()`で止め、`active()`でまだ呼ぶかが分かります。どのメソッドにも、
-関数に引数を1つ渡す形があります（`blinker.attach_ms(250, toggle, RED)`は`toggle(RED)`を
+関数に引数を1つ渡す形があります（`blinker.attach_ms(250, toggle, LEDR)`は`toggle(LEDR)`を
 呼ぶ）。ESP32・ESP8266のコアの`Ticker`と同じインターフェースで、クラスの名前が
 `mcxTicker`です。それらのスケッチは、`#include`とクラスの名前を替えれば動きます。
 作例: `Blink`、`ArgumentAndOnce`。

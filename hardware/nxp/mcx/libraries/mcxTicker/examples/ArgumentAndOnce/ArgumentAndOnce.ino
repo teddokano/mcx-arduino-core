@@ -23,18 +23,18 @@ void toggle(int pin) {
 
 void stopRed() {
   redBlinker.detach();
-  digitalWrite(RED, HIGH);  // off: the LED lights on LOW
+  digitalWrite(LEDR, HIGH);  // off: the LED lights on LOW
 }
 
 void setup() {
   Serial.begin(115200);
-  pinMode(RED, OUTPUT);
-  pinMode(BLUE, OUTPUT);
-  digitalWrite(RED, HIGH);
-  digitalWrite(BLUE, HIGH);
+  pinMode(LEDR, OUTPUT);
+  pinMode(LEDB, OUTPUT);
+  digitalWrite(LEDR, HIGH);
+  digitalWrite(LEDB, HIGH);
 
-  redBlinker.attach_ms(150, toggle, RED);  // every 150 ms
-  blueBlinker.attach(1.0, toggle, BLUE);   // every second
+  redBlinker.attach_ms(150, toggle, LEDR);  // every 150 ms
+  blueBlinker.attach(1.0, toggle, LEDB);   // every second
   stopper.once(5.0, stopRed);              // once, 5 s from now
 }
 

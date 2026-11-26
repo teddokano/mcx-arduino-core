@@ -31,9 +31,9 @@ void onLevel()   { levelCount = levelCount + 1; }
 
 // The LEDs are on when LOW
 void showLeds(bool red, bool green, bool blue) {
-  digitalWrite(RED, red ? LOW : HIGH);
-  digitalWrite(GREEN, green ? LOW : HIGH);
-  digitalWrite(BLUE, blue ? LOW : HIGH);
+  digitalWrite(LEDR, red ? LOW : HIGH);
+  digitalWrite(LEDG, green ? LOW : HIGH);
+  digitalWrite(LEDB, blue ? LOW : HIGH);
 }
 
 void setup() {
@@ -43,9 +43,9 @@ void setup() {
 
   Serial.println("=== Release check 03: SW2 interactive checks ===");
 
-  pinMode(RED, OUTPUT);
-  pinMode(GREEN, OUTPUT);
-  pinMode(BLUE, OUTPUT);
+  pinMode(LEDR, OUTPUT);
+  pinMode(LEDG, OUTPUT);
+  pinMode(LEDB, OUTPUT);
   pinMode(SW2, INPUT_PULLUP);
 
   // Three green blinks: presses count from the blue LED on

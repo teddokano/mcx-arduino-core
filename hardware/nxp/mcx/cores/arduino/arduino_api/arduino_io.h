@@ -29,8 +29,9 @@ constexpr int	OUTPUT_OPENDRAIN	= 0x30;              // OUTPUTかつOpenDrain
 constexpr bool	HIGH	= true;
 constexpr bool	LOW		= false;
 
-/** Pin the on-board LED that most example sketches blink is wired to. */
-#define	LED_BUILTIN	GREEN
+/** Pin the on-board LED that most example sketches blink is wired to:
+ *  the RGB LED's green, LEDG (below). */
+#define	LED_BUILTIN	LEDG
 
 /** Configure a pin's direction and pull/drive mode. Lazily creates (or
  *  reconfigures) the pin's underlying DigitalInOut instance, always
@@ -382,9 +383,12 @@ enum ArduinoPinNum {
 	MB_TX,
 	MB_SCL,
 	MB_SDA,
-	RED,
-	GREEN,
-	BLUE,
+	//	The RGB LED's colors. Deprecated for LEDR/LEDG/LEDB (below), and
+	//	gone in 1.0.0: as global names they kept a sketch from declaring
+	//	its own RED or GREEN (enum Light { RED, YELLOW, GREEN };)
+	RED		[[deprecated( "use LEDR: RED goes in 1.0.0" )]],
+	GREEN	[[deprecated( "use LEDG: GREEN goes in 1.0.0" )]],
+	BLUE	[[deprecated( "use LEDB: BLUE goes in 1.0.0" )]],
 
 	SPI_CS,
 	SPI_MOSI,
@@ -403,6 +407,13 @@ enum ArduinoPinNum {
 	PWM4,
 	PWM5,
 #endif
+
+	//	The RGB LED, by the names Arduino's own boards with one use
+	//	(Nano 33 BLE, Nano RP2040 Connect, Portenta, GIGA). Lit on LOW.
+	//	The same pins as RED/GREEN/BLUE, which still number them above
+	LEDR	= MB_SDA + 1,
+	LEDG	= MB_SDA + 2,
+	LEDB	= MB_SDA + 3,
 };
 
 // Bare MOSI/MISO/SCK, aliased to this board's default SPI pins (ARD_MOSI/

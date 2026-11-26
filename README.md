@@ -246,13 +246,13 @@ most of it in a handful of flashes instead, see
 void setup() {
     Serial.begin(115200);
     Serial.println("Hello from FRDM-MCXA153!");
-    pinMode(RED, OUTPUT);
+    pinMode(LEDR, OUTPUT);
 }
 
 void loop() {
-    digitalWrite(RED, LOW);
+    digitalWrite(LEDR, LOW);
     delay(500);
-    digitalWrite(RED, HIGH);
+    digitalWrite(LEDR, HIGH);
     delay(500);
 }
 ```

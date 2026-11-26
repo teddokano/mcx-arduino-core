@@ -45,7 +45,7 @@ public:
 	typedef void	(*callback_t)( void );
 
 	/** TArg as it is: an argument of this type is not used to find TArg,
-	 *  which comes from the function alone, so that toggle( int ) takes RED */
+	 *  which comes from the function alone, so that toggle( int ) takes LEDR */
 	template<typename T> struct same { typedef T type; };
 
 	mcxTicker();

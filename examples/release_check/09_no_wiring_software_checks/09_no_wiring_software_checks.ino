@@ -682,10 +682,10 @@ void setup() {
     tickA.attach_ms(5, onTickInt, 1234);
     delay(30);
     bool gotInt = tickIntCalls >= 4 && tickInt == 1234;
-    tickA.attach_ms(5, onTickInt, RED);
+    tickA.attach_ms(5, onTickInt, LEDR);
     delay(30);
     tickA.detach();
-    check("mcxTicker attach_ms(5, f, 1234) and (5, f, RED): f gets them", gotInt && tickInt == (int)RED);
+    check("mcxTicker attach_ms(5, f, 1234) and (5, f, LEDR): f gets them", gotInt && tickInt == (int)LEDR);
 
     // detach(), attach() on a running object, detach() from its function,
     // a null function, an object out of scope

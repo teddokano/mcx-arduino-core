@@ -237,10 +237,10 @@ void test_arguments() {
   check("attach_ms(5, f, 1234): f gets 1234", int_calls >= 4 && last_int == 1234);
 
   int_calls = 0;
-  ta.attach_ms(5, take_int, RED);  // an enum value, for a function taking int
+  ta.attach_ms(5, take_int, LEDR);  // an enum value, for a function taking int
   delay(30);
   ta.detach();
-  check("attach_ms(5, f, RED): f(int) gets RED", int_calls >= 4 && last_int == (int)RED);
+  check("attach_ms(5, f, LEDR): f(int) gets LEDR", int_calls >= 4 && last_int == (int)LEDR);
 
   plain_calls = 0;
   ta.attach_ms(5, plain);

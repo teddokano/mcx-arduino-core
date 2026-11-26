@@ -38,14 +38,14 @@ notice:
 | `D3` | `PTA12` | `analogWrite` (TPM1 channel 0); also `MB_PWM` |
 | `D4` | `PTA4` | the `SW3` button too (see below) |
 | `D5` | `PTA5` | `analogWrite` (TPM0 channel 2, shared with `D6`/`D9`) |
-| `D6` | `PTE29` | `analogWrite` (TPM0 channel 2, shared with `D5`/`D9`); the blue LED (`BLUE`) too |
+| `D6` | `PTE29` | `analogWrite` (TPM0 channel 2, shared with `D5`/`D9`); the blue LED (`LEDB`) too |
 | `D7` | `PTE30` | also `MB_RST` |
 | `D8` | `PTA13` | |
 | `D9` | `PTD2` | `analogWrite` (TPM0 channel 2, shared with `D5`/`D6`) |
 | `D10` | `PTD4` | `SPI` CS; `analogWrite` (TPM0 channel 4); also `MB_CS` |
 | `D11` | `PTD6` | `SPI` MOSI; also `MB_MOSI` |
 | `D12` | `PTD7` | `SPI` MISO; also `MB_MISO` |
-| `D13` | `PTD5` | `SPI` SCK; the green LED (`GREEN`) too; also `MB_SCK` |
+| `D13` | `PTD5` | `SPI` SCK; the green LED (`LEDG`) too; also `MB_SCK` |
 | `D18` | `PTE0` | `Wire` (I2C1) SDA; also `MB_TX` |
 | `D19` | `PTE1` | `Wire` (I2C1) SCL; also `MB_RX` |
 | `A0` | `PTB0` | `analogRead` (ADC16, `ADC0_SE8`); also `MB_AN` |
@@ -78,7 +78,7 @@ notice:
 | Name | MCU pin(s) | Used by |
 |---|---|---|
 | `USBTX` / `USBRX` | `PTA2` / `PTA1` | `Serial`; the same pins as `D1`/`D0` |
-| `RED` / `GREEN` / `BLUE` | `PTE31` / `PTD5` / `PTE29` | on-board RGB LED (on when LOW). `GREEN` is also `D13`, `BLUE` is also `D6` |
+| `LEDR` / `LEDG` / `LEDB` | `PTE31` / `PTD5` / `PTE29` | on-board RGB LED (on when LOW). `LEDG` is also `D13`, `LEDB` is also `D6` |
 | `SW2` / `SW3` | `PTC3` / `PTA4` | on-board push buttons. `SW3` is also `D4` |
 
 > **There is no temperature sensor on this board, and no I3C.** The on-board

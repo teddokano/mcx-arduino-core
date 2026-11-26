@@ -19,18 +19,18 @@ void setup(void) {
 	Serial.println("Hello, world!");
 	Serial.println("Press SW2 to generate INT and toggle LED");
 
-	pinMode(BLUE, OUTPUT);
+	pinMode(LEDB, OUTPUT);
 	pinMode(SW2, INPUT_PULLUP);
 
 	attachInterrupt(digitalPinToInterrupt(SW2), callback, FALLING);
-	digitalWrite(BLUE, led_state);
+	digitalWrite(LEDB, led_state);
 }
 
 void loop(void) {
 	if (sw_pressed) {
 		sw_pressed = false;
 		led_state = !led_state;
-		digitalWrite(BLUE, led_state);
+		digitalWrite(LEDB, led_state);
 		Serial.print("SW2 has been pressed: ");
 		Serial.println(count++);
 		delay(100);  //	debounce

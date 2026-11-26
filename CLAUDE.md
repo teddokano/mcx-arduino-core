@@ -147,6 +147,7 @@
 
 ## 決定の要点（詳細は`docs/dev_notes/releases_and_decisions.md`）
 - **1.0までに変えない**: インスタンス名（`Wire1`・`Serial1`・`SPI1`など）は付け替えない。`endTransmission()`の戻り値はAVRの0〜5。公開APIの範囲はAPI_COMPATIBILITYの冒頭の「What stays compatible」（2026-11-26に見直し、ユーザーが決定: `mcxRCServo`と`mcxPinState`の`PinState`（表は除く）、FQBNのボード名とToolsメニューの選択肢の名前、この文書のマクロを足した。メニューの既定、probe-rs・LinkServer・コンパイラの版、フラッシュ・RAMの量、書いていない時間は含めない）。
+- **RGBのLEDの名前は`LEDR`・`LEDG`・`LEDB`**（0.14.0で足した。2026-11-26、ユーザーが決定。Arduinoの公式のボードと同じ名前。`LED_RED`系は要望があれば足す）。**`RED`・`GREEN`・`BLUE`は0.14.0で非推奨（`[[deprecated]]`）にし、1.0.0で外す**（グローバルな名前なので、スケッチの`enum Light { RED, YELLOW, GREEN };`や`const int RED`とぶつかる。UNO R4では通る）。`PWM0`〜`PWM5`・`MB_*`・`SPI_*`・`ARD_*`・`SW2`・`SW3`の扱いは未決（memoの§9）。
 - **ADCの無いピンへの`analogRead()`をビルド時に検出する案は入れない**（実行時の`panic()`のまま）。
 - **0.12.0でやらなかった**: `SoftwareSerial`・USB・r01libの名前空間。
 - **0.13.0の範囲（2026-11-20に決めたもの）**: ウォッチドッグのAPIを入れる（`<avr/wdt.h>`と同梱の`WDT`で入れた。仕様は`memo/notes_toward_1.0.0.md`の§11。2026-11-21に5ボードで実機で確かめた）。r01libの名前空間はやらない（効果が薄い）。ほかの大域インスタンス（`Serial1`・`SPI1`など）を使ったときだけリンクする案はやらない（減るのは100バイト以下）。経緯は`memo/notes_toward_1.0.0.md`の§8・§10。

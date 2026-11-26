@@ -69,9 +69,9 @@ const char PAGE[] =
 
 void showColor() {
   // the board's LEDs light at LOW
-  digitalWrite(RED, COLORS[color].r ? LOW : HIGH);
-  digitalWrite(GREEN, COLORS[color].g ? LOW : HIGH);
-  digitalWrite(BLUE, COLORS[color].b ? LOW : HIGH);
+  digitalWrite(LEDR, COLORS[color].r ? LOW : HIGH);
+  digitalWrite(LEDG, COLORS[color].g ? LOW : HIGH);
+  digitalWrite(LEDB, COLORS[color].b ? LOW : HIGH);
 }
 
 void sendState(EthernetClient &client) {
@@ -91,9 +91,9 @@ void sendState(EthernetClient &client) {
 
 void setup() {
   Serial.begin(115200);
-  pinMode(RED, OUTPUT);
-  pinMode(GREEN, OUTPUT);
-  pinMode(BLUE, OUTPUT);
+  pinMode(LEDR, OUTPUT);
+  pinMode(LEDG, OUTPUT);
+  pinMode(LEDB, OUTPUT);
   showColor();
   pinMode(SW2, INPUT_PULLUP);
   pinMode(SW3, INPUT_PULLUP);

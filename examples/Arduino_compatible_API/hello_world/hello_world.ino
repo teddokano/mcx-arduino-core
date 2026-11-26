@@ -7,24 +7,24 @@ void setup() {
 
   Serial.println("Hello, world!");
 
-  pinMode(RED, OUTPUT);
-  pinMode(GREEN, OUTPUT);
-  pinMode(BLUE, OUTPUT);
+  pinMode(LEDR, OUTPUT);
+  pinMode(LEDG, OUTPUT);
+  pinMode(LEDB, OUTPUT);
 }
 
 #define WAIT  100
 
 void loop() {
-  digitalWrite(RED, LOW);
+  digitalWrite(LEDR, LOW);
   delay(WAIT);
-  digitalWrite(RED, HIGH);
+  digitalWrite(LEDR, HIGH);
   delay(WAIT);
-  digitalWrite(GREEN, LOW);
+  digitalWrite(LEDG, LOW);
   delay(WAIT);
-  digitalWrite(GREEN, HIGH);
+  digitalWrite(LEDG, HIGH);
   delay(WAIT);
-  digitalWrite(BLUE, LOW);
+  digitalWrite(LEDB, LOW);
   delay(WAIT);
-  digitalWrite(BLUE, HIGH);
+  digitalWrite(LEDB, HIGH);
   delay(WAIT);
 }

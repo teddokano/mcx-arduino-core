@@ -42,7 +42,7 @@
  * Changes from the original:
  *  - setup()/loop(), and Serial in place of PRINTF
  *  - The LEDs and D2 go through pinMode()/digitalWrite(): with <Arduino.h>
- *    included, RED/GREEN/BLUE/D2 are Arduino's pin numbers, which r01lib's
+ *    included, LEDR/LEDG/LEDB/D2 are Arduino's pin numbers, which r01lib's
  *    DigitalOut does not take
  *  - Each target is addressed by the dynamic address DAA reports for it
  *  - The LED follows the first target's temperature. The original passed
@@ -91,7 +91,7 @@ int ndev = 0;
 float ref_temp[MAX_TARGETS];
 bool i2c_device = false;
 
-volatile int led_target = BLUE;
+volatile int led_target = LEDB;
 
 int DAA(const uint8_t *address_list, uint8_t list_length);
 bool check_i2c_device(LM75B &ts);
@@ -105,9 +105,9 @@ void setup() {
   while (!Serial)
     ;
 
-  pinMode(RED, OUTPUT);
-  pinMode(GREEN, OUTPUT);
-  pinMode(BLUE, OUTPUT);
+  pinMode(LEDR, OUTPUT);
+  pinMode(LEDG, OUTPUT);
+  pinMode(LEDB, OUTPUT);
   pinMode(TRIGGER, OUTPUT);
   digitalWrite(TRIGGER, !TRIGGER_POLARITY);
 
@@ -243,9 +243,9 @@ void led_control_callback(void) {
   const int k = 32;
 
   if ((count % k) < (k - 5)) {
-    digitalWrite(RED, PIN_LED_OFF);
-    digitalWrite(GREEN, PIN_LED_OFF);
-    digitalWrite(BLUE, PIN_LED_OFF);
+    digitalWrite(LEDR, PIN_LED_OFF);
+    digitalWrite(LEDG, PIN_LED_OFF);
+    digitalWrite(LEDB, PIN_LED_OFF);
   } else {
     digitalWrite(led_target, PIN_LED_ON);
   }
@@ -255,11 +255,11 @@ void led_control_callback(void) {
 
 void led_set_color(float temp, float ref) {
   if ((ref + 2) < temp)
-    led_target = RED;
+    led_target = LEDR;
   else if ((ref + 1) < temp)
-    led_target = GREEN;
+    led_target = LEDG;
   else
-    led_target = BLUE;
+    led_target = LEDB;
 
   digitalWrite(TRIGGER, !TRIGGER_POLARITY);
 }

@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- **`LEDR`, `LEDG` and `LEDB`** for the on-board RGB LED, the names Arduino's own boards with one use (Nano 33 BLE,
+  Nano RP2040 Connect, Portenta, GIGA). `LED_BUILTIN` is `LEDG`. The examples and documents use them
+
+### Deprecated
+- **`RED`, `GREEN` and `BLUE`** (the same pins as `LEDR`, `LEDG` and `LEDB`) go in 1.0.0. As global names they kept a
+  sketch from declaring its own: `enum Light { RED, YELLOW, GREEN };` or `const int RED = 9;` doesn't build here,
+  and does on UNO R4. Using them now warns (`'RED' is deprecated: use LEDR`), with the IDE's compiler warnings on
+
 ### Changed
 - **What stays compatible from 1.0** (`API_COMPATIBILITY.md`) now also covers the bundled `mcxRCServo` and
   `mcxPinState`'s `PinState` (its printed tables still aside), the macros the file lists, and for arduino-cli the

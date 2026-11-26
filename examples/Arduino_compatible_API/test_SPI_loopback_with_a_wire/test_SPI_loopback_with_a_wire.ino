@@ -12,7 +12,7 @@ void setup(void) {
 
 	SPI.begin();
 
-	pinMode(BLUE, OUTPUT);
+	pinMode(LEDB, OUTPUT);
 }
 
 void loop(void) {
@@ -34,10 +34,10 @@ void loop(void) {
 
 
 	Serial.println("LED - ON");
-	digitalWrite(BLUE, LOW);
+	digitalWrite(LEDB, LOW);
 	delay(50);
 
 	Serial.println("LED - OFF");
-	digitalWrite(BLUE, HIGH);
+	digitalWrite(LEDB, HIGH);
 	delay(950);
 }

@@ -78,7 +78,7 @@ void loop() {
 It runs on the core's 1 ms tick, the one `millis()` counts, so it takes no timer and
 no pin, and times are whole milliseconds. `detach()` stops an object, and `active()`
 tells whether it will still call. Each method also comes in a form that passes one
-argument to the function (`blinker.attach_ms(250, toggle, RED)` calls `toggle(RED)`).
+argument to the function (`blinker.attach_ms(250, toggle, LEDR)` calls `toggle(LEDR)`).
 This is the interface of the `Ticker` in the ESP32 and ESP8266 cores, under the class
 name `mcxTicker`: a sketch written for one of those moves here by changing the
 `#include` and the class name. Examples: `Blink`, `ArgumentAndOnce`.

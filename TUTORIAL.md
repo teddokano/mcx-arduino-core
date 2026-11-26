@@ -277,9 +277,9 @@ The pins used throughout this section, all in one picture:
 
 ### 2.1. Your first sketch: blink the on-board LED
 
-The board has three on-board LEDs (`RED`, `GREEN`, `BLUE`) wired **active-low**
+The board has three on-board LEDs (`LEDR`, `LEDG`, `LEDB`, as on Arduino's own boards with an RGB LED; `RED`, `GREEN` and `BLUE` before v0.14.0, which go in 1.0.0) wired **active-low**
 — `LOW` turns a LED on, `HIGH` turns it off. `LED_BUILTIN` is aliased to
-`GREEN`.
+`LEDG`.
 
 ```cpp
 #include <Arduino.h>
@@ -392,18 +392,18 @@ void callback() {
 void setup() {
   Serial.begin(115200);
 
-  pinMode(BLUE, OUTPUT);
+  pinMode(LEDB, OUTPUT);
   pinMode(SW2, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(SW2), callback, FALLING);
 
-  digitalWrite(BLUE, led_state);
+  digitalWrite(LEDB, led_state);
 }
 
 void loop() {
   if (sw_pressed) {
     sw_pressed = false;
     led_state = !led_state;
-    digitalWrite(BLUE, led_state);
+    digitalWrite(LEDB, led_state);
     Serial.println("SW2 pressed");
     delay(100);  // debounce
   }

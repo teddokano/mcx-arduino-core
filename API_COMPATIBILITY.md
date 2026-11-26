@@ -16,8 +16,11 @@ Covered:
 - The Arduino functions, classes and macros in this file, with the
   behavior it describes, limits included
 - The pin names: `D0`-`D19`, `A0`-`A5`, `PWM0`-`PWM5`, the MikroBus names
-  (`MB_*`), and the on-board LEDs' and buttons' names (`RED`, `GREEN`,
-  `BLUE`, `SW2`, `SW3`), on the pins each board's PIN_MAPPING file gives
+  (`MB_*`), and the on-board LEDs' and buttons' names (`LEDR`, `LEDG`,
+  `LEDB`, `LED_BUILTIN`, `SW2`, `SW3`), on the pins each board's PIN_MAPPING file gives.
+  The LEDs' old names `RED`, `GREEN` and `BLUE` are deprecated since v0.14.0
+  and go in 1.0.0: as global names they kept a sketch from declaring its own
+  (`enum Light { RED, YELLOW, GREEN };` didn't build)
 - The board macros: `ARDUINO_FRDM_*` and `FRDM_*`
 - The instance names and what each is on, per board (below)
 - The bundled libraries' interfaces: `EEPROM`, `Servo`, `MsTimer2`, `TimerOne`, `mcxTicker`, `WDT`, `MCXEthernet`,

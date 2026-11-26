@@ -26,18 +26,18 @@ void setup() {
   Serial.println("detachInterrupt test");
   Serial.println("Press SW2 up to 3 times");
 
-  pinMode(BLUE, OUTPUT);
+  pinMode(LEDB, OUTPUT);
   pinMode(SW2, INPUT_PULLUP);
 
   attachInterrupt(digitalPinToInterrupt(SW2), callback, FALLING);
-  digitalWrite(BLUE, led_state);
+  digitalWrite(LEDB, led_state);
 }
 
 void loop() {
   if (sw_pressed) {
     sw_pressed = false;
     led_state = !led_state;
-    digitalWrite(BLUE, led_state);
+    digitalWrite(LEDB, led_state);
     count++;
     Serial.print("SW2 pressed: ");
     Serial.println(count);

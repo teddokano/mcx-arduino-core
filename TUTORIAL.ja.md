@@ -197,7 +197,7 @@ sudo udevadm control --reload && sudo udevadm trigger
 
 ### 2.1. 最初のスケッチ: オンボードLEDを点滅させる
 
-ボードには3色のオンボードLED（`RED`, `GREEN`, `BLUE`）があり、**アクティブLow**で配線されています —— `LOW`で点灯、`HIGH`で消灯します。`LED_BUILTIN`は`GREEN`のエイリアスです。
+ボードには3色のオンボードLED（`LEDR`, `LEDG`, `LEDB`。RGBのLEDを持つArduinoの公式のボードと同じ名前。v0.14.0より前の`RED`, `GREEN`, `BLUE`は1.0.0でなくなります）があり、**アクティブLow**で配線されています —— `LOW`で点灯、`HIGH`で消灯します。`LED_BUILTIN`は`LEDG`のエイリアスです。
 
 ```cpp
 #include <Arduino.h>
@@ -295,18 +295,18 @@ void callback() {
 void setup() {
   Serial.begin(115200);
 
-  pinMode(BLUE, OUTPUT);
+  pinMode(LEDB, OUTPUT);
   pinMode(SW2, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(SW2), callback, FALLING);
 
-  digitalWrite(BLUE, led_state);
+  digitalWrite(LEDB, led_state);
 }
 
 void loop() {
   if (sw_pressed) {
     sw_pressed = false;
     led_state = !led_state;
-    digitalWrite(BLUE, led_state);
+    digitalWrite(LEDB, led_state);
     Serial.println("SW2 pressed");
     delay(100);  // チャタリング防止
   }

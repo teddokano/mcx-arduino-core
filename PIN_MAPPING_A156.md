@@ -51,7 +51,7 @@ physical MCU port pin.
 | `D0` | `P2_11` | `Serial1` RX |
 | `D1` | `P2_10` | `Serial1` TX |
 | `D2` | `P3_1` | |
-| `D3` | `P3_12` | `analogWrite` (FlexPWM1); on-board Red LED (`RED`) |
+| `D3` | `P3_12` | `analogWrite` (FlexPWM1); on-board Red LED (`LEDR`) |
 | `D4` | `P3_31` | |
 | `D5` | `P3_14` | `analogWrite` (FlexPWM1) |
 | `D6` | `P3_16` | `analogWrite` (FlexPWM1) |
@@ -114,7 +114,7 @@ the board has ten:
 | Name | MCU pin(s) | Used by |
 |---|---|---|
 | `USBTX` / `USBRX` | `P0_3` / `P0_2` | `Serial` (USB-bridged UART) |
-| `RED` / `GREEN` / `BLUE` | `P3_12` / `P3_13` / `P3_0` | on-board RGB LED (on when LOW). `RED` is also `D3`; `GREEN` reaches the header only on an unmodified board (as `D10`) |
+| `LEDR` / `LEDG` / `LEDB` | `P3_12` / `P3_13` / `P3_0` | on-board RGB LED (on when LOW). `LEDR` is also `D3`; `LEDG` reaches the header only on an unmodified board (as `D10`) |
 | `SW2` / `SW3` | `P1_7` / `P0_6` | on-board push buttons (`SW2` is WAKEUP, `SW3` is ISP) |
 
 > **The on-board P3T1755 temperature sensor is on `Wire`, not `Wire1`.**

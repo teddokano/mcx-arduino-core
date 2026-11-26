@@ -276,11 +276,11 @@ Servo servo;
 
 void setup() {
   // ---- red LED, before anything else ----
-  pinMode(RED, OUTPUT);
+  pinMode(LEDR, OUTPUT);
   for (int i = 0; i < 3; i++) {
-    digitalWrite(RED, LOW);  // the LEDs are on when LOW
+    digitalWrite(LEDR, LOW);  // the LEDs are on when LOW
     delay(150);
-    digitalWrite(RED, HIGH);
+    digitalWrite(LEDR, HIGH);
     delay(150);
   }
 
