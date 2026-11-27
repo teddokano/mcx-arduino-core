@@ -333,9 +333,10 @@ void setup() {
 
   // ---- MOSI/MISO/SCK bare macros (was test_MOSI_MISO_SCK_macros) ----
   Serial.println("--- MOSI/MISO/SCK macros ---");
-  check("MOSI == ARD_MOSI", MOSI == ARD_MOSI);
-  check("MISO == ARD_MISO", MISO == ARD_MISO);
-  check("SCK == ARD_SCK", SCK == ARD_SCK);
+  check("MOSI is D11", arduino_pin_by_number[MOSI] == arduino_pin_by_number[D11]);
+  check("MISO is D12", arduino_pin_by_number[MISO] == arduino_pin_by_number[D12]);
+  check("SCK is D13", arduino_pin_by_number[SCK] == arduino_pin_by_number[D13]);
+  check("SS is D10", arduino_pin_by_number[SS] == arduino_pin_by_number[D10]);
 
   // ---- Print::set/get/clearWriteError() (was test_Print_writeError) ----
   Serial.println("--- Print::*WriteError() ---");

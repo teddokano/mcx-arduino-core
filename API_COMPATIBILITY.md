@@ -88,6 +88,12 @@ Each row below has the details.
   see their PIN_MAPPING files.
 - **`printf()` has no `long long`** (`%lld`, and C99's `%zu`): newlib-nano's.
   `Serial.print()` and `String` print 64-bit values.
+- **The pin names are global**: a sketch can't declare its own variable or
+  enum value named like one (`const int SW2 = 7;` or `enum { PWM0, ... };`
+  doesn't build; `#define SW2 7` does, and hides this core's). Choose
+  another name. Names inside a class or namespace are fine. `RED`, `GREEN`,
+  `BLUE`, `SPI_*` and `ARD_*`, which collided most, are deprecated and go in
+  1.0.0 (use `LEDR`, `LEDG`, `LEDB`, `SS`, `MOSI`, `MISO`, `SCK`).
 - **The watchdog can't be stopped** once started; `wdt_disable()` only stops it
   resetting the board ([Watchdog](#watchdog)).
 - **Third-party libraries that pick code by chip** may not know this core:
@@ -177,7 +183,7 @@ On FRDM-MCXC444 (see [PIN_MAPPING_C444.md](PIN_MAPPING_C444.md)):
 | `SPI.begin` / `end` / `beginTransaction` / `endTransaction` / `transfer` / `transfer16` | ✅ | `bitOrder` in `SPISettings` is now actually applied to hardware (was silently ignored before v0.2.1). CS is always plain GPIO, fully sketch-controlled via `pinMode`/`digitalWrite` -- never muxed to the LPSPI hardware chip-select function -- so multiple devices can correctly share one bus with separate CS pins (e.g. an LCD + an SD card), matching standard Arduino SPI semantics |
 | `SPI.usingInterrupt` / `notUsingInterrupt` | ✅ | No-op — declared for sketch compatibility only |
 | `SPI.setBitOrder` / `setDataMode` / `setClockDivider` | ✅ | Legacy pre-1.6 API; `setClockDivider` divides `SPI`'s peripheral input clock, not `F_CPU` |
-| Bare `MOSI` / `MISO` / `SCK` pin macros | ✅ | Aliased to this board's default SPI pins (`ARD_MOSI`/`ARD_MISO`/`ARD_SCK`); needed by third-party libraries (e.g. the official `SD` library) that reference them directly |
+| Bare `MOSI` / `MISO` / `SCK` pin macros | ✅ | This board's default SPI pins, `D11`/`D12`/`D13` on every board (and `SS` is `D10`); needed by third-party libraries (e.g. the official `SD` library) that reference them directly |
 | Second SPI instance on MikroBus (`SPI1`) | ✅ / ❌ N236, C444 | `SPI1` on `MB_MOSI`/`MB_MISO`/`MB_SCK`/`MB_CS`, own peripheral (`LPSPI6` on N947, `LPSPI0` on A153 and A156), independent of `SPI` — see [PIN_MAPPING_N947.md](PIN_MAPPING_N947.md) / [PIN_MAPPING_A153.md](PIN_MAPPING_A153.md) / [PIN_MAPPING_A156.md](PIN_MAPPING_A156.md). FRDM-MCXN236 has no `SPI1`: its MikroBus SPI is the same lines as `SPI`, and its CS is `D18`, `Wire`'s SDA — see [PIN_MAPPING_N236.md](PIN_MAPPING_N236.md). Nor does FRDM-MCXC444, whose MikroBus SPI is also the same lines as `SPI` |
 | `SPI` on `D10`-`D13` on FRDM-MCXA156 | ✅ | Needs the board's R59/R60 moved to pins 2-3: as shipped, `D10`/`D11` are wired to PWM pins instead, and `SPI`'s CS and MOSI don't reach the header. See [PIN_MAPPING_A156.md](PIN_MAPPING_A156.md) |
 

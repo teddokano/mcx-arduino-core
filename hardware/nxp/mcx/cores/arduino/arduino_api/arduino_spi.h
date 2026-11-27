@@ -43,8 +43,25 @@ enum spi_mode {
 #define	SPI_CLOCK_DIV32		0x06
 ///@}
 
+//	The Arduino header's SPI pins, in whichever numbering this file is read
+//	with: Arduino's (PIN_SPI_*, arduino_io.h) in a sketch, which reads
+//	Arduino.h first, or r01lib's raw pin values (ARD_*, io.h) in
+//	arduino_spi.cpp and wherever SPI.h comes before Arduino.h. Not ARD_*
+//	in a sketch: those are deprecated there (they go in 1.0.0)
+#if defined( PIN_SPI_SS )
+#define	MCX_SPI_DEFAULT_CS		PIN_SPI_SS
+#define	MCX_SPI_DEFAULT_MOSI	PIN_SPI_MOSI
+#define	MCX_SPI_DEFAULT_MISO	PIN_SPI_MISO
+#define	MCX_SPI_DEFAULT_SCK		PIN_SPI_SCK
+#else
+#define	MCX_SPI_DEFAULT_CS		ARD_CS
+#define	MCX_SPI_DEFAULT_MOSI	ARD_MOSI
+#define	MCX_SPI_DEFAULT_MISO	ARD_MISO
+#define	MCX_SPI_DEFAULT_SCK		ARD_SCK
+#endif
+
 /** Default SPI chip-select pin (this board's Arduino-header CS). */
-constexpr int SS	= ARD_CS;
+constexpr int SS	= MCX_SPI_DEFAULT_CS;
 
 /** Bundles the clock/bitOrder/dataMode settings for one
  *  beginTransaction()/endTransaction() pair.
@@ -84,7 +101,7 @@ public:
 	 *  @param cs default chip-select pin (driven by begin()/end(); a
 	 *            sketch can still bit-bang any pin itself as CS instead)
 	 */
-	SPIClass( int mosi = ARD_MOSI, int miso = ARD_MISO, int sclk = ARD_SCK, int cs = ARD_CS );
+	SPIClass( int mosi = MCX_SPI_DEFAULT_MOSI, int miso = MCX_SPI_DEFAULT_MISO, int sclk = MCX_SPI_DEFAULT_SCK, int cs = MCX_SPI_DEFAULT_CS );
 
 	/** Initialize the underlying r01lib SPI instance (idempotent -- a second call is a no-op). */
 	void	 begin( void );

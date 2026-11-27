@@ -390,14 +390,17 @@ enum ArduinoPinNum {
 	GREEN	[[deprecated( "use LEDG: GREEN goes in 1.0.0" )]],
 	BLUE	[[deprecated( "use LEDB: BLUE goes in 1.0.0" )]],
 
-	SPI_CS,
-	SPI_MOSI,
-	SPI_MISO,
-	SPI_SCLK,
-	ARD_CS,
-	ARD_MOSI,
-	ARD_MISO,
-	ARD_SCK,
+	//	The Arduino header's SPI pins, by two older sets of names. Deprecated
+	//	for SS/MOSI/MISO/SCK, and gone in 1.0.0: global names like SPI_CS
+	//	kept a sketch from declaring its own (const int SPI_CS = 10;)
+	SPI_CS		[[deprecated( "use SS: SPI_CS goes in 1.0.0" )]],
+	SPI_MOSI	[[deprecated( "use MOSI: SPI_MOSI goes in 1.0.0" )]],
+	SPI_MISO	[[deprecated( "use MISO: SPI_MISO goes in 1.0.0" )]],
+	SPI_SCLK	[[deprecated( "use SCK: SPI_SCLK goes in 1.0.0" )]],
+	ARD_CS		[[deprecated( "use SS: ARD_CS goes in 1.0.0" )]],
+	ARD_MOSI	[[deprecated( "use MOSI: ARD_MOSI goes in 1.0.0" )]],
+	ARD_MISO	[[deprecated( "use MISO: ARD_MISO goes in 1.0.0" )]],
+	ARD_SCK		[[deprecated( "use SCK: ARD_SCK goes in 1.0.0" )]],
 
 #if	!defined( FRDM_MCXC444 )	//	FRDM-MCXC444 has no I3C and no PWM0-PWM5 header
 	PWM0,
@@ -414,6 +417,15 @@ enum ArduinoPinNum {
 	LEDR	= MB_SDA + 1,
 	LEDG	= MB_SDA + 2,
 	LEDB	= MB_SDA + 3,
+
+	//	The Arduino header's SPI pins for SS/MOSI/MISO/SCK and PIN_SPI_*
+	//	(below): the same as ARD_*, by names that aren't deprecated.
+	//	Internal: use SS, MOSI, MISO and SCK. arduino_io.cpp checks that
+	//	these and LEDR/LEDG/LEDB number the same pins as the old names
+	MCX_SPI_SS		= MB_SDA + 8,
+	MCX_SPI_MOSI	= MB_SDA + 9,
+	MCX_SPI_MISO	= MB_SDA + 10,
+	MCX_SPI_SCK		= MB_SDA + 11,
 };
 
 // Bare MOSI/MISO/SCK, aliased to this board's default SPI pins (ARD_MOSI/
@@ -422,9 +434,9 @@ enum ArduinoPinNum {
 // as standard board-pin identifiers; without them, any third-party library
 // that references MOSI/MISO/SCK directly (e.g. the official SD library)
 // fails to compile here.
-#define	MOSI	ARD_MOSI
-#define	MISO	ARD_MISO
-#define	SCK		ARD_SCK
+#define	MOSI	MCX_SPI_MOSI
+#define	MISO	MCX_SPI_MISO
+#define	SCK		MCX_SPI_SCK
 
 /** Standard SPI/Wire pin identifiers, same convention as
  *  ArduinoCore-avr's/ArduinoCore-samd's pins_arduino.h/variant.h --
@@ -437,10 +449,10 @@ enum ArduinoPinNum {
  */
 #define	PIN_WIRE_SDA	I2C_SDA
 #define	PIN_WIRE_SCL	I2C_SCL
-#define	PIN_SPI_SS		ARD_CS
-#define	PIN_SPI_MOSI	ARD_MOSI
-#define	PIN_SPI_MISO	ARD_MISO
-#define	PIN_SPI_SCK		ARD_SCK
+#define	PIN_SPI_SS		MCX_SPI_SS
+#define	PIN_SPI_MOSI	MCX_SPI_MOSI
+#define	PIN_SPI_MISO	MCX_SPI_MISO
+#define	PIN_SPI_SCK		MCX_SPI_SCK
 
 /** The bare SDA/SCL every official core has (AVR's and UNO R4's
  *  pins_arduino.h), for libraries that pinMode() them directly. Constants

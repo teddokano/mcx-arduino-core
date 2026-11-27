@@ -292,7 +292,7 @@ const KnownInstance KNOWN_INSTANCES[]	=
 	// impossible on that board.
 	{ "Wire2",   "GPIO",   { (uint8_t)arduino_pin_by_number[ MB_SDA ], (uint8_t)arduino_pin_by_number[ MB_SCL ], 0 }, 2, true },
 #endif
-	{ "SPI",     "SPI",    { (uint8_t)arduino_pin_by_number[ ARD_MOSI ], (uint8_t)arduino_pin_by_number[ ARD_MISO ], (uint8_t)arduino_pin_by_number[ ARD_SCK ] }, 3 },
+	{ "SPI",     "SPI",    { (uint8_t)arduino_pin_by_number[ MOSI ], (uint8_t)arduino_pin_by_number[ MISO ], (uint8_t)arduino_pin_by_number[ SCK ] }, 3 },
 #if !defined( FRDM_MCXN236 ) && !defined( FRDM_MCXC444 )
 	// FRDM-MCXN236 and FRDM-MCXC444 have no SPI1: their MikroBus SPI is
 	// SPI's own lines.

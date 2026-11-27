@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - **`RED`, `GREEN` and `BLUE`** (the same pins as `LEDR`, `LEDG` and `LEDB`) go in 1.0.0. As global names they kept a
   sketch from declaring its own: `enum Light { RED, YELLOW, GREEN };` or `const int RED = 9;` doesn't build here,
   and does on UNO R4. Using them now warns (`'RED' is deprecated: use LEDR`), with the IDE's compiler warnings on
+- **`SPI_CS`, `SPI_MOSI`, `SPI_MISO`, `SPI_SCLK` and `ARD_CS`, `ARD_MOSI`, `ARD_MISO`, `ARD_SCK`** go in 1.0.0, for the
+  same reason (`const int SPI_CS = 10;` didn't build). They were the Arduino header's SPI pins, which `SS`, `MOSI`,
+  `MISO` and `SCK` (and `PIN_SPI_*`) name as on every Arduino core; those no longer stand for `ARD_*`, so using them
+  doesn't warn. API_COMPATIBILITY's known limitations now say which names a sketch can't use for its own
 
 ### Changed
 - **`analogRead()` of a number that is no pin at all stops the sketch** (`analogRead: no such pin`), as a pin with

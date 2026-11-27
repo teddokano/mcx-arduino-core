@@ -9,6 +9,16 @@
 
 #define MAX_DIGITAL_PINS    128
 
+// LEDR/LEDG/LEDB and MCX_SPI_* (arduino_io.h) are given as numbers, so that
+// they don't name the deprecated RED/GREEN/BLUE and ARD_* they stand for:
+// check here that they are the same pins
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+static_assert( LEDR == RED && LEDG == GREEN && LEDB == BLUE, "LEDR/LEDG/LEDB must be RED/GREEN/BLUE" );
+static_assert( MCX_SPI_SS == ARD_CS && MCX_SPI_MOSI == ARD_MOSI && MCX_SPI_MISO == ARD_MISO && MCX_SPI_SCK == ARD_SCK,
+               "MCX_SPI_* must be ARD_*" );
+#pragma GCC diagnostic pop
+
 static DigitalInOut*    digital_pins[ MAX_DIGITAL_PINS ]    = {};
 static InterruptIn*     interrupt_pins[ MAX_DIGITAL_PINS ]  = {};
 static uint8_t          pin_modes[ MAX_DIGITAL_PINS ]       = {};  // the last pinMode() mode, valid where digital_pins[] is set
